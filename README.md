@@ -152,6 +152,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## Contact
 
 IAESTE Lleida - [@iaeste.lleida](https://instagram.com/iaeste.lleida) - iaeste@udl.cat
+
 Joel Taylor - [@jtayped\_](https://instagram.com/jtayped_) - jtp17@alumnes.udl.cat
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
