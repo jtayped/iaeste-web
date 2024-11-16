@@ -168,6 +168,6 @@ Joel Taylor - [@jtayped\_](https://instagram.com/jtayped_) - jtp17@alumnes.udl.c
 [issues-shield]: https://img.shields.io/github/issues/jtayped/iaeste.svg?style=for-the-badge
 [issues-url]: https://github.com/jtayped/iaeste/issues
 [license-shield]: https://img.shields.io/github/license/jtayped/iaeste.svg?style=for-the-badge
-[license-url]: https://github.com/jtayped/iaeste/blob/master/LICENSE.txt
+[license-url]: https://github.com/jtayped/iaeste/blob/master/LICENSE
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
