@@ -3,7 +3,10 @@ import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "../globals.css";
+
+const inter = Inter({ weight: "variable", subsets: ["latin"] });
 
 // TODO: add all other available metadata, and improve content for SEO
 export const metadata: Metadata = {
@@ -32,7 +35,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale}>
-      <body>
+      <body className={`${inter.className}`}>
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>
