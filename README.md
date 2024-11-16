@@ -10,7 +10,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/jtayped/iaeste">
-    <img src="public/logos/vertical.svg" alt="Logo" width="80" height="80">
+    <img src="public/logos/vertical.svg" alt="Logo" width="145" height="145">
   </a>
 
   <h3 align="center">IAESTE Lleida</h3>
@@ -67,10 +67,10 @@
 1. Clone the repo
    ```sh
    git clone https://github.com/jtayped/iaeste.git
-   cd iaeste
    ```
 2. Install NPM packages
    ```sh
+   cd iaeste
    npm install
    ```
 3. Run in development mode
