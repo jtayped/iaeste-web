@@ -112,8 +112,8 @@ See the [open issues](https://github.com/jtayped/iaeste/issues) for a full list 
 
 IAESTE’s theme uses two main shades of blue:
 
-- **Darker blue:** `#0b3d59`
-- **Lighter blue:** `#1a84d7`
+- **Darker blue:** <span style="background-color:#0b3d59; color:white; padding:2px 5px;">`#0b3d59`</span>
+- **Lighter blue:** <span style="background-color:#1a84d7; color:white; padding:2px 5px;">`#1a84d7`</span>
 
 Additionally, a dark mode wouldn't fit well with IAESTE's brand.
 
