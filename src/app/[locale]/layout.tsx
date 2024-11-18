@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
+import Header from "@/components/common/header";
 
 const inter = Inter({ weight: "variable", subsets: ["latin"] });
 
@@ -37,6 +38,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body className={`${inter.className}`}>
         <NextIntlClientProvider messages={messages}>
+          <Header />
           {children}
         </NextIntlClientProvider>
       </body>
