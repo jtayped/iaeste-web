@@ -1,6 +1,12 @@
 {
   "HomePage": {
-    "title": "IAESTE Lleida",
-    "about": "Lorem ipsum dolor sit amet."
+    "hero": { "title": "IAESTE", "about": "Lorem ipsum dolor sit amet." }
+  },
+  "header": {
+    "pages": {
+      "student": {"name": "Student", "description": ""},
+      "company": {"name": "Company", "description": ""},
+      "incommings": {"name": "Incommings", "description": "Discover IAESTE Lleida: activities, culture, guides, and essential info."}
+    }
   }
 }
