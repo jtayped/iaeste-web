@@ -3,7 +3,7 @@
 import { Link } from "@/i18n/routing";
 import { Page } from "@/types/pages";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
   NavigationMenu,
@@ -86,23 +86,50 @@ const ListItem = React.forwardRef<
 ListItem.displayName = "ListItem";
 
 const Header = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="fixed top-0 w-full flex justify-between items-center px-screen pt-10 z-50">
+    <header
+      className={`
+        fixed top-0 w-full flex justify-between items-center 
+        transition-all duration-300 z-50 px-screen  
+        ${isScrolled ? "py-2 bg-primary shadow-lg" : "py-10"}
+      `}
+    >
       <Link href={"/"}>
         <Image
           src={"/logos/horizontal.png"}
           alt={"Logo"}
-          width={255}
-          height={75}
+          width={isScrolled ? 160 : 255}
+          height={isScrolled ? 40 : 75}
+          className="transition-all duration-300"
         />
       </Link>
-      <NavigationMenu className="text-white">
+      <NavigationMenu
+        className={`
+          text-white 
+          ${isScrolled ? "text-white" : "text-white"}
+        `}
+      >
         <NavigationMenuList>
           {pages.map((p, i) => (
             <HeaderItem page={p} key={i} />
           ))}
           <NavigationMenuItem>
-            <Button className="ml-3" asChild>
+            <Button
+              className="ml-3"
+              variant={isScrolled ? "secondary" : "default"}
+              asChild
+            >
               <Link href={"#contact"}>Contact</Link>
             </Button>
           </NavigationMenuItem>
