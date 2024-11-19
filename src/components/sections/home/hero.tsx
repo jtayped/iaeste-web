@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { BiMap } from "react-icons/bi";
 
 const Hero = () => {
   const t = useTranslations("HomePage.hero");
