@@ -9,11 +9,67 @@ import Header from "@/components/common/header";
 
 const inter = Inter({ weight: "variable", subsets: ["latin"] });
 
-// TODO: add all other available metadata, and improve content for SEO
 export const metadata: Metadata = {
+  // Basic SEO metadata
   title: "IAESTE Lleida",
   description:
     "Organització sense ànim de lucre de l'Escola Politècnica Superior de la Universitat de Lleida.",
+
+  // OpenGraph / Social Media Tags
+  openGraph: {
+    title: "IAESTE Lleida - International Student Internships",
+    description:
+      "Exchanging students for technical work experience in 100+ countries around the world.",
+    url: "https://iaeste.udl.cat/",
+    type: "website",
+
+    // Recommended: Add high-quality, representative image
+    images: [
+      {
+        url: "/twitter.png", // TODO: Replace with your social share image path
+        width: 700,
+        height: 350,
+        alt: "IAESTE Lleida - International Student Exchanges",
+      },
+    ],
+
+    locale: "ca_ES",
+    siteName: "IAESTE Lleida",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "IAESTE Lleida - International Student Internships",
+    description:
+      "Exchanging students for technical work experience in 100+ countries around the world.",
+
+    creator: "@IAESTELCLleida",
+    site: "@IAESTELCLleida",
+
+    images: ["/twitter.png"],
+  },
+
+  keywords: [
+    "IAESTE",
+    "internships",
+    "estudiants",
+    "Universitat de Lleida",
+    "Escola Politècnica Superior",
+    "intercanvis internacionals",
+  ],
+
+  // Robots meta tag for search engine crawling
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default async function LocaleLayout({
