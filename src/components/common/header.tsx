@@ -63,7 +63,7 @@ const HeaderItem = ({ page }: { page: Page }) => {
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a"> & { title: string }
->(({ className, title, children, ...props }, ref) => {
+>(({ title, children, ...props }, ref) => {
   return (
     <li>
       <NavigationMenuLink asChild>
