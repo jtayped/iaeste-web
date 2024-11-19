@@ -87,7 +87,7 @@ ListItem.displayName = "ListItem";
 
 const Header = () => {
   return (
-    <header className="fixed top-0 w-full flex justify-between items-center px-5 pt-10 z-50">
+    <header className="fixed top-0 w-full flex justify-between items-center px-screen pt-10 z-50">
       <Link href={"/"}>
         <Image
           src={"/logos/horizontal.png"}
