@@ -1,12 +1,19 @@
 {
   "HomePage": {
-    "hero": { "title": "IAESTE", "about": "Lorem ipsum dolor sit amet." }
+    "hero": {
+      "title": "IAESTE",
+      "description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem veniam ea ipsum assumenda fugit commodi? Optio numquam ipsam consequuntur accusantium!",
+      "buttons": { "student": "I'm a student", "company": "I'm a company" }
+    }
   },
   "header": {
     "pages": {
-      "student": {"name": "Student", "description": ""},
-      "company": {"name": "Company", "description": ""},
-      "incommings": {"name": "Incommings", "description": "Discover IAESTE Lleida: activities, culture, guides, and essential info."}
+      "student": { "name": "Student", "description": "" },
+      "company": { "name": "Company", "description": "" },
+      "incommings": {
+        "name": "Incommings",
+        "description": "Discover IAESTE Lleida: activities, culture, guides, and essential info."
+      }
     }
   }
 }
