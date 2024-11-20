@@ -26,12 +26,12 @@ const Hero = () => {
                 <motion.span
                   initial={{ x: -10, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  className="text-3xl leading-none"
+                  className="text-3xl font-bold leading-none"
                 >
                   LC
                 </motion.span>
                 <motion.div
-                  initial={{ rotate: -60, opacity: 0 }}
+                  initial={{ rotate: -120, opacity: 0 }}
                   animate={{ rotate: 0, opacity: 1 }}
                 >
                   <Image
@@ -39,6 +39,7 @@ const Hero = () => {
                     height={32}
                     width={32}
                     alt="IAESTE Lleida's logo"
+                    className="lg:w-12 aspect-square"
                   />
                 </motion.div>
               </div>
@@ -46,7 +47,7 @@ const Hero = () => {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-xl font-extrabold leading-none"
+                className="text-xl lg:text-3xl font-extrabold leading-none"
               >
                 LLEIDA
               </motion.span>
