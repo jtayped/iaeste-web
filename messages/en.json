@@ -1,7 +1,6 @@
 {
   "HomePage": {
     "hero": {
-      "title": "IAESTE",
       "description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem veniam ea ipsum assumenda fugit commodi? Optio numquam ipsam consequuntur accusantium!",
       "buttons": { "student": "I'm a student", "company": "I'm a company" }
     },
