@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const Collaborators = () => {
   return (
-    <ul className="grid grid-cols-3 md:grid-cols-6 gap-x-10 gap-y-5 items-center py-7 px-screen">
+    <ul className="grid grid-cols-2 md:grid-cols-4 gap-x-10 gap-y-5 items-center py-7 px-screen">
       {collaborators.map((c, i) => (
         <li key={i}>
           <Image
