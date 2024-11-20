@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { useTranslations } from "next-intl";
 import { BiMenu, BiX } from "react-icons/bi";
+import { motion, AnimatePresence } from "framer-motion";
 
 const pages: Page[] = [
   {
@@ -86,22 +87,45 @@ const ListItem = React.forwardRef<
 });
 ListItem.displayName = "ListItem";
 
+// Define the animation variants
+const containerVariants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
 const MobileMenu = ({ toggleOpen }: { toggleOpen: () => void }) => {
   const t = useTranslations("header.pages");
 
   function renderPages(page: Page): React.ReactNode {
     return (
       <React.Fragment key={page.href}>
-        <div className="relative">
-          <Link
-            href={page.href}
-            onClick={toggleOpen}
-            className="text-3xl"
-          >
+        <motion.div variants={itemVariants} className="relative">
+          <Link href={page.href} onClick={toggleOpen} className="text-3xl">
             {t(`${page.key}.name`).toUpperCase()}
           </Link>
-          <div className="relative bottom-0 left-0 w-6 h-1 bg-white"/>
-        </div>
+          <div className="relative bottom-0 left-0 w-6 h-1 bg-white" />
+        </motion.div>
 
         {page.pages && page.pages.length > 0
           ? page.pages.map((p) => renderPages(p))
@@ -109,20 +133,35 @@ const MobileMenu = ({ toggleOpen }: { toggleOpen: () => void }) => {
       </React.Fragment>
     );
   }
+
   return (
-    <div className="fixed w-screen h-screen text-white z-[100]">
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ duration: 0.15 }}
+      className="fixed w-screen h-screen text-white z-[100]"
+    >
       <div className="w-full h-full flex items-center justify-center bg-primary">
-        <div className="flex flex-col gap-2">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col gap-2"
+        >
           {pages.map((p) => renderPages(p))}
-        </div>
+        </motion.div>
       </div>
-      <button
+      <motion.button
         className="absolute top-10 right-6 text-white"
         onClick={toggleOpen}
+        initial={{ rotate: 90 }}
+        animate={{ rotate: 0 }}
+        transition={{ duration: 0.7, type: "spring" }}
       >
         <BiX size={33} />
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 };
 
@@ -187,7 +226,9 @@ const Header = () => {
           </NavigationMenuList>
         </NavigationMenu>
       </header>
-      {isMenuOpen ? <MobileMenu toggleOpen={toggleMenu} /> : null}
+      <AnimatePresence>
+        {isMenuOpen && <MobileMenu toggleOpen={toggleMenu} />}
+      </AnimatePresence>
     </>
   );
 };
