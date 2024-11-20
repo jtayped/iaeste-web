@@ -15,6 +15,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { useTranslations } from "next-intl";
+import { BiMenu, BiX } from "react-icons/bi";
 
 const pages: Page[] = [
   {
@@ -85,8 +86,49 @@ const ListItem = React.forwardRef<
 });
 ListItem.displayName = "ListItem";
 
+const MobileMenu = ({ toggleOpen }: { toggleOpen: () => void }) => {
+  const t = useTranslations("header.pages");
+
+  function renderPages(page: Page): React.ReactNode {
+    return (
+      <React.Fragment key={page.href}>
+        <div className="relative">
+          <Link
+            href={page.href}
+            onClick={toggleOpen}
+            className="text-3xl"
+          >
+            {t(`${page.key}.name`).toUpperCase()}
+          </Link>
+          <div className="relative bottom-0 left-0 w-6 h-1 bg-white"/>
+        </div>
+
+        {page.pages && page.pages.length > 0
+          ? page.pages.map((p) => renderPages(p))
+          : null}
+      </React.Fragment>
+    );
+  }
+  return (
+    <div className="fixed w-screen h-screen text-white z-[100]">
+      <div className="w-full h-full flex items-center justify-center bg-primary">
+        <div className="flex flex-col gap-2">
+          {pages.map((p) => renderPages(p))}
+        </div>
+      </div>
+      <button
+        className="absolute top-10 right-6 text-white"
+        onClick={toggleOpen}
+      >
+        <BiX size={33} />
+      </button>
+    </div>
+  );
+};
+
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -97,45 +139,56 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const toggleMenu = () => {
+    setMenuOpen((prev) => !prev);
+  };
+
   return (
-    <header
-      className={`
+    <>
+      {" "}
+      <header
+        className={`
         fixed top-0 w-full flex justify-between items-center 
         transition-all duration-300 z-50 px-screen  
         ${isScrolled ? "py-2 bg-primary shadow-lg" : "py-10"}
       `}
-    >
-      <Link href={"/"}>
-        <Image
-          src={"/logos/horizontal.png"}
-          alt={"Logo"}
-          width={isScrolled ? 160 : 255}
-          height={isScrolled ? 40 : 75}
-          className="transition-all duration-300"
-        />
-      </Link>
-      <NavigationMenu
-        className={`
-          text-white 
+      >
+        <Link href={"/"}>
+          <Image
+            src={"/logos/horizontal.png"}
+            alt={"Logo"}
+            width={isScrolled ? 160 : 255}
+            height={isScrolled ? 40 : 75}
+            className="transition-all duration-300 h-[45px] w-[160px] md:w-auto md:h-auto"
+          />
+        </Link>
+        <button className="text-white block md:hidden" onClick={toggleMenu}>
+          <BiMenu size={26} />
+        </button>
+        <NavigationMenu
+          className={`
+          text-white hidden md:flex 
           ${isScrolled ? "text-white" : "text-white"}
         `}
-      >
-        <NavigationMenuList>
-          {pages.map((p, i) => (
-            <HeaderItem page={p} key={i} />
-          ))}
-          <NavigationMenuItem>
-            <Button
-              className="ml-3"
-              variant={isScrolled ? "secondary" : "default"}
-              asChild
-            >
-              <Link href={"#contact"}>Contact</Link>
-            </Button>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
-    </header>
+        >
+          <NavigationMenuList>
+            {pages.map((p, i) => (
+              <HeaderItem page={p} key={i} />
+            ))}
+            <NavigationMenuItem>
+              <Button
+                className="ml-3"
+                variant={isScrolled ? "secondary" : "default"}
+                asChild
+              >
+                <Link href={"#contact"}>Contact</Link>
+              </Button>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </header>
+      {isMenuOpen ? <MobileMenu toggleOpen={toggleMenu} /> : null}
+    </>
   );
 };
 

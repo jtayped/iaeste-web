@@ -7,7 +7,7 @@ import { RxArrowTopRight } from "react-icons/rx";
 const About = () => {
   return (
     <section id="about" className="mt-14">
-      <div className="grid grid-cols-2 gap-10 px-screen">
+      <div className="grid md:grid-cols-2 gap-10 px-screen">
         <div>
           <h2 className="text-3xl font-bold">What is IAESTE?</h2>
           <p className="text-lg mt-3">
