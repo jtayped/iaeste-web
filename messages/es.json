@@ -1,6 +1,58 @@
 {
   "HomePage": {
-    "title": "IAESTE Lleida",
-    "about": "Lorem ipsum dolor sit amet."
+    "hero": {
+      "description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem veniam ea ipsum assumenda fugit commodi? Optio numquam ipsam consequuntur accusantium!",
+      "buttons": { "student": "I'm a student", "company": "I'm a company" }
+    },
+    "about": {
+      "title": "What is IAESTE?",
+      "description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem veniam ea ipsum assumenda fugit commodi? Optio numquam ipsam consequuntur accusantium!"
+    },
+    "stats": {
+      "countries": {
+        "title": "Countries",
+        "subtitle": "served with IAESTE internships."
+      },
+      "students": {
+        "title": "Students",
+        "subtitle": "sent on internships."
+      },
+      "organisations": {
+        "title": "Organisations",
+        "subtitle": "that host interns."
+      },
+      "volunteers": {
+        "title": "Volunteers",
+        "subtitle": "that help make IAESTE great."
+      }
+    },
+    "steps": {
+      "title": "How does it work?",
+      "internship": {
+        "title": "An internship",
+        "subtitle": "This is a subtitle",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+      },
+      "auction": {
+        "title": "Auction",
+        "subtitle": "This is a subtitle",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+      },
+      "exchange": {
+        "title": "Exchange",
+        "subtitle": "This is a subtitle",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+      }
+    }
+  },
+  "header": {
+    "pages": {
+      "student": { "name": "Student", "description": "" },
+      "company": { "name": "Company", "description": "" },
+      "incommings": {
+        "name": "Incommings",
+        "description": "Discover IAESTE Lleida: activities, culture, guides, and essential info."
+      }
+    }
   }
 }
