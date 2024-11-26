@@ -54,5 +54,40 @@
         "description": "Discover IAESTE Lleida: activities, culture, guides, and essential info."
       }
     }
+  },
+  "contact": {
+    "title": "Contact us",
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+    "email": {
+      "label": "Email",
+      "placeholder": "johndoe@gmail.com",
+      "description": "",
+      "invalid": "Please enter a valid email address",
+      "required": "Email is required"
+    },
+    "name": {
+      "label": "Name",
+      "placeholder": "John Doe",
+      "description": "",
+      "required": "Name is required",
+      "min": "Name must be at least {min} characters long",
+      "max": "Name cannot exceed {max} characters"
+    },
+    "subject": {
+      "label": "Subject",
+      "placeholder": "Your subject",
+      "description": "",
+      "required": "Subject is required",
+      "min": "Subject must be at least {min} characters long",
+      "max": "Subject cannot exceed {max} characters"
+    },
+    "message": {
+      "label": "Message",
+      "placeholder": "Your message",
+      "description": "",
+      "required": "Message is required",
+      "min": "Message must be at least {min} characters long",
+      "max": "Message cannot exceed {max} characters"
+    }
   }
 }
