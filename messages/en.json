@@ -58,6 +58,7 @@
   "contact": {
     "title": "Contact us",
     "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+    "btn": "Send us an email",
     "email": {
       "label": "Email",
       "placeholder": "johndoe@gmail.com",
