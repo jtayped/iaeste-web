@@ -16,7 +16,7 @@ export async function sendEmail(
 
   await resend.emails.send({
     from: process.env.CONTACT_FORM_FROM as string,
-    to: email,
+    to: process.env.CONTACT_FORM_TO as string,
     subject: `IAESTE WEB | ${subject}`,
     react: ContactFormEmail({ email, name, message }),
   });
