@@ -8,17 +8,17 @@ const socials = [
   },
   {
     name: "X",
-    href: "https://instagram.com/iaeste.lleida",
+    href: "https://x.com/IAESTELCLleida",
     icon: FaXTwitter,
   },
   {
     name: "LinkedIn",
-    href: "https://instagram.com/iaeste.lleida",
+    href: "https://www.linkedin.com/company/iaeste-lleida",
     icon: FaLinkedin,
   },
   {
     name: "TikTok",
-    href: "https://instagram.com/iaeste.lleida",
+    href: "https://www.tiktok.com/@iaeste.lleida",
     icon: FaTiktok,
   },
 ];
