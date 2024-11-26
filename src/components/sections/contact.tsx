@@ -10,7 +10,7 @@ const Contact = () => {
     <div className="px-screen grid md:grid-cols-2 gap-10 mt-14">
       <div>
         <h2 className="text-3xl font-bold">{t("title")}</h2>
-        <p className="text-muted-foreground mt-3">{t("description")}</p>
+        <p className="text-lg mt-3">{t("description")}</p>
         <ul className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
           {socials.map((s) => (
             <li key={s.name}>
