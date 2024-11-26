@@ -8,7 +8,7 @@ export default function HomePage() {
   return (
     <main>
       <Hero />
-      <div className="bg-background">
+      <div className="bg-background pb-10">
         <Collaborators />
         <About />
         <HowItWorks />

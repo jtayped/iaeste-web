@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
 import Header from "@/components/common/header";
+import Footer from "@/components/common/footer";
 
 const inter = Inter({ weight: "variable", subsets: ["latin"] });
 
@@ -95,7 +96,8 @@ export default async function LocaleLayout({
       <body className={`${inter.className}`}>
         <NextIntlClientProvider messages={messages}>
           <Header />
-          {children}
+          <main className="min-h-screen">{children}</main>
+          <Footer />
         </NextIntlClientProvider>
       </body>
     </html>
