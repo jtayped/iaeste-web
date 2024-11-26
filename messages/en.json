@@ -61,22 +61,33 @@
     "email": {
       "label": "Email",
       "placeholder": "johndoe@gmail.com",
-      "description": ""
+      "description": "",
+      "invalid": "Please enter a valid email address",
+      "required": "Email is required"
     },
     "name": {
       "label": "Name",
       "placeholder": "John Doe",
-      "description": ""
+      "description": "",
+      "required": "Name is required",
+      "min": "Name must be at least {min} characters long",
+      "max": "Name cannot exceed {max} characters"
     },
     "subject": {
       "label": "Subject",
       "placeholder": "Your subject",
-      "description": ""
+      "description": "",
+      "required": "Subject is required",
+      "min": "Subject must be at least {min} characters long",
+      "max": "Subject cannot exceed {max} characters"
     },
     "message": {
       "label": "Message",
       "placeholder": "Your message",
-      "description": ""
+      "description": "",
+      "required": "Message is required",
+      "min": "Message must be at least {min} characters long",
+      "max": "Message cannot exceed {max} characters"
     }
   }
 }

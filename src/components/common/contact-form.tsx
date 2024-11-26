@@ -15,21 +15,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { Textarea } from "../ui/textarea";
-
-const formSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2).max(20),
-  subject: z.string().max(500),
-  message: z.string().max(5000),
-});
+import { sendEmail } from "@/lib/emails";
+import { BiCheck, BiLoader } from "react-icons/bi";
+import useFormSchema from "@/validators/contact-form";
 
 const ContactField = ({
   translationKey,
   form,
   type = "text",
 }: {
-  translationKey: "name" | "email" | "subject" | "message";
-  form: UseFormReturn<z.infer<typeof formSchema>>;
+  translationKey: keyof z.infer<ReturnType<typeof useFormSchema>>;
+  form: UseFormReturn<z.infer<ReturnType<typeof useFormSchema>>>;
   type?: string;
 }) => {
   const t = useTranslations(`contact.${translationKey}`);
@@ -60,29 +56,54 @@ const ContactField = ({
 };
 
 const ContactForm = () => {
+  const formSchema = useFormSchema();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  const { isSubmitting, isSubmitSuccessful } = form.formState;
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await sendEmail(values);
   }
+
+  const SubmitButtonContent = () => {
+    if (isSubmitSuccessful) {
+      return (
+        <>
+          <BiCheck className="mr-2" />
+          Success
+        </>
+      );
+    }
+
+    if (isSubmitting) {
+      return <BiLoader className="animate-spin" />;
+    }
+
+    return "Submit";
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-4"
+      >
         <div className="grid grid-cols-2 gap-5">
-          <ContactField translationKey={"email"} form={form} />
-          <ContactField translationKey={"name"} form={form} />
+          <ContactField translationKey="email" form={form} />
+          <ContactField translationKey="name" form={form} />
         </div>
-        <ContactField translationKey={"subject"} form={form} />
-        <ContactField
-          translationKey={"message"}
-          type={"textarea"}
-          form={form}
-        />
-        <Button type="submit" className="w-full">
-          Submit
+        <ContactField translationKey="subject" form={form} />
+        <ContactField translationKey="message" type="textarea" form={form} />
+
+        <Button
+          type="submit"
+          disabled={isSubmitting || isSubmitSuccessful}
+          className="w-full"
+        >
+          <SubmitButtonContent />
         </Button>
       </form>
     </Form>
