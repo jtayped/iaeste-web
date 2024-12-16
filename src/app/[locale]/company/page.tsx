@@ -1,5 +1,11 @@
+import InDevelopment from "@/components/sections/in-development";
+
 const CompaniesPage = () => {
-  return <main>CompaniesPage</main>;
+  return (
+    <main>
+      <InDevelopment />
+    </main>
+  );
 };
 
 export default CompaniesPage;
