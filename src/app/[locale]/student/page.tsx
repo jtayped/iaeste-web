@@ -1,9 +1,16 @@
-import InDevelopment from "@/components/sections/in-development";
+import HeroSection from "@/components/common/hero-section";
+import { useTranslations } from "next-intl";
 
 const StudentsPage = () => {
+  const t = useTranslations("StudentsPage");
+
   return (
     <main>
-      <InDevelopment />
+      <HeroSection
+        title={t("hero.title")}
+        description={t("hero.description")}
+        backgroundImage="/hero.jpg"
+      />
     </main>
   );
 };
