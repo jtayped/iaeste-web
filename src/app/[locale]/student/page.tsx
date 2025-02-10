@@ -1,4 +1,5 @@
 import HeroSection from "@/components/common/sections/hero";
+import ContactSection from "@/components/sections/students/contact";
 import Team from "@/components/sections/students/team";
 import WhyIaeste from "@/components/sections/students/why";
 import { useTranslations } from "next-intl";
@@ -16,6 +17,7 @@ const StudentsPage = () => {
       <div className="bg-background pb-10 pt-20 grid gap-20">
         <WhyIaeste />
         <Team />
+        <ContactSection />
       </div>
     </main>
   );
