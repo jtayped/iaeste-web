@@ -1,17 +1,23 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import DivideSection from "@/components/common/sections/divide";
+import Section from "@/components/common/sections/section";
+import { Card, CardContent } from "@/components/ui/card";
+import { H2, H3, Paragraph, Subheader } from "@/components/ui/typography";
 import teams from "@/constants/teams";
 import { Team as TeamType } from "@/types/teams";
 import Image from "next/image";
 import React from "react";
 
-const TeamComponent = ({ title, description, Icon }: TeamType) => {
+const TeamComponent = ({ title, description, icon: Icon }: TeamType) => {
   return (
-    <Card>
-      <CardHeader>
-        <Icon />
-        {title}
-      </CardHeader>
-      <CardContent>{description}</CardContent>
+    <Card className="space-y-4 relative overflow-hidden">
+      <div className="absolute left-0 h-full w-2 bg-primary rounded-tr-sm" />
+      <div>
+        <Icon size={40} />
+      </div>
+      <CardContent>
+        <H3 className="mt-0">{title}</H3>
+        <Subheader>{description}</Subheader>
+      </CardContent>
     </Card>
   );
 };
@@ -19,7 +25,7 @@ const TeamComponent = ({ title, description, Icon }: TeamType) => {
 const Team = () => {
   return (
     <div className="grid gap-10">
-      <div className="grid grid-cols-2 gap-12 px-screen mt-20">
+      <DivideSection>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Image
@@ -47,21 +53,21 @@ const Team = () => {
             />
           </div>
         </div>
-        <div>
-          <h2 className="text-3xl font-semibold">This is a title</h2>
-          <p className="text-lg mt-3">
+        <article>
+          <H2 className="text-3xl font-semibold">This is a title</H2>
+          <Paragraph className="text-lg mt-3">
             Lorem ipsum dolor sit amet consectetur adipisicing elit. In, esse
             suscipit quia consequatur debitis vero inventore nesciunt possimus
             fugit culpa ratione necessitatibus. Placeat, accusamus! Placeat
             assumenda inventore reprehenderit labore unde?
-          </p>
-        </div>
-      </div>
-      <div className="grid grid-cols-5 gap-5">
+          </Paragraph>
+        </article>
+      </DivideSection>
+      <Section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
         {teams.map((t) => (
           <TeamComponent key={t.title} {...t} />
         ))}
-      </div>
+      </Section>
     </div>
   );
 };

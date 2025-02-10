@@ -1,31 +1,31 @@
 import { Team } from "@/types/teams";
-import { FaPenFancy } from "react-icons/fa6";
+import { Building2, CalendarDays, Camera, Computer, Users } from "lucide-react";
 
 const teams: Team[] = [
   {
     title: "Junta",
     description: "Lorem ipsum dolor sit amet",
-    Icon: FaPenFancy,
+    icon: Users,
   },
   {
     title: "Empreses",
     description: "Lorem ipsum dolor sit amet",
-    Icon: FaPenFancy,
+    icon: Building2,
   },
   {
     title: "Marketing",
     description: "Lorem ipsum dolor sit amet",
-    Icon: FaPenFancy,
+    icon: Camera,
   },
   {
     title: "IT",
     description: "Lorem ipsum dolor sit amet",
-    Icon: FaPenFancy,
+    icon: Computer,
   },
   {
     title: "Eventos",
     description: "Lorem ipsum dolor sit amet",
-    Icon: FaPenFancy,
+    icon: CalendarDays,
   },
 ];
 
