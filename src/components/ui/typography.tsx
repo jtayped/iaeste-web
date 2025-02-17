@@ -26,7 +26,10 @@ export const H2: React.FC<Props> = ({ children, className = "", ...props }) => (
 
 export const H3: React.FC<Props> = ({ children, className = "", ...props }) => (
   <h3
-    className={`mt-8 scroll-m-20 text-2xl font-semibold tracking-tight ${className}`}
+    className={cn(
+      "mt-8 scroll-m-20 text-2xl font-semibold tracking-tight",
+      className
+    )}
     {...props}
   >
     {children}

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import DivideSection from "@/components/common/sections/divide";
 import { H2, Paragraph, Subheader } from "@/components/ui/typography";
 import React from "react";
+import Reasons from "../reasons";
 
 const WhyIaeste = () => {
   return (
@@ -15,7 +16,7 @@ const WhyIaeste = () => {
         </Paragraph>
         <Button className="mt-3">Button 1</Button>
       </article>
-      <div></div>
+      <Reasons />
     </DivideSection>
   );
 };

@@ -51,29 +51,6 @@
       "subtitle": "Lorem ipsum dolor sit.",
       "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
     },
-    "why-iaeste": {
-      "title": "",
-      "subtitle": "",
-      "description": "",
-      "reasons": {
-        "oportunities": {
-          "title": "Global Opportunities",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
-        },
-        "growth": {
-          "title": "Professional Growth",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
-        },
-        "exchange": {
-          "title": "Cultural Exchange",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
-        },
-        "internship": {
-          "title": "Paid Internship",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
-        }
-      }
-    },
     "contact": {
       "title": "Join IAESTE Lleida now!",
       "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
@@ -86,6 +63,29 @@
       "incommings": {
         "name": "Incommings",
         "description": "Discover IAESTE Lleida: activities, culture, guides, and essential info."
+      }
+    }
+  },
+  "why-iaeste": {
+    "title": "",
+    "subtitle": "",
+    "description": "",
+    "reasons": {
+      "oportunities": {
+        "title": "Global Opportunities",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+      },
+      "growth": {
+        "title": "Professional Growth",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+      },
+      "exchange": {
+        "title": "Cultural Exchange",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+      },
+      "internship": {
+        "title": "Paid Internship",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
       }
     }
   },
