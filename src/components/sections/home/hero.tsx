@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import ButtonGroup from "@/components/ui/button-group";
+import { Link } from "@/i18n/routing";
+import { Building, User } from "lucide-react";
 
 const Hero = () => {
   const t = useTranslations("HomePage.hero");
@@ -55,14 +58,20 @@ const Hero = () => {
           </div>
 
           <p className="text-md md:text-lg mt-4">{t("description")}</p>
-          <div className="flex items-center gap-3 mt-3">
-            <Button variant={"default"} size={"lg"}>
-              {t("buttons.student")}
+          <ButtonGroup className="mt-4">
+            <Button variant={"default"} size={"lg"} asChild>
+              <Link href="/student">
+                <User />
+                {t("buttons.student")}
+              </Link>
             </Button>
-            <Button variant={"secondary"} size={"lg"}>
-              {t("buttons.company")}
+            <Button variant={"secondary"} size={"lg"} asChild>
+              <Link href="/company">
+                <Building />
+                {t("buttons.company")}
+              </Link>
             </Button>
-          </div>
+          </ButtonGroup>
         </div>
       </div>
     </div>
