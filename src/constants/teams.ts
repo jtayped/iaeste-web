@@ -3,28 +3,23 @@ import { Building2, CalendarDays, Camera, Computer, Users } from "lucide-react";
 
 const teams: Team[] = [
   {
-    title: "Junta",
-    description: "Lorem ipsum dolor sit amet",
+    key: "junta",
     icon: Users,
   },
   {
-    title: "Empreses",
-    description: "Lorem ipsum dolor sit amet",
+    key: "empreses",
     icon: Building2,
   },
   {
-    title: "Marketing",
-    description: "Lorem ipsum dolor sit amet",
+    key: "marketing",
     icon: Camera,
   },
   {
-    title: "IT",
-    description: "Lorem ipsum dolor sit amet",
+    key: "it",
     icon: Computer,
   },
   {
-    title: "Eventos",
-    description: "Lorem ipsum dolor sit amet",
+    key: "eventos",
     icon: CalendarDays,
   },
 ];

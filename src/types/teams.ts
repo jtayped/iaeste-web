@@ -1,7 +1,6 @@
 import { LucideIcon } from "lucide-react";
 
 export interface Team {
-  title: string;
-  description: string;
+  key: string;
   icon: LucideIcon;
 }

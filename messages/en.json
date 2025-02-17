@@ -47,9 +47,59 @@
   },
   "StudentsPage": {
     "hero": {
-      "title": "Some title",
+      "title": "Join IAESTE Lleida",
       "subtitle": "Lorem ipsum dolor sit.",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+    },
+    "why-iaeste": {
+      "title": "Why IAESTE?",
+      "subtitle": "Lorem ipsum dolor sit.",
+      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "reasons": {
+        "oportunities": {
+          "title": "Global Opportunities",
+          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        },
+        "growth": {
+          "title": "Professional Growth",
+          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        },
+        "exchange": {
+          "title": "Cultural Exchange",
+          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        },
+        "internship": {
+          "title": "Paid Internship",
+          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        }
+      }
+    },
+    "teams": {
+      "title": "Choose a team",
+      "subtitle": "Lorem ipsum dolor sit.",
+      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "teams": {
+        "junta": {
+          "name": "Board",
+          "description": "Lorem ipsum dolor sit amet."
+        },
+        "empreses": {
+          "name": "Companies",
+          "description": "Lorem ipsum dolor sit amet."
+        },
+        "marketing": {
+          "name": "Marketing",
+          "description": "Lorem ipsum dolor sit amet."
+        },
+        "it": {
+          "name": "IT",
+          "description": "Lorem ipsum dolor sit amet."
+        },
+        "eventos": {
+          "name": "Events",
+          "description": "Lorem ipsum dolor sit amet."
+        }
+      }
     },
     "contact": {
       "title": "Join IAESTE Lleida now!",
@@ -63,29 +113,6 @@
       "incommings": {
         "name": "Incommings",
         "description": "Discover IAESTE Lleida: activities, culture, guides, and essential info."
-      }
-    }
-  },
-  "why-iaeste": {
-    "title": "",
-    "subtitle": "",
-    "description": "",
-    "reasons": {
-      "oportunities": {
-        "title": "Global Opportunities",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
-      },
-      "growth": {
-        "title": "Professional Growth",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
-      },
-      "exchange": {
-        "title": "Cultural Exchange",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
-      },
-      "internship": {
-        "title": "Paid Internship",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
       }
     }
   },
@@ -150,5 +177,10 @@
       "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
       "location": "Germany"
     }
+  },
+  "buttons": {
+    "send-email": "Send an email",
+    "contact-form": "Contact us now",
+    "learn-more": "Learn more"
   }
 }

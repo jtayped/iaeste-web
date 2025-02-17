@@ -1,3 +1,4 @@
+import SendEmailBtn from "@/components/common/buttons/send-email";
 import ContactForm from "@/components/common/contact-form";
 import DivideSection from "@/components/common/sections/divide";
 import { H2, Paragraph } from "@/components/ui/typography";
@@ -12,6 +13,7 @@ const ContactSection = () => {
       <article>
         <H2>{t("title")}</H2>
         <Paragraph>{t("description")}</Paragraph>
+        <SendEmailBtn icon />
       </article>
       <ContactForm />
     </DivideSection>

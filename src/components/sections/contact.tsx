@@ -4,6 +4,7 @@ import socials from "@/constants/socials";
 import { Button } from "../ui/button";
 import { BiSend } from "react-icons/bi";
 import Link from "next/link";
+import { email } from "@/constants/contact";
 
 const Contact = () => {
   const t = useTranslations("contact");
@@ -28,7 +29,7 @@ const Contact = () => {
         </div>
 
         <p className="text-lg mt-3">{t("description")}</p>
-        <Link href="mailto:iaeste@udl.cat">
+        <Link href={`mailto:${email}`}>
           <Button className="mt-5">
             {t("btn")} <BiSend />
           </Button>

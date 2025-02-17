@@ -17,11 +17,16 @@ const Reason = ({
   reason: Reason;
   className?: string;
 }) => {
-  const t = useTranslations("why-iaeste.reasons");
+  const t = useTranslations("StudentsPage.why-iaeste.reasons");
 
   return (
-    <Card className={cn("flex flex-col md:flex-row gap-6", className)}>
-      <div className="bg-primary p-4 md:h-40 shadow">
+    <Card
+      className={cn(
+        "h-[320px] md:h-[250px] flex flex-col md:flex-row gap-6",
+        className
+      )}
+    >
+      <div className="bg-primary p-4 md:h-full shadow">
         <reason.icon className="text-primary-foreground" size={60} />
       </div>
       <div>
@@ -83,7 +88,7 @@ const Reasons = () => {
           <Reason reason={reasons[currentIndex]} />
         </motion.div>
       </AnimatePresence>
-      <div className="flex justify-between items-center gap-5 mt-6">
+      <div className="flex justify-between items-center gap-5 mt-4">
         <Button size="icon" variant="ghost" onClick={goToPrevious}>
           <ChevronLeft className="h-6 w-6" />
         </Button>
