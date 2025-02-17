@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import React, { ReactNode } from "react";
 
 type Props = {
@@ -60,7 +61,10 @@ export const Blockquote: React.FC<Props> = ({
   className = "",
   ...props
 }) => (
-  <blockquote className={`mt-6 border-l-2 pl-6 italic ${className}`} {...props}>
+  <blockquote
+    className={cn("mt-6 border-l-2 border-primary pl-6 italic", className)}
+    {...props}
+  >
     {children}
   </blockquote>
 );

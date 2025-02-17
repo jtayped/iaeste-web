@@ -51,6 +51,29 @@
       "subtitle": "Lorem ipsum dolor sit.",
       "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
     },
+    "why-iaeste": {
+      "title": "",
+      "subtitle": "",
+      "description": "",
+      "reasons": {
+        "oportunities": {
+          "title": "Global Opportunities",
+          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        },
+        "growth": {
+          "title": "Professional Growth",
+          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        },
+        "exchange": {
+          "title": "Cultural Exchange",
+          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        },
+        "internship": {
+          "title": "Paid Internship",
+          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        }
+      }
+    },
     "contact": {
       "title": "Join IAESTE Lleida now!",
       "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
@@ -100,6 +123,32 @@
       "required": "Message is required",
       "min": "Message must be at least {min} characters long",
       "max": "Message cannot exceed {max} characters"
+    }
+  },
+  "outgoings": {
+    "jaume": {
+      "quote": "Lorem ipsum dolor sit amet.",
+      "title": "An internship",
+      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "location": "Germany"
+    },
+    "jordi": {
+      "quote": "Lorem ipsum dolor sit amet.",
+      "title": "An internship",
+      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "location": "Germany"
+    },
+    "pepito": {
+      "quote": "Lorem ipsum dolor sit amet.",
+      "title": "An internship",
+      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "location": "Germany"
+    },
+    "pep": {
+      "quote": "Lorem ipsum dolor sit amet.",
+      "title": "An internship",
+      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "location": "Germany"
     }
   }
 }
