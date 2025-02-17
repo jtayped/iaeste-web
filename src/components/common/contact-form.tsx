@@ -90,6 +90,7 @@ const ContactForm = () => {
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-2 md:gap-4"
+        id="contact-form"
       >
         <div className="grid grid-cols-2 gap-3 md:gap-5">
           <ContactField translationKey="email" form={form} />
