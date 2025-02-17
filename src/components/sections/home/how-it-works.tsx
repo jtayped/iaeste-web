@@ -1,4 +1,6 @@
+import Section from "@/components/common/sections/section";
 import Step from "@/components/ui/step";
+import { H2 } from "@/components/ui/typography";
 import steps from "@/constants/how-it-works";
 import { useTranslations } from "next-intl";
 
@@ -6,8 +8,8 @@ const HowItWorks = () => {
   const t = useTranslations("HomePage.steps");
 
   return (
-    <div className="px-screen mt-20">
-      <h2 className="text-4xl font-bold text-center">{t("title")}</h2>
+    <Section>
+      <H2>{t("title")}</H2>
       <ol className="grid md:grid-cols-3 mt-8 gap-5">
         {steps.map((s, i) => (
           <li key={i}>
@@ -15,7 +17,7 @@ const HowItWorks = () => {
           </li>
         ))}
       </ol>
-    </div>
+    </Section>
   );
 };
 

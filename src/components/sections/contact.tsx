@@ -1,19 +1,19 @@
 import { useTranslations } from "next-intl";
 import ContactForm from "../common/contact-form";
 import socials from "@/constants/socials";
-import { Button } from "../ui/button";
-import { BiSend } from "react-icons/bi";
 import Link from "next/link";
-import { email } from "@/constants/contact";
+import SendEmailBtn from "../common/buttons/send-email";
+import { H2, Paragraph } from "../ui/typography";
+import DivideSection from "../common/sections/divide";
 
 const Contact = () => {
   const t = useTranslations("contact");
 
   return (
-    <div className="px-screen grid md:grid-cols-2 gap-10 mt-14">
+    <DivideSection>
       <div>
         <div className="flex items-center gap-3.5">
-          <h2 className="text-3xl font-bold">{t("title")}</h2>
+          <H2>{t("title")}</H2>
           <ul className="flex items-center gap-2">
             {socials.map((s) => {
               const Icon = s.icon;
@@ -27,16 +27,11 @@ const Contact = () => {
             })}
           </ul>
         </div>
-
-        <p className="text-lg mt-3">{t("description")}</p>
-        <Link href={`mailto:${email}`}>
-          <Button className="mt-5">
-            {t("btn")} <BiSend />
-          </Button>
-        </Link>
+        <Paragraph>{t("description")}</Paragraph>
+        <SendEmailBtn icon />
       </div>
       <ContactForm />
-    </div>
+    </DivideSection>
   );
 };
 

@@ -1,3 +1,4 @@
+import Content from "@/components/common/sections/content";
 import Collaborators from "@/components/sections/collaborators";
 import Contact from "@/components/sections/contact";
 import About from "@/components/sections/home/about";
@@ -8,12 +9,12 @@ export default function HomePage() {
   return (
     <main>
       <Hero />
-      <div className="bg-background pb-10">
+      <Content className="py-10">
         <Collaborators />
         <About />
         <HowItWorks />
         <Contact />
-      </div>
+      </Content>
     </main>
   );
 }

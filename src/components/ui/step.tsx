@@ -2,6 +2,7 @@ import React from "react";
 import { Card } from "./card";
 import { useTranslations } from "next-intl";
 import { IconType } from "react-icons";
+import { H3, Paragraph, Subheader } from "./typography";
 
 const Step = ({
   translationKey,
@@ -15,19 +16,21 @@ const Step = ({
   const t = useTranslations("HomePage.steps");
 
   return (
-    <Card className="p-6 flex flex-col items-center text-center gap-4">
+    <Card className="p-6 flex flex-col items-center text-center">
       <div className="bg-primary/10 h-min p-7">
         <Icon size={50} />
       </div>
-      <div>
-        <h3 className="text-xl font-semibold">
+      <article>
+        <H3>
           Step {idx}: {t(`${translationKey}.title`)}
-        </h3>
-        <p className="text-primary mt-2">{t(`${translationKey}.subtitle`)}</p>
-        <p className="text-muted-foreground text-sm mt-1">
+        </H3>
+        <Subheader className="text-primary">
+          {t(`${translationKey}.subtitle`)}
+        </Subheader>
+        <Paragraph className="text-muted-foreground text-sm">
           {t(`${translationKey}.description`)}
-        </p>
-      </div>
+        </Paragraph>
+      </article>
     </Card>
   );
 };

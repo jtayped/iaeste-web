@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import ButtonGroup from "@/components/ui/button-group";
 import { Link } from "@/i18n/routing";
 import { Building, User } from "lucide-react";
+import { Paragraph } from "@/components/ui/typography";
 
 const Hero = () => {
   const t = useTranslations("HomePage.hero");
@@ -56,8 +57,7 @@ const Hero = () => {
               </motion.span>
             </div>
           </div>
-
-          <p className="text-md md:text-lg mt-4">{t("description")}</p>
+          <Paragraph>{t("description")}</Paragraph>
           <ButtonGroup className="mt-4">
             <Button variant={"default"} size={"lg"} asChild>
               <Link href="/student">

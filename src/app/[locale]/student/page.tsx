@@ -1,5 +1,6 @@
 import ContactFormBtn from "@/components/common/buttons/contact-form";
 import SendEmailBtn from "@/components/common/buttons/send-email";
+import Content from "@/components/common/sections/content";
 import HeroSection from "@/components/common/sections/hero";
 import ContactSection from "@/components/sections/students/contact";
 import Outgoings from "@/components/sections/students/outgoings";
@@ -24,12 +25,12 @@ const StudentsPage = () => {
           </ButtonGroup>
         }
       />
-      <div className="bg-background pb-10 pt-20 grid gap-20">
+      <Content>
         <WhyIaeste />
         <Outgoings />
         <Team />
         <ContactSection />
-      </div>
+      </Content>
     </main>
   );
 };
