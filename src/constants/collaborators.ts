@@ -1,14 +1,22 @@
 const collaborators = [
-  { src: "/collaborators/udl.png", href: "", name: "Universitat de Lleida" },
-  { src: "/collaborators/alumni.png", href: "", name: "Alumni de l'UdL" },
+  {
+    src: "/collaborators/udl.png",
+    href: "https://www.udl.cat/",
+    name: "Universitat de Lleida",
+  },
+  {
+    src: "/collaborators/alumni.png",
+    href: "https://alumni.udl.cat/",
+    name: "Alumni de l'UdL",
+  },
   {
     src: "/collaborators/diputacio.png",
-    href: "",
+    href: "https://www.diputaciolleida.cat/",
     name: "Diputació de Lleida",
   },
   {
     src: "/collaborators/ajuntament.png",
-    href: "",
+    href: "https://www.paeria.cat/",
     name: "Ajuntament de Lleida",
   },
 ];
