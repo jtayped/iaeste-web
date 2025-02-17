@@ -12,8 +12,7 @@ const TeamComponent = ({ team }: { team: TeamType }) => {
   const t = useTranslations("StudentsPage.teams.teams");
 
   return (
-    <Card className="space-y-4 relative overflow-hidden">
-      <div className="absolute left-0 h-full w-2 bg-primary rounded-tr-sm" />
+    <Card className="space-y-4" accent>
       <div>
         <team.icon size={40} />
       </div>

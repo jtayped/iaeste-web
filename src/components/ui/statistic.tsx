@@ -12,8 +12,7 @@ const Statistic = ({
 }) => {
   const t = useTranslations("HomePage.stats");
   return (
-    <Card className="relative overflow-hidden h-full">
-      <div className="absolute left-0 h-full w-1 bg-primary" />
+    <Card accent>
       <CardHeader className="pb-0 md:pb-4">
         <p className="text-4xl font-semibold text-primary">
           <AnimatedCounter from={0} to={stat} duration={1} />+
