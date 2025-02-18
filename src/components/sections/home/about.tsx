@@ -21,7 +21,11 @@ const About = () => {
       <div className="grid grid-cols-2 gap-3">
         {allStatistics.map((s, i) => (
           <li key={i} className="list-none">
-            <Statistic translationKey={s.key} stat={s.stat} />
+            <Statistic
+              translationKey={s.key}
+              stat={s.stat}
+              className="h-full"
+            />
           </li>
         ))}
       </div>
