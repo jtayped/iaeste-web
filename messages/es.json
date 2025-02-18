@@ -108,11 +108,25 @@
   },
   "header": {
     "pages": {
-      "student": { "name": "Student", "description": "" },
-      "company": { "name": "Company", "description": "" },
-      "incommings": {
+      "home": {
+        "name": "Home",
+        "title": "IAESTE Lleida",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+      },
+      "student": {
+        "name": "Students",
+        "title": "Want to join?",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+      },
+      "incomming": {
         "name": "Incommings",
-        "description": "Discover IAESTE Lleida: activities, culture, guides, and essential info."
+        "title": "Are you an incomming?",
+        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+      },
+      "company": {
+        "name": "Companies",
+        "title": "Are a company?",
+        "description": ""
       }
     }
   },

@@ -5,7 +5,7 @@ import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
-import Header from "@/components/common/header";
+import Header, { NavigationProvider } from "@/components/header";
 import Footer from "@/components/common/footer";
 
 const inter = Inter({ weight: "variable", subsets: ["latin"] });
@@ -95,9 +95,11 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body className={`${inter.className}`}>
         <NextIntlClientProvider messages={messages}>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
+          <NavigationProvider>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </NavigationProvider>
         </NextIntlClientProvider>
       </body>
     </html>
