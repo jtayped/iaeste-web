@@ -1,200 +1,206 @@
 {
   "HomePage": {
     "hero": {
-      "description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem veniam ea ipsum assumenda fugit commodi? Optio numquam ipsam consequuntur accusantium!",
-      "buttons": { "student": "I'm a student", "company": "I'm a company" }
+      "description": "Uneix-te a una xarxa global que connecta estudiants talentosos amb pràctiques tècniques internacionals. Desenvolupa la teva carrera professional mentre descobreixes noves cultures a través del programa d'intercanvi mundial d'IAESTE.",
+      "buttons": { "student": "Soc estudiant", "company": "Soc empresa" }
     },
     "about": {
-      "title": "What is IAESTE?",
-      "description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem veniam ea ipsum assumenda fugit commodi? Optio numquam ipsam consequuntur accusantium!"
+      "title": "Què és IAESTE?",
+      "subtitle": "Connectant el Talent Català amb Oportunitats Globals",
+      "description": "Com a IAESTE LC Lleida, part de la xarxa nacional d'IAESTE Espanya, facilitem pràctiques tècniques remunerades a través de la nostra plataforma sense ànim de lucre a l'Escola Politècnica Superior. Des de 1948, hem connectat estudiants de la UdL amb més de 100 països mitjançant el nostre sistema estructurat d'intercanvi."
     },
     "stats": {
       "countries": {
-        "title": "Countries",
-        "subtitle": "served with IAESTE internships."
+        "title": "Països",
+        "subtitle": "amb pràctiques IAESTE."
       },
       "students": {
-        "title": "Students",
-        "subtitle": "sent on internships."
+        "title": "Estudiants",
+        "subtitle": "enviats a pràctiques."
       },
       "organisations": {
-        "title": "Organisations",
-        "subtitle": "that host interns."
+        "title": "Organitzacions",
+        "subtitle": "que acullen estudiants."
       },
       "volunteers": {
-        "title": "Volunteers",
-        "subtitle": "that help make IAESTE great."
+        "title": "Voluntaris",
+        "subtitle": "que fan IAESTE possible."
       }
     },
     "steps": {
-      "title": "How does it work?",
+      "title": "Com funciona?",
       "internship": {
-        "title": "An internship",
-        "subtitle": "This is a subtitle",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        "title": "Les pràctiques",
+        "subtitle": "De Local a Global",
+        "description": "Els estudiants de la UdL envien els seus perfils mentre LC Lleida col·labora amb IAESTE Espanya per connectar habilitats tècniques amb oportunitats globals a través de la nostra plataforma segura."
       },
       "auction": {
-        "title": "Auction",
-        "subtitle": "This is a subtitle",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        "title": "Subhasta",
+        "subtitle": "Sistema Dual de Col·locació",
+        "description": "Per cada estudiant sortint de Lleida, acollim un estudiant internacional a Catalunya, mantenint l'equilibri a través de la coordinació nacional d'Espanya."
       },
       "exchange": {
-        "title": "Exchange",
-        "subtitle": "This is a subtitle",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        "title": "Intercanvi",
+        "subtitle": "Assistència Integral",
+        "description": "Des de la coordinació de visats fins al suport en allotjament, el nostre equip de LC Lleida garanteix transicions fluides tant per a estudiants sortints com entrants."
       }
     }
   },
   "StudentsPage": {
     "hero": {
-      "title": "Join IAESTE Lleida",
-      "subtitle": "Lorem ipsum dolor sit.",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+      "title": "Uneix-te a IAESTE Lleida",
+      "subtitle": "Forma la teva carrera internacional",
+      "description": "Fes el primer pas cap a una experiència internacional enriquidora. Uneix-te a IAESTE Lleida per accedir a oportunitats globals i desenvolupar-te professional i personalment."
     },
     "why-iaeste": {
-      "title": "Why IAESTE?",
-      "subtitle": "Lorem ipsum dolor sit.",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "title": "Per què IAESTE?",
+      "subtitle": "Mobilitat Global Estructurada",
+      "description": "Com a part de la xarxa oficial d'IAESTE Espanya, LC Lleida ofereix accés exclusiu a pràctiques tècniques verificades amb opcions de reconeixement acadèmic.",
       "reasons": {
         "oportunities": {
-          "title": "Global Opportunities",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+          "title": "Oportunitats Globals",
+          "description": "Accedeix a pràctiques en més de 80 països amb empreses i institucions de recerca líders. Construeix una xarxa internacional i obtén experiència que et diferencia al mercat laboral global."
         },
         "growth": {
-          "title": "Professional Growth",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+          "title": "Creixement Professional",
+          "description": "Desenvolupa habilitats tècniques en entorns reals, millora el teu CV amb experiència internacional i obtén valuosos coneixements en el teu camp a través del treball pràctic en organitzacions líders."
         },
         "exchange": {
-          "title": "Cultural Exchange",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+          "title": "Intercanvi Cultural",
+          "description": "Submergeix-te en noves cultures, desenvolupa competències interculturals i construeix amistats internacionals duradores mentre treballes a l'estranger en un entorn de suport."
         },
         "internship": {
-          "title": "Paid Internship",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+          "title": "Pràctiques Remunerades",
+          "description": "Totes les pràctiques d'IAESTE són remunerades, assegurant que puguis centrar-te en guanyar experiència valuosa mentre cobreixes les teves despeses de vida durant la teva estada internacional."
         }
       }
     },
     "teams": {
-      "title": "Choose a team",
-      "subtitle": "Lorem ipsum dolor sit.",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "title": "Tria un equip",
+      "subtitle": "Sigues part d'alguna cosa més gran",
+      "description": "Uneix-te a un dels nostres equips dinàmics a IAESTE Lleida. Desenvolupa habilitats de lideratge, guanya experiència organitzativa i marca la diferència mentre ajudes altres estudiants a accedir a oportunitats internacionals.",
       "teams": {
         "junta": {
-          "name": "Board",
-          "description": "Lorem ipsum dolor sit amet."
+          "name": "Junta Directiva",
+          "description": "Lidera iniciatives estratègiques i guia la direcció de la nostra organització."
         },
         "empreses": {
-          "name": "Companies",
-          "description": "Lorem ipsum dolor sit amet."
+          "name": "Empreses",
+          "description": "Construeix relacions amb ocupadors locals i internacionals."
         },
         "marketing": {
-          "name": "Marketing",
-          "description": "Lorem ipsum dolor sit amet."
+          "name": "Màrqueting",
+          "description": "Crea contingut atractiu i promociona la missió d'IAESTE."
         },
         "it": {
           "name": "IT",
-          "description": "Lorem ipsum dolor sit amet."
+          "description": "Mantén i millora la nostra infraestructura digital."
         },
         "eventos": {
-          "name": "Events",
-          "description": "Lorem ipsum dolor sit amet."
+          "name": "Esdeveniments",
+          "description": "Organitza activitats i esdeveniments professionals atractius."
         }
       }
     },
     "contact": {
-      "title": "Join IAESTE Lleida now!",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+      "title": "Inicia el teu Viatge IAESTE",
+      "description": "Uneix-te als estudiants d'enginyeria de la UdL que han llançat carreres globals a través del nostre programa LC Lleida."
     }
   },
   "header": {
     "pages": {
       "home": {
-        "name": "Home",
+        "name": "Inici",
         "title": "IAESTE Lleida",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        "description": "La teva porta d'entrada a pràctiques tècniques internacionals i oportunitats d'intercanvi cultural a través de la Universitat de Lleida."
       },
       "student": {
-        "name": "Students",
-        "title": "Want to join?",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        "name": "Estudiants",
+        "title": "Vols unir-te?",
+        "description": "Descobreix com accedir a pràctiques internacionals remunerades i formar part de la nostra xarxa global d'estudiants tècnics."
       },
       "incomming": {
-        "name": "Incommings",
-        "title": "Are you an incomming?",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        "name": "Incoming",
+        "title": "Ets estudiant entrant?",
+        "description": "Informació essencial per a estudiants internacionals que venen a Lleida per a la seva experiència de pràctiques IAESTE."
       },
       "company": {
-        "name": "Companies",
-        "title": "Are a company?",
-        "description": ""
+        "name": "Empreses",
+        "title": "Ets una empresa?",
+        "description": "Col·labora amb IAESTE per accedir a talent tècnic internacional per a la teva organització."
       }
-    }
+    },
+    "groups": {
+      "students": "Estudiants",
+      "companies": "Companyies"
+    },
+    "contact-btn": "Contacta'ns"
   },
   "contact": {
-    "title": "Contact us",
-    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
-    "btn": "Send us an email",
+    "title": "Contacta'ns",
+    "description": "Obtén detalls sobre intercanvis d'estudiants de la UdL o acollida de talent internacional.",
+    "btn": "Enviar email",
     "email": {
       "label": "Email",
       "placeholder": "johndoe@gmail.com",
       "description": "",
-      "invalid": "Please enter a valid email address",
-      "required": "Email is required"
+      "invalid": "Si us plau, introdueix una adreça d'email vàlida",
+      "required": "L'email és obligatori"
     },
     "name": {
-      "label": "Name",
+      "label": "Nom",
       "placeholder": "John Doe",
       "description": "",
-      "required": "Name is required",
-      "min": "Name must be at least {min} characters long",
-      "max": "Name cannot exceed {max} characters"
+      "required": "El nom és obligatori",
+      "min": "El nom ha de tenir almenys {min} caràcters",
+      "max": "El nom no pot excedir els {max} caràcters"
     },
     "subject": {
-      "label": "Subject",
-      "placeholder": "Your subject",
+      "label": "Assumpte",
+      "placeholder": "El teu assumpte",
       "description": "",
-      "required": "Subject is required",
-      "min": "Subject must be at least {min} characters long",
-      "max": "Subject cannot exceed {max} characters"
+      "required": "L'assumpte és obligatori",
+      "min": "L'assumpte ha de tenir almenys {min} caràcters",
+      "max": "L'assumpte no pot excedir els {max} caràcters"
     },
     "message": {
-      "label": "Message",
-      "placeholder": "Your message",
+      "label": "Missatge",
+      "placeholder": "El teu missatge",
       "description": "",
-      "required": "Message is required",
-      "min": "Message must be at least {min} characters long",
-      "max": "Message cannot exceed {max} characters"
+      "required": "El missatge és obligatori",
+      "min": "El missatge ha de tenir almenys {min} caràcters",
+      "max": "El missatge no pot excedir els {max} caràcters"
     }
   },
   "outgoings": {
     "jaume": {
-      "quote": "Lorem ipsum dolor sit amet.",
-      "title": "An internship",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
-      "location": "Germany"
+      "quote": "IAESTE em va obrir portes que ni sabia que existien.",
+      "title": "Innovació en Enginyeria a Alemanya",
+      "description": "Durant les meves pràctiques en una empresa líder del sector automotriu a Munic, vaig obtenir experiència pràctica amb tecnologies d'avantguarda mentre desenvolupava la meva xarxa professional. L'experiència va millorar tant les meves habilitats tècniques com la meva comprensió cultural.",
+      "location": "Alemanya"
     },
     "jordi": {
-      "quote": "Lorem ipsum dolor sit amet.",
-      "title": "An internship",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
-      "location": "Germany"
+      "quote": "La combinació perfecta de creixement professional i personal.",
+      "title": "Excel·lència en Recerca",
+      "description": "Treballar a la Universitat Tècnica de Berlín em va permetre contribuir a investigacions pioneres mentre experimentava la vida en una de les ciutats més dinàmiques d'Europa. IAESTE va fer que tot el procés fos fluid i em va donar suport en tot moment.",
+      "location": "Alemanya"
     },
     "pepito": {
-      "quote": "Lorem ipsum dolor sit amet.",
-      "title": "An internship",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
-      "location": "Germany"
+      "quote": "Una experiència que va definir la meva trajectòria professional.",
+      "title": "Innovació Industrial",
+      "description": "Les meves pràctiques en una planta manufacturera alemanya em van donar coneixements pràctics sobre tecnologies de la Indústria 4.0. L'entorn internacional i els reptes professionals em van ajudar a créixer tant tècnicament com personalment.",
+      "location": "Alemanya"
     },
     "pep": {
-      "quote": "Lorem ipsum dolor sit amet.",
-      "title": "An internship",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
-      "location": "Germany"
+      "quote": "Més que unes pràctiques - una experiència que va canviar la meva vida.",
+      "title": "Lideratge Tecnològic",
+      "description": "Participar en un projecte de desenvolupament de programari en una empresa tecnològica líder a Hamburg em va ensenyar valuoses lliçons sobre col·laboració internacional i comunicació professional mentre avançava en la meva experiència tècnica.",
+      "location": "Alemanya"
     }
   },
   "buttons": {
-    "send-email": "Send an email",
-    "contact-form": "Contact us now",
-    "learn-more": "Learn more"
+    "send-email": "Envia'ns un correu",
+    "contact-form": "Contacta'ns",
+    "learn-more": "Saber-ne més"
   }
 }

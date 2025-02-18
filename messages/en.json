@@ -1,12 +1,13 @@
 {
   "HomePage": {
     "hero": {
-      "description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem veniam ea ipsum assumenda fugit commodi? Optio numquam ipsam consequuntur accusantium!",
+      "description": "Join a global network connecting talented students with international technical internships. Experience professional growth while discovering new cultures through IAESTE's worldwide exchange program.",
       "buttons": { "student": "I'm a student", "company": "I'm a company" }
     },
     "about": {
       "title": "What is IAESTE?",
-      "description": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem veniam ea ipsum assumenda fugit commodi? Optio numquam ipsam consequuntur accusantium!"
+      "subtitle": "Bridging Spanish Talent with Global Opportunities",
+      "description": "As IAESTE LC Lleida, part of IAESTE Spain's national network, we facilitate paid technical internships through our non-profit platform at Escola Politècnica Superior. Since 1948, we've connected UdL students with 100+ countries through our structured exchange system."
     },
     "stats": {
       "countries": {
@@ -30,80 +31,80 @@
       "title": "How does it work?",
       "internship": {
         "title": "An internship",
-        "subtitle": "This is a subtitle",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        "subtitle": "Local to Global",
+        "description": "UdL students submit profiles while LC Lleida collaborates with IAESTE Spain to match technical skills with global opportunities through our secure platform."
       },
       "auction": {
         "title": "Auction",
-        "subtitle": "This is a subtitle",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        "subtitle": "Dual Placement System",
+        "description": "For every outgoing student from Lleida, we welcome an international intern to Catalonia, maintaining balance through Spain's national coordination."
       },
       "exchange": {
         "title": "Exchange",
-        "subtitle": "This is a subtitle",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+        "subtitle": "End-to-End Assistance",
+        "description": "From visa coordination to housing support, our LC Lleida team ensures smooth transitions for both outgoing and incoming technical students."
       }
     }
   },
   "StudentsPage": {
     "hero": {
       "title": "Join IAESTE Lleida",
-      "subtitle": "Lorem ipsum dolor sit.",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+      "subtitle": "Shape your international career",
+      "description": "Take the first step towards an enriching international experience. Join IAESTE Lleida to access global opportunities and develop both professionally and personally."
     },
     "why-iaeste": {
       "title": "Why IAESTE?",
-      "subtitle": "Lorem ipsum dolor sit.",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "subtitle": "Structured Global Mobility",
+      "description": "As part of Spain's official IAESTE network, LC Lleida offers exclusive access to vetted technical internships with academic recognition options.",
       "reasons": {
         "oportunities": {
           "title": "Global Opportunities",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+          "description": "Access internships in over 80 countries with leading companies and research institutions. Build an international network and gain experience that sets you apart in the global job market."
         },
         "growth": {
           "title": "Professional Growth",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+          "description": "Develop technical skills in real-world settings, enhance your CV with international experience, and gain valuable insights into your field through hands-on work at leading organizations."
         },
         "exchange": {
           "title": "Cultural Exchange",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+          "description": "Immerse yourself in new cultures, develop intercultural competencies, and build lasting international friendships while working abroad in a supportive environment."
         },
         "internship": {
           "title": "Paid Internship",
-          "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+          "description": "All IAESTE internships are paid positions, ensuring you can focus on gaining valuable experience while covering your living expenses during your international stay."
         }
       }
     },
     "teams": {
       "title": "Choose a team",
-      "subtitle": "Lorem ipsum dolor sit.",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "subtitle": "Be part of something bigger",
+      "description": "Join one of our dynamic teams at IAESTE Lleida. Develop leadership skills, gain organizational experience, and make a difference while helping other students access international opportunities.",
       "teams": {
         "junta": {
           "name": "Board",
-          "description": "Lorem ipsum dolor sit amet."
+          "description": "Lead strategic initiatives and guide our organization's direction."
         },
         "empreses": {
           "name": "Companies",
-          "description": "Lorem ipsum dolor sit amet."
+          "description": "Build relationships with local and international employers."
         },
         "marketing": {
           "name": "Marketing",
-          "description": "Lorem ipsum dolor sit amet."
+          "description": "Create compelling content and promote IAESTE's mission."
         },
         "it": {
           "name": "IT",
-          "description": "Lorem ipsum dolor sit amet."
+          "description": "Maintain and improve our digital infrastructure."
         },
         "eventos": {
           "name": "Events",
-          "description": "Lorem ipsum dolor sit amet."
+          "description": "Organize engaging activities and professional events."
         }
       }
     },
     "contact": {
-      "title": "Join IAESTE Lleida now!",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex."
+      "title": "Start Your IAESTE Journey",
+      "description": "Join UdL's engineering students who've launched global careers through our LC Lleida program."
     }
   },
   "header": {
@@ -111,28 +112,33 @@
       "home": {
         "name": "Home",
         "title": "IAESTE Lleida",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        "description": "Your gateway to international technical internships and cultural exchange opportunities through the Universitat de Lleida."
       },
       "student": {
         "name": "Students",
         "title": "Want to join?",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        "description": "Discover how to access paid international internships and become part of our global network of technical students."
       },
       "incomming": {
         "name": "Incommings",
         "title": "Are you an incomming?",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias."
+        "description": "Essential information for international students coming to Lleida for their IAESTE internship experience."
       },
       "company": {
         "name": "Companies",
         "title": "Are a company?",
-        "description": ""
+        "description": "Partner with IAESTE to access talented international technical students for your organization."
       }
-    }
+    },
+    "groups": {
+      "students": "Students",
+      "companies": "Companies"
+    },
+    "contact-btn": "Contact us"
   },
   "contact": {
     "title": "Contact us",
-    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+    "description": "Get details about UdL student exchanges or hosting international talent.",
     "btn": "Send us an email",
     "email": {
       "label": "Email",
@@ -168,27 +174,27 @@
   },
   "outgoings": {
     "jaume": {
-      "quote": "Lorem ipsum dolor sit amet.",
-      "title": "An internship",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "quote": "IAESTE opened doors I never knew existed.",
+      "title": "Engineering Innovation in Germany",
+      "description": "During my internship at a leading automotive company in Munich, I gained hands-on experience with cutting-edge technologies while developing my professional network. The experience enhanced both my technical skills and cultural understanding.",
       "location": "Germany"
     },
     "jordi": {
-      "quote": "Lorem ipsum dolor sit amet.",
-      "title": "An internship",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "quote": "The perfect blend of professional and personal growth.",
+      "title": "Research Excellence",
+      "description": "Working at the Technical University of Berlin allowed me to contribute to groundbreaking research while experiencing life in one of Europe's most dynamic cities. IAESTE made the entire process smooth and supported me throughout.",
       "location": "Germany"
     },
     "pepito": {
-      "quote": "Lorem ipsum dolor sit amet.",
-      "title": "An internship",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "quote": "An experience that shaped my career path.",
+      "title": "Industrial Innovation",
+      "description": "My internship at a German manufacturing plant gave me practical insights into Industry 4.0 technologies. The international environment and professional challenges helped me grow both technically and personally.",
       "location": "Germany"
     },
     "pep": {
-      "quote": "Lorem ipsum dolor sit amet.",
-      "title": "An internship",
-      "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero nesciunt accusantium consectetur adipisci alias. Dolorum delectus nemo quisquam reprehenderit, mollitia eos corporis, qui odio a ex.",
+      "quote": "More than just an internship - a life-changing experience.",
+      "title": "Technology Leadership",
+      "description": "Participating in a software development project at a leading tech company in Hamburg taught me valuable lessons in international collaboration and professional communication while advancing my technical expertise.",
       "location": "Germany"
     }
   },
