@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import reasons from "@/constants/why-iaeste";
 import { type Reason } from "@/types/why-iaeste";
-import { Card } from "../ui/card";
 import { H3, Paragraph } from "../ui/typography";
 import { useTranslations } from "next-intl";
 import { Button } from "../ui/button";
@@ -20,9 +19,9 @@ const Reason = ({
   const t = useTranslations("StudentsPage.why-iaeste.reasons");
 
   return (
-    <Card
+    <div
       className={cn(
-        "h-[320px] md:h-[250px] flex flex-col md:flex-row gap-6",
+        "h-[280px] md:h-[200px] flex flex-col md:flex-row gap-6",
         className
       )}
     >
@@ -35,7 +34,7 @@ const Reason = ({
           {t(`${reason.key}.description`)}
         </Paragraph>
       </div>
-    </Card>
+    </div>
   );
 };
 
