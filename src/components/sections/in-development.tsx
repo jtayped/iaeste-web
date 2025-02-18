@@ -7,7 +7,7 @@ import BackButton from "../ui/back-btn";
 const InDevelopment = () => {
   return (
     <div className="flex items-center justify-center w-full h-screen bg-primary/50">
-      <div className="flex flex-col items-center max-w-screen-sm px-screen">
+      <div className="flex flex-col items-center text-center max-w-screen-sm px-screen">
         <span className="p-4 bg-primary/30">
           <BiCode size={40} />
         </span>
