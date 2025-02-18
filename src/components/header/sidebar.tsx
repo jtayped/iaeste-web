@@ -49,10 +49,10 @@ const SidebarComponent = () => {
           initial="hidden"
           animate="visible"
         >
-          <Item href="/incomming">{t("home.name").toUpperCase()}</Item>
-          <Item href="/incomming">{t("student.name").toUpperCase()}</Item>
+          <Item href="/">{t("home.name").toUpperCase()}</Item>
+          <Item href="/student">{t("student.name").toUpperCase()}</Item>
           <Item href="/incomming">{t("incomming.name").toUpperCase()}</Item>
-          <Item href="/incomming">{t("company.name").toUpperCase()}</Item>
+          <Item href="/company">{t("company.name").toUpperCase()}</Item>
         </motion.nav>
       </div>
     </motion.div>
