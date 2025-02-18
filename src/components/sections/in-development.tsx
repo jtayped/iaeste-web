@@ -3,26 +3,27 @@ import React from "react";
 import { BiCode } from "react-icons/bi";
 import { Button } from "../ui/button";
 import BackButton from "../ui/back-btn";
+import { useTranslations } from "next-intl";
+import { H1, Paragraph } from "../ui/typography";
+import ButtonGroup from "../ui/button-group";
 
 const InDevelopment = () => {
+  const t = useTranslations("UnderConstructionPage");
+
   return (
     <div className="flex items-center justify-center w-full h-screen bg-primary/50">
       <div className="flex flex-col items-center text-center max-w-screen-sm px-screen">
         <span className="p-4 bg-primary/30">
           <BiCode size={40} />
         </span>
-        <p className="text-3xl font-semibold mt-5">
-          This page is under construction!
-        </p>
-        <p className="mt-2">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam, cum!
-        </p>
-        <div className="flex items-center gap-2 mt-4">
+        <H1 className="mt-6">{t("title")}</H1>
+        <Paragraph>{t("description")}</Paragraph>
+        <ButtonGroup className="mt-4">
           <Button asChild>
-            <Link href={"/"}>Home</Link>
+            <Link href={"/"}>{t("buttons.home")}</Link>
           </Button>
-          <BackButton variant="secondary">Go back</BackButton>
-        </div>
+          <BackButton variant="secondary">{t("buttons.back")}</BackButton>
+        </ButtonGroup>
       </div>
     </div>
   );

@@ -107,6 +107,14 @@
       "description": "Join UdL's engineering students who've launched global careers through our LC Lleida program."
     }
   },
+  "UnderConstructionPage": {
+    "title": "This page is under construction!",
+    "description": "Our IT people are on it! It will be finished shortly.",
+    "buttons": {
+      "home": "Home",
+      "back": "Go back"
+    }
+  },
   "header": {
     "pages": {
       "home": {

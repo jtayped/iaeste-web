@@ -107,6 +107,14 @@
       "description": "Uneix-te als estudiants d'enginyeria de la UdL que han llançat carreres globals a través del nostre programa LC Lleida."
     }
   },
+  "UnderConstructionPage": {
+    "title": "Aquesta pàgina està en construcció!",
+    "description": "El nostre equip d'TI hi està treballant! Estarà llesta aviat.",
+    "buttons": {
+      "home": "Inici",
+      "back": "Tornar"
+    }
+  },
   "header": {
     "pages": {
       "home": {
