@@ -19,14 +19,14 @@ import { useTranslations } from "next-intl";
 import { useNavigation } from ".";
 
 const Navigation = ({ className = "" }: { className?: string }) => {
-  const t = useTranslations("header.pages");
+  const t = useTranslations("header");
   const { isScrolled } = useNavigation();
 
   return (
     <NavigationMenu className={cn("", className)}>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>Students</NavigationMenuTrigger>
+          <NavigationMenuTrigger>{t("groups.students")}</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid gap-3 p-6 md:w-[400px]">
               <li className="row-span-3">
@@ -43,19 +43,19 @@ const Navigation = ({ className = "" }: { className?: string }) => {
                       className="invert h-14 w-14"
                     />
                     <div className="mb-2 mt-4 text-lg font-medium">
-                      {t("home.title")}
+                      {t("pages.home.title")}
                     </div>
                     <p className="text-sm leading-tight text-muted-foreground">
-                      {t("home.description")}
+                      {t("pages.home.description")}
                     </p>
                   </Link>
                 </NavigationMenuLink>
               </li>
-              <ListItem href="/student" title={t("student.title")}>
-                {t("student.description")}
+              <ListItem href="/student" title={t("pages.student.title")}>
+                {t("pages.student.description")}
               </ListItem>
-              <ListItem href="/incomming" title={t("incomming.title")}>
-                {t("incomming.description")}
+              <ListItem href="/incomming" title={t("pages.incomming.title")}>
+                {t("pages.incomming.description")}
               </ListItem>
             </ul>
           </NavigationMenuContent>
@@ -63,7 +63,7 @@ const Navigation = ({ className = "" }: { className?: string }) => {
         <NavigationMenuItem>
           <Link href="/company" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Companies
+              {t("groups.companies")}
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
@@ -73,7 +73,7 @@ const Navigation = ({ className = "" }: { className?: string }) => {
             asChild
             variant={isScrolled ? "secondary" : "default"}
           >
-            <Link href="#contact-form">Contact us</Link>
+            <Link href="#contact-form">{t("contact-btn")}</Link>
           </Button>
         </NavigationMenuItem>
       </NavigationMenuList>

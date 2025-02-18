@@ -3,19 +3,16 @@ import DivideSection from "@/components/common/sections/divide";
 import Statistic from "@/components/ui/statistic";
 import { H2, Paragraph, Subheader } from "@/components/ui/typography";
 import allStatistics from "@/constants/statistics";
+import { useTranslations } from "next-intl";
 
 const About = () => {
+  const t = useTranslations("HomePage.about");
   return (
     <DivideSection>
       <article>
-        <H2>What is IAESTE?</H2>
-        <Subheader>IAESTE is the best org</Subheader>
-        <Paragraph>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa optio
-          odit quam culpa consectetur fuga quo enim iste laborum repellat.
-          Assumenda quia dolorum doloremque voluptates accusantium corporis
-          magni ex quae!
-        </Paragraph>
+        <H2>{t("title")}</H2>
+        <Subheader>{t("subtitle")}</Subheader>
+        <Paragraph>{t("description")}</Paragraph>
         <LearnMoreBtn />
       </article>
       <div className="grid grid-cols-2 gap-3">
