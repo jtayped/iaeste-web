@@ -60,16 +60,13 @@ const Hero = () => {
           <Paragraph>{t("description")}</Paragraph>
           <ButtonGroup className="mt-4">
             <Button variant={"default"} size={"lg"} asChild>
-              <Link href="/student">
-                <User />
-                {t("buttons.student")}
-              </Link>
-            </Button>
-            <Button variant={"secondary"} size={"lg"} asChild>
               <Link href="/company">
                 <Building />
                 {t("buttons.company")}
               </Link>
+            </Button>
+            <Button variant={"secondary"} size={"lg"} asChild>
+              <Link href="/student">{t("buttons.student")}</Link>
             </Button>
           </ButtonGroup>
         </div>
