@@ -17,6 +17,7 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useNavigation } from ".";
+import ChangeTranslation from "../common/change-translation";
 
 const Navigation = ({ className = "" }: { className?: string }) => {
   const t = useTranslations("header");
@@ -66,6 +67,13 @@ const Navigation = ({ className = "" }: { className?: string }) => {
               {t("groups.companies")}
             </NavigationMenuLink>
           </Link>
+        </NavigationMenuItem>
+        <NavigationMenuItem asChild>
+          <ChangeTranslation
+            align="end"
+            size="icon"
+            className="hidden md:flex"
+          />
         </NavigationMenuItem>
         <NavigationMenuItem asChild>
           <Button

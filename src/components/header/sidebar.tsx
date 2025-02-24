@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import ChangeTranslation from "../common/change-translation";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -55,6 +56,9 @@ const SidebarComponent = () => {
           <Item href="/company">{t("company.name").toUpperCase()}</Item>
         </motion.nav>
       </div>
+      <div className="absolute bottom-0 w-full p-screen">
+        <ChangeTranslation className="w-full"/>
+      </div>
     </motion.div>
   );
 };
@@ -72,7 +76,9 @@ const Item = ({
 
   return (
     <motion.div variants={itemVariants} className={cn("relative", className)}>
-      <Link href={href} onClick={toggleSidebar}>{children}</Link>
+      <Link href={href} onClick={toggleSidebar}>
+        {children}
+      </Link>
       <motion.div
         className="h-2 bg-primary-foreground"
         initial={{ width: 0 }}
