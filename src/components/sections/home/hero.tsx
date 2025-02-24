@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import ButtonGroup from "@/components/ui/button-group";
 import { Link } from "@/i18n/routing";
-import { Building, User } from "lucide-react";
+import { Building } from "lucide-react";
 import { Paragraph } from "@/components/ui/typography";
 
 const Hero = () => {

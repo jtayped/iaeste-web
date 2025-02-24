@@ -17,7 +17,7 @@ const StudentsPage = () => {
       <HeroSection
         title={t("title")}
         description={t("description")}
-        backgroundImage="/hero.jpg"
+        backgroundImage="/team/subhasta-zaragoza.webp"
         component={
           <ButtonGroup className="justify-center">
             <ContactFormBtn />
