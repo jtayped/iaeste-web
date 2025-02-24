@@ -68,9 +68,11 @@ const Item = ({
   href: string;
   className?: string;
 }) => {
+  const { toggleSidebar } = useNavigation();
+
   return (
     <motion.div variants={itemVariants} className={cn("relative", className)}>
-      <Link href={href}>{children}</Link>
+      <Link href={href} onClick={toggleSidebar}>{children}</Link>
       <motion.div
         className="h-2 bg-primary-foreground"
         initial={{ width: 0 }}
