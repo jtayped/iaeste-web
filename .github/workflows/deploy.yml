@@ -34,7 +34,6 @@ jobs:
           strip_components: 1
           overwrite: true
           tar_tmp_path: /tmp
-          tar_exec: sudo tar
 
       - name: Restart Next.js App
         uses: appleboy/ssh-action@v1.0.0
