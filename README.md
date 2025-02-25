@@ -88,17 +88,17 @@
 - [x] Setup
 - [x] Docs
 - [ ] Pages
-  - [ ] Home
-  - [ ] I'm a student
+  - [x] Home
+  - [x] I'm a student
   - [ ] I'm a company
   - [ ] Incommings
-- [ ] Internationalization
-  - [ ] Catalan
-  - [ ] Spanish
-  - [ ] English
-- [ ] Hosting
-  - [ ] Figure out domain [iaeste.udl.cat](http://www.iaeste.udl.cat/)
-  - [ ] Host with appropriate provider (e.g. Vercel, Cloudflare, etc.)
+- [x] Internationalization
+  - [x] Catalan
+  - [x] Spanish
+  - [x] English
+- [x] Hosting
+  - [x] Figure out domain [iaeste.udl.cat](http://www.iaeste.udl.cat/)
+  - [x] Host with appropriate provider (e.g. Vercel, Cloudflare, etc.)
 
 See the [open issues](https://github.com/jtayped/iaeste/issues) for a full list of proposed features (and known issues).
 
