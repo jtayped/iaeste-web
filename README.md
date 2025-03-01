@@ -1,174 +1,58 @@
-<a id="readme-top"></a>
+# Turborepo Tailwind CSS starter
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+This Turborepo starter is maintained by the Turborepo core team.
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/jtayped/iaeste">
-    <img src="public/logos/vertical.svg" alt="Logo" width="145" height="145">
-  </a>
+## Using this example
 
-  <h3 align="center">IAESTE Lleida</h3>
-  <p align="center">
-    IAESTE Lleida's official website.
-  </p>
-</div>
+Run the following command:
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#development">Development</a></li>
-      </ul>
-    </li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li>
-      <a href="#theming">Theming</a>
-      <ul>
-        <li><a href="#colors">Colors</a></li>
-        <li><a href="#visual-design">Visual design</a></li>
-      </ul>
-    </li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</details>
+```sh
+npx create-turbo@latest -e with-tailwind
+```
 
-<!-- GETTING STARTED -->
+## What's inside?
 
-## Getting Started
+This Turborepo includes the following packages/apps:
 
-### Prerequisites
+### Apps and Packages
 
-- Install Node.js (including npm):
-  1. Visit the [Node.js download page](https://nodejs.org/).
-  2. Download the **LTS** version for your operating system.
-  3. Follow the installation instructions for your platform:
-     - **Windows/Mac**: Use the installer and ensure "Add to PATH" is selected.
-     - **Linux**: Use your package manager or [Node Version Manager (nvm)](https://github.com/nvm-sh/nvm).
-  4. Verify the installation:
-     ```sh
-     node -v
-     npm -v
-     ```
+- `docs`: a [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
+- `web`: another [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
+- `ui`: a stub React component library with [Tailwind CSS](https://tailwindcss.com/) shared by both `web` and `docs` applications
+- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
 
-### Development
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/jtayped/iaeste.git
-   ```
-2. Install NPM packages
-   ```sh
-   cd iaeste
-   npm install
-   ```
-3. Run in development mode
-   ```sh
-   npm run dev
-   ```
+### Building packages/ui
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+This example is set up to produce compiled styles for `ui` components into the `dist` directory. The component `.tsx` files are consumed by the Next.js apps directly using `transpilePackages` in `next.config.ts`. This was chosen for several reasons:
 
-<!-- ROADMAP -->
+- Make sharing one `tailwind.config.ts` to apps and packages as easy as possible.
+- Make package compilation simple by only depending on the Next.js Compiler and `tailwindcss`.
+- Ensure Tailwind classes do not overwrite each other. The `ui` package uses a `ui-` prefix for it's classes.
+- Maintain clear package export boundaries.
 
-## Roadmap
+Another option is to consume `packages/ui` directly from source without building. If using this option, you will need to update the `tailwind.config.ts` in your apps to be aware of your package locations, so it can find all usages of the `tailwindcss` class names for CSS compilation.
 
-- [x] Idea
-- [x] Setup
-- [x] Docs
-- [ ] Pages
-  - [x] Home
-  - [x] I'm a student
-  - [ ] I'm a company
-  - [ ] Incommings
-- [x] Internationalization
-  - [x] Catalan
-  - [x] Spanish
-  - [x] English
-- [x] Hosting
-  - [x] Figure out domain [iaeste.udl.cat](http://www.iaeste.udl.cat/)
-  - [x] Host with appropriate provider (e.g. Vercel, Cloudflare, etc.)
+For example, in [tailwind.config.ts](packages/tailwind-config/tailwind.config.ts):
 
-See the [open issues](https://github.com/jtayped/iaeste/issues) for a full list of proposed features (and known issues).
+```js
+  content: [
+    // app content
+    `src/**/*.{js,ts,jsx,tsx}`,
+    // include packages if not transpiling
+    "../../packages/ui/*.{js,ts,jsx,tsx}",
+  ],
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+If you choose this strategy, you can remove the `tailwindcss` and `autoprefixer` dependencies from the `ui` package.
 
-<!-- THEMING -->
+### Utilities
 
-## Theming
+This Turborepo has some additional tools already setup for you:
 
-### Colors
-
-IAESTE’s theme uses two main shades of blue:
-
-- **Darker blue:** <span style="background-color:#0b3d59; color:white; padding:2px 5px;">#0b3d59</span>
-- **Lighter blue:** <span style="background-color:#1a84d7; color:white; padding:2px 5px;">#1a84d7</span>
-
-Additionally, a dark mode wouldn't fit well with IAESTE's brand.
-
-### Visual Design
-
-The design should be "corporate", and have plenty of high-quality images of the IAESTE team. Having pictures of the team creates a more personal and relatable connection with students and companies (target audience).
-
-<!-- CONTRIBUTING -->
-
-## Contributing
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a pull request
-
-### Top contributors:
-
-<a href="https://github.com/jtayped/iaeste/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jtayped/iaeste" alt="contrib.rocks image" />
-</a>
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- LICENSE -->
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTACT -->
-
-## Contact
-
-IAESTE Lleida - [@iaeste.lleida](https://instagram.com/iaeste.lleida) - iaeste@udl.cat
-
-Joel Taylor - [@jtayped\_](https://instagram.com/jtayped_) - jtp17@alumnes.udl.cat
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-
-[contributors-shield]: https://img.shields.io/github/contributors/jtayped/iaeste.svg?style=for-the-badge
-[contributors-url]: https://github.com/jtayped/iaeste/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/jtayped/iaeste.svg?style=for-the-badge
-[forks-url]: https://github.com/jtayped/iaeste/network/members
-[stars-shield]: https://img.shields.io/github/stars/jtayped/iaeste.svg?style=for-the-badge
-[stars-url]: https://github.com/jtayped/iaeste/stargazers
-[issues-shield]: https://img.shields.io/github/issues/jtayped/iaeste.svg?style=for-the-badge
-[issues-url]: https://github.com/jtayped/iaeste/issues
-[license-shield]: https://img.shields.io/github/license/jtayped/iaeste.svg?style=for-the-badge
-[license-url]: https://github.com/jtayped/iaeste/blob/master/LICENSE
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
+- [Tailwind CSS](https://tailwindcss.com/) for styles
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
+- [Prettier](https://prettier.io) for code formatting
