@@ -1,0 +1,1 @@
+export const email = "iaeste.lleida@gmail.com"

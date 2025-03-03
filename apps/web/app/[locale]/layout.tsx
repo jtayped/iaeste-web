@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "../globals.css";
+import "@repo/ui/globals.css";
 import Header, { NavigationProvider } from "@/components/header";
 import Footer from "@/components/common/footer";
 
