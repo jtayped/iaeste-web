@@ -22,6 +22,8 @@ const ChangeTranslation: React.FC<{
   const locale = useLocale();
   const pathname = usePathname();
 
+  if (!locales[locale]) return;
+
   const { svg, label } = locales[locale];
 
   return (
@@ -38,6 +40,7 @@ const ChangeTranslation: React.FC<{
       </DropdownMenuTrigger>
       <DropdownMenuContent side="top" align={align}>
         {routing.locales.map((l) => {
+          if (!locales[l]) return;
           const { svg, label } = locales[l];
           return (
             <DropdownMenuItem key={l} asChild>
