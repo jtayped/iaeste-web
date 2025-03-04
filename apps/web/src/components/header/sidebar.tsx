@@ -57,7 +57,7 @@ const SidebarComponent = () => {
         </motion.nav>
       </div>
       <div className="absolute bottom-0 w-full p-screen">
-        <ChangeTranslation className="w-full"/>
+        <ChangeTranslation className="w-full" />
       </div>
     </motion.div>
   );

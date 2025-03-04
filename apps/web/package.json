@@ -11,10 +11,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/ui": "*",
-    "next": "^15.1.6",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@repo/ui": "*"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.1.6",
