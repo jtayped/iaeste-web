@@ -69,6 +69,8 @@ const Reasons = () => {
     setCurrentIndex(index);
   };
 
+  if (!reasons[currentIndex]) return;
+
   return (
     <div
       className="w-full overflow-x-hidden relative"
