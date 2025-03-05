@@ -6,19 +6,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { useLocale } from "next-intl";
 import { usePathname } from "@/i18n/routing";
 import { locales } from "@/constants/locales";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ChangeTranslation: React.FC<{
-  className?: string;
-  size?: "default" | "icon";
-  align?: "center" | "end" | "start" | undefined;
-}> = ({ align = "center", size = "default", className = "" }) => {
+const ChangeTranslation = ({ className = "" }: { className?: string }) => {
   const locale = useLocale();
   const pathname = usePathname();
 
@@ -34,11 +30,11 @@ const ChangeTranslation: React.FC<{
           variant={"ghost"}
         >
           <Image src={svg} alt={label} width={24} height={24} />
-          {size !== "icon" ? label : null}
+          {label}
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="top" align={align}>
+      <DropdownMenuContent side="top" align="center">
         {routing.locales.map((l) => {
           if (!locales[l]) return;
           const { svg, label } = locales[l];
