@@ -16,6 +16,15 @@ export const metadata: Metadata = {
   description:
     "Organització sense ànim de lucre de l'Escola Politècnica Superior de la Universitat de Lleida.",
 
+  alternates: {
+    canonical: "/ca",
+    languages: {
+      ca: "/ca",
+      es: "/es",
+      en: "/en",
+    },
+  },
+
   // OpenGraph / Social Media Tags
   openGraph: {
     title: "IAESTE Lleida - International Student Internships",
