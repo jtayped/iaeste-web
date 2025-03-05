@@ -13,11 +13,11 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useNavigation } from ".";
-import ChangeTranslation from "../common/change-translation";
+import { useNavigation } from "..";
+import ChangeTranslation from "./change-translation";
 
 const Navigation = ({ className = "" }: { className?: string }) => {
   const t = useTranslations("header");
@@ -68,13 +68,7 @@ const Navigation = ({ className = "" }: { className?: string }) => {
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
-        <NavigationMenuItem asChild>
-          <ChangeTranslation
-            align="end"
-            size="icon"
-            className="hidden md:flex"
-          />
-        </NavigationMenuItem>
+        <ChangeTranslation className="hidden md:flex" />
         <NavigationMenuItem asChild>
           <Button
             size="lg"

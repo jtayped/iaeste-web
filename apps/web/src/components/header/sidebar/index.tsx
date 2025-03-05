@@ -1,13 +1,13 @@
 import React from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { useNavigation } from ".";
+import { useNavigation } from "..";
 import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import ChangeTranslation from "../common/change-translation";
+import ChangeTranslation from "./change-translation";
 
 const containerVariants = {
   hidden: { opacity: 0 },
