@@ -26,16 +26,22 @@ const ChangeTranslation = ({ className = "" }: { className?: string }) => {
         <Image src={svg} alt={label} width={24} height={24} />
       </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <ul className="grid gap-3 p-6 md:w-[400px]">
+        <ul className="grid grid-cols-3 gap-3 p-6 md:w-[400px]">
           {routing.locales.map((l) => {
             if (!locales[l]) return;
             const { svg, label } = locales[l];
             return (
               <NavigationMenuLink key={l} asChild>
                 <Link href={pathname} locale={l}>
-                  <div className="flex items-center gap-2">
-                    <Image src={svg} alt={label} width={24} height={24} />
-                    {label}
+                  <div className="bg-muted/70 hover:bg-muted p-4">
+                    <Image
+                      src={svg}
+                      alt={label}
+                      width={46}
+                      height={46}
+                      className="rounded-sm"
+                    />
+                    <p className="text-lg font-semibold mt-3">{label}</p>
                   </div>
                 </Link>
               </NavigationMenuLink>
