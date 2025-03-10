@@ -12,6 +12,7 @@
   "devDependencies": {
     "prettier": "^3.5.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
+    "prisma": "^6.4.1",
     "turbo": "^2.4.4"
   },
   "engines": {
