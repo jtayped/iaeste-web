@@ -82,6 +82,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const runtime = "edge";
+
 export default async function LocaleLayout({
   children,
   params,
