@@ -1,3 +1,0 @@
-name = "web"
-main = ".next/static/_worker.js"
-compatibility_date = "2025-03-05"
