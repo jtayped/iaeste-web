@@ -3,7 +3,6 @@ import SendEmailBtn from "@/components/common/buttons/send-email";
 import Content from "@/components/common/sections/content";
 import HeroSection from "@/components/common/sections/hero";
 import ContactSection from "@/components/sections/students/contact";
-import Outgoings from "@/components/sections/students/outgoings";
 import Team from "@/components/sections/students/team";
 import WhyIaeste from "@/components/sections/students/why";
 import ButtonGroup from "@/components/ui/button-group";
@@ -27,7 +26,6 @@ const StudentsPage = () => {
       />
       <Content>
         <WhyIaeste />
-        <Outgoings />
         <Team />
         <ContactSection />
       </Content>
