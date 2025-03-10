@@ -1,13 +1,13 @@
 {
   "HomePage": {
     "hero": {
-      "description": "Uneix-te a una xarxa global que connecta estudiants talentosos amb pràctiques tècniques internacionals. Desenvolupa la teva carrera professional mentre descobreixes noves cultures a través del programa d'intercanvi mundial d'IAESTE.",
+      "description": "Uneix-te a una xarxa global que connecta estudiants talentosos amb pràctiques tècniques internacionals. Desenvolupa la teva carrera professional mentre descobreixes noves cultures a través del programa d'intercanvi mundial de IAESTE.",
       "buttons": { "student": "Soc estudiant", "company": "Soc empresa" }
     },
     "about": {
       "title": "Què és IAESTE?",
       "subtitle": "Connectant el Talent Català amb Oportunitats Globals",
-      "description": "Com a IAESTE LC Lleida, part de la xarxa nacional d'IAESTE Espanya, facilitem pràctiques tècniques remunerades a través de la nostra plataforma sense ànim de lucre a l'Escola Politècnica Superior. Des de 1948, hem connectat estudiants de la UdL amb més de 100 països mitjançant el nostre sistema estructurat d'intercanvi."
+      "description": "Com a IAESTE LC Lleida, part de la xarxa nacional de IAESTE Espanya, facilitem pràctiques tècniques remunerades a través de la nostra plataforma sense ànim de lucre a l'Escola Politècnica Superior. Des de 1948, hem connectat estudiants de la UdL amb més de 100 països mitjançant el nostre sistema estructurat d'intercanvi."
     },
     "stats": {
       "countries": {
@@ -50,12 +50,12 @@
     "hero": {
       "title": "Uneix-te a IAESTE Lleida",
       "subtitle": "Forma la teva carrera internacional",
-      "description": "Fes el primer pas cap a una experiència internacional enriquidora. Uneix-te a IAESTE Lleida per accedir a oportunitats globals i desenvolupar-te professional i personalment."
+      "description": "Fes el primer pas cap a una experiència internacional enriquidora. Uneix-te a IAESTE LC Lleida per accedir a oportunitats globals i desenvolupar-te professional i personalment."
     },
     "why-iaeste": {
       "title": "Per què IAESTE?",
       "subtitle": "Mobilitat Global Estructurada",
-      "description": "Com a part de la xarxa oficial d'IAESTE Espanya, LC Lleida ofereix accés exclusiu a pràctiques tècniques verificades amb opcions de reconeixement acadèmic.",
+      "description": "Com a part de la xarxa oficial de IAESTE Espanya, LC Lleida ofereix accés exclusiu a pràctiques tècniques verificades amb opcions de reconeixement acadèmic.",
       "reasons": {
         "oportunities": {
           "title": "Oportunitats Globals",
@@ -71,14 +71,14 @@
         },
         "internship": {
           "title": "Pràctiques Remunerades",
-          "description": "Totes les pràctiques d'IAESTE són remunerades, assegurant que puguis centrar-te en guanyar experiència valuosa mentre cobreixes les teves despeses de vida durant la teva estada internacional."
+          "description": "Totes les pràctiques de IAESTE són remunerades, assegurant que puguis centrar-te en guanyar experiència valuosa mentre cobreixes les teves despeses de vida durant la teva estada internacional."
         }
       }
     },
     "teams": {
       "title": "Tria un equip",
       "subtitle": "Sigues part d'alguna cosa més gran",
-      "description": "Uneix-te a un dels nostres equips dinàmics a IAESTE Lleida. Desenvolupa habilitats de lideratge, guanya experiència organitzativa i marca la diferència mentre ajudes altres estudiants a accedir a oportunitats internacionals.",
+      "description": "Uneix-te a un dels nostres equips dinàmics a IAESTE LC Lleida. Desenvolupa habilitats de lideratge, guanya experiència organitzativa i marca la diferència mentre ajudes altres estudiants a accedir a oportunitats internacionals.",
       "teams": {
         "junta": {
           "name": "Junta Directiva",
@@ -90,7 +90,7 @@
         },
         "marketing": {
           "name": "Màrqueting",
-          "description": "Crea contingut atractiu i promociona la missió d'IAESTE."
+          "description": "Crea contingut atractiu i promociona la missió de IAESTE."
         },
         "it": {
           "name": "IT",
@@ -109,7 +109,7 @@
   },
   "UnderConstructionPage": {
     "title": "Aquesta pàgina està en construcció!",
-    "description": "El nostre equip d'TI hi està treballant! Estarà llesta aviat.",
+    "description": "El nostre equip de IT hi està treballant! Estarà llesta aviat.",
     "buttons": {
       "home": "Inici",
       "back": "Tornar"
