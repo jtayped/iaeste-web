@@ -1,11 +1,9 @@
-type Locale = {
+interface Locale {
   label: string;
   svg: string;
-};
+}
 
-type Locales = {
-  [key: string]: Locale;
-};
+type Locales = Record<string, Locale>;
 
 export const locales: Locales = {
   en: { label: "English", svg: "/icons/gb.svg" },

@@ -3,11 +3,17 @@ import Section from "@/components/common/sections/section";
 import { Card, CardContent } from "@/components/ui/card";
 import { H2, H3, Paragraph, Subheader } from "@/components/ui/typography";
 import teams from "@/constants/teams";
-import { images } from "@/constants/us";
-import { Team as TeamType } from "@/types/teams";
+import { type Team as TeamType } from "@/types/teams";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import React from "react";
+
+const images = [
+  "/team/sopar-ago-2024.webp" as const,
+  "/team/ago-2024.webp" as const,
+  "/team/sopar-subhasta.webp" as const,
+  "/team/subhasta-zaragoza.webp" as const,
+];
 
 const TeamComponent = ({ team }: { team: TeamType }) => {
   const t = useTranslations("StudentsPage.teams.teams");

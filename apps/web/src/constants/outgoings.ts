@@ -1,4 +1,4 @@
-import { Outgoing } from "@/types/outgoing";
+import { type Outgoing } from "@/types/outgoing";
 
 const outgoings: Outgoing[] = [
   {

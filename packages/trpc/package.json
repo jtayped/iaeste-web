@@ -8,7 +8,10 @@
   },
   "dependencies": {
     "@repo/eslint-config": "*",
-    "@repo/typescript-config": "*"
+    "@repo/typescript-config": "*",
+    "@trpc/client": "^11.0.0-rc.446",
+    "@trpc/react-query": "^11.0.0-rc.446",
+    "@trpc/server": "^11.0.0-rc.446"
   },
   "exports": {
     "./root": "./src/root.ts",

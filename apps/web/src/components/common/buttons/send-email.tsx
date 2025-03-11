@@ -21,7 +21,7 @@ const SendEmailBtn = ({
     <Button asChild variant="secondary" className={cn("mt-4", className)}>
       <Link href={`mailto:${email}`}>
         {icon && <LetterText />}
-        {text ? text : t("send-email")}
+        {text ?? t("send-email")}
       </Link>
     </Button>
   );

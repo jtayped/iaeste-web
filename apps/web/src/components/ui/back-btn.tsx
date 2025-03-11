@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Button, ButtonProps } from "./button";
+import { Button, type ButtonProps } from "./button";
 
 const BackButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ children, ...props }, ref) => {

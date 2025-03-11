@@ -1,4 +1,4 @@
-import { Team } from "@/types/teams";
+import { type Team } from "@/types/teams";
 import { Building2, CalendarDays, Camera, Computer, Users } from "lucide-react";
 
 const teams: Team[] = [

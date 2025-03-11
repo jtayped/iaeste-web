@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "./card";
 import { useTranslations } from "next-intl";
-import { IconType } from "react-icons";
+import { type IconType } from "react-icons";
 import { H3, Paragraph, Subheader } from "./typography";
 
 const Step = ({

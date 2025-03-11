@@ -15,11 +15,17 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true,
-      "env": ["RESEND_API_KEY", "CONTACT_FORM_FROM", "CONTACT_FORM_TO"]
+      "persistent": true
     }
   },
-  "globalEnv": ["RESEND_API_KEY", "CONTACT_FORM_FROM", "CONTACT_FORM_TO"],
+  "globalEnv": [
+    "AUTH_SECRET",
+    "DATABASE_URL",
+    "RESEND_API_KEY",
+    "CONTACT_FORM_FROM",
+    "CONTACT_FORM_TO",
+    "PORT"
+  ],
   "globalPassThroughEnv": [
     "NODE_ENV",
     "CI",

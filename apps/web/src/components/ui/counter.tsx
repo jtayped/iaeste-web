@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  KeyframeOptions,
+  type KeyframeOptions,
   animate,
   useInView,
   useIsomorphicLayoutEffect,
 } from "framer-motion";
 import { useRef } from "react";
 
-type AnimatedCounterProps = {
+interface AnimatedCounterProps {
   from: number;
   to: number;
   duration: number;
