@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "npm run with-env -- next dev --port 3001 --turbopack",
+    "dev": "npm run with-env -- next dev --turbopack",
     "build": "npx next build",
     "postinstall": "prisma generate --schema=../../prisma/schema/schema.prisma",
     "start": "next start",

@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "npm run with-env -- next dev --port 3000 --turbopack",
+    "dev": "npm run with-env -- next dev --turbopack",
     "build": "npx next build",
     "start": "next start",
     "lint": "eslint",
