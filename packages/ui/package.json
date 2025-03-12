@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
+    "@repo/tailwind-config": "*",
     "@repo/typescript-config": "*",
     "@types/node": "^22.13.0",
     "@types/react": "19.0.8",

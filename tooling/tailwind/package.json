@@ -1,0 +1,12 @@
+{
+  "name": "@repo/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "devDependencies": {
+    "tailwindcss": "^3.3.5",
+    "tailwind-variants": "^0.1.18"
+  },
+  "exports": {
+    ".": "./tailwind.config.ts"
+  }
+}
