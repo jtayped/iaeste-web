@@ -1,1 +1,0 @@
-npm i --save-dev @types/node @types/react @types/react-dom dotenv-cli eslint tailwindcss typescript
