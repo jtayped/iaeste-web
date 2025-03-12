@@ -80,7 +80,7 @@ const Item = ({
         {children}
       </Link>
       <motion.div
-        className="h-2 bg-primary-foreground"
+        className="h-2 bg-primary-foreground rounded"
         initial={{ width: 0 }}
         animate={{ width: 30 }}
         transition={{ delay: 0.35 }}

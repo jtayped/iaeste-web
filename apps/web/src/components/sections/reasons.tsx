@@ -25,7 +25,7 @@ const Reason = ({
         className
       )}
     >
-      <div className="bg-primary p-4 md:h-full shadow">
+      <div className="bg-primary p-4 md:h-full shadow rounded-lg">
         <reason.icon className="text-primary-foreground" size={60} />
       </div>
       <div>

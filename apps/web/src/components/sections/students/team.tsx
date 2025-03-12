@@ -44,7 +44,7 @@ const Team = () => {
               width={300}
               height={300}
               alt="Image1"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
           </div>
           <div className="grid grid-rows-2 gap-4">
@@ -53,14 +53,14 @@ const Team = () => {
               width={300}
               height={300}
               alt="Image1"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
             <Image
               src={images[2] as string}
               width={300}
               height={300}
               alt="Image1"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
           </div>
         </div>

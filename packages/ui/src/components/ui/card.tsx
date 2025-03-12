@@ -11,12 +11,14 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "relative overflow-hidden border bg-card text-card-foreground shadow p-6",
+        "relative overflow-hidden border bg-card text-card-foreground shadow-sm p-6 rounded-lg",
         className
       )}
       {...props}
     >
-      {accent && <div className="absolute left-0 h-full w-2 bg-primary" />}
+      {accent && (
+        <div className="absolute left-0 h-full w-2 bg-primary rounded-tr-sm" />
+      )}
       {children}
     </div>
   )
