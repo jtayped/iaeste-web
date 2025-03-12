@@ -1,4 +1,4 @@
-import baseConfig from "@repo/eslint-config/base";
+import { config } from "@repo/eslint-config/react-internal";
 
-/** @type {import('typescript-eslint').Config} */
-export default [...baseConfig];
+/** @type {import("eslint").Linter.Config} */
+export default config;
