@@ -1,6 +1,6 @@
 import Section from "@/components/common/sections/section";
-import Step from "@/components/ui/step";
-import { H2 } from "@/components/ui/typography";
+import Step from "@repo/ui/step";
+import { H2 } from "@repo/ui/typography";
 import steps from "@/constants/how-it-works";
 import { useTranslations } from "next-intl";
 

@@ -1,5 +1,5 @@
 import DivideSection from "@/components/common/sections/divide";
-import { H2, Paragraph, Subheader } from "@/components/ui/typography";
+import { H2, Paragraph, Subheader } from "@repo/ui/typography";
 import React from "react";
 import Reasons from "../reasons";
 import { useTranslations } from "next-intl";

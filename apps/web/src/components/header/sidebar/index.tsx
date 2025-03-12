@@ -1,12 +1,12 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/ui/button";
 import { Menu, X } from "lucide-react";
 import { useNavigation } from "..";
 import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
+import { cn } from "@repo/ui/lib/utils";
 import ChangeTranslation from "./change-translation";
 
 const containerVariants = {

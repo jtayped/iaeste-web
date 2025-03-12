@@ -1,12 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@repo/ui/lib/utils";
 import reasons from "@/constants/why-iaeste";
 import { type Reason } from "@/types/why-iaeste";
-import { H3, Paragraph } from "../ui/typography";
+import { H3, Paragraph } from "@repo/ui/typography";
 import { useTranslations } from "next-intl";
-import { Button } from "../ui/button";
+import { Button } from "@repo/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Reason = ({

@@ -1,5 +1,5 @@
 "use client";
-import { Card } from "@/components/ui/card";
+import { Card } from "@repo/ui/card";
 import outgoings from "@/constants/outgoings";
 import { type Outgoing } from "@/types/outgoing";
 import { motion, useAnimationFrame, useMotionValue } from "framer-motion";

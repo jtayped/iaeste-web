@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader } from "./card";
 import React from "react";
 import AnimatedCounter from "./counter";
-import { cn } from "@/lib/utils";
+import { cn } from "@repo/ui/lib/utils";
 
 const Statistic = ({
   translationKey,

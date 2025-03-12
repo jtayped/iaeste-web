@@ -1,12 +1,12 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/ui/button";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import ButtonGroup from "@/components/ui/button-group";
+import ButtonGroup from "@repo/ui/button-group";
 import { Link } from "@/i18n/routing";
 import { Building } from "lucide-react";
-import { Paragraph } from "@/components/ui/typography";
+import { Paragraph } from "@repo/ui/typography";
 
 const Hero = () => {
   const t = useTranslations("HomePage.hero");

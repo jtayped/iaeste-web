@@ -6,13 +6,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@repo/ui/dropdown-menu";
+import { Button } from "@repo/ui/button";
 import { useLocale } from "next-intl";
 import { usePathname } from "@/i18n/routing";
 import { locales } from "@/constants/locales";
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@repo/ui/lib/utils";
 
 const ChangeTranslation = ({ className = "" }: { className?: string }) => {
   const locale = useLocale();

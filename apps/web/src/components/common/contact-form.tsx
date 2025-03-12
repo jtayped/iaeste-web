@@ -2,7 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
 import { type z } from "zod";
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/ui/button";
 import {
   Form,
   FormControl,
@@ -11,10 +11,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@repo/ui/form";
+import { Input } from "@repo/ui/input";
 import { useTranslations } from "next-intl";
-import { Textarea } from "../ui/textarea";
+import { Textarea } from "@repo/ui/textarea";
 import { sendEmail } from "@/lib/emails";
 import { BiCheck, BiLoader } from "react-icons/bi";
 import useFormSchema from "@/validators/contact-form";

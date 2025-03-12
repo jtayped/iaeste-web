@@ -3,7 +3,7 @@ import ContactForm from "../common/contact-form";
 import socials from "@/constants/socials";
 import Link from "next/link";
 import SendEmailBtn from "../common/buttons/send-email";
-import { H2, Paragraph } from "../ui/typography";
+import { H2, Paragraph } from "@repo/ui/typography";
 import DivideSection from "../common/sections/divide";
 
 const Contact = () => {

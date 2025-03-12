@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@repo/ui/lib/utils";
 import React, { type ReactNode } from "react";
 
 type Props = {

@@ -5,7 +5,7 @@ import HeroSection from "@/components/common/sections/hero";
 import ContactSection from "@/components/sections/students/contact";
 import Team from "@/components/sections/students/team";
 import WhyIaeste from "@/components/sections/students/why";
-import ButtonGroup from "@/components/ui/button-group";
+import ButtonGroup from "@repo/ui/button-group";
 import { useTranslations } from "next-intl";
 
 const StudentsPage = () => {

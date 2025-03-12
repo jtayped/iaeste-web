@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Link } from "@/i18n/routing";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@repo/ui/lib/utils";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -12,8 +12,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { Button } from "@/components/ui/button";
+} from "@repo/ui/navigation-menu";
+import { Button } from "@repo/ui/button";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useNavigation } from "..";

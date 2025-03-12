@@ -1,7 +1,7 @@
 import DivideSection from "@/components/common/sections/divide";
 import Section from "@/components/common/sections/section";
-import { Card, CardContent } from "@/components/ui/card";
-import { H2, H3, Paragraph, Subheader } from "@/components/ui/typography";
+import { Card, CardContent } from "@repo/ui/card";
+import { H2, H3, Paragraph, Subheader } from "@repo/ui/typography";
 import teams from "@/constants/teams";
 import { type Team as TeamType } from "@/types/teams";
 import { useTranslations } from "next-intl";

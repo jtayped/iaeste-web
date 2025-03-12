@@ -9,8 +9,8 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
+} from "@repo/ui/navigation-menu";
+import { cn } from "@repo/ui/lib/utils";
 
 const ChangeTranslation = ({ className = "" }: { className?: string }) => {
   const locale = useLocale();

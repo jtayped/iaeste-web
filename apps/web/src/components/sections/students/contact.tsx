@@ -1,7 +1,7 @@
 import SendEmailBtn from "@/components/common/buttons/send-email";
 import ContactForm from "@/components/common/contact-form";
 import DivideSection from "@/components/common/sections/divide";
-import { H2, Paragraph } from "@/components/ui/typography";
+import { H2, Paragraph } from "@repo/ui/typography";
 import { useTranslations } from "next-intl";
 import React from "react";
 

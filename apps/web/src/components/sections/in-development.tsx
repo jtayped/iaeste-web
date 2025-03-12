@@ -1,11 +1,11 @@
 import { Link } from "@/i18n/routing";
 import React from "react";
 import { BiCode } from "react-icons/bi";
-import { Button } from "../ui/button";
-import BackButton from "../ui/back-btn";
+import { Button } from "@repo/ui/button";
+import BackButton from "@repo/ui/back-btn";
 import { useTranslations } from "next-intl";
-import { H1, Paragraph } from "../ui/typography";
-import ButtonGroup from "../ui/button-group";
+import { H1, Paragraph } from "@repo/ui/typography";
+import ButtonGroup from "@repo/ui/button-group";
 
 const InDevelopment = () => {
   const t = useTranslations("UnderConstructionPage");

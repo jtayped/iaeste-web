@@ -1,4 +1,4 @@
-import { H1, Paragraph } from "@/components/ui/typography";
+import { H1, Paragraph } from "@repo/ui/typography";
 import Image from "next/image";
 import React from "react";
 

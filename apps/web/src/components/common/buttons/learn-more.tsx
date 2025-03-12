@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@repo/ui/button";
+import { cn } from "@repo/ui/lib/utils";
 import { ArrowUpRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";

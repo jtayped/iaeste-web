@@ -1,7 +1,7 @@
 import LearnMoreBtn from "@/components/common/buttons/learn-more";
 import DivideSection from "@/components/common/sections/divide";
-import Statistic from "@/components/ui/statistic";
-import { H2, Paragraph, Subheader } from "@/components/ui/typography";
+import Statistic from "@repo/ui/statistic";
+import { H2, Paragraph, Subheader } from "@repo/ui/typography";
 import allStatistics from "@/constants/statistics";
 import { useTranslations } from "next-intl";
 

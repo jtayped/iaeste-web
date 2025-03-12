@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/ui/button";
 import { email } from "@/constants/contact";
-import { cn } from "@/lib/utils";
+import { cn } from "@repo/ui/lib/utils";
 import { LetterText } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
