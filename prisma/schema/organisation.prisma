@@ -1,11 +1,13 @@
 model Invitation {
     id String @id @default(cuid())
 
-    email    String
-    accepted Boolean @default(false)
+    email String
+    state InvitationState @default(PENDING)
 
     senderId String
     sender   User   @relation(fields: [senderId], references: [id])
+
+    expires DateTime
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -17,8 +19,21 @@ model Request {
     email String
     name  String
 
-    accepted Boolean @default(false)
+    state RequestState @default(PENDING)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+enum InvitationState {
+    PENDING
+    REJECTED
+    ACCEPTED
+    EXPIRED
+}
+
+enum RequestState {
+    PENDING
+    REJECTED
+    ACCEPTED
 }
