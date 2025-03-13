@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure } from "@/trpc";
 
 export const userRouter = createTRPCRouter({
   getById: publicProcedure
@@ -8,8 +8,4 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input: { id } }) =>
       ctx.db.user.findUniqueOrThrow({ where: { id } })
     ),
-
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input: { text } }) => ({greeting: `Hello ${text}`})),
 });
