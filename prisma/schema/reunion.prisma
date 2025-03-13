@@ -1,0 +1,34 @@
+model Reunion {
+    id String @id @default(cuid())
+
+    title        String
+    description  String?
+    scheduledFor DateTime
+
+    groupId String?
+    group   Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+    invites ReunionInvitation[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model ReunionInvitation {
+    id String @id @default(uuid())
+
+    reunionId String
+    reunion   Reunion @relation(fields: [reunionId], references: [id], onDelete: Cascade)
+
+    participantId String
+    participant   User   @relation("ReunionInvitationsReceived", fields: [participantId], references: [id], onDelete: Cascade)
+
+    senderId String
+    sender   User   @relation("ReunionInvitationsSent", fields: [senderId], references: [id])
+
+    willAssist Boolean @default(true)
+    excuse     String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

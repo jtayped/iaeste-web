@@ -1,0 +1,30 @@
+model Group {
+    id String @id @default(cuid())
+
+    name        String  @unique
+    description String?
+
+    isPrivate Boolean @default(false)
+
+    participants User[]
+    reunions     Reunion[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model GroupInvite {
+    id String @id @default(uuid())
+
+    comment String?
+    accepted Boolean @default(false)
+
+    userId String
+    user   User   @relation("GroupInvitesReceived", fields: [userId], references: [id], onDelete: Cascade)
+
+    senderId String
+    sender   User   @relation("GroupInvitesSent", fields: [senderId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
