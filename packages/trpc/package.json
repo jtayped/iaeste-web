@@ -20,9 +20,9 @@
   "exports": {
     "./root": "./src/root.ts",
     "./trpc": "./src/trpc.ts",
-    "./react": "./src/next/react.tsx",
-    "./server": "./src/next/server.ts",
-    "./query-client": "./src/next/query-client.ts"
+    "./react": "./src/react/react.tsx",
+    "./server": "./src/react/server.ts",
+    "./query-client": "./src/react/query-client.ts"
   },
   "keywords": [],
   "author": "",
