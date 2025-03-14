@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm run with-env -- next dev --turbopack",
     "build": "npx next build",
-    "postinstall": "prisma generate --schema=../../prisma/schema/schema.prisma",
+    "postinstall": "prisma generate --schema=../../prisma/schema",
     "start": "next start",
     "lint": "eslint",
     "check-types": "tsc --noEmit",
