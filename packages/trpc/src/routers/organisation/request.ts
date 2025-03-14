@@ -1,4 +1,4 @@
-import { adminProcedure, createTRPCRouter, publicProcedure } from "@/trpc";
+import { adminProcedure, createTRPCRouter, publicProcedure } from "../../trpc";
 import { RequestState } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";

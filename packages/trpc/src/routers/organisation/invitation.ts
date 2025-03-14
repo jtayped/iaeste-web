@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { createTRPCRouter, adminProcedure, publicProcedure } from "@/trpc";
+import { createTRPCRouter, adminProcedure, publicProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
 import { InvitationState } from "@prisma/client";
-import { Pagination } from "@/validators/pagination";
+import { Pagination } from "../../validators/pagination";
 
 const invitationProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
