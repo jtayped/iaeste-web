@@ -38,9 +38,15 @@ export const reunionRouter = createTRPCRouter({
       return result;
     }),
   create: adminProcedure
-    .input(Reunion)
-    .mutation(async ({ ctx, input: reunionData }) => {
-      const reunion = await ctx.db.reunion.create({ data: { ...reunionData } });
+    .input(Reunion.and(z.object({ invites: z.array(z.string()) })))
+    .mutation(async ({ ctx, input: { invites, ...reunionData } }) => {
+      // TODO: send notifications to all invitees
+      const reunion = await ctx.db.reunion.create({
+        data: {
+          invites: { connect: invites.map((id) => ({ id })) },
+          ...reunionData,
+        },
+      });
       return reunion;
     }),
   edit: adminProcedure
@@ -50,11 +56,19 @@ export const reunionRouter = createTRPCRouter({
         .and(z.object({ id: z.string() }))
     )
     .mutation(async ({ ctx, input: { id, ...reunionData } }) => {
-      await ctx.db.reunion.update({ where: { id }, data: reunionData });
+      await Promise.all([
+        ctx.db.reunion.update({ where: { id }, data: reunionData }),
+
+        // TODO: send notifications to all invitees
+      ]);
     }),
   delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input: { id } }) => {
-      await ctx.db.reunion.delete({ where: { id } });
+      await Promise.all([
+        ctx.db.reunion.delete({ where: { id } }),
+
+        // TODO: send notifications to all invitees
+      ]);
     }),
 });
