@@ -1,7 +1,7 @@
 model BlogPost {
     id String @id @default(cuid())
 
-    cover   String
+    cover   String?
     title   String
     content String
 
@@ -18,7 +18,7 @@ model BlogPost {
 model Experience {
     id String @id @default(cuid())
 
-    cover   String
+    cover   String?
     title   String
     content String
     quote   String?
