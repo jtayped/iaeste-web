@@ -61,6 +61,21 @@ export const requestRouter = createTRPCRouter({
         // TODO: send notifications to admins
       ]);
     }),
+  cancel: requestProcedure.mutation(async ({ ctx, input: { id } }) => {
+    if (ctx.request.state !== RequestState.PENDING)
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message:
+          "This request has already been accepted or rejected, and cannot be canceled.",
+      });
+
+    await Promise.all([
+      ctx.db.request.update({
+        where: { id },
+        data: { state: RequestState.CANCELLED },
+      }),
+    ]);
+  }),
 
   accept: requestProcedure.mutation(async ({ ctx, input: { id } }) => {
     if (ctx.request.state !== RequestState.PENDING)
