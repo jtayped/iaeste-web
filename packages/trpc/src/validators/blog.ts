@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const Post = z.object({
+  title: z.string().min(3).max(50),
+  content: z.string().min(10),
+  path: z.string(),
+  metaDescription: z.string().optional(),
+});
+
 export const Experience = z.object({
   title: z.string().min(3).max(50),
   content: z.string().min(10),
