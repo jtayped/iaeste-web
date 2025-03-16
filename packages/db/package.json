@@ -6,6 +6,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@prisma/client": "^6.5.0",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
     "@tanstack/react-query": "^5.50.0",
