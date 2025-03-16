@@ -8,9 +8,13 @@ import { Pagination } from "../../validators/pagination";
 import { reunionRouter } from "./reunion";
 import { TRPCError } from "@trpc/server";
 import { Group } from "../../validators/group";
+import { participantRouter } from "./participant";
+import { invitationRouter } from "./invitation";
 
 export const groupRouter = createTRPCRouter({
   reunion: reunionRouter,
+  participant: participantRouter,
+  invitation: invitationRouter,
   getAll: protectedProcedure
     .input(Pagination)
     .query(async ({ ctx, input: { page, limit } }) => {
