@@ -11,6 +11,15 @@ import { Group } from "../../validators/group";
 import { participantRouter } from "./participant";
 import { invitationRouter } from "./invitation";
 
+export const groupProcedure = protectedProcedure
+  .input(z.object({ id: z.string() }))
+  .use(async ({ ctx, input: { id }, next }) => {
+    const group = await ctx.db.group.findUnique({ where: { id } });
+    if (!group) throw new TRPCError({ code: "NOT_FOUND" });
+
+    return next({ ctx: { ...ctx, group } });
+  });
+
 export const groupRouter = createTRPCRouter({
   reunion: reunionRouter,
   participant: participantRouter,
