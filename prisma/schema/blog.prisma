@@ -9,7 +9,7 @@ model BlogPost {
     author   User?   @relation(fields: [authorId], references: [id])
 
     path            String @unique // /blog/{path-to-blog-post}
-    metaDescription String
+    metaDescription String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -30,7 +30,7 @@ model Experience {
     endDate      DateTime
 
     path            String @unique // /experience/{path-to-experience}
-    metaDescription String
+    metaDescription String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
