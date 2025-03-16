@@ -5,7 +5,6 @@ import {
   protectedProcedure,
 } from "../../trpc";
 import { Pagination } from "../../validators/pagination";
-import { reunionRouter } from "./reunion";
 import { TRPCError } from "@trpc/server";
 import { Group } from "../../validators/group";
 import { participantRouter } from "./participant";
@@ -21,7 +20,6 @@ export const groupProcedure = protectedProcedure
   });
 
 export const groupRouter = createTRPCRouter({
-  reunion: reunionRouter,
   participant: participantRouter,
   invitation: invitationRouter,
   getAll: protectedProcedure
@@ -34,16 +32,7 @@ export const groupRouter = createTRPCRouter({
       const result = await ctx.db.group.paginate().withPages({ page, limit });
       return result;
     }),
-  getById: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input: { id } }) => {
-      const group = await ctx.db.group.findUnique({
-        where: { id },
-      });
-      if (!group) throw new TRPCError({ code: "NOT_FOUND" });
-
-      return group;
-    }),
+  getById: groupProcedure.query(({ ctx }) => ctx.group),
   getByName: protectedProcedure
     .input(z.object({ name: z.string() }))
     .query(async ({ ctx, input: { name } }) => {
