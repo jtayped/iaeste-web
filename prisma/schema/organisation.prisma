@@ -28,6 +28,7 @@ model Request {
 enum InvitationState {
     PENDING
     REJECTED
+    CANCELLED
     ACCEPTED
     EXPIRED
 }
@@ -35,5 +36,6 @@ enum InvitationState {
 enum RequestState {
     PENDING
     REJECTED
+    CANCELLED
     ACCEPTED
 }

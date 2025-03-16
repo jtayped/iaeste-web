@@ -68,7 +68,7 @@ export const invitationRouter = createTRPCRouter({
         // TODO: send email
       ]);
     }),
-  delete: adminProcedure
+  cancel: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input: { id } }) => {
       const invitation = await ctx.db.invitation.findUnique({
@@ -86,7 +86,10 @@ export const invitationRouter = createTRPCRouter({
             "This invitation has already been accepted or rejected and cannot be canceled.",
         });
 
-      await ctx.db.invitation.delete({ where: { id } });
+      await ctx.db.invitation.update({
+        where: { id },
+        data: { state: InvitationState.CANCELLED },
+      });
     }),
   accept: invitationProcedure
     .input(z.object({ id: z.string() }))

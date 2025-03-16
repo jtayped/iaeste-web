@@ -1,7 +1,7 @@
 model BlogPost {
     id String @id @default(cuid())
 
-    cover   String
+    cover   String?
     title   String
     content String
 
@@ -9,7 +9,7 @@ model BlogPost {
     author   User?   @relation(fields: [authorId], references: [id])
 
     path            String @unique // /blog/{path-to-blog-post}
-    metaDescription String
+    metaDescription String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -18,7 +18,7 @@ model BlogPost {
 model Experience {
     id String @id @default(cuid())
 
-    cover   String
+    cover   String?
     title   String
     content String
     quote   String?
@@ -30,7 +30,7 @@ model Experience {
     endDate      DateTime
 
     path            String @unique // /experience/{path-to-experience}
-    metaDescription String
+    metaDescription String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
