@@ -21,7 +21,7 @@ model GroupInvite {
     id String @id @default(uuid())
 
     comment String?
-    accepted Boolean @default(false)
+    state   GroupInviteState @default(PENDING)
 
     userId String
     user   User   @relation("GroupInvitesReceived", fields: [userId], references: [id], onDelete: Cascade)
@@ -34,4 +34,11 @@ model GroupInvite {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+enum GroupInviteState {
+    ACCEPTED
+    REJECTED
+    CANCELLED
+    PENDING
 }
