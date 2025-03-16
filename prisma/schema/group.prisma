@@ -7,7 +7,9 @@ model Group {
     isPrivate Boolean @default(false)
 
     participants User[]
-    reunions     Reunion[]
+    invitesSent  GroupInvite[]
+
+    reunions Reunion[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -23,6 +25,9 @@ model GroupInvite {
 
     userId String
     user   User   @relation("GroupInvitesReceived", fields: [userId], references: [id], onDelete: Cascade)
+
+    groupId String
+    group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
     senderId String
     sender   User   @relation("GroupInvitesSent", fields: [senderId], references: [id])
