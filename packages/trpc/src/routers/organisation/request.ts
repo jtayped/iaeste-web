@@ -2,8 +2,9 @@ import { adminProcedure, createTRPCRouter, publicProcedure } from "../../trpc";
 import { RequestState } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { Pagination } from "../../validators/pagination";
 
-const requestProcedure = adminProcedure
+const requestProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
   .use(async ({ ctx, input: { id }, next }) => {
     const request = await ctx.db.request.findUnique({ where: { id } });
@@ -16,6 +17,21 @@ const requestProcedure = adminProcedure
   });
 
 export const requestRouter = createTRPCRouter({
+  getById: requestProcedure.query(({ ctx }) => ctx.request),
+  getByEmail: adminProcedure
+    .input(z.object({ email: z.string() }))
+    .query(async ({ ctx, input: { email } }) => {
+      const request = await ctx.db.request.findFirst({ where: { email } });
+      if (!request) throw new TRPCError({ code: "NOT_FOUND" });
+
+      return request;
+    }),
+  getAll: adminProcedure
+    .input(Pagination)
+    .query(async ({ ctx, input: { page, limit } }) => {
+      const result = await ctx.db.request.paginate().withPages({ page, limit });
+      return result;
+    }),
   send: publicProcedure
     .input(z.object({ name: z.string().min(4), email: z.string().email() }))
     .mutation(async ({ ctx, input: { name, email } }) => {
