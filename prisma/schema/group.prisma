@@ -11,6 +11,8 @@ model Group {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    @@index([name])
 }
 
 model GroupInvite {
