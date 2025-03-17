@@ -11,6 +11,8 @@ model Group {
 
     reunions Reunion[]
 
+    notificationsSent Notification[]
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 

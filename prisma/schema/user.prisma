@@ -9,16 +9,19 @@ model User {
 
     isAdmin Boolean @default(false)
 
+    notifications     Notification[] @relation("NotificationsReceived")
+    notificationsSent Notification[] @relation("NotificationsSent")
+
     reunions               ReunionInvitation[] @relation("ReunionInvitationsReceived")
     reunionInvitationsSent ReunionInvitation[] @relation("ReunionInvitationsSent")
 
     invitationsSent Invitation[]
-    
-    groups          Group[]
-    groupInvitesSent GroupInvite[] @relation("GroupInvitesReceived")
-    groupInvites GroupInvite[] @relation("GroupInvitesSent")
 
-    blogPosts       BlogPost[]
+    groups           Group[]
+    groupInvitesSent GroupInvite[] @relation("GroupInvitesReceived")
+    groupInvites     GroupInvite[] @relation("GroupInvitesSent")
+
+    blogPosts BlogPost[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
