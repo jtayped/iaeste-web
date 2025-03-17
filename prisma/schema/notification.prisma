@@ -18,14 +18,12 @@ model Notification {
     reunion   Reunion? @relation(fields: [reunionId], references: [id])
 
     requestId String?
-    request Request? @relation(fields: [requestId], references: [id])
+    request   Request? @relation(fields: [requestId], references: [id])
 
     inviteId String?
-    invite Invitation? @relation(fields: [inviteId], references: [id])
-    
-    createdAt DateTime @default(now())
+    invite   Invitation? @relation(fields: [inviteId], references: [id])
 
-    @@unique([senderId, receiverId])
+    createdAt DateTime @default(now())
 }
 
 enum NotificationType {
