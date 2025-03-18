@@ -4,6 +4,8 @@ import { createTRPCRouter, adminProcedure, publicProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
 import { InvitationState } from "@prisma/client";
 import { Pagination } from "../../validators/pagination";
+import { sendEmail } from "@repo/email/resend";
+import { UserInvitation } from "@repo/email/invitation";
 
 const invitationProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
@@ -66,6 +68,11 @@ export const invitationRouter = createTRPCRouter({
           },
         }),
         // TODO: send email
+        sendEmail(
+          email,
+          "You have been invited to IAESTE LC Lleida!",
+          UserInvitation({ email, invitationLink: "google.com" })
+        ),
       ]);
     }),
   cancel: adminProcedure
