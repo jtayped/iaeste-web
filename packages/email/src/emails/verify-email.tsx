@@ -43,7 +43,7 @@ export const VercelInviteUserEmail = ({
                 href={link}
                 className="bg-blue-900 text-center rounded-lg text-white w-full py-3"
               >
-                Verifica
+                Verificar
               </Button>
             </Section>
             <Text className="text-xs mb-0">
