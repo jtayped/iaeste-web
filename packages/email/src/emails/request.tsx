@@ -1,5 +1,5 @@
 import { Button, Heading, Section, Text } from "@react-email/components";
-import EmailWrapper from "./wrapper.js";
+import EmailWrapper from "./wrapper";
 
 interface UserRequestProps {
   name: string;
