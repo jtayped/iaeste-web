@@ -7,7 +7,8 @@
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "ui": "npm --filter @repo/ui ui"
+    "ui": "npm --filter @repo/ui ui",
+    "email:dev": "email dev --dir=packages/email/src/emails"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
