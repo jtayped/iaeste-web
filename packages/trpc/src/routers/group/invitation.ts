@@ -4,7 +4,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "../../trpc";
-import { GroupInviteState } from "@prisma/client";
+import { GroupInviteState, NotificationType } from "@prisma/client";
 
 export const invitationRouter = createTRPCRouter({
   send: adminProcedure
@@ -15,7 +15,14 @@ export const invitationRouter = createTRPCRouter({
           data: { userId, groupId, senderId: ctx.session.user.id },
         }),
 
-        // TODO: send notification to user
+        ctx.db.notification.create({
+          data: {
+            type: NotificationType.GROUP_INVITE,
+            senderId: ctx.session.user.id,
+            receiverId: userId,
+            groupId,
+          },
+        }),
       ]);
     }),
   cancel: adminProcedure

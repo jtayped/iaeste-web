@@ -9,6 +9,8 @@ model Invitation {
 
     expires DateTime
 
+    notificationsSent Notification[]
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -20,6 +22,8 @@ model Request {
     name  String
 
     state RequestState @default(PENDING)
+
+    notificationsSent Notification[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

@@ -3,8 +3,10 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../../trpc";
 import { createListSchema } from "../../validators/list";
 import { transformSelectFields, transformOrderByClause } from "../../lib/list";
+import { notificationRouter } from "./notification";
 
 export const userRouter = createTRPCRouter({
+  notifications: notificationRouter,
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input: { id } }) =>

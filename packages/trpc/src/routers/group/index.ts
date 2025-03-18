@@ -9,6 +9,7 @@ import { TRPCError } from "@trpc/server";
 import { Group } from "../../validators/group";
 import { participantRouter } from "./participant";
 import { invitationRouter } from "./invitation";
+import { NotificationType } from "@prisma/client";
 
 export const groupProcedure = protectedProcedure
   .input(z.object({ id: z.string() }))
@@ -55,17 +56,26 @@ export const groupRouter = createTRPCRouter({
   create: adminProcedure
     .input(Group.and(z.object({ participants: z.array(z.string()) })))
     .mutation(async ({ ctx, input: { participants, ...groupData } }) => {
-      Promise.all([
-        // Create the group with all the participatns
-        ctx.db.group.create({
-          data: {
-            participants: { create: participants?.map((id) => ({ id })) },
-            ...groupData,
-          },
-        }),
+      // Create the group with all the participatns
+      const { id: groupId } = await ctx.db.group.create({
+        data: {
+          participants: { create: participants?.map((id) => ({ id })) },
+          ...groupData,
+        },
+        select: { id: true },
+      });
 
-        // Send notifications to all the new participants
-      ]);
+      // Send invite notifications to all new participants except the creator
+      await ctx.db.notification.createMany({
+        data: participants
+          ?.filter((id) => id !== ctx.session.user.id)
+          .map((id) => ({
+            type: NotificationType.GROUP_INVITE,
+            senderId: ctx.session.user.id,
+            receiverId: id,
+            groupId,
+          })),
+      });
     }),
   edit: adminProcedure
     .input(z.object({ id: z.string() }).and(Group.partial()))

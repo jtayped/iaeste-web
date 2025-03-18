@@ -15,6 +15,9 @@ const createPrismaClient = () =>
           limit: 15,
           includePageCount: true,
         },
+        cursor: {
+          limit: 15,
+        },
       })
     )
     .$extends(groups);

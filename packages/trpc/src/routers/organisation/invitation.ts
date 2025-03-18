@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, adminProcedure, publicProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
-import { InvitationState } from "@prisma/client";
+import { InvitationState, NotificationType } from "@prisma/client";
 import { Pagination } from "../../validators/pagination";
 import { sendEmail } from "@repo/email/resend";
 import { UserInvitation } from "@repo/email/invitation";
@@ -107,7 +107,12 @@ export const invitationRouter = createTRPCRouter({
           message: "This invitation has already been accepted or rejected.",
         });
 
-      await Promise.all([
+      const admins = await ctx.db.user.findMany({
+        where: { isAdmin: true },
+        select: { id: true },
+      });
+
+      const result = await Promise.all([
         // Change 'accepted' to true
         ctx.db.invitation.update({
           where: { id },
@@ -117,10 +122,19 @@ export const invitationRouter = createTRPCRouter({
         // Create the user
         ctx.db.user.create({
           data: { email: ctx.invitation.email, emailVerified: new Date() },
+          select: { id: true },
         }),
-
-        // TODO: Send notification
       ]);
+      const newUser = result[1];
+
+      await ctx.db.notification.createMany({
+        data: admins.map(({ id }) => ({
+          type: NotificationType.ORGANISATION_INVITE_ACCEPTED,
+          inviteId: ctx.invitation.id,
+          senderId: newUser.id,
+          receiverId: id,
+        })),
+      });
     }),
   reject: invitationProcedure
     .input(z.object({ id: z.string() }))
@@ -137,7 +151,13 @@ export const invitationRouter = createTRPCRouter({
           data: { state: InvitationState.REJECTED },
         }),
 
-        // TODO: send notification to sender
+        ctx.db.notification.create({
+          data: {
+            type: NotificationType.ORGANISATION_INVITE_REJECTED,
+            receiverId: ctx.invitation.senderId,
+            inviteId: ctx.invitation.id,
+          },
+        }),
       ]);
     }),
 });
