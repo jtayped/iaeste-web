@@ -8,10 +8,14 @@ export async function sendEmail(
   subject: string,
   react: React.ReactNode
 ): Promise<void> {
-  await resend.emails.send({
-    from: "noreply@iaestelleida.cat",
-    to,
-    subject,
-    react,
-  });
+  try {
+    await resend.emails.send({
+      from: "noreply@iaestelleida.cat",
+      to,
+      subject,
+      react,
+    });
+  } catch (error) {
+    console.error(error);
+  }
 }
