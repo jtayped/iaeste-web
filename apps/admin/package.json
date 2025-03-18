@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "set PORT=3001 && npm run with-env -- next dev --turbopack",
-    "build": "npx next build",
+    "build": "npm run with-env -- npx next build",
     "postinstall": "prisma generate --schema=../../prisma/schema",
     "start": "next start",
     "lint": "eslint",
