@@ -19,12 +19,9 @@ interface VerifyUserEmailProps {
 
 const baseUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "/static";
+  : "http://iaeste-lleida.vercel.app";
 
-export const VerifyUserEmail = ({
-  email,
-  link,
-}: VerifyUserEmailProps) => {
+export const VerifyUserEmail = ({ email, link }: VerifyUserEmailProps) => {
   const previewText = `Verify your email (${email}) for the IAESTE Admin site. Verify at ${link}`;
 
   return (

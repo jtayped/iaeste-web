@@ -20,7 +20,7 @@ interface UserRequestProps {
 
 const baseUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "/static";
+  : "http://iaeste-lleida.vercel.app";
 
 export const UserRequest = ({ name, email, requestLink }: UserRequestProps) => {
   const previewText = `Verify your email (${email}) for the IAESTE Admin site. Verify at ${requestLink}`;

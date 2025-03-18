@@ -19,7 +19,7 @@ interface InviteUserProps {
 
 const baseUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+  : "http://iaeste-lleida.vercel.app";
 
 export const UserInvitation = ({ email, invitationLink }: InviteUserProps) => {
   const previewText = `Verify your email (${email}) for the IAESTE Admin site. Verify at ${invitationLink}`;
