@@ -8,6 +8,7 @@ import { invitationRouter } from "./invitation";
 import { TRPCError } from "@trpc/server";
 import { Pagination } from "../../validators/pagination";
 import { Reunion } from "../../validators/reunion";
+import { NotificationType } from "@prisma/client";
 
 export const reunionRouter = createTRPCRouter({
   invitation: invitationRouter,
@@ -40,14 +41,29 @@ export const reunionRouter = createTRPCRouter({
   create: adminProcedure
     .input(Reunion.and(z.object({ invites: z.array(z.string()) })))
     .mutation(async ({ ctx, input: { invites, ...reunionData } }) => {
-      // TODO: send notifications to all invitees
+      // Add user to invites by default
+      if (!invites.includes(ctx.session.user.id))
+        invites.push(ctx.session.user.id);
+
+      // Create the reunion and connect all invies to users
       const reunion = await ctx.db.reunion.create({
         data: {
           invites: { connect: invites.map((id) => ({ id })) },
           ...reunionData,
         },
       });
-      return reunion;
+
+      // Send notifications to all invitees
+      await ctx.db.notification.createMany({
+        data: invites
+          .filter((id) => id !== ctx.session.user.id)
+          .map((id) => ({
+            type: NotificationType.REUNION_INVITE,
+            senderId: ctx.session.user.id,
+            reunionId: reunion.id,
+            receiverId: id,
+          })),
+      });
     }),
   edit: adminProcedure
     .input(
@@ -56,19 +72,45 @@ export const reunionRouter = createTRPCRouter({
         .and(z.object({ id: z.string() }))
     )
     .mutation(async ({ ctx, input: { id, ...reunionData } }) => {
+      const invitees = await ctx.db.user.findMany({
+        where: { reunions: { some: { id } } },
+        select: { id: true },
+      });
+
       await Promise.all([
         ctx.db.reunion.update({ where: { id }, data: reunionData }),
 
-        // TODO: send notifications to all invitees
+        // Send notification to all invitees
+        ctx.db.notification.createMany({
+          data: invitees.map(({ id }) => ({
+            type: NotificationType.REUNION_EDITED,
+            senderId: ctx.session.user.id,
+            receiverId: id,
+            reunionId: id,
+          })),
+        }),
       ]);
     }),
   delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input: { id } }) => {
+      const invitees = await ctx.db.user.findMany({
+        where: { reunions: { some: { id } } },
+        select: { id: true },
+      });
+
       await Promise.all([
         ctx.db.reunion.delete({ where: { id } }),
 
-        // TODO: send notifications to all invitees
+        // Send notification to all invitees
+        ctx.db.notification.createMany({
+          data: invitees.map(({ id }) => ({
+            type: NotificationType.REUNION_DELETED,
+            senderId: ctx.session.user.id,
+            receiverId: id,
+            reunionId: id,
+          })),
+        }),
       ]);
     }),
 });

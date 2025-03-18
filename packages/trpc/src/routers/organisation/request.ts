@@ -1,5 +1,5 @@
 import { adminProcedure, createTRPCRouter, publicProcedure } from "../../trpc";
-import { RequestState } from "@prisma/client";
+import { NotificationType, RequestState } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { Pagination } from "../../validators/pagination";
@@ -54,11 +54,24 @@ export const requestRouter = createTRPCRouter({
             "A request has already been sent and is awaiting a response.",
         });
 
-      await Promise.all([
+      const [admins, request] = await Promise.all([
+        ctx.db.user.findMany({
+          where: { isAdmin: true },
+          select: { id: true },
+        }),
         ctx.db.request.create({ data: { name, email } }),
+      ]);
 
+      await Promise.all([
         // TODO: send email to verify email ownership
-        // TODO: send notifications to admins
+
+        ctx.db.notification.createMany({
+          data: admins.map(({ id }) => ({
+            type: NotificationType.ORGANISATION_REQUEST,
+            receiverId: id,
+            requestId: request.id,
+          })),
+        }),
       ]);
     }),
   cancel: requestProcedure.mutation(async ({ ctx, input: { id } }) => {
