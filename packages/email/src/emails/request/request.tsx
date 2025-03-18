@@ -12,7 +12,7 @@ import {
   Text,
 } from "@react-email/components";
 
-interface VercelInviteUserEmailProps {
+interface UserRequestProps {
   name: string;
   email: string;
   requestLink: string;
@@ -22,11 +22,7 @@ const baseUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "/static";
 
-export const VercelInviteUserEmail = ({
-  name,
-  email,
-  requestLink,
-}: VercelInviteUserEmailProps) => {
+export const UserRequest = ({ name, email, requestLink }: UserRequestProps) => {
   const previewText = `Verify your email (${email}) for the IAESTE Admin site. Verify at ${requestLink}`;
 
   return (
@@ -59,10 +55,10 @@ export const VercelInviteUserEmail = ({
   );
 };
 
-VercelInviteUserEmail.PreviewProps = {
+UserRequest.PreviewProps = {
   name: "John Doe",
   email: "john.doe@gmail.com",
   requestLink: "https://google.com",
-} as VercelInviteUserEmailProps;
+} as UserRequestProps;
 
-export default VercelInviteUserEmail;
+export default UserRequest;
