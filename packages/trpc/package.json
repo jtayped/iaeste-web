@@ -10,6 +10,7 @@
   "dependencies": {
     "@prisma/client": "^6.5.0",
     "@repo/eslint-config": "*",
+    "@repo/email": "*",
     "@repo/typescript-config": "*",
     "@trpc/client": "^11.0.0-rc.446",
     "@trpc/react-query": "^11.0.0-rc.446",
