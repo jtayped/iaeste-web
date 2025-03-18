@@ -1,0 +1,25 @@
+model User {
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    accounts      Account[]
+    sessions      Session[]
+
+    isAdmin Boolean @default(false)
+
+    reunions               ReunionInvitation[] @relation("ReunionInvitationsReceived")
+    reunionInvitationsSent ReunionInvitation[] @relation("ReunionInvitationsSent")
+
+    invitationsSent Invitation[]
+    
+    groups          Group[]
+    groupInvitesSent GroupInvite[] @relation("GroupInvitesReceived")
+    groupInvites GroupInvite[] @relation("GroupInvitesSent")
+
+    blogPosts       BlogPost[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

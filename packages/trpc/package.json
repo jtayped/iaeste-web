@@ -4,10 +4,13 @@
   "description": "",
   "private": true,
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@prisma/client": "^6.5.0",
     "@repo/eslint-config": "*",
+    "@repo/email": "*",
     "@repo/typescript-config": "*",
     "@trpc/client": "^11.0.0-rc.446",
     "@trpc/react-query": "^11.0.0-rc.446",
@@ -18,9 +21,9 @@
   "exports": {
     "./root": "./src/root.ts",
     "./trpc": "./src/trpc.ts",
-    "./react": "./src/next/react.tsx",
-    "./server": "./src/next/server.ts",
-    "./query-client": "./src/next/query-client.ts"
+    "./react": "./src/react/react.tsx",
+    "./server": "./src/react/server.ts",
+    "./query-client": "./src/react/query-client.ts"
   },
   "keywords": [],
   "author": "",

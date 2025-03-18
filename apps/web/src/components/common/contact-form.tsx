@@ -15,9 +15,9 @@ import {
 import { Input } from "@repo/ui/input";
 import { useTranslations } from "next-intl";
 import { Textarea } from "@repo/ui/textarea";
-import { sendEmail } from "@/lib/emails";
 import { BiCheck, BiLoader } from "react-icons/bi";
 import useFormSchema from "@/validators/contact-form";
+import { sendContactFormEmail } from "@/lib/emails";
 
 const ContactField = ({
   translationKey,
@@ -65,7 +65,7 @@ const ContactForm = () => {
   const { isSubmitting, isSubmitSuccessful } = form.formState;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await sendEmail(values);
+    await sendContactFormEmail(values);
   }
 
   const SubmitButtonContent = () => {
