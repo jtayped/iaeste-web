@@ -9,11 +9,8 @@ export async function sendEmail(
   react: React.ReactNode
 ): Promise<void> {
   await resend.emails.send({
-    // TODO: change "from" and "to" when the domain is configured
-    // from: "noreply@iaestelleida.cat" ,
-    // to,
-    from: "onboarding@resend.dev",
-    to: "iaeste.lleida@gmail.com",
+    from: "noreply@iaestelleida.cat",
+    to,
     subject,
     react,
   });
