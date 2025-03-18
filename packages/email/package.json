@@ -17,7 +17,7 @@
     "resend": "^4.1.2"
   },
   "exports": {
-    "./*": "./src/emails/**/*.tsx",
+    "./*": "./src/emails/*.tsx",
     "./resend": "./src/lib/resend.ts"
   }
 }

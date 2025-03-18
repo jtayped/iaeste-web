@@ -19,9 +19,9 @@ interface InviteUserProps {
 
 const baseUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "/static";
+  : "http://localhost:3000";
 
-export const InviteUserEmail = ({ email, invitationLink }: InviteUserProps) => {
+export const UserInvitation = ({ email, invitationLink }: InviteUserProps) => {
   const previewText = `Verify your email (${email}) for the IAESTE Admin site. Verify at ${invitationLink}`;
 
   return (
@@ -58,9 +58,9 @@ export const InviteUserEmail = ({ email, invitationLink }: InviteUserProps) => {
   );
 };
 
-InviteUserEmail.PreviewProps = {
+UserInvitation.PreviewProps = {
   email: "john.doe@gmail.com",
   invitationLink: "https://google.com",
 } as InviteUserProps;
 
-export default InviteUserEmail;
+export default UserInvitation;
