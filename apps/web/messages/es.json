@@ -30,19 +30,19 @@
     "steps": {
       "title": "¿Cómo funciona?",
       "internship": {
-        "title": "Las prácticas",
-        "subtitle": "De Local a Global",
-        "description": "Los estudiantes de la UdL envían sus perfiles mientras LC Lleida colabora con IAESTE España para conectar habilidades técnicas con oportunidades globales a través de nuestra plataforma segura."
+        "title": "Prácticas",
+        "subtitle": "De local a global",
+        "description": "Los estudiantes de la UdL envían sus perfiles y IAESTE LC Lleida colabora con IAESTE España para conectar habilidades con oportunidades."
       },
       "auction": {
         "title": "Subasta",
-        "subtitle": "Sistema Dual de Colocación",
-        "description": "Por cada estudiante saliente de Lleida, acogemos a un estudiante internacional en Cataluña, manteniendo el equilibrio a través de la coordinación nacional de España."
+        "subtitle": "Sistema de doble plaza",
+        "description": "Por cada estudiante que se va, acogemos a un interno internacional, manteniendo el equilibrio con la coordinación nacional."
       },
       "exchange": {
         "title": "Intercambio",
-        "subtitle": "Asistencia Integral",
-        "description": "Desde la coordinación de visados hasta el apoyo en alojamiento, nuestro equipo de LC Lleida garantiza transiciones fluidas tanto para estudiantes salientes como entrantes."
+        "subtitle": "Asistencia completa",
+        "description": "IAESTE LC Lleida gestiona visados y alojamiento, asegurando transiciones fluidas para estudiantes que entran y salen."
       }
     }
   },
