@@ -55,23 +55,23 @@
     "why-iaeste": {
       "title": "Why IAESTE?",
       "subtitle": "Structured Global Mobility",
-      "description": "As part of Spain's official IAESTE network, LC Lleida offers exclusive access to vetted technical internships with academic recognition options.",
+      "description": "Join IAESTE LC Lleida to access exclusive, verified international internships that enhance your career prospects. Gain valuable professional experience, expand your global network, and enjoy cultural exchange opportunities while securing academic recognition for your work in leading companies and institutions worldwide.",
       "reasons": {
         "oportunities": {
           "title": "Global Opportunities",
-          "description": "Access internships in over 80 countries with leading companies and research institutions. Build an international network and gain experience that sets you apart in the global job market."
+          "description": "Access internships in 80+ countries, build an international network, boost global career."
         },
         "growth": {
           "title": "Professional Growth",
-          "description": "Develop technical skills in real-world settings, enhance your CV with international experience, and gain valuable insights into your field through hands-on work at leading organizations."
+          "description": "Develop real-world technical skills, enhance your CV, and gain professional insights."
         },
         "exchange": {
           "title": "Cultural Exchange",
-          "description": "Immerse yourself in new cultures, develop intercultural competencies, and build lasting international friendships while working abroad in a supportive environment."
+          "description": "Immerse in new cultures, build intercultural competence, and form lasting international friendships."
         },
         "internship": {
-          "title": "Paid Internship",
-          "description": "All IAESTE internships are paid positions, ensuring you can focus on gaining valuable experience while covering your living expenses during your international stay."
+          "title": "Paid Internships",
+          "description": "Earn paid internships, gaining valuable experience while covering living expenses abroad."
         }
       }
     },
