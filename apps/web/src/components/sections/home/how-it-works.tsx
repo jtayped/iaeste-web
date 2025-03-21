@@ -8,15 +8,8 @@ const HowItWorks = () => {
 
   return (
     <Section className="bg-primary text-primary-foreground py-14 flex flex-col items-center">
-      <div className="text-center max-w-screen-md">
-        <H2>{t("title")}</H2>
-        <Paragraph className="text-primary-foreground/70">
-          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Temporibus,
-          nobis?
-        </Paragraph>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-14 lg:gap-28 mt-16">
+      <h2 className="sr-only">{t("title")}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-14 lg:gap-28">
         {steps.map((s, idx) => (
           <div key={s.key}>
             <s.icon
