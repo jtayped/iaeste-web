@@ -16,10 +16,10 @@ const LinkBtn = ({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 hover:underline underline-offset-2"
+      className="flex items-center gap-3 hover:underline underline-offset-2 text-sm"
     >
       {children}
-      <ArrowUpRight size={20} />
+      <ArrowUpRight size={18} />
     </Link>
   );
 };
@@ -36,17 +36,19 @@ const Footer = () => {
             alt="IAESTE Logo"
             className="h-auto w-48"
           />
-          <div className="space-y-2">
+          <div>
             <p className="font-semibold">{legalName}</p>
-            <p className="text-sm">{address}</p>
-            <p className="text-sm">Tel: {phone}</p>
-            <p className="text-sm">Email: {email}</p>
+            <div className="mt-3 space-y-2">
+              <p className="text-sm mt-2">{address}</p>
+              <p className="text-sm">Tel: {phone}</p>
+              <p className="text-sm">Email: {email}</p>
+            </div>
           </div>
         </div>
         <div className="flex flex-col md:flex-row gap-8">
-          <div className="space-y-4">
+          <div>
             <h4 className="font-bold text-lg">Quick Links</h4>
-            <nav className="flex flex-col space-y-3">
+            <nav className="flex flex-col space-y-2 mt-4">
               <LinkBtn href="/company">For companies</LinkBtn>
               <LinkBtn href="/student">For students</LinkBtn>
               <LinkBtn href="/incomming">For incomming students</LinkBtn>
