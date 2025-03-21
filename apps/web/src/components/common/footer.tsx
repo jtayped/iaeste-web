@@ -26,7 +26,7 @@ const LinkBtn = ({
 
 const Footer = () => {
   return (
-    <div className="bg-primary text-primary-foreground py-8">
+    <footer className="bg-primary text-primary-foreground py-8">
       <DivideSection>
         <div className="space-y-4 max-w-sm">
           <Image
@@ -63,7 +63,7 @@ const Footer = () => {
           </p>
         </div>
       </Section>
-    </div>
+    </footer>
   );
 };
 
