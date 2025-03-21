@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .section-padding {
+    @apply px-screen-sm md:px-screen-md lg:px-screen-lg;
+  }
+}
