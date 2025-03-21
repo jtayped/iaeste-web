@@ -8,7 +8,9 @@ const Section = ({
   children: React.ReactNode;
   className?: string;
 }) => {
-  return <section className={cn("px-screen", className)}>{children}</section>;
+  return (
+    <section className={cn("section-padding", className)}>{children}</section>
+  );
 };
 
 export default Section;

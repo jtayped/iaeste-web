@@ -75,7 +75,7 @@ const Header = () => {
     <header
       className={`
         fixed top-0 w-full flex justify-between items-center 
-        transition-all duration-300 z-50 px-screen text-primary-foreground
+        transition-all duration-300 z-50 section-padding text-primary-foreground
         ${isScrolled ? "py-2 bg-primary shadow-lg" : "py-10"}
       `}
     >

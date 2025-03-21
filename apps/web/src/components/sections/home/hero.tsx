@@ -21,7 +21,7 @@ const Hero = () => {
         className="w-full h-full object-cover -z-10 fixed"
         priority
       />
-      <div className="h-screen flex justify-center items-center bg-primary/60 text-white px-screen">
+      <div className="h-screen flex justify-center items-center bg-primary/60 text-white section-padding">
         <div className="flex flex-col items-center text-center max-w-3xl">
           <div className="flex items-center gap-1">
             <h1 className="text-6xl lg:text-8xl font-extrabold">IAESTE</h1>

@@ -25,7 +25,7 @@ const HeroSection = ({
         className="w-full h-full object-cover object-center -z-10 fixed"
         priority
       />
-      <div className="h-screen flex justify-center items-center bg-primary/60 text-white px-screen">
+      <div className="h-screen flex justify-center items-center bg-primary/60 text-white section-padding">
         <div className="max-w-3xl text-center">
           <H1>{title}</H1>
           {subtitle && <p className="text-xl">{subtitle}</p>}
