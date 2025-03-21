@@ -54,7 +54,10 @@ export const Paragraph: React.FC<Props> = ({
   className = "",
   ...props
 }) => (
-  <p className={`leading-7 [&:not(:first-child)]:mt-6 ${className}`} {...props}>
+  <p
+    className={cn("leading-7 [&:not(:first-child)]:mt-6", className)}
+    {...props}
+  >
     {children}
   </p>
 );
