@@ -53,9 +53,6 @@ const config: Pick<Config, "presets" | "theme" | "plugins"> = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      padding: {
-        screen: "1.5rem",
-      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
