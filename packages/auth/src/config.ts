@@ -18,6 +18,7 @@ declare module "next-auth" {
       email: string;
       image: string;
       isAdmin: boolean;
+      isParticipant: boolean;
       createdAt: Date;
       updatedAt: Date;
     } & DefaultSession["user"];
