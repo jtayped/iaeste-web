@@ -36,7 +36,7 @@ export const invitationRouter = createTRPCRouter({
     .input(z.object({ email: z.string().email() }))
     .query(async ({ ctx, input: { email } }) => {
       const invitation = await ctx.db.invitation.findFirst({
-        where: { email },
+        where: { user: { email } },
         orderBy: { createdAt: "desc" },
       });
       if (!invitation) throw new TRPCError({ code: "NOT_FOUND" });
@@ -59,12 +59,17 @@ export const invitationRouter = createTRPCRouter({
       const currentDate = new Date();
       const expires = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
 
+      // Create new user
+      const newUser = await ctx.db.user.create({
+        data: { email, emailVerified: new Date() },
+      });
+
       await Promise.all([
         ctx.db.invitation.create({
           data: {
-            email,
-            expires,
             senderId: ctx.session.user.id,
+            userId: newUser.id,
+            expires,
           },
         }),
         // TODO: send email
@@ -112,20 +117,16 @@ export const invitationRouter = createTRPCRouter({
         select: { id: true },
       });
 
-      const result = await Promise.all([
-        // Change 'accepted' to true
+      const { user: newUser } =
+        await // Change 'accepted' to true and change the users participant state
         ctx.db.invitation.update({
           where: { id },
-          data: { state: InvitationState.ACCEPTED },
-        }),
-
-        // Create the user
-        ctx.db.user.create({
-          data: { email: ctx.invitation.email, emailVerified: new Date() },
-          select: { id: true },
-        }),
-      ]);
-      const newUser = result[1];
+          data: {
+            state: InvitationState.ACCEPTED,
+            user: { update: { isParticipant: true } },
+          },
+          include: { user: true },
+        });
 
       await ctx.db.notification.createMany({
         data: admins.map(({ id }) => ({

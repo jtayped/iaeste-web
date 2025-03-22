@@ -1,11 +1,13 @@
 model Invitation {
     id String @id @default(cuid())
 
-    email String
+    userId String
+    user   User   @relation("InvitationsReceived", fields: [userId], references: [id], onDelete: Cascade)
+
     state InvitationState @default(PENDING)
 
     senderId String
-    sender   User   @relation(fields: [senderId], references: [id])
+    sender   User   @relation("InvitationsSent", fields: [senderId], references: [id])
 
     expires DateTime
 
@@ -18,8 +20,8 @@ model Invitation {
 model Request {
     id String @id @default(cuid())
 
-    email String
-    name  String
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     state RequestState @default(PENDING)
 

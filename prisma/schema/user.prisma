@@ -7,7 +7,8 @@ model User {
     accounts      Account[]
     sessions      Session[]
 
-    isAdmin Boolean @default(false)
+    isAdmin       Boolean @default(false)
+    isParticipant Boolean @default(false)
 
     notifications     Notification[] @relation("NotificationsReceived")
     notificationsSent Notification[] @relation("NotificationsSent")
@@ -15,13 +16,15 @@ model User {
     reunions               ReunionInvitation[] @relation("ReunionInvitationsReceived")
     reunionInvitationsSent ReunionInvitation[] @relation("ReunionInvitationsSent")
 
-    invitationsSent Invitation[]
-
     groups           Group[]
     groupInvitesSent GroupInvite[] @relation("GroupInvitesReceived")
     groupInvites     GroupInvite[] @relation("GroupInvitesSent")
 
     blogPosts BlogPost[]
+
+    requestToJoin   Request[]
+    invitesToJoin   Invitation[] @relation("InvitationsReceived")
+    invitationsSent Invitation[] @relation("InvitationsSent")
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

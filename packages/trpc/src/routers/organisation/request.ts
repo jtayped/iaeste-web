@@ -21,7 +21,9 @@ export const requestRouter = createTRPCRouter({
   getByEmail: adminProcedure
     .input(z.object({ email: z.string() }))
     .query(async ({ ctx, input: { email } }) => {
-      const request = await ctx.db.request.findFirst({ where: { email } });
+      const request = await ctx.db.request.findFirst({
+        where: { user: { email } },
+      });
       if (!request) throw new TRPCError({ code: "NOT_FOUND" });
 
       return request;
@@ -45,7 +47,7 @@ export const requestRouter = createTRPCRouter({
 
       // Check if there are any other pending requests
       const pendingRequest = await ctx.db.request.findFirst({
-        where: { email, state: RequestState.PENDING },
+        where: { user: { email }, state: RequestState.PENDING },
       });
       if (pendingRequest)
         throw new TRPCError({
@@ -59,7 +61,16 @@ export const requestRouter = createTRPCRouter({
           where: { isAdmin: true },
           select: { id: true },
         }),
-        ctx.db.request.create({ data: { name, email } }),
+        ctx.db.request.create({
+          data: {
+            user: {
+              connectOrCreate: {
+                where: { email, isParticipant: false },
+                create: { name, email },
+              },
+            },
+          },
+        }),
       ]);
 
       await Promise.all([
@@ -97,17 +108,15 @@ export const requestRouter = createTRPCRouter({
         message: "Request has already been accepted or rejected.",
       });
 
-    const { name, email } = ctx.request;
-
     await Promise.all([
-      // Change state to ACCEPTED
+      // Change state to ACCEPTED and update the user's state
       ctx.db.request.update({
         where: { id },
-        data: { state: RequestState.ACCEPTED },
+        data: {
+          state: RequestState.ACCEPTED,
+          user: { update: { isParticipant: true } },
+        },
       }),
-
-      // Create user
-      ctx.db.user.create({ data: { name, email } }),
     ]);
   }),
 
