@@ -23,7 +23,13 @@ const ChangeTranslation = ({ className = "" }: { className?: string }) => {
   return (
     <NavigationMenuItem>
       <NavigationMenuTrigger className={cn("", className)}>
-        <Image src={svg} alt={label} width={24} height={24} />
+        <Image
+          src={svg}
+          alt={label}
+          width={24}
+          height={24}
+          className="rounded-sm"
+        />
       </NavigationMenuTrigger>
       <NavigationMenuContent>
         <ul className="grid grid-cols-3 gap-3 p-6 md:w-[400px]">
