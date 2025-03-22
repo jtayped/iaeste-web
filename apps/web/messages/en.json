@@ -6,42 +6,42 @@
     },
     "about": {
       "title": "What is IAESTE?",
-      "subtitle": "Bridging Spanish Talent with Global Opportunities",
+      "subtitle": "Bridging Spanish talent with global opportunities",
       "description": "As IAESTE LC Lleida, part of IAESTE Spain's national network, we facilitate paid technical internships through our non-profit platform at Escola Politècnica Superior. Since 1948, we've connected UdL students with 100+ countries through our structured exchange system."
     },
     "stats": {
       "countries": {
         "title": "Countries",
-        "subtitle": "served with IAESTE internships."
+        "subtitle": "Served with IAESTE internships."
       },
       "students": {
         "title": "Students",
-        "subtitle": "sent on internships."
+        "subtitle": "Sent on internships."
       },
       "organisations": {
         "title": "Organisations",
-        "subtitle": "that host interns."
+        "subtitle": "That host interns."
       },
       "volunteers": {
         "title": "Volunteers",
-        "subtitle": "that help make IAESTE great."
+        "subtitle": "That help make IAESTE great."
       }
     },
     "steps": {
       "title": "How does it work?",
       "internship": {
         "title": "An internship",
-        "subtitle": "Local to Global",
+        "subtitle": "Local to global",
         "description": "UdL students submit profiles, and IAESTE LC Lleida works with IAESTE Spain to match skills with global opportunities."
       },
       "auction": {
         "title": "Auction",
-        "subtitle": "Dual Placement System",
+        "subtitle": "Dual placement system",
         "description": "For every student from Lleida, we welcome an international intern, ensuring balance through national coordination."
       },
       "exchange": {
         "title": "Exchange",
-        "subtitle": "End-to-End Assistance",
+        "subtitle": "End-to-end assistance",
         "description": "IAESTE LC Lleida handles visas and housing, ensuring smooth transitions for students going abroad and coming to Catalonia."
       }
     }
@@ -54,23 +54,23 @@
     },
     "why-iaeste": {
       "title": "Why IAESTE?",
-      "subtitle": "Structured Global Mobility",
+      "subtitle": "Structured global mobility",
       "description": "Join IAESTE LC Lleida to access exclusive, verified international internships that enhance your career prospects. Gain valuable professional experience, expand your global network, and enjoy cultural exchange opportunities while securing academic recognition for your work in leading companies and institutions worldwide.",
       "reasons": {
         "oportunities": {
-          "title": "Global Opportunities",
+          "title": "Global opportunities",
           "description": "Access internships in 80+ countries, build an international network, boost global career."
         },
         "growth": {
-          "title": "Professional Growth",
+          "title": "Professional growth",
           "description": "Develop real-world technical skills, enhance your CV, and gain professional insights."
         },
         "exchange": {
-          "title": "Cultural Exchange",
+          "title": "Cultural exchange",
           "description": "Immerse in new cultures, build intercultural competence, and form lasting international friendships."
         },
         "internship": {
-          "title": "Paid Internships",
+          "title": "Paid internships",
           "description": "Earn paid internships, gaining valuable experience while covering living expenses abroad."
         }
       }
@@ -103,7 +103,7 @@
       }
     },
     "contact": {
-      "title": "Start Your IAESTE Journey",
+      "title": "Start your IAESTE journey",
       "description": "Join UdL's engineering students who've launched global careers through our LC Lleida program."
     }
   },
@@ -183,25 +183,25 @@
   "outgoings": {
     "jaume": {
       "quote": "IAESTE opened doors I never knew existed.",
-      "title": "Engineering Innovation in Germany",
+      "title": "Engineering innovation in Germany",
       "description": "During my internship at a leading automotive company in Munich, I gained hands-on experience with cutting-edge technologies while developing my professional network. The experience enhanced both my technical skills and cultural understanding.",
       "location": "Germany"
     },
     "jordi": {
       "quote": "The perfect blend of professional and personal growth.",
-      "title": "Research Excellence",
+      "title": "Research excellence",
       "description": "Working at the Technical University of Berlin allowed me to contribute to groundbreaking research while experiencing life in one of Europe's most dynamic cities. IAESTE made the entire process smooth and supported me throughout.",
       "location": "Germany"
     },
     "pepito": {
       "quote": "An experience that shaped my career path.",
-      "title": "Industrial Innovation",
+      "title": "Industrial innovation",
       "description": "My internship at a German manufacturing plant gave me practical insights into Industry 4.0 technologies. The international environment and professional challenges helped me grow both technically and personally.",
       "location": "Germany"
     },
     "pep": {
       "quote": "More than just an internship - a life-changing experience.",
-      "title": "Technology Leadership",
+      "title": "Technology leadership",
       "description": "Participating in a software development project at a leading tech company in Hamburg taught me valuable lessons in international collaboration and professional communication while advancing my technical expertise.",
       "location": "Germany"
     }

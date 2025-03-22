@@ -6,25 +6,25 @@
     },
     "about": {
       "title": "Què és IAESTE?",
-      "subtitle": "Connectant el Talent Català amb Oportunitats Globals",
+      "subtitle": "Connectant el talent català amb oportunitats globals",
       "description": "Com a IAESTE LC Lleida, part de la xarxa nacional de IAESTE Espanya, facilitem pràctiques tècniques remunerades a través de la nostra plataforma sense ànim de lucre a l'Escola Politècnica Superior. Des de 1948, hem connectat estudiants de la UdL amb més de 100 països mitjançant el nostre sistema estructurat d'intercanvi."
     },
     "stats": {
       "countries": {
         "title": "Països",
-        "subtitle": "amb pràctiques IAESTE."
+        "subtitle": "Amb pràctiques IAESTE."
       },
       "students": {
         "title": "Estudiants",
-        "subtitle": "enviats a pràctiques."
+        "subtitle": "Enviats a pràctiques."
       },
       "organisations": {
         "title": "Organitzacions",
-        "subtitle": "que acullen estudiants."
+        "subtitle": "Que acullen estudiants."
       },
       "volunteers": {
         "title": "Voluntaris",
-        "subtitle": "que fan IAESTE possible."
+        "subtitle": "Que fan IAESTE possible."
       }
     },
     "steps": {
@@ -54,23 +54,23 @@
     },
     "why-iaeste": {
       "title": "Per què IAESTE?",
-      "subtitle": "Mobilitat Global Estructurada",
+      "subtitle": "Mobilitat global estructurada",
       "description": "Uneix-te a IAESTE LC Lleida per accedir a pràctiques internacionals exclusives i verificades que impulsaran la teva carrera. Adquireix experiència professional, amplia la teva xarxa global i gaudeix d’un intercanvi cultural mentre obtens reconeixement acadèmic en empreses i institucions de prestigi arreu del món.",
       "reasons": {
         "oportunities": {
-          "title": "Oportunitats Globals",
+          "title": "Oportunitats globals",
           "description": "Accedeix a pràctiques en 80+ països i construeix xarxa internacional."
         },
         "growth": {
-          "title": "Creixement Professional",
+          "title": "Creixement professional",
           "description": "Desenvolupa habilitats reals, millora el teu CV i obté coneixements professionals."
         },
         "exchange": {
-          "title": "Intercanvi Cultural",
+          "title": "Intercanvi cultural",
           "description": "Submergeix-te en noves cultures, aprèn competències interculturals i forma amistats internacionals."
         },
         "internship": {
-          "title": "Pràctiques Remunerades",
+          "title": "Pràctiques remunerades",
           "description": "Gaudeix de pràctiques remunerades que cobreixen despeses mentre guanyes experiència."
         }
       }
@@ -81,7 +81,7 @@
       "description": "Uneix-te a un dels nostres equips dinàmics a IAESTE LC Lleida. Desenvolupa habilitats de lideratge, guanya experiència organitzativa i marca la diferència mentre ajudes altres estudiants a accedir a oportunitats internacionals.",
       "teams": {
         "junta": {
-          "name": "Junta Directiva",
+          "name": "Junta directiva",
           "description": "Lidera iniciatives estratègiques i guia la direcció de la nostra organització."
         },
         "empreses": {
@@ -103,7 +103,7 @@
       }
     },
     "contact": {
-      "title": "Inicia el teu Viatge IAESTE",
+      "title": "Inicia el teu viatge IAESTE",
       "description": "Uneix-te als estudiants d'enginyeria de la UdL que han llançat carreres globals a través del nostre programa LC Lleida."
     }
   },
@@ -183,25 +183,25 @@
   "outgoings": {
     "jaume": {
       "quote": "IAESTE em va obrir portes que ni sabia que existien.",
-      "title": "Innovació en Enginyeria a Alemanya",
+      "title": "Innovació en enginyeria a Alemanya",
       "description": "Durant les meves pràctiques en una empresa líder del sector automotriu a Munic, vaig obtenir experiència pràctica amb tecnologies d'avantguarda mentre desenvolupava la meva xarxa professional. L'experiència va millorar tant les meves habilitats tècniques com la meva comprensió cultural.",
       "location": "Alemanya"
     },
     "jordi": {
       "quote": "La combinació perfecta de creixement professional i personal.",
-      "title": "Excel·lència en Recerca",
+      "title": "Excel·lència en recerca",
       "description": "Treballar a la Universitat Tècnica de Berlín em va permetre contribuir a investigacions pioneres mentre experimentava la vida en una de les ciutats més dinàmiques d'Europa. IAESTE va fer que tot el procés fos fluid i em va donar suport en tot moment.",
       "location": "Alemanya"
     },
     "pepito": {
       "quote": "Una experiència que va definir la meva trajectòria professional.",
-      "title": "Innovació Industrial",
+      "title": "Innovació industrial",
       "description": "Les meves pràctiques en una planta manufacturera alemanya em van donar coneixements pràctics sobre tecnologies de la Indústria 4.0. L'entorn internacional i els reptes professionals em van ajudar a créixer tant tècnicament com personalment.",
       "location": "Alemanya"
     },
     "pep": {
       "quote": "Més que unes pràctiques - una experiència que va canviar la meva vida.",
-      "title": "Lideratge Tecnològic",
+      "title": "Lideratge tecnològic",
       "description": "Participar en un projecte de desenvolupament de programari en una empresa tecnològica líder a Hamburg em va ensenyar valuoses lliçons sobre col·laboració internacional i comunicació professional mentre avançava en la meva experiència tècnica.",
       "location": "Alemanya"
     }
