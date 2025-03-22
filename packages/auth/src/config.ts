@@ -56,6 +56,10 @@ export const authConfig = {
     GoogleProvider,
   ],
   adapter: PrismaAdapter(db),
+  pages: {
+    signIn: "/auth/signin",
+    newUser: "/auth/onboarding",
+  },
   callbacks: {
     session: ({ session, user }) => ({
       ...session,
