@@ -1,7 +1,7 @@
-import React from "react";
+import AcceptInvitationPageComponent from "@repo/ui/auth/invitation/accept/page";
 
-const InvitationPage = () => {
-  return <div>InvitationPage</div>;
+const InvitationPage = ({ params: { id } }: { params: { id: string } }) => {
+  return <AcceptInvitationPageComponent id={id} />;
 };
 
 export default InvitationPage;

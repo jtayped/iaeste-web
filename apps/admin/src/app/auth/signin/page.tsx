@@ -1,9 +1,8 @@
-import React from 'react'
+import SigninPageComponent from "@repo/ui/auth/signin/page";
+import React from "react";
 
 const SignInPage = () => {
-  return (
-    <div>SignInPage</div>
-  )
-}
+  return <SigninPageComponent />;
+};
 
-export default SignInPage
+export default SignInPage;
