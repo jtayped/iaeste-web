@@ -5,6 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { compare } from "bcrypt";
 import { db } from "@repo/db";
 import { Credentials } from "./validators/credentials";
+import { pages } from "@repo/constants/constants/pages";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -68,8 +69,8 @@ export const authConfig = {
   ],
   adapter: PrismaAdapter(db),
   pages: {
-    signIn: "/auth/signin",
-    newUser: "/auth/onboarding",
+    signIn: pages.signin,
+    newUser: pages.onboarding,
   },
   callbacks: {
     session: ({ session, user }) => ({
@@ -87,7 +88,7 @@ export const authConfig = {
         });
 
         if (!existingUser) {
-          return "/auth/register";
+          return pages.register;
         }
       }
       return true;
