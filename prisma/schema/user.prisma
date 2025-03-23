@@ -30,3 +30,9 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
+
+model PasswordResetToken {
+    token  String   @id
+    expiry DateTime
+    email  String
+}

@@ -13,7 +13,9 @@
     "bcrypt": "^5.1.1"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./lib/*": "./src/lib/*.ts",
+    "./validators/*": "./src/validators/*.ts"
   },
   "keywords": [],
   "author": "",

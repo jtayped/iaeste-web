@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
+    "@repo/auth": "*",
     "@repo/eslint-config": "*",
     "@repo/email": "*",
     "@repo/typescript-config": "*",
