@@ -2,7 +2,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-
+import { compare } from "bcrypt";
 import { db } from "@repo/db";
 
 /**
@@ -43,12 +43,21 @@ export const authConfig = {
         email: { label: "Username", type: "text", placeholder: "John Doe" },
         password: { label: "Password", type: "password" },
       },
-      async authorize({ email }) {
+      async authorize({ email, password: inputPassword }) {
+        if (!email || !inputPassword) return null;
+
         const user = await db.user.findUnique({
           where: { email: email as string },
+          omit: { password: false },
         });
 
-        // Check if password is right
+        if (!user || !user.password) return null;
+
+        const isPasswordValid = compare(inputPassword as string, user.password);
+
+        if (!isPasswordValid) {
+          return null;
+        }
 
         return user;
       },
@@ -68,6 +77,19 @@ export const authConfig = {
         id: user.id,
       },
     }),
+    async signIn({ user, account }) {
+      // Check if user exists when logging in with google
+      if (account?.provider === "google") {
+        const existingUser = await db.user.findUnique({
+          where: { email: user?.email ?? "" },
+        });
+
+        if (!existingUser) {
+          return "/auth/register";
+        }
+      }
+      return true;
+    },
   },
-  secret: process.env.RESEND_API_KEY,
+  secret: process.env.AUTH_SECRET,
 } satisfies NextAuthConfig;
