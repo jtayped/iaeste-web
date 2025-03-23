@@ -8,6 +8,9 @@ const createPrismaClient = () =>
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
         : ["error"],
+    omit: {
+      user: { password: true },
+    },
   })
     .$extends(
       pagination({
