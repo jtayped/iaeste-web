@@ -1,5 +1,5 @@
 {
   "extends": "@repo/typescript-config/base.json",
-  "include": ["constants"],
+  "include": ["validators"],
   "exclude": ["node_modules"]
 }
