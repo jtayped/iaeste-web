@@ -1,8 +1,8 @@
-import RequestPendingPageComponent from "@repo/ui/auth/request/pending/page";
+import RequestPending from "@repo/ui/auth/request/pending";
 import React from "react";
 
 const RequestPendingPage = () => {
-  return <RequestPendingPageComponent />;
+  return <RequestPending />;
 };
 
 export default RequestPendingPage;

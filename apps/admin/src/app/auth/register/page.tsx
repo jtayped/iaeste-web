@@ -1,8 +1,8 @@
-import RequestCreatePageComponent from "@repo/ui/auth/request/create/page";
+import RequestCreateForm from "@repo/ui/auth/request/create/form";
 import React from "react";
 
 const RegisterPage = () => {
-  return <RequestCreatePageComponent />;
+  return <RequestCreateForm />;
 };
 
 export default RegisterPage;
