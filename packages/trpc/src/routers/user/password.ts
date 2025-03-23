@@ -25,7 +25,7 @@ export const passwordRouter = createTRPCRouter({
           "Canvi de contrasenya",
           PasswordResetEmail({
             email,
-            link: `https://admin.iaestelleida.cat/auth/password-reset?token=${token}`,
+            link: `https://admin.iaestelleida.cat/auth/reset-password/${token}`,
           })
         ),
       ]);
