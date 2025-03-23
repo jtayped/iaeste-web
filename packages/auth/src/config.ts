@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { compare } from "bcrypt";
 import { db } from "@repo/db";
+import { Credentials } from "./validators/credentials";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -43,17 +44,18 @@ export const authConfig = {
         email: { label: "Username", type: "text", placeholder: "John Doe" },
         password: { label: "Password", type: "password" },
       },
-      async authorize({ email, password: inputPassword }) {
-        if (!email || !inputPassword) return null;
+      async authorize(credentials) {
+        const { email, password: inputPassword } =
+          Credentials.parse(credentials);
 
         const user = await db.user.findUnique({
-          where: { email: email as string },
+          where: { email },
           omit: { password: false },
         });
 
         if (!user || !user.password) return null;
 
-        const isPasswordValid = compare(inputPassword as string, user.password);
+        const isPasswordValid = compare(inputPassword, user.password);
 
         if (!isPasswordValid) {
           return null;
