@@ -7,14 +7,18 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",
+    "@repo/db": "*",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
-    "@repo/db": "*"
+    "bcrypt": "^5.1.1"
   },
   "exports": {
     ".": "./src/index.ts"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2"
+  }
 }
