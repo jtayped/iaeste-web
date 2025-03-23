@@ -1,7 +1,7 @@
 import React from "react";
 
-const AcceptInvitation = () => {
-  return <div>AcceptInvitation</div>;
+const AcceptInvitation = ({ id }: { id: string }) => {
+  return <div>{id}</div>;
 };
 
 export default AcceptInvitation;

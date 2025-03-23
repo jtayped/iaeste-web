@@ -1,0 +1,13 @@
+{
+  "name": "@repo/validators",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "dependencies": {},
+  "exports": {
+    "./*": "./validators/*.ts"
+  }
+}

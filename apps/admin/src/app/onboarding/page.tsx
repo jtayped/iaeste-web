@@ -1,8 +1,8 @@
-import OnboardingPageComponent from "@repo/ui/auth/onboarding/page";
+import OnboardingForm from "@repo/ui/auth/onboarding/form";
 import React from "react";
 
 const OnboardingPage = () => {
-  return <OnboardingPageComponent />;
+  return <OnboardingForm />;
 };
 
 export default OnboardingPage;
