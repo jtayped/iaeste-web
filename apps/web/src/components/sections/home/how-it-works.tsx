@@ -1,5 +1,5 @@
 import Section from "@/components/common/sections/section";
-import { H2, H3, Paragraph } from "@repo/ui/typography";
+import { H3, Paragraph } from "@repo/ui/typography";
 import steps from "@/constants/how-it-works";
 import { useTranslations } from "next-intl";
 
