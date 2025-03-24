@@ -3,6 +3,7 @@ import { NotificationType, RequestState } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { Pagination } from "../../validators/pagination";
+import RequestSchema from "@repo/validators/request";
 
 const requestProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
@@ -35,8 +36,8 @@ export const requestRouter = createTRPCRouter({
       return result;
     }),
   send: publicProcedure
-    .input(z.object({ name: z.string().min(4), email: z.string().email() }))
-    .mutation(async ({ ctx, input: { name, email } }) => {
+    .input(RequestSchema)
+    .mutation(async ({ ctx, input: { name, email, comment } }) => {
       // Check if email already exists
       const user = await ctx.db.user.findFirst({ where: { email } });
       if (user)
@@ -69,6 +70,7 @@ export const requestRouter = createTRPCRouter({
                 create: { name, email },
               },
             },
+            comment,
           },
         }),
       ]);

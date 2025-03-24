@@ -23,6 +23,8 @@ model Request {
     userId String
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+    comment String?
+
     state RequestState @default(PENDING)
 
     notificationsSent Notification[]
