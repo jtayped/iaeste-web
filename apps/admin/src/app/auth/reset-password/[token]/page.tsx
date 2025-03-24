@@ -1,10 +1,11 @@
 import NewPasswordForm from "@repo/ui/auth/password-reset/new-password-form";
 
-const PasswordResetPage = ({
-  params: { token },
+const PasswordResetPage = async ({
+  params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) => {
+  const { token } = await params;
   return <NewPasswordForm token={token} />;
 };
 
