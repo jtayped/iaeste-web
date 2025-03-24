@@ -1,4 +1,12 @@
 {
+  "Metadata": {
+    "title": "IAESTE Lleida",
+    "description": "Non-profit organization of the Polytechnic School of the University of Lleida.",
+    "ogTitle": "IAESTE Lleida - International Student Internships",
+    "ogDescription": "Exchanging students for technical work experience in 100+ countries around the world.",
+    "twitterTitle": "IAESTE Lleida - International Student Internships",
+    "twitterDescription": "Exchanging students for technical work experience in 100+ countries around the world."
+  },
   "HomePage": {
     "hero": {
       "description": "Join a global network connecting talented students with international technical internships. Experience professional growth while discovering new cultures through IAESTE's worldwide exchange program.",

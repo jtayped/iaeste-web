@@ -1,4 +1,12 @@
 {
+  "Metadata": {
+    "title": "IAESTE Lleida",
+    "description": "Organització sense ànim de lucre de l'Escola Politècnica Superior de la Universitat de Lleida.",
+    "ogTitle": "IAESTE Lleida - Pasanties Internacionals per a Estudiants",
+    "ogDescription": "Intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món.",
+    "twitterTitle": "IAESTE Lleida - Pasanties Internacionals per a Estudiants",
+    "twitterDescription": "Intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món."
+  },
   "HomePage": {
     "hero": {
       "description": "Uneix-te a una xarxa global que connecta estudiants talentosos amb pràctiques tècniques internacionals. Desenvolupa la teva carrera professional mentre descobreixes noves cultures a través del programa d'intercanvi mundial de IAESTE.",

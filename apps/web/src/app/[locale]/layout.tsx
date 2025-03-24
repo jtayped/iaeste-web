@@ -1,5 +1,5 @@
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
@@ -11,77 +11,72 @@ import "@/globals.css";
 
 const inter = Inter({ weight: "variable", subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  // Basic SEO metadata
-  title: "IAESTE Lleida",
-  description:
-    "Organització sense ànim de lucre de l'Escola Politècnica Superior de la Universitat de Lleida.",
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
 
-  alternates: {
-    canonical: "/ca",
-    languages: {
-      ca: "/ca",
-      es: "/es",
-      en: "/en",
-    },
-  },
-
-  // OpenGraph / Social Media Tags
-  openGraph: {
-    title: "IAESTE Lleida - International Student Internships",
-    description:
-      "Exchanging students for technical work experience in 100+ countries around the world.",
-    url: "https://iaeste.udl.cat/",
-    type: "website",
-
-    // Recommended: Add high-quality, representative image
-    images: [
-      {
-        url: "/twitter.png", // TODO: Replace with your social share image path
-        width: 700,
-        height: 350,
-        alt: "IAESTE Lleida - International Student Exchanges",
+  // Load localized metadata from the "Metadata" namespace
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: {
+      canonical: `/${locale}`,
+      languages: {
+        ca: "/ca",
+        es: "/es",
+        en: "/en",
       },
+    },
+    openGraph: {
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+      url: "https://iaeste.udl.cat/",
+      type: "website",
+      images: [
+        {
+          url: "/twitter.png", // Replace with your social share image path if needed
+          width: 700,
+          height: 350,
+          alt: t("ogTitle"),
+        },
+      ],
+      // Set locale-specific OpenGraph locale code
+      locale: locale === "ca" ? "ca_ES" : locale === "es" ? "es_ES" : "en_US",
+      siteName: "IAESTE Lleida",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("twitterTitle"),
+      description: t("twitterDescription"),
+      creator: "@IAESTELCLleida",
+      site: "@IAESTELCLleida",
+      images: ["/twitter.png"],
+    },
+    keywords: [
+      "IAESTE",
+      "internships",
+      "estudiants",
+      "Universitat de Lleida",
+      "Escola Politècnica Superior",
+      "intercanvis internacionals",
     ],
-
-    locale: "ca_ES",
-    siteName: "IAESTE Lleida",
-  },
-
-  twitter: {
-    card: "summary_large_image",
-    title: "IAESTE Lleida - International Student Internships",
-    description:
-      "Exchanging students for technical work experience in 100+ countries around the world.",
-
-    creator: "@IAESTELCLleida",
-    site: "@IAESTELCLleida",
-
-    images: ["/twitter.png"],
-  },
-
-  keywords: [
-    "IAESTE",
-    "internships",
-    "estudiants",
-    "Universitat de Lleida",
-    "Escola Politècnica Superior",
-    "intercanvis internacionals",
-  ],
-
-  // Robots meta tag for search engine crawling
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    robots: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-};
+  };
+}
 
 export default async function LocaleLayout({
   children,
