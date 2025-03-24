@@ -34,7 +34,7 @@ export async function generateMetadata({
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
-      url: "https://iaeste.udl.cat/",
+      url: "https://iaestelleida.cat/",
       type: "website",
       images: [
         {
