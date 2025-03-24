@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -18,8 +18,11 @@ import { Card } from "@repo/ui/card";
 import Loader from "@repo/ui/loader";
 import { useRouter } from "next/navigation";
 import { pages } from "@repo/constants/constants/pages";
+import { Textarea } from "@repo/ui/textarea";
+import { Checkbox } from "@repo/ui/checkbox";
 
 const RequestCreateForm = () => {
+  const [showCommentField, setShowCommentField] = useState<boolean>(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof RequestSchema>>({
@@ -27,7 +30,7 @@ const RequestCreateForm = () => {
     defaultValues: {
       name: "",
       email: "",
-      comment: "",
+      comment: undefined,
     },
   });
 
@@ -73,6 +76,43 @@ const RequestCreateForm = () => {
               </FormItem>
             )}
           />
+          <div className="space-y-3">
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={showCommentField}
+                  onCheckedChange={(checked) => {
+                    setShowCommentField(!!checked);
+                    // Reset comment field when unchecked
+                    if (!checked) {
+                      form.setValue("comment", undefined);
+                    }
+                  }}
+                />
+              </FormControl>
+              <FormLabel className="ml-2">
+                Vols afegir un comentari addicional?
+              </FormLabel>
+            </FormItem>
+            {showCommentField && (
+              <FormField
+                control={form.control}
+                name="comment"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea
+                        rows={5}
+                        placeholder="Escriu aquí el teu comentari addicional"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
           <Button
             type="submit"
             className="w-full"
