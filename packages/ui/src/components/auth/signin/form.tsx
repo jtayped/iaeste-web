@@ -1,10 +1,9 @@
 import { cn } from "@repo/ui/lib/utils";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
-import { Input } from "@repo/ui/input";
-import { Label } from "@repo/ui/label";
 import Link from "next/link";
 import CredentialsForm from "./credentials-form";
+import { pages } from "@repo/constants/constants/pages";
 
 const SigninForm = ({
   className,
@@ -33,7 +32,10 @@ const SigninForm = ({
           <CredentialsForm />
           <div className="text-center text-sm">
             No ets membre?{" "}
-            <Link href="#" className="underline underline-offset-4">
+            <Link
+              href={pages.register}
+              className="underline underline-offset-4"
+            >
               Registra&apos;t
             </Link>
           </div>
