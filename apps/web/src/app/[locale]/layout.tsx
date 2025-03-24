@@ -38,7 +38,7 @@ export async function generateMetadata({
       type: "website",
       images: [
         {
-          url: "/twitter.png", // Replace with your social share image path if needed
+          url: "https://iaestelleida.cat/twitter.png",
           width: 700,
           height: 350,
           alt: t("ogTitle"),
@@ -54,7 +54,7 @@ export async function generateMetadata({
       description: t("twitterDescription"),
       creator: "@IAESTELCLleida",
       site: "@IAESTELCLleida",
-      images: ["/twitter.png"],
+      images: ["https://iaestelleida.cat/twitter.png"],
     },
     keywords: [
       "IAESTE",
