@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 const host = "https://iaestelleida.cat";
 const locales = ["ca", "es", "en"];
-const paths = ["", "/student", "/incomming"];
+const paths = ["", "/student", "/incommings"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const sitemapEntries = paths.flatMap((path) =>
