@@ -1,13 +1,14 @@
 {
-  "Metadata": {
-    "title": "IAESTE Lleida | Pràctiques Internacionals",
-    "description": "Organització sense ànim de lucre de l'Escola Politècnica Superior de la Universitat de Lleida.",
-    "ogTitle": "IAESTE Lleida - Pràctiques Internacionals per a Estudiants",
-    "ogDescription": "Intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món.",
-    "twitterTitle": "IAESTE Lleida - Pràctiques Internacionals per a Estudiants",
-    "twitterDescription": "Intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món."
-  },
   "HomePage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Pràctiques Internacionals",
+      "description": "Organització sense ànim de lucre de l'Escola Politècnica Superior de la Universitat de Lleida.",
+      "keywords": "pràctiques internacionals, pràctiques globals, pràctiques tècniques, intercanvi cultural, IAESTE Lleida",
+      "ogTitle": "IAESTE Lleida - Pràctiques Internacionals per a Estudiants",
+      "ogDescription": "Intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món.",
+      "twitterTitle": "IAESTE Lleida - Pràctiques Internacionals per a Estudiants",
+      "twitterDescription": "Intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món."
+    },
     "hero": {
       "description": "Uneix-te a una xarxa global que connecta estudiants talentosos amb pràctiques tècniques internacionals. Desenvolupa la teva carrera professional mentre descobreixes noves cultures a través del programa d'intercanvi mundial de IAESTE.",
       "buttons": { "student": "Soc estudiant", "company": "Soc empresa" }
@@ -55,6 +56,15 @@
     }
   },
   "StudentsPage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Pràctiques UDL per Estudiants Internacionals",
+      "description": "Descobreix oportunitats de pràctiques internacionals remunerades a la UdL amb IAESTE Lleida. Impulsa la teva carrera amb experiències globals i un enriquit intercanvi cultural.",
+      "keywords": "practiques udl, pràctiques internacionals, estudiants udl, intercanvi cultural, creixement professional",
+      "ogTitle": "IAESTE Lleida - Pràctiques UDL per Estudiants Internacionals",
+      "ogDescription": "Uneix-te a IAESTE Lleida i accedeix a pràctiques remunerades a la UdL que impulsen la teva carrera a nivell internacional.",
+      "twitterTitle": "IAESTE Lleida - Pràctiques UDL per Estudiants",
+      "twitterDescription": "Impulsa la teva carrera amb pràctiques internacionals remunerades i un intercanvi cultural únic amb IAESTE Lleida."
+    },
     "hero": {
       "title": "Uneix-te a IAESTE Lleida",
       "subtitle": "Forma la teva carrera internacional",
@@ -113,6 +123,28 @@
     "contact": {
       "title": "Inicia el teu viatge IAESTE",
       "description": "Uneix-te als estudiants d'enginyeria de la UdL que han llançat carreres globals a través del nostre programa LC Lleida."
+    }
+  },
+  "CompanyPage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Empreses i Talent Internacional",
+      "description": "Col·labora amb IAESTE Lleida per accedir a talent tècnic internacional. Oferim oportunitats de pràctiques remunerades que enriqueixen la teva empresa amb noves idees i experiència global.",
+      "keywords": "empresa IAESTE, talent internacional, pràctiques remunerades, talent tècnic, col·laboració empresarial",
+      "ogTitle": "IAESTE Lleida - Empreses i Talent Internacional",
+      "ogDescription": "Uneix-te a IAESTE Lleida i connecta amb estudiants tècnics de tot el món per aportar innovació i diversitat a la teva empresa.",
+      "twitterTitle": "IAESTE Lleida - Empreses i Talent Internacional",
+      "twitterDescription": "Descobreix com la col·laboració amb IAESTE pot aportar talent internacionals i pràctiques remunerades per potenciar la teva empresa."
+    }
+  },
+  "IncommingPage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Informació per a Estudiants Internacionals Entrants",
+      "description": "Tota la informació que necessites per preparar la teva arribada a Lleida. Suport, requisits i consells per estudiants internacionals entrants amb IAESTE.",
+      "keywords": "estudiants internacionals entrants, incoming lleida, informació estudiants entrants, intercanvi cultural, suport per estudiants internacionals",
+      "ogTitle": "IAESTE Lleida - Benvinguts Estudiants Internacionals Entrants",
+      "ogDescription": "Prepara la teva experiència d'intercanvi a Lleida amb tota la informació i suport que ofereix IAESTE per estudiants internacionals entrants.",
+      "twitterTitle": "IAESTE Lleida - Estudiants Internacionals Entrants",
+      "twitterDescription": "Descobreix els detalls i el suport necessari per a la teva arribada a Lleida amb IAESTE."
     }
   },
   "UnderConstructionPage": {

@@ -9,74 +9,16 @@ import Footer from "@/components/common/footer";
 import "@repo/ui/globals.css";
 import "@/globals.css";
 import AnalyticsWrapper from "./analytics";
+import { generatePageMetadata } from "@/lib/metadata";
 
 const inter = Inter({ weight: "variable", subsets: ["latin"] });
 
-export async function generateMetadata({
+export function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
-
-  // Load localized metadata from the "Metadata" namespace
-  const t = await getTranslations({ locale, namespace: "Metadata" });
-  return {
-    title: t("title"),
-    description: t("description"),
-    alternates: {
-      canonical: "/ca",
-      languages: {
-        ca: "/ca",
-        es: "/es",
-        en: "/en",
-      },
-    },
-    openGraph: {
-      title: t("ogTitle"),
-      description: t("ogDescription"),
-      url: "https://iaestelleida.cat/",
-      type: "website",
-      images: [
-        {
-          url: "https://iaestelleida.cat/twitter.png",
-          width: 700,
-          height: 350,
-          alt: t("ogTitle"),
-        },
-      ],
-      // Set locale-specific OpenGraph locale code
-      locale: locale === "ca" ? "ca_ES" : locale === "es" ? "es_ES" : "en_US",
-      siteName: "IAESTE Lleida",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: t("twitterTitle"),
-      description: t("twitterDescription"),
-      creator: "@IAESTELCLleida",
-      site: "@IAESTELCLleida",
-      images: ["https://iaestelleida.cat/twitter.png"],
-    },
-    keywords: [
-      "IAESTE",
-      "internships",
-      "estudiants",
-      "Universitat de Lleida",
-      "Escola Politècnica Superior",
-      "intercanvis internacionals",
-    ],
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
-  };
+  return generatePageMetadata({ params, pageKey: "HomePage" });
 }
 
 export default async function LocaleLayout({

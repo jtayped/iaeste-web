@@ -1,13 +1,14 @@
 {
-  "Metadata": {
-    "title": "IAESTE Lleida | Pràcticas Internacionales",
-    "description": "Organización sin ánimo de lucro de la Escuela Politécnica Superior de la Universidad de Lleida.",
-    "ogTitle": "IAESTE Lleida - Prácticas Internacionales para Estudiantes",
-    "ogDescription": "Intercambiando estudiantes para experiencia laboral técnica en más de 100 países alrededor del mundo.",
-    "twitterTitle": "IAESTE Lleida - Prácticas Internacionales para Estudiantes",
-    "twitterDescription": "Intercambiando estudiantes para experiencia laboral técnica en más de 100 países alrededor del mundo."
-  },
   "HomePage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Pràcticas Internacionales",
+      "description": "Organización sin ánimo de lucro de la Escuela Politécnica Superior de la Universidad de Lleida.",
+      "keywords": "prácticas internacionales, prácticas globales, prácticas técnicas, intercambio cultural, IAESTE Lleida",
+      "ogTitle": "IAESTE Lleida - Prácticas Internacionales para Estudiantes",
+      "ogDescription": "Intercambiando estudiantes para experiencia laboral técnica en más de 100 países alrededor del mundo.",
+      "twitterTitle": "IAESTE Lleida - Prácticas Internacionales para Estudiantes",
+      "twitterDescription": "Intercambiando estudiantes para experiencia laboral técnica en más de 100 países alrededor del mundo."
+    },
     "hero": {
       "description": "Únete a una red global que conecta estudiantes talentosos con prácticas técnicas internacionales. Desarrolla tu carrera profesional mientras descubres nuevas culturas a través del programa de intercambio mundial de IAESTE.",
       "buttons": { "student": "Soy estudiante", "company": "Soy empresa" }
@@ -55,6 +56,15 @@
     }
   },
   "StudentsPage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Prácticas UDL para Estudiantes Internacionales",
+      "description": "Descubre prácticas internacionales remuneradas en la UdL con IAESTE Lleida. Impulsa tu carrera con experiencias globales y un enriquecedor intercambio cultural.",
+      "keywords": "prácticas udl, prácticas internacionales, estudiantes udl, intercambio cultural, crecimiento profesional",
+      "ogTitle": "IAESTE Lleida - Prácticas UDL para Estudiantes Internacionales",
+      "ogDescription": "Únete a IAESTE Lleida y accede a prácticas remuneradas en la UdL que potencian tu carrera a nivel internacional.",
+      "twitterTitle": "IAESTE Lleida - Prácticas UDL para Estudiantes",
+      "twitterDescription": "Impulsa tu carrera con prácticas internacionales remuneradas y un intercambio cultural único en IAESTE Lleida."
+    },
     "hero": {
       "title": "Únete a IAESTE Lleida",
       "subtitle": "Forma tu carrera internacional",
@@ -113,6 +123,30 @@
     "contact": {
       "title": "Inicia tu viaje IAESTE",
       "description": "Únete a los estudiantes de ingeniería de la UdL que han lanzado carreras globales a través de nuestro programa LC Lleida."
+    }
+  },
+  "IncommingPage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Información para Estudiantes Internacionales Entrantes",
+      "description": "Toda la información esencial que necesitas para preparar tu llegada a Lleida. Soporte, requisitos y consejos para estudiantes internacionales entrantes con IAESTE.",
+      "keywords": "estudiantes internacionales entrantes, incoming lleida, información para estudiantes, intercambio cultural, soporte para estudiantes internacionales",
+      "ogTitle": "IAESTE Lleida - Bienvenidos Estudiantes Internacionales Entrantes",
+      "ogDescription": "Prepara tu experiencia de intercambio en Lleida con toda la información y el soporte que ofrece IAESTE para estudiantes internacionales entrantes.",
+      "twitterTitle": "IAESTE Lleida - Estudiantes Internacionales Entrantes",
+      "twitterDescription": "Descubre los detalles y el apoyo necesario para tu llegada a Lleida con IAESTE."
+    }
+  },
+  "CompanyPage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Empresas y Talento Internacional",
+      "description": "Colabora con IAESTE Lleida para acceder a talento técnico internacional. Ofrecemos prácticas remuneradas que enriquecen tu empresa con nuevas ideas y experiencia global.",
+      "keywords": [
+        "empresa iaeste, talento internacional, prácticas remuneradas, talento técnico, colaboración empresarial"
+      ],
+      "ogTitle": "IAESTE Lleida - Empresas y Talento Internacional",
+      "ogDescription": "Únete a IAESTE Lleida y conecta con estudiantes técnicos de todo el mundo para aportar innovación y diversidad a tu empresa.",
+      "twitterTitle": "IAESTE Lleida - Empresas y Talento Internacional",
+      "twitterDescription": "Descubre cómo la colaboración con IAESTE puede aportar talento internacional y prácticas remuneradas para potenciar tu empresa."
     }
   },
   "UnderConstructionPage": {

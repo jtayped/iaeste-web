@@ -1,13 +1,14 @@
 {
-  "Metadata": {
-    "title": "IAESTE Lleida | International Internships",
-    "description": "Non-profit organization of the Polytechnic School of the University of Lleida.",
-    "ogTitle": "IAESTE Lleida - International Student Internships",
-    "ogDescription": "Exchanging students for technical work experience in 100+ countries around the world.",
-    "twitterTitle": "IAESTE Lleida - International Student Internships",
-    "twitterDescription": "Exchanging students for technical work experience in 100+ countries around the world."
-  },
   "HomePage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | International Internships",
+      "description": "Non-profit organization of the Polytechnic School of the University of Lleida.",
+      "keywords": "international internships, global internships, technical internships, cultural exchange, IAESTE Lleida",
+      "ogTitle": "IAESTE Lleida - International Student Internships",
+      "ogDescription": "Exchanging students for technical work experience in 100+ countries around the world.",
+      "twitterTitle": "IAESTE Lleida - International Student Internships",
+      "twitterDescription": "Exchanging students for technical work experience in 100+ countries around the world."
+    },
     "hero": {
       "description": "Join a global network connecting talented students with international technical internships. Experience professional growth while discovering new cultures through IAESTE's worldwide exchange program.",
       "buttons": { "student": "I'm a student", "company": "I'm a company" }
@@ -55,6 +56,15 @@
     }
   },
   "StudentsPage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | UDL Internships for International Students",
+      "description": "Discover remunerated international internships at UdL with IAESTE Lleida. Boost your career with global experiences and cultural exchange.",
+      "keywords": "udl internships, international internships, udl students, cultural exchange, professional growth",
+      "ogTitle": "IAESTE Lleida - UDL Internships for International Students",
+      "ogDescription": "Join IAESTE Lleida and access remunerated internships at UdL that enhance your career on an international level.",
+      "twitterTitle": "IAESTE Lleida - UDL Internships for Students",
+      "twitterDescription": "Boost your career with remunerated international internships and a unique cultural exchange at IAESTE Lleida."
+    },
     "hero": {
       "title": "Join IAESTE Lleida",
       "subtitle": "Shape your international career",
@@ -113,6 +123,28 @@
     "contact": {
       "title": "Start your IAESTE journey",
       "description": "Join UdL's engineering students who've launched global careers through our LC Lleida program."
+    }
+  },
+  "IncommingPage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Information for Incoming International Students",
+      "description": "All the essential information you need to prepare your arrival in Lleida. Support, requirements, and advice for incoming international students with IAESTE.",
+      "keywords": "incoming international students, incoming lleida, student information, cultural exchange, international student support",
+      "ogTitle": "IAESTE Lleida - Welcome Incoming International Students",
+      "ogDescription": "Prepare your exchange experience in Lleida with all the information and support provided by IAESTE for incoming international students.",
+      "twitterTitle": "IAESTE Lleida - Incoming International Students",
+      "twitterDescription": "Discover the details and support you need for your arrival in Lleida with IAESTE."
+    }
+  },
+  "CompanyPage": {
+    "Metadata": {
+      "title": "IAESTE Lleida | Companies & International Talent",
+      "description": "Partner with IAESTE Lleida to access international technical talent. We offer remunerated internships that enrich your company with new ideas and global experience.",
+      "keywords": "iaeste company, international talent, remunerated internships, technical talent, business collaboration",
+      "ogTitle": "IAESTE Lleida - Companies & International Talent",
+      "ogDescription": "Join IAESTE Lleida and connect with technical students from around the world to bring innovation and diversity to your company.",
+      "twitterTitle": "IAESTE Lleida - Companies & International Talent",
+      "twitterDescription": "Discover how partnering with IAESTE can bring international talent and remunerated internships to boost your company."
     }
   },
   "UnderConstructionPage": {
