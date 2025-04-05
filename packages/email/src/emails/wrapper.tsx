@@ -16,9 +16,7 @@ interface WrapperProps {
   previewText: string;
 }
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://iaeste-lleida.vercel.app";
+const baseUrl = "https://iaestelleida.cat";
 
 export const EmailWrapper = ({ children, previewText }: WrapperProps) => {
   return (

@@ -13,7 +13,7 @@
     "@repo/typescript-config": "*",
     "@repo/ui": "*",
     "browserslist": "^4.22.2",
-    "react-email": "^3.0.7",
+    "react-email": "^4.0.4",
     "resend": "^4.1.2"
   },
   "exports": {
