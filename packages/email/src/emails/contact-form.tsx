@@ -37,7 +37,7 @@ export const ContactFormEmail = ({
           href={`mailto:${email}`}
           className="bg-blue-900 text-center rounded-lg text-white w-full py-3"
         >
-          Contestar el {name}
+          Contestar el/la {name}
         </Button>
       </Section>
       <Text>
