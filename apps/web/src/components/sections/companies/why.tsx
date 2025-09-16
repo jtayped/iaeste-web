@@ -1,4 +1,3 @@
-import DivideSection from "@/components/common/sections/divide";
 import { Card } from "@repo/ui/card";
 import { H2, H3, Paragraph } from "@repo/ui/typography";
 import { useTranslations } from "next-intl";
