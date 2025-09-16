@@ -139,20 +139,40 @@
   "CompanyPage": {
     "Metadata": {
       "title": "IAESTE Lleida | Companies & International Talent",
-      "description": "Partner with IAESTE Lleida to access international technical talent. We offer remunerated internships that enrich your company with new ideas and global experience.",
-      "keywords": "iaeste company, international talent, remunerated internships, technical talent, business collaboration",
+      "description": "Collaborate with IAESTE Lleida to host skilled international students. Access remunerated internships that bring fresh ideas and global perspectives to your company.",
+      "keywords": "iaeste company, international talent, paid internships, technical internships, global collaboration",
       "ogTitle": "IAESTE Lleida - Companies & International Talent",
-      "ogDescription": "Join IAESTE Lleida and connect with technical students from around the world to bring innovation and diversity to your company.",
+      "ogDescription": "Partner with IAESTE Lleida to connect with motivated technical students from across the globe, driving innovation and diversity in your workplace.",
       "twitterTitle": "IAESTE Lleida - Companies & International Talent",
-      "twitterDescription": "Discover how partnering with IAESTE can bring international talent and remunerated internships to boost your company."
+      "twitterDescription": "Discover how partnering with IAESTE gives your company access to international technical students through remunerated internships."
     },
     "hero": {
       "title": "Partner with IAESTE Lleida",
-      "description": "Join our network of forward-thinking companies leveraging international internships to drive innovation and growth."
+      "subtitle": "Bring international expertise to your team",
+      "description": "Join IAESTE’s global exchange program and access talented students from 100+ countries. Host remunerated internships that enrich your company with innovation, cultural diversity, and professional excellence."
+    },
+    "why": {
+      "title": "Why collaborate with IAESTE?",
+      "subtitle": "International talent made simple",
+      "description": "By hosting IAESTE interns, your company gains access to motivated students trained in technical fields. The structured exchange system ensures quality, reliability, and support at every stage.",
+      "reasons": {
+        "talent": {
+          "title": "Global talent",
+          "description": "Access a pool of skilled students from leading universities worldwide."
+        },
+        "innovation": {
+          "title": "Innovation & diversity",
+          "description": "Gain fresh perspectives and creative solutions through cultural exchange."
+        },
+        "growth": {
+          "title": "Business growth",
+          "description": "Expand your company’s reach while contributing to international mobility."
+        }
+      }
     },
     "contact": {
-      "title": "Get in touch",
-      "description": "Contact us to explore how IAESTE Lleida can connect your company with top international technical talent."
+      "title": "Start collaborating with us",
+      "description": "Get in touch with IAESTE Lleida and discover how hosting an international intern can add value to your company."
     }
   },
   "UnderConstructionPage": {

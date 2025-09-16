@@ -139,14 +139,44 @@
   "CompanyPage": {
     "Metadata": {
       "title": "IAESTE Lleida | Empresas y Talento Internacional",
-      "description": "Colabora con IAESTE Lleida para acceder a talento técnico internacional. Ofrecemos prácticas remuneradas que enriquecen tu empresa con nuevas ideas y experiencia global.",
-      "keywords": [
-        "empresa iaeste, talento internacional, prácticas remuneradas, talento técnico, colaboración empresarial"
-      ],
+      "description": "Colabora con IAESTE Lleida para acoger estudiantes internacionales cualificados. Accede a prácticas remuneradas que aportan nuevas ideas y perspectivas globales a tu empresa.",
+      "keywords": "iaeste empresa, talento internacional, prácticas remuneradas, prácticas técnicas, colaboración global",
       "ogTitle": "IAESTE Lleida - Empresas y Talento Internacional",
-      "ogDescription": "Únete a IAESTE Lleida y conecta con estudiantes técnicos de todo el mundo para aportar innovación y diversidad a tu empresa.",
+      "ogDescription": "Colabora con IAESTE Lleida y conecta con estudiantes técnicos motivados de todo el mundo, impulsando la innovación y la diversidad en tu organización.",
       "twitterTitle": "IAESTE Lleida - Empresas y Talento Internacional",
-      "twitterDescription": "Descubre cómo la colaboración con IAESTE puede aportar talento internacional y prácticas remuneradas para potenciar tu empresa."
+      "twitterDescription": "Descubre cómo colaborar con IAESTE te da acceso a estudiantes técnicos internacionales a través de prácticas remuneradas."
+    },
+    "hero": {
+      "title": "Colabora con IAESTE Lleida",
+      "subtitle": "Aporta experiencia internacional a tu equipo",
+      "description": "Únete al programa global de intercambio de IAESTE y accede a estudiantes de más de 100 países. Acoge prácticas remuneradas que enriquecerán tu empresa con innovación, diversidad cultural y excelencia profesional."
+    },
+    "why": {
+      "title": "¿Por qué colaborar con IAESTE?",
+      "subtitle": "Talento internacional de forma sencilla",
+      "description": "Al acoger estudiantes de IAESTE, tu empresa accede a jóvenes motivados formados en áreas técnicas. Nuestro sistema de intercambio estructurado garantiza calidad, fiabilidad y apoyo en cada etapa.",
+      "reasons": {
+        "talent": {
+          "title": "Talento global",
+          "description": "Accede a estudiantes cualificados de las mejores universidades de todo el mundo."
+        },
+        "innovation": {
+          "title": "Innovación y diversidad",
+          "description": "Aporta nuevas perspectivas y soluciones creativas gracias al intercambio cultural."
+        },
+        "growth": {
+          "title": "Crecimiento empresarial",
+          "description": "Expande el alcance de tu empresa mientras contribuyes a la movilidad internacional."
+        },
+        "support": {
+          "title": "Apoyo completo",
+          "description": "IAESTE se encarga de la logística como visados y alojamiento para facilitar el proceso."
+        }
+      }
+    },
+    "contact": {
+      "title": "Empieza a colaborar con nosotros",
+      "description": "Contacta con IAESTE Lleida y descubre cómo acoger a un estudiante internacional puede aportar valor a tu empresa."
     }
   },
   "UnderConstructionPage": {
