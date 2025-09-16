@@ -149,6 +149,10 @@
     "hero": {
       "title": "Partner with IAESTE Lleida",
       "description": "Join our network of forward-thinking companies leveraging international internships to drive innovation and growth."
+    },
+    "contact": {
+      "title": "Get in touch",
+      "description": "Contact us to explore how IAESTE Lleida can connect your company with top international technical talent."
     }
   },
   "UnderConstructionPage": {

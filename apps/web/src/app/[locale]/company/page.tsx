@@ -2,7 +2,7 @@ import ContactFormBtn from "@/components/common/buttons/contact-form";
 import SendEmailBtn from "@/components/common/buttons/send-email";
 import Content from "@/components/common/sections/content";
 import HeroSection from "@/components/common/sections/hero";
-import ContactSection from "@/components/sections/students/contact";
+import ContactSection from "@/components/sections/companies/contact";
 import ButtonGroup from "@repo/ui/button-group";
 import { useTranslations } from "next-intl";
 
