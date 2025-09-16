@@ -66,6 +66,9 @@ const ContactForm = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     await sendContactFormEmail(values);
+    
+    // Clear the form after submission
+    form.reset();
   }
 
   const SubmitButtonContent = () => {
