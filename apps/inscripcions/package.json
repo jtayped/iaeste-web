@@ -1,0 +1,34 @@
+{
+  "name": "inscipcions",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "set PORT=3001 && npm run with-env -- next dev --turbopack",
+    "build": "npm run with-env -- npx next build",
+    "postinstall": "prisma generate --schema=../../prisma/schema",
+    "start": "next start",
+    "lint": "eslint",
+    "check-types": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env"
+  },
+  "dependencies": {
+    "@repo/ui": "*",
+    "geist": "^1.3.1",
+    "lucide-react": "^0.477.0",
+    "next": "^15.2.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@types/node": "^22.13.9",
+    "@types/react": "19.0.10",
+    "@types/react-dom": "19.0.4",
+    "dotenv-cli": "^8.0.0",
+    "eslint": "^9.22.0",
+    "tailwindcss": "^3.4.3",
+    "typescript": "5.8.2"
+  }
+}
