@@ -50,7 +50,7 @@ const HomePage = () => {
         </motion.div>
         <motion.div variants={childVariants}>
           <Paragraph className="mt-3">
-            Només et calen 2 minuts per inscriure’t. Omple el formulari i
+            Només son 2 minuts per inscriure’t. Omple el formulari i
             uneix-te a nosaltres!
           </Paragraph>
         </motion.div>

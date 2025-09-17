@@ -7,6 +7,7 @@ import { notificationRouter } from "./notification";
 import { userSchema } from "@repo/constants/validators/user";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
+import { appendUser } from "../../lib/google-sheets";
 
 export const userRouter = createTRPCRouter({
   notifications: notificationRouter,
@@ -43,6 +44,7 @@ export const userRouter = createTRPCRouter({
         const user = await ctx.db.inscripcions.create({
           data,
         });
+        await appendUser(data);
         return user;
       } catch (error) {
         if (
