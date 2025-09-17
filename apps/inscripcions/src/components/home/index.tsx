@@ -50,9 +50,8 @@ const HomePage = () => {
         </motion.div>
         <motion.div variants={childVariants}>
           <Paragraph className="mt-3">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Iure
-            quidem placeat, est illo alias pariatur illum quod tenetur! Aliquid,
-            quisquam?
+            Només et calen 2 minuts per inscriure’t. Omple el formulari i
+            uneix-te a nosaltres!
           </Paragraph>
         </motion.div>
         <motion.div variants={childVariants} className="mt-6 mx-auto">
