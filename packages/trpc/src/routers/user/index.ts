@@ -4,7 +4,7 @@ import { createTRPCRouter, publicProcedure } from "../../trpc";
 import { createListSchema } from "../../validators/list";
 import { transformSelectFields, transformOrderByClause } from "../../lib/list";
 import { notificationRouter } from "./notification";
-import { userSchema } from "../../validators/user";
+import { userSchema } from "@repo/constants/validators/user";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
 
