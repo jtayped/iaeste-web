@@ -59,7 +59,7 @@ export const groupRouter = createTRPCRouter({
       // Create the group with all the participatns
       const { id: groupId } = await ctx.db.group.create({
         data: {
-          participants: { create: participants?.map((id) => ({ id })) },
+          participants: { connect: participants?.map((id) => ({ id })) },
           ...groupData,
         },
         select: { id: true },
