@@ -18,7 +18,9 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable}`}>
       <body className="bg-primary/10">
         <TRPCReactProvider>
-          <div className="w-full h-screen flex justify-center">{children}</div>
+          <div className="w-full h-screen flex justify-center">
+            <div className="px-4 w-full md:w-[600px] mx-auto">{children}</div>
+          </div>
         </TRPCReactProvider>
       </body>
     </html>

@@ -1,9 +1,5 @@
-import UserForm from "@/components/form";
+import HomePage from "@/components/home";
 
 export default async function Home() {
-  return (
-    <div className="p-4 w-full md:w-[600px] mx-auto py-10">
-      <UserForm />
-    </div>
-  );
+  return <HomePage />;
 }
