@@ -2,12 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Confetti from "react-confetti";
-import { UserCheck } from "lucide-react";
+import { ArrowRight, UserCheck } from "lucide-react";
 import { H1, Paragraph } from "@repo/ui/typography";
 import { useSearchParams } from "next/navigation";
 import { ALREADY_SUBMITTED } from "@/constants/errors";
 import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
 import { AlertCircleIcon } from "lucide-react";
+import { Button } from "@repo/ui/button";
+import Link from "next/link";
 
 const SuccessPageComponent = () => {
   const searchParams = useSearchParams();
@@ -85,6 +87,19 @@ const SuccessPageComponent = () => {
           <Paragraph className="mt-4">
             Hem rebut la teva inscripció i ens posarem en contacte amb tu! :)
           </Paragraph>
+        </motion.div>
+        <motion.div
+          custom={1}
+          variants={textVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <Button asChild className="mt-6 group">
+            <Link href={"https://iaestelleida.cat"}>
+              Visita la nostra web
+              <ArrowRight className="group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </Button>
         </motion.div>
         {alreadySubmitted && (
           <Alert variant="destructive" className="mt-6">

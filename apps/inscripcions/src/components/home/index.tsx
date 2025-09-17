@@ -50,14 +50,13 @@ const HomePage = () => {
         </motion.div>
         <motion.div variants={childVariants}>
           <Paragraph className="mt-3">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Iure
-            quidem placeat, est illo alias pariatur illum quod tenetur! Aliquid,
-            quisquam?
+            Només et calen 2 minuts per inscriure’t. Omple el formulari i
+            uneix-te a nosaltres!
           </Paragraph>
         </motion.div>
         <motion.div variants={childVariants} className="mt-6 mx-auto">
-          <ButtonGroup>
-            <Button asChild className="px-12">
+          <ButtonGroup className="grid grid-cols-2 md:flex">
+            <Button asChild className="md:px-12">
               <Link href="/formulari">
                 <Check />
                 Inscriu-te
@@ -65,7 +64,7 @@ const HomePage = () => {
             </Button>
             <Button variant="outline" asChild>
               <Link href={"https://iaestelleida.cat"}>
-                <Globe /> Visita la nostra pagina
+                <Globe /> Més informació
               </Link>
             </Button>
           </ButtonGroup>
