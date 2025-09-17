@@ -104,8 +104,8 @@ const SuccessPageComponent = () => {
         {alreadySubmitted && (
           <Alert variant="destructive" className="mt-6">
             <AlertCircleIcon />
-            <AlertTitle>Ja estas inscrit</AlertTitle>
-            <AlertDescription>Sol et pots inscriure un cop!</AlertDescription>
+            <AlertTitle>Ja estás inscrit</AlertTitle>
+            <AlertDescription>Només et pots inscriure un cop!</AlertDescription>
           </Alert>
         )}
       </div>
