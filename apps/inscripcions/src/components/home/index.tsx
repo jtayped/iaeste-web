@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { motion } from "framer-motion";
+import ButtonGroup from "@repo/ui/button-group";
+import { Globe } from "lucide-react";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -53,13 +55,20 @@ const HomePage = () => {
             quisquam?
           </Paragraph>
         </motion.div>
-        <motion.div variants={childVariants}>
-          <Button asChild className="mt-6 mx-auto px-12">
-            <Link href="/formulari">
-              <Check />
-              Inscriu-te
-            </Link>
-          </Button>
+        <motion.div variants={childVariants} className="mt-6 mx-auto">
+          <ButtonGroup>
+            <Button asChild className="px-12">
+              <Link href="/formulari">
+                <Check />
+                Inscriu-te
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href={"https://iaestelleida.cat"}>
+                <Globe /> Visita la nostra pagina
+              </Link>
+            </Button>
+          </ButtonGroup>
         </motion.div>
       </motion.div>
     </motion.div>
