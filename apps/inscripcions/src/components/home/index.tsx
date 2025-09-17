@@ -56,8 +56,8 @@ const HomePage = () => {
           </Paragraph>
         </motion.div>
         <motion.div variants={childVariants} className="mt-6 mx-auto">
-          <ButtonGroup>
-            <Button asChild className="px-12">
+          <ButtonGroup className="grid grid-cols-2 md:flex">
+            <Button asChild className="md:px-12">
               <Link href="/formulari">
                 <Check />
                 Inscriu-te
@@ -65,7 +65,7 @@ const HomePage = () => {
             </Button>
             <Button variant="outline" asChild>
               <Link href={"https://iaestelleida.cat"}>
-                <Globe /> Visita la nostra pagina
+                <Globe /> Més informació
               </Link>
             </Button>
           </ButtonGroup>

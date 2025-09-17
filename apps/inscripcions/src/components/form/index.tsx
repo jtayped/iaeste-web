@@ -138,7 +138,7 @@ const UserForm = () => {
 
   return (
     <motion.div
-      className="py-10 px-4"
+      className="py-10"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
