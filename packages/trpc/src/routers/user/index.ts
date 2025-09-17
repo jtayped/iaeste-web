@@ -5,6 +5,8 @@ import { createListSchema } from "../../validators/list";
 import { transformSelectFields, transformOrderByClause } from "../../lib/list";
 import { notificationRouter } from "./notification";
 import { userSchema } from "../../validators/user";
+import { TRPCError } from "@trpc/server";
+import { Prisma } from "@prisma/client";
 
 export const userRouter = createTRPCRouter({
   notifications: notificationRouter,
@@ -36,12 +38,48 @@ export const userRouter = createTRPCRouter({
     }),
   create: publicProcedure
     .input(userSchema)
-    .mutation(async ({ ctx, input: { note, ...userData } }) => {
-      console.log(note);
+    .mutation(async ({ ctx, input: data }) => {
+      try {
+        const user = await ctx.db.inscripcions.create({
+          data,
+        });
+        return user;
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002"
+        ) {
+          // error.meta.target is usually the field(s) that violated the unique constraint
+          const target = error.meta?.target;
+          // target might be a string or array of strings
+          const fields = Array.isArray(target) ? target : [target];
 
-      const user = await ctx.db.user.create({
-        data: { ...userData },
-      });
-      return user;
+          // Decide which field(s) are in there
+          if (fields.includes("email")) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Email ja utilitzat. Si us plau, utilitza un altre.",
+            });
+          }
+          if (fields.includes("number")) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message:
+                "El número ja està registrat. Si us plau, utilitza un altre.",
+            });
+          }
+          // fallback: generic conflict
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Ja existeix una entrada amb un valor duplicat.",
+          });
+        }
+        // other errors
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Hi ha hagut un problema al crear l'usuari.",
+          cause: error,
+        });
+      }
     }),
 });

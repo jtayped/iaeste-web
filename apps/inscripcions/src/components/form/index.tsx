@@ -1,5 +1,6 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
+import Cookies from "js-cookie";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { User, userSchema } from "@repo/constants/validators/user";
@@ -13,10 +14,20 @@ import EmailField from "./fields/email";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
 import SurnameField from "./fields/surnames";
-import { CircleUserRound, LucideIcon, School, Send } from "lucide-react";
+import {
+  AlertCircleIcon,
+  CircleUserRound,
+  Loader2,
+  LucideIcon,
+  School,
+  Send,
+} from "lucide-react";
 import { H1, Paragraph } from "@repo/ui/typography";
-
 import { motion } from "framer-motion";
+import { api } from "@repo/trpc/react";
+import { useRouter } from "next/navigation";
+import { Alert, AlertTitle, AlertDescription } from "@repo/ui/alert";
+import { ALREADY_SUBMITTED } from "@/constants/errors";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -59,6 +70,16 @@ const Group = ({
 };
 
 const UserForm = () => {
+  const router = useRouter();
+
+  // Redirect if cookie already exists
+  useEffect(() => {
+    const submitted = Cookies.get("form_submitted");
+    if (submitted) {
+      router.replace(`/gracies?error=${ALREADY_SUBMITTED}`);
+    }
+  }, [router]);
+
   const form = useForm<User>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -72,8 +93,47 @@ const UserForm = () => {
     },
   });
 
-  function onSubmit(values: User) {
-    console.log(values);
+  const userMutation = api.user.create.useMutation({
+    onSuccess(data) {
+      // Save cookie (expires in 7 days)
+      Cookies.set("form_submitted", "true", { expires: 7 });
+      router.push(`/gracies?name=${data.name}`);
+    },
+    onError(error) {
+      const code = error.data?.code;
+      const message = error.message;
+
+      if (code === "CONFLICT") {
+        if (message.toLowerCase().includes("email")) {
+          form.setError("email", {
+            type: "manual",
+            message: "Aquest correu ja està registrat.",
+          });
+        } else if (
+          message.toLowerCase().includes("número") ||
+          message.toLowerCase().includes("numero")
+        ) {
+          form.setError("number", {
+            type: "manual",
+            message: "Aquest número ja està registrat.",
+          });
+        } else {
+          form.setError("root", {
+            type: "manual",
+            message: message || "Ja existeix una entrada duplicada.",
+          });
+        }
+      } else {
+        form.setError("root", {
+          type: "manual",
+          message: "Hi ha hagut un problema al inscriure't! :(",
+        });
+      }
+    },
+  });
+
+  async function onSubmit(values: User) {
+    await userMutation.mutateAsync(values);
   }
 
   return (
@@ -117,10 +177,27 @@ const UserForm = () => {
             </motion.div>
 
             <motion.div variants={childVariants}>
-              <Button className="w-full" type="submit">
-                Inscriu-me
+              <Button
+                className="w-full"
+                type="submit"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  "Inscriu-me"
+                )}
               </Button>
             </motion.div>
+            {form.formState.errors.root && (
+              <Alert variant="destructive">
+                <AlertCircleIcon />
+                <AlertTitle>Ups!</AlertTitle>
+                <AlertDescription>
+                  {form.formState.errors.root?.message}
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         </form>
       </Form>
