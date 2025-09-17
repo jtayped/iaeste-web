@@ -1,0 +1,22 @@
+{
+  "name": "@repo/constants",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.7.2",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@repo/db": "*"
+  },
+  "exports": {
+    "./*": "./src/constants/*.ts",
+    "./types/*": "./src/types/*.ts",
+    "./validators/*": "./src/validators/*.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

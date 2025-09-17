@@ -1,4 +1,4 @@
-import { DEGREE_OPTIONS } from "@/constants/studies";
+import { DEGREE_OPTIONS } from "../constants/studies";
 import { z } from "zod";
 
 export const userSchema = z.object({

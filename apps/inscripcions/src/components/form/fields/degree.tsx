@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { User } from "@/schemas/user";
-import { DEGREE_OPTIONS } from "@/constants/studies";
-import { DegreeOption } from "@/types/studies";
+import { User } from "@repo/constants/validators/user";
+import { DEGREE_OPTIONS } from "@repo/constants/studies";
+import { DegreeOption } from "@repo/constants/types/studies";
 
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";

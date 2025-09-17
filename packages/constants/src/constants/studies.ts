@@ -1,0 +1,16 @@
+export const DEGREE_OPTIONS = [
+  "Doble Grau: Grau en Enginyeria en Organització Industrial i Logística i Grau en Administració i Direcció d'Empreses",
+  "Doble Grau: Grau en Enginyeria Informàtica i Grau en Administració i Direcció d'Empreses",
+  "Doble Grau: Grau en Enginyeria Mecànica i Grau en Enginyeria de l'Energia i Sostenibilitat",
+  "Grau en Arquitectura Tècnica i Edificació",
+  "Grau en Disseny Digital i Tecnologies Creatives",
+  "Grau en Enginyeria de l'Energia i Sostenibilitat",
+  "Grau en Enginyeria Electrònica Industrial i Automàtica",
+  "Grau en Enginyeria en Organització Industrial i Logística",
+  "Grau en Enginyeria Informàtica (Igualada)",
+  "Grau en Enginyeria Informàtica (Lleida)",
+  "Grau en Enginyeria Mecànica",
+  "Grau en Enginyeria Química",
+  "Grau en Tècniques d'Interacció Digital i de Computació",
+  "Altre",
+] as const;

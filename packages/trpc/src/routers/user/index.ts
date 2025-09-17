@@ -4,6 +4,7 @@ import { createTRPCRouter, publicProcedure } from "../../trpc";
 import { createListSchema } from "../../validators/list";
 import { transformSelectFields, transformOrderByClause } from "../../lib/list";
 import { notificationRouter } from "./notification";
+import { userSchema } from "../../validators/user";
 
 export const userRouter = createTRPCRouter({
   notifications: notificationRouter,
@@ -32,5 +33,15 @@ export const userRouter = createTRPCRouter({
         .withPages(pagination);
 
       return result;
+    }),
+  create: publicProcedure
+    .input(userSchema)
+    .mutation(async ({ ctx, input: { note, ...userData } }) => {
+      console.log(note);
+
+      const user = await ctx.db.user.create({
+        data: { ...userData },
+      });
+      return user;
     }),
 });

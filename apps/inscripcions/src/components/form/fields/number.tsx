@@ -1,4 +1,4 @@
-import { User } from "@/schemas/user";
+import { User } from "@repo/constants/validators/user";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import {

@@ -2,7 +2,7 @@
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { User, userSchema } from "@/schemas/user";
+import { User, userSchema } from "@repo/constants/validators/user";
 import { Form } from "@repo/ui/form";
 import NameField from "./fields/name";
 import DegreeField from "./fields/degree";
@@ -78,7 +78,7 @@ const UserForm = () => {
           <Card>
             <NoteField form={form} />
           </Card>
-          <Button className="w-full">Envia</Button>
+          <Button className="w-full" type="submit">Inscriu-me</Button>
         </div>
       </form>
     </Form>

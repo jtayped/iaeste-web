@@ -1,4 +1,4 @@
-import { User } from "@/schemas/user";
+import { User } from "@repo/constants/validators/user";
 import {
   FormControl,
   FormField,
