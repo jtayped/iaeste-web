@@ -1,7 +1,11 @@
 model User {
     id            String    @id @default(cuid())
     name          String?
-    email         String?   @unique
+    surnames      String?
+    email         String    @unique
+    number        String?   @unique
+    degree        String?
+    year          Int?
     emailVerified DateTime?
     image         String?
     accounts      Account[]
@@ -25,4 +29,15 @@ model User {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model Inscripcions {
+    id       Int     @id @default(autoincrement())
+    name     String
+    surnames String
+    email    String  @unique
+    number   String  @unique
+    degree   String
+    year     Int
+    note     String?
 }
