@@ -16,6 +16,7 @@ export const userSchema = z.object({
     })
     .min(1, "L'any ha de ser com a mínim 1")
     .max(6, "L'any ha d'estar entre 1 i 6"),
+  previousMember: z.boolean(),
   note: z.string().optional(),
 });
 
