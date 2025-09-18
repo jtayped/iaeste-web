@@ -32,12 +32,13 @@ model User {
 }
 
 model Inscripcions {
-    id       Int     @id @default(autoincrement())
-    name     String
-    surnames String
-    email    String  @unique
-    number   String  @unique
-    degree   String
-    year     Int
-    note     String?
+    id             Int     @id @default(autoincrement())
+    name           String
+    surnames       String
+    email          String  @unique
+    number         String  @unique
+    degree         String
+    year           Int
+    previousMember Boolean
+    note           String?
 }
