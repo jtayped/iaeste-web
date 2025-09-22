@@ -229,11 +229,19 @@
     },
     "name": {
       "label": "Nom",
-      "placeholder": "John Doe",
+      "placeholder": "John",
       "description": "",
       "required": "El nom és obligatori",
       "min": "El nom ha de tenir almenys {min} caràcters",
       "max": "El nom no pot excedir els {max} caràcters"
+    },
+    "lastname": {
+      "label": "Cognoms",
+      "placeholder": "Doe",
+      "description": "",
+      "required": "Els cognoms és obligatori",
+      "min": "Els cognoms han de tenir almenys {min} caràcters",
+      "max": "Els cognoms no poden excedir els {max} caràcters"
     },
     "subject": {
       "label": "Assumpte",
@@ -250,6 +258,11 @@
       "required": "El missatge és obligatori",
       "min": "El missatge ha de tenir almenys {min} caràcters",
       "max": "El missatge no pot excedir els {max} caràcters"
+    },
+    "submitBtn": {
+      "default": "Enviar",
+      "loading": "Enviant...",
+      "success": "Missatge enviat!"
     }
   },
   "outgoings": {

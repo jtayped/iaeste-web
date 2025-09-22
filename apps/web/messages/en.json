@@ -225,11 +225,19 @@
     },
     "name": {
       "label": "Name",
-      "placeholder": "John Doe",
+      "placeholder": "John",
       "description": "",
       "required": "Name is required",
       "min": "Name must be at least {min} characters long",
       "max": "Name cannot exceed {max} characters"
+    },
+    "lastname": {
+      "label": "Last Name",
+      "placeholder": "Doe",
+      "description": "",
+      "required": "Last name is required",
+      "min": "Last name must be at least {min} characters long",
+      "max": "Last name cannot exceed {max} characters"
     },
     "subject": {
       "label": "Subject",
@@ -246,6 +254,11 @@
       "required": "Message is required",
       "min": "Message must be at least {min} characters long",
       "max": "Message cannot exceed {max} characters"
+    },
+    "submitBtn": {
+      "default": "Send",
+      "loading": "Sending...",
+      "success": "Message sent!"
     }
   },
   "outgoings": {

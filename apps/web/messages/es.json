@@ -229,11 +229,19 @@
     },
     "name": {
       "label": "Nombre",
-      "placeholder": "John Doe",
+      "placeholder": "John",
       "description": "",
       "required": "El nombre es obligatorio",
       "min": "El nombre debe tener al menos {min} caracteres",
       "max": "El nombre no puede exceder los {max} caracteres"
+    },
+    "lastname": {
+      "label": "Apellidos",
+      "placeholder": "Doe",
+      "description": "",
+      "required": "Los apellidos son obligatorios",
+      "min": "Los apellidos deben tener al menos {min} caracteres",
+      "max": "Los apellidos no pueden exceder los {max} caracteres"
     },
     "subject": {
       "label": "Asunto",
@@ -250,6 +258,11 @@
       "required": "El mensaje es obligatorio",
       "min": "El mensaje debe tener al menos {min} caracteres",
       "max": "El mensaje no puede exceder los {max} caracteres"
+    },
+    "submitBtn": {
+      "default": "Enviar",
+      "loading": "Enviando...",
+      "success": "Mensaje enviado!"
     }
   },
   "outgoings": {

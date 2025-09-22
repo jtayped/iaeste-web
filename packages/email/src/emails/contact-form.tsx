@@ -6,11 +6,13 @@ interface ContactFormProps {
   name: string;
   subject: string;
   message: string;
+  lastname: string;
 }
 
 export const ContactFormEmail = ({
   email,
   name,
+  lastname,
   subject,
   message,
 }: ContactFormProps) => {
@@ -21,8 +23,11 @@ export const ContactFormEmail = ({
       <Heading className="mt-4">Nou missatge</Heading>
       <Text>Holaaaa,</Text>
       <Text>
-        El/la <b>{name}</b> ha fet servir el formulari de la web. Ha enviat el
-        següent missatge:
+        El/la{" "}
+        <b>
+          {name} {lastname}
+        </b>{" "}
+        ha fet servir el formulari de la web. Ha enviat el següent missatge:
       </Text>
       <blockquote>
         <p className="text-lg mb-0">

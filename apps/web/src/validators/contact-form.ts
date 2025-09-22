@@ -22,6 +22,16 @@ const useFormSchema = () => {
       .max(20, {
         message: t("contact.name.max", { max: 20 }),
       }),
+    lastname: z
+      .string({
+        required_error: t("contact.lastname.required"),
+      })
+      .min(2, {
+        message: t("contact.lastname.min", { min: 2 }),
+      })
+      .max(20, {
+        message: t("contact.lastname.max", { max: 20 }),
+      }),
     subject: z
       .string({
         required_error: t("contact.subject.required"),
