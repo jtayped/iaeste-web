@@ -223,7 +223,7 @@
     "email": {
       "label": "Email",
       "placeholder": "johndoe@gmail.com",
-      "description": "",
+      "description": "Et respondrem a aquest correu.",
       "invalid": "Si us plau, introdueix una adreça d'email vàlida",
       "required": "L'email és obligatori"
     },
@@ -246,7 +246,7 @@
     "subject": {
       "label": "Assumpte",
       "placeholder": "El teu assumpte",
-      "description": "",
+      "description": "Descriu la teva consulta breument",
       "required": "L'assumpte és obligatori",
       "min": "L'assumpte ha de tenir almenys {min} caràcters",
       "max": "L'assumpte no pot excedir els {max} caràcters"

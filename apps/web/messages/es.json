@@ -223,7 +223,7 @@
     "email": {
       "label": "Email",
       "placeholder": "johndoe@gmail.com",
-      "description": "",
+      "description": "Te responderemos a este correo",
       "invalid": "Por favor, introduce una dirección de email válida",
       "required": "El email es obligatorio"
     },
@@ -246,7 +246,7 @@
     "subject": {
       "label": "Asunto",
       "placeholder": "Tu asunto",
-      "description": "",
+      "description": "Describe tu consulta brevemente",
       "required": "El asunto es obligatorio",
       "min": "El asunto debe tener al menos {min} caracteres",
       "max": "El asunto no puede exceder los {max} caracteres"

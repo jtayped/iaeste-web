@@ -219,7 +219,7 @@
     "email": {
       "label": "Email",
       "placeholder": "johndoe@gmail.com",
-      "description": "",
+      "description": "We will answer you at this email.",
       "invalid": "Please enter a valid email address",
       "required": "Email is required"
     },
@@ -242,7 +242,7 @@
     "subject": {
       "label": "Subject",
       "placeholder": "Your subject",
-      "description": "",
+      "description": "Describe your inquiry briefly",
       "required": "Subject is required",
       "min": "Subject must be at least {min} characters long",
       "max": "Subject cannot exceed {max} characters"
