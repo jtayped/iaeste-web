@@ -62,7 +62,7 @@ const Navigation = ({ className = "" }: { className?: string }) => {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/company" legacyBehavior passHref>
+          <Link href="/company">
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               {t("groups.companies")}
             </NavigationMenuLink>

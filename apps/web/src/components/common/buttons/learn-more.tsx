@@ -23,7 +23,9 @@ const LearnMoreBtn = ({
         target="_blank" // Opens the link in a new tab
         rel="noopener noreferrer" // Security best practice
       >
-        {text ?? t("learn-more")} {icon && <ArrowUpRight />}
+        <>
+          {text ?? t("learn-more")} {icon && <ArrowUpRight />}
+        </>
       </Link>
     </Button>
   );
