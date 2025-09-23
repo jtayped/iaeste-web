@@ -14,6 +14,8 @@ export const userSchema = z.object({
       invalid_type_error: "L'any ha de ser un número",
       required_error: "L'any és obligatori",
     })
+    .nonnegative("L'any no pot ser negatiu")
+    .int("L'any ha de ser un número enter")
     .min(1, "L'any ha de ser com a mínim 1")
     .max(6, "L'any ha d'estar entre 1 i 6"),
   previousMember: z.boolean(),
