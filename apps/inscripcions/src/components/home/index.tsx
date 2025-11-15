@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@repo/ui/button";
 import { H1, Paragraph } from "@repo/ui/typography";
-import { Check } from "lucide-react";
+import { Check, Send } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -27,7 +27,7 @@ const childVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
 
-const HomePage = () => {
+const HomePage = ({ state }: { state: "on" | "off" }) => {
   return (
     <motion.div
       className="h-screen flex items-center"
@@ -46,21 +46,33 @@ const HomePage = () => {
           />
         </motion.div>
         <motion.div variants={childVariants}>
-          <H1>Inscriu-te a IAESTE Lleida!</H1>
+          <H1>
+            {state === "on"
+              ? "Inscriu-te a IAESTE Lleida!"
+              : "Ha finalitzat el plaç per inscriure't a IAESTE :("}
+          </H1>
         </motion.div>
         <motion.div variants={childVariants}>
           <Paragraph className="mt-3">
-            Només son 2 minuts per inscriure’t. Omple el formulari i
-            uneix-te a nosaltres!
+            {state === "on"
+              ? "Només son 2 minuts per inscriure’t. Omple el formulari i uneix-te a nosaltres!"
+              : "Contacta amb nosaltres per correu o visita la nostra web!"}
           </Paragraph>
         </motion.div>
         <motion.div variants={childVariants} className="mt-6 mx-auto">
           <ButtonGroup className="grid grid-cols-2 md:flex">
             <Button asChild className="md:px-12">
-              <Link href="/formulari">
-                <Check />
-                Inscriu-te
-              </Link>
+              {state == "on" ? (
+                <Link href="/formulari">
+                  <Check />
+                  Inscriu-te
+                </Link>
+              ) : (
+                <Link href="mailto:iaeste@udl.cat?subject=Inscripci%C3%B3%20a%20IAESTE%20Lleida">
+                  <Send />
+                  Contacta&apos;ns
+                </Link>
+              )}
             </Button>
             <Button variant="outline" asChild>
               <Link href={"https://iaestelleida.cat"}>

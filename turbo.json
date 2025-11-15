@@ -27,7 +27,8 @@
     "PORT",
     "SHEETS_PROJECT_ID",
     "SHEETS_PRIVATE_KEY",
-    "SHEETS_CLIENT_EMAIL"
+    "SHEETS_CLIENT_EMAIL",
+    "INSCRIPCIONS_STATE"
   ],
   "globalPassThroughEnv": [
     "NODE_ENV",
