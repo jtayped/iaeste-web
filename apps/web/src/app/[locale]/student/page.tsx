@@ -7,6 +7,7 @@ import Team from "@/components/sections/students/team";
 import WhyIaeste from "@/components/sections/students/why";
 import ButtonGroup from "@repo/ui/button-group";
 import { useTranslations } from "next-intl";
+import Inscripcions from "@/components/sections/students/inscripcions";
 
 const StudentsPage = () => {
   const t = useTranslations("StudentsPage.hero");
@@ -24,7 +25,8 @@ const StudentsPage = () => {
           </ButtonGroup>
         }
       />
-      <Content>
+      <Content className="pt-0">
+        <Inscripcions />
         <WhyIaeste />
         <Team />
         <ContactSection />

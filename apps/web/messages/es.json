@@ -70,6 +70,11 @@
       "subtitle": "Forma tu carrera internacional",
       "description": "Da el primer paso hacia una experiencia internacional enriquecedora. Únete a IAESTE Lleida para acceder a oportunidades globales y desarrollarte profesional y personalmente."
     },
+    "registrations": {
+      "title": "¡Las inscripciones están abiertas!",
+      "description": "¡Rellena el formulario para formar parte de nuestro equipo!",
+      "button": "Inscríbete"
+    },
     "why-iaeste": {
       "title": "¿Por qué IAESTE?",
       "subtitle": "Movilidad global estructurada",

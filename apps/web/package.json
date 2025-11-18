@@ -14,6 +14,7 @@
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",
     "@motionone/utils": "^10.18.0",
+    "@repo/constants": "*",
     "@repo/email": "*",
     "@repo/ui": "*",
     "@vercel/analytics": "^1.5.0",
