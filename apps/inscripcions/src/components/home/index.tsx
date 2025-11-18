@@ -8,6 +8,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import ButtonGroup from "@repo/ui/button-group";
 import { Globe } from "lucide-react";
+import { INSCRIPCIONS_STATE } from "@repo/constants/inscripcions";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -27,7 +28,7 @@ const childVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
 
-const HomePage = ({ state }: { state: "on" | "off" }) => {
+const HomePage = () => {
   return (
     <motion.div
       className="h-screen flex items-center"
@@ -47,14 +48,14 @@ const HomePage = ({ state }: { state: "on" | "off" }) => {
         </motion.div>
         <motion.div variants={childVariants}>
           <H1>
-            {state === "on"
+            {INSCRIPCIONS_STATE === "on"
               ? "Inscriu-te a IAESTE Lleida!"
               : "Ha finalitzat el plaç per inscriure't a IAESTE :("}
           </H1>
         </motion.div>
         <motion.div variants={childVariants}>
           <Paragraph className="mt-3">
-            {state === "on"
+            {INSCRIPCIONS_STATE === "on"
               ? "Només son 2 minuts per inscriure’t. Omple el formulari i uneix-te a nosaltres!"
               : "Contacta amb nosaltres per correu o visita la nostra web!"}
           </Paragraph>
@@ -62,7 +63,7 @@ const HomePage = ({ state }: { state: "on" | "off" }) => {
         <motion.div variants={childVariants} className="mt-6 mx-auto">
           <ButtonGroup className="grid grid-cols-2 md:flex">
             <Button asChild className="md:px-12">
-              {state == "on" ? (
+              {INSCRIPCIONS_STATE == "on" ? (
                 <Link href="/formulari">
                   <Check />
                   Inscriu-te
