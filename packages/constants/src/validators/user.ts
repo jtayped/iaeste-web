@@ -4,7 +4,10 @@ import { z } from "zod";
 export const userSchema = z.object({
   name: z.string().min(2, "El nom ha de tenir almenys 2 caràcters"),
   surnames: z.string().min(2, "Els cognoms han de tenir almenys 2 caràcters"),
-  email: z.string().email("Adreça de correu electrònic no vàlida"),
+  email: z
+    .string()
+    .email("Adreça de correu electrònic no vàlida")
+    .refine((e) => e.endsWith("udl.cat"), "El correu té que ser de la uni :("),
   number: z.string().min(1, "El número és obligatori"),
   degree: z.enum(DEGREE_OPTIONS, {
     errorMap: () => ({ message: "Has de seleccionar un grau" }),

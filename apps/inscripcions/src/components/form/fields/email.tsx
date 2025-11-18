@@ -17,10 +17,10 @@ const EmailField = ({ form }: { form: UseFormReturn<User> }) => {
       name="email"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Correu</FormLabel>
+          <FormLabel>Correu de la uni</FormLabel>
           <FormControl>
             <Input
-              placeholder="johndoe@gmail.com"
+              placeholder="johndoe@alumnes.udl.cat"
               autoComplete="email"
               {...field}
             />
