@@ -40,8 +40,8 @@ const Hero = () => {
                 >
                   <Image
                     src={"/logos/icon-lleida-white.png"}
-                    height={32}
-                    width={32}
+                    height={64}
+                    width={64}
                     alt="IAESTE Lleida's logo"
                     className="lg:w-12 aspect-square"
                   />
