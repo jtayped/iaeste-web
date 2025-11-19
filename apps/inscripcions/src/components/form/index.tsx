@@ -96,41 +96,9 @@ const UserForm = () => {
   });
 
   const userMutation = api.user.create.useMutation({
-    onSuccess(data) {
-      // Save cookie (expires in 7 days)
-      Cookies.set("form_submitted", "true", { expires: 7 });
-      router.push(`/gracies?name=${data.name}`);
-    },
-    onError(error) {
-      const code = error.data?.code;
-      const message = error.message;
-
-      if (code === "CONFLICT") {
-        if (message.toLowerCase().includes("email")) {
-          form.setError("email", {
-            type: "manual",
-            message: "Aquest correu ja està registrat.",
-          });
-        } else if (
-          message.toLowerCase().includes("número") ||
-          message.toLowerCase().includes("numero")
-        ) {
-          form.setError("number", {
-            type: "manual",
-            message: "Aquest número ja està registrat.",
-          });
-        } else {
-          form.setError("root", {
-            type: "manual",
-            message: message || "Ja existeix una entrada duplicada.",
-          });
-        }
-      } else {
-        form.setError("root", {
-          type: "manual",
-          message: "Hi ha hagut un problema al inscriure't! :(",
-        });
-      }
+    onSuccess() {
+      Cookies.set("form_submitted", "true");
+      router.push(`/gracies?name=${form.getFieldState("name")}`);
     },
   });
 

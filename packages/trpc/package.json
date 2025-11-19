@@ -8,7 +8,6 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0",
     "@repo/email": "*",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
@@ -17,7 +16,6 @@
     "@trpc/server": "^11.0.0-rc.446",
     "google-auth-library": "^10.3.0",
     "googleapis": "^160.0.0",
-    "next-auth": "^5.0.0-beta.25",
     "superjson": "^2.2.2"
   },
   "exports": {

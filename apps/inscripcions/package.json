@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "set PORT=3003 && npm run with-env -- next dev --turbopack",
     "build": "npm run with-env -- npx next build",
-    "postinstall": "prisma generate --schema=../../prisma/schema",
     "start": "next start",
     "lint": "eslint",
     "check-types": "tsc --noEmit",
