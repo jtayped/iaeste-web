@@ -43,7 +43,7 @@ const Hero = () => {
                     height={64}
                     width={64}
                     alt="IAESTE Lleida's logo"
-                    className="lg:w-12 aspect-square"
+                    className="size-8 lg:size-12"
                   />
                 </motion.div>
               </div>
