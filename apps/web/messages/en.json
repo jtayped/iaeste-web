@@ -175,6 +175,13 @@
         }
       }
     },
+    "testimonial": {
+      "tag": "Featured",
+      "title": "Factory Data's experience with Jonathan.",
+      "text": "Excellent experience with Jonathan Gruss during his IAESTE internship in Summer 2021. He contributed to a demand-analysis project using Apache Spark, worked independently, solved problems creatively, and integrated perfectly with the team. We highly recommend him.",
+      "author": "Joan Cabós",
+      "role": "CEO @ Factory Data"
+    },
     "contact": {
       "title": "Start collaborating with us",
       "description": "Get in touch with IAESTE Lleida and discover how hosting an international intern can add value to your company."

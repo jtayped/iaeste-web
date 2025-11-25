@@ -4,6 +4,7 @@ import Content from "@/components/common/sections/content";
 import HeroSection from "@/components/common/sections/hero";
 import Collaborators from "@/components/sections/collaborators";
 import ContactSection from "@/components/sections/companies/contact";
+import Testimonial from "@/components/sections/companies/testimonial";
 import WhySection from "@/components/sections/companies/why";
 import ButtonGroup from "@repo/ui/button-group";
 import { useTranslations } from "next-intl";
@@ -27,6 +28,7 @@ const CompaniesPage = () => {
       <Content>
         <Collaborators />
         <WhySection />
+        <Testimonial />
         <ContactSection />
       </Content>
     </main>

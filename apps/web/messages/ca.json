@@ -168,6 +168,13 @@
         }
       }
     },
+    "testimonial": {
+      "tag": "Destacat",
+      "title": "L'experiència de Factory Data amb en Jonathan.",
+      "text": "Excel·lent experiència amb en Jonathan Gruss durant les seves pràctiques IAESTE l'estiu del 2021. Va contribuir en un projecte d'anàlisi de demanda utilitzant Apache Spark, va treballar de manera independent, va resoldre problemes amb creativitat i es va integrar perfectament a l'equip. El recomanem encaridament.",
+      "author": "Joan Cabós",
+      "role": "CEO @ Factory Data"
+    },
     "contact": {
       "title": "Comença a col·laborar amb nosaltres",
       "description": "Posa’t en contacte amb IAESTE Lleida i descobreix com acollir un estudiant internacional pot aportar valor a la teva empresa."
