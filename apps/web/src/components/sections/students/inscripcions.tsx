@@ -5,9 +5,12 @@ import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import React from "react";
+import { INSCRIPCIONS_STATE } from "@repo/constants/inscripcions";
 
 const Inscripcions = () => {
   const t = useTranslations("StudentsPage.registrations");
+
+  if (INSCRIPCIONS_STATE !== "on") return;
 
   return (
     <Section className="flex justify-center bg-primary py-6">
