@@ -59,7 +59,14 @@ const Footer = () => {
       <Section>
         <div className="border-t border-white/20 mt-8 pt-4 text-center text-sm">
           <p>
-            © {new Date().getFullYear()} {legalName}. All rights reserved.
+            © {new Date().getFullYear()} {legalName}. All rights reserved. |
+            Made by{" "}
+            <Link
+              href="https://www.linkedin.com/in/jtayped/"
+              className="underline underline-offset-2"
+            >
+              Joel Taylor Pedrós
+            </Link>
           </p>
         </div>
       </Section>
