@@ -16,6 +16,25 @@ jobs:
   verify:
     name: Lint, types, tests
     runs-on: ubuntu-latest
+    # @repo/db's repository suite runs against a real Postgres, never mocks
+    # (see IA-11's acceptance criteria) — this service container is that
+    # database for CI. IA-70 is where a fuller integration-test setup is
+    # planned, but the tests already exist and already run in `npm run
+    # test`, so this can't wait for IA-70 without leaving CI broken.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: iaeste_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -39,6 +58,8 @@ jobs:
 
       - name: Tests
         run: npm run test
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/iaeste_test
 
       # Catches a `.env.example` that has drifted from what the schemas in
       # @repo/env (and apps/api's own process.env reads) actually expect —
