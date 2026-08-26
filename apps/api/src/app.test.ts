@@ -3,31 +3,15 @@ import { describe, it } from "node:test";
 
 import type { Registration } from "@repo/constants/validators/registration";
 
-import { createApp } from "./app";
-import type { RegistrationRepository } from "./repositories/registrations";
-
-const validRegistration: Registration = {
-  name: "Joan",
-  surnames: "Garcia Serra",
-  email: "joan@alumnes.udl.cat",
-  phone: "+34 623 32 42 34",
-  degree: "Grau en Informàtica (Lleida)",
-  year: 2,
-  previousMember: false,
-  note: "Hola",
-};
-
-function createRepository(
-  create: RegistrationRepository["create"] = async () => undefined,
-): RegistrationRepository {
-  return { create };
-}
-
-const quietLogger = { error() {} };
-
-function createTestApp(registrationRepository = createRepository()) {
-  return createApp({ registrationRepository, logger: quietLogger });
-}
+import {
+  RegistrationAlreadyExistsError,
+  RegistrationsClosedError,
+} from "./repositories/registrations";
+import {
+  createRepository,
+  createTestApp,
+  validRegistration,
+} from "./test-support/app";
 
 describe("API", () => {
   it("reports its health", async () => {
@@ -58,6 +42,7 @@ describe("API", () => {
     const app = createTestApp(
       createRepository(async (registration) => {
         saved = registration;
+        return { id: "registration_123" };
       }),
     );
     const response = await app.request("/v1/registrations", {
@@ -68,7 +53,44 @@ describe("API", () => {
 
     assert.equal(response.status, 201);
     assert.deepEqual(saved, validRegistration);
-    assert.deepEqual(await response.json(), { status: "created" });
+    assert.deepEqual(await response.json(), {
+      status: "created",
+      id: "registration_123",
+    });
+  });
+
+  it("reports registration as closed distinctly from other repository errors", async () => {
+    const app = createTestApp(
+      createRepository(async () => {
+        throw new RegistrationsClosedError();
+      }),
+    );
+    const response = await app.request("/v1/registrations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(validRegistration),
+    });
+    const body = (await response.json()) as { error: { code: string } };
+
+    assert.equal(response.status, 409);
+    assert.equal(body.error.code, "CONFLICT");
+  });
+
+  it("reports a duplicate registration distinctly from a closed campaign", async () => {
+    const app = createTestApp(
+      createRepository(async () => {
+        throw new RegistrationAlreadyExistsError();
+      }),
+    );
+    const response = await app.request("/v1/registrations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(validRegistration),
+    });
+    const body = (await response.json()) as { error: { code: string } };
+
+    assert.equal(response.status, 409);
+    assert.equal(body.error.code, "ALREADY_REGISTERED");
   });
 
   it("rejects invalid registration data", async () => {
@@ -76,6 +98,7 @@ describe("API", () => {
     const app = createTestApp(
       createRepository(async () => {
         saveCount += 1;
+        return { id: "registration_123" };
       }),
     );
     const response = await app.request("/v1/registrations", {

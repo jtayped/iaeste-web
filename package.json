@@ -9,6 +9,13 @@
     "check-types": "turbo run check-types",
     "test": "turbo run test",
     "generate:api": "npm --workspace @repo/api run generate:openapi && npm --workspace @repo/api-client run generate",
+    "db:generate": "npm --workspace @repo/db run db:generate",
+    "db:migrate": "npm --workspace @repo/db run db:migrate",
+    "db:check": "npm --workspace @repo/db run db:check",
+    "db:studio": "npm --workspace @repo/db run db:studio",
+    "db:reset": "npm --workspace @repo/db run db:reset",
+    "db:seed": "npm --workspace @repo/db run db:seed",
+    "auth:generate-schema": "npm --workspace @repo/db run auth:generate-schema",
     "env:check": "tsx packages/env/scripts/check-example.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
@@ -17,6 +24,7 @@
   "devDependencies": {
     "@types/node": "^22.13.10",
     "dotenv-cli": "^8.0.0",
+    "drizzle-orm": "^0.45.2",
     "eslint": "^9.22.0",
     "prettier": "^3.5.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
@@ -25,7 +33,8 @@
     "typescript": "^5.8.2"
   },
   "overrides": {
-    "zod": "^4.0.0"
+    "zod": "^4.0.0",
+    "react": "19.1.1"
   },
   "engines": {
     "node": ">=18"

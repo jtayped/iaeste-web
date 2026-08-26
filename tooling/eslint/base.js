@@ -39,9 +39,17 @@ export const config = [
         { max: 300, skipBlankLines: true, skipComments: true },
       ],
     },
+    // Each workspace has its own eslint.config.js, so ESLint's ignore-match
+    // base path is that workspace's own directory, not the repo root — a
+    // pattern like "packages/api-client/src/generated/**" never matches
+    // anything when linting runs from inside packages/api-client, because
+    // the path relative to that base is just "src/generated/**". A leading
+    // "**/" absorbs whatever prefix (or none) the base path leaves, so the
+    // same pattern matches from any workspace. Verified with
+    // `eslint --print-config` from within packages/api-client.
     ignores: [
-      "packages/api-client/src/generated/**",
-      "apps/api/openapi.json",
+      "**/generated/**",
+      "**/openapi.json",
       "**/.next/**",
       "**/dist/**",
       "**/drizzle/**",
@@ -66,6 +74,37 @@ export const boundaryRules = {
         "MemberExpression[object.name='process'][property.name='env']",
       message:
         "Read configuration from @repo/env instead of process.env. Add the variable to the schema there so it is validated once, at startup.",
+    },
+  ],
+};
+
+/**
+ * `@repo/db` opens a Postgres connection pool at import time and exposes
+ * repositories that assume a server runtime. Only `apps/api` (the sole
+ * writer) and `packages/db` itself (its own internals, tests, and seed
+ * scripts) may import it.
+ *
+ * `next-js.js` and `react-internal.js` mix this into `boundaryRules`
+ * automatically, which covers `apps/web`, `apps/inscripcions`,
+ * `packages/ui`, and `packages/email`. Everything else that lints through
+ * plain `base.js` (`apps/api`, `packages/db`, `packages/constants`,
+ * `packages/api-client`, `packages/env`) has to opt in itself, because
+ * `apps/api` and `packages/db` share that same base config and must NOT get
+ * this rule. `packages/constants`, `packages/api-client`, and `packages/env`
+ * each mix `dbBoundaryRules` into their own `eslint.config.mjs` — see those
+ * files.
+ */
+export const dbBoundaryRules = {
+  "no-restricted-imports": [
+    "error",
+    {
+      patterns: [
+        {
+          group: ["@repo/db", "@repo/db/*"],
+          message:
+            "@repo/db is server-only and reserved for apps/api. Add a route there instead of importing the database client, schema, or repositories directly.",
+        },
+      ],
     },
   ],
 };

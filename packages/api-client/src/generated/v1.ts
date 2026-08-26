@@ -36,6 +36,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/registrations/{id}/resend-verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resendRegistrationVerification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/registrations/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description What an email link naturally is: GET with the token as a query param. */
+        get: operations["verifyRegistrationEmailGet"];
+        put?: never;
+        /** @description What a client-side confirmation page might prefer: POST with the token in the body, so it doesn't sit in server logs / browser history. */
+        post: operations["verifyRegistrationEmailPost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/registrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description UNAUTHENTICATED (see the block comment above this route in routes.ts). campaignId is required so omitting it can never list across every campaign at once. */
+        get: operations["adminListRegistrations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/registrations/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description UNAUTHENTICATED (see the block comment above adminListRegistrations in routes.ts). `reviewerId` is a self-reported user id, not verified as an admin. */
+        post: operations["adminAcceptRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/registrations/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description UNAUTHENTICATED (see the block comment above adminListRegistrations in routes.ts). `reviewerId` is a self-reported user id, not verified as an admin. */
+        post: operations["adminRejectRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -49,11 +134,13 @@ export interface components {
         RegistrationCreated: {
             /** @enum {string} */
             status: "created";
+            /** @example registration_123 */
+            id: string;
         };
         ApiError: {
             error: {
                 /** @enum {string} */
-                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "NOT_FOUND" | "INTERNAL_ERROR";
+                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "NOT_FOUND" | "CONFLICT" | "ALREADY_REGISTERED" | "INVALID_TOKEN" | "INTERNAL_ERROR";
                 message: string;
                 details?: components["schemas"]["ValidationIssue"][];
             };
@@ -82,10 +169,69 @@ export interface components {
             degree: "Doble Grau en Organització Industrial i ADE" | "Doble Grau en Informàtica i ADE" | "Doble Grau en Mecànica i Energia" | "Grau en Arquitectura Tècnica" | "Grau en Disseny Digital" | "Grau en Enginyeria de l'Energia" | "Grau en Eng. Electrònica Industrial" | "Grau en Organització Industrial" | "Grau en Informàtica (Igualada)" | "Grau en Informàtica (Lleida)" | "Grau en Enginyeria Mecànica" | "Grau en Enginyeria Química" | "Grau en Tècniques d'Interacció Digital" | "Altre";
             /** @example 2 */
             year: number;
-            /** @example false */
-            previousMember: boolean;
             /** @example M'interessen els intercanvis internacionals. */
             note?: string;
+        };
+        ResendVerificationResponse: {
+            /** @enum {string} */
+            status: "ok";
+            message: string;
+        };
+        Verified: {
+            /** @enum {string} */
+            status: "verified";
+        };
+        VerifyTokenRequest: {
+            /** @example a1b2c3... */
+            token: string;
+        };
+        AdminRegistrationList: components["schemas"]["AdminRegistration"][];
+        AdminRegistration: {
+            id: string;
+            campaignId: string;
+            email: string;
+            status: components["schemas"]["RegistrationStatus"];
+            profileSnapshot: components["schemas"]["AdminRegistrationProfileSnapshot"];
+            source: string;
+            verifiedAt: string | null;
+            reviewedAt: string | null;
+            reviewerId: string | null;
+            rejectionReason: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
+        /** @enum {string} */
+        RegistrationStatus: "pending_email" | "pending_review" | "accepted" | "rejected";
+        AdminRegistrationProfileSnapshot: {
+            name: string;
+            surnames: string;
+            phoneE164: string;
+            phoneDisplay: string;
+            degree: string;
+            studyYear: number;
+            note?: string;
+        };
+        AdminAcceptResponse: {
+            /** @enum {string} */
+            status: "accepted";
+            notificationSent: boolean;
+        };
+        AdminAcceptRequest: {
+            /** @example user_123 */
+            reviewerId: string;
+            /** @example registration */
+            membershipSource?: string;
+        };
+        AdminRejectResponse: {
+            /** @enum {string} */
+            status: "rejected";
+            notificationSent: boolean;
+        };
+        AdminRejectRequest: {
+            /** @example user_123 */
+            reviewerId: string;
+            /** @example No hi ha places disponibles aquest curs. */
+            reason: string;
         };
     };
     responses: never;
@@ -129,13 +275,22 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The registration was saved. */
+            /** @description The registration was saved and, on a best-effort basis, a verification email was sent. A 201 does not guarantee the email arrived — see POST /v1/registrations/:id/resend-verification. */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["RegistrationCreated"];
+                };
+            };
+            /** @description Either no campaign is currently open for registration (error code CONFLICT), or this email already has a registration for the open campaign (error code ALREADY_REGISTERED) — check the response body's error.code to tell them apart. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
             /** @description The request body is too large. */
@@ -167,6 +322,212 @@ export interface operations {
             };
             /** @description The registration could not be saved. */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    resendRegistrationVerification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Always returned, whether or not a new verification email was actually sent — see the route's doc comment. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResendVerificationResponse"];
+                };
+            };
+        };
+    };
+    verifyRegistrationEmailGet: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The email is verified; the registration moved from pending_email to pending_review. This does NOT create a membership. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Verified"];
+                };
+            };
+            /** @description The token is invalid, expired, or already used. Deliberately generic — never distinguishes those cases from each other or from a nonexistent registration. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    verifyRegistrationEmailPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyTokenRequest"];
+            };
+        };
+        responses: {
+            /** @description The email is verified; the registration moved from pending_email to pending_review. This does NOT create a membership. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Verified"];
+                };
+            };
+            /** @description The token is invalid, expired, or already used. Deliberately generic — never distinguishes those cases from each other or from a nonexistent registration. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminListRegistrations: {
+        parameters: {
+            query: {
+                campaignId: string;
+                status?: components["schemas"]["RegistrationStatus"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Registrations for the given campaign. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRegistrationList"];
+                };
+            };
+            /** @description campaignId is missing or status is not a valid value. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminAcceptRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminAcceptRequest"];
+            };
+        };
+        responses: {
+            /** @description Accepted: the membership was created. notificationSent is false if the acceptance email failed to send — the membership still stands either way. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAcceptResponse"];
+                };
+            };
+            /** @description No registration with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The registration is not in pending_review. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminRejectRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRejectRequest"];
+            };
+        };
+        responses: {
+            /** @description Rejected. notificationSent is false if the rejection email failed to send — the rejection still stands either way. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRejectResponse"];
+                };
+            };
+            /** @description No registration with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The registration is not in pending_review. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

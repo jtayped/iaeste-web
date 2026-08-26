@@ -1,0 +1,39 @@
+{
+  "name": "@repo/db",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit",
+    "test": "dotenv -e ../../.env -- tsx --test --test-concurrency=1 \"src/**/*.test.ts\"",
+    "db:generate": "dotenv -e ../../.env -- drizzle-kit generate",
+    "db:migrate": "dotenv -e ../../.env -- drizzle-kit migrate",
+    "db:check": "dotenv -e ../../.env -- drizzle-kit check",
+    "db:studio": "dotenv -e ../../.env -- drizzle-kit studio",
+    "db:reset": "dotenv -e ../../.env -- tsx scripts/reset.ts",
+    "db:seed": "dotenv -e ../../.env -- tsx scripts/seed.ts",
+    "auth:generate-schema": "tsx scripts/generate-auth-schema.ts"
+  },
+  "exports": {
+    "./client": "./src/client.ts",
+    "./schema": "./src/schema/index.ts",
+    "./repositories": "./src/repositories/index.ts",
+    "./test-connection": "./src/test-connection.ts",
+    "./test-support": "./src/test-support/db.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@types/pg": "^8.23.1",
+    "better-auth": "^1.7.1",
+    "dotenv-cli": "^8.0.0",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.2"
+  }
+}

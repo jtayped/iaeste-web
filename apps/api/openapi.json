@@ -46,10 +46,15 @@
             "enum": [
               "created"
             ]
+          },
+          "id": {
+            "type": "string",
+            "example": "registration_123"
           }
         },
         "required": [
-          "status"
+          "status",
+          "id"
         ]
       },
       "ApiError": {
@@ -65,6 +70,9 @@
                   "UNSUPPORTED_MEDIA_TYPE",
                   "PAYLOAD_TOO_LARGE",
                   "NOT_FOUND",
+                  "CONFLICT",
+                  "ALREADY_REGISTERED",
+                  "INVALID_TOKEN",
                   "INTERNAL_ERROR"
                 ]
               },
@@ -166,10 +174,6 @@
             "maximum": 6,
             "example": 2
           },
-          "previousMember": {
-            "type": "boolean",
-            "example": false
-          },
           "note": {
             "type": "string",
             "maxLength": 2000,
@@ -182,8 +186,242 @@
           "email",
           "phone",
           "degree",
-          "year",
-          "previousMember"
+          "year"
+        ]
+      },
+      "ResendVerificationResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "message"
+        ]
+      },
+      "Verified": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "verified"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "VerifyTokenRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "example": "a1b2c3..."
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "AdminRegistrationList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AdminRegistration"
+        }
+      },
+      "AdminRegistration": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RegistrationStatus"
+          },
+          "profileSnapshot": {
+            "$ref": "#/components/schemas/AdminRegistrationProfileSnapshot"
+          },
+          "source": {
+            "type": "string"
+          },
+          "verifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reviewedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reviewerId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rejectionReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "campaignId",
+          "email",
+          "status",
+          "profileSnapshot",
+          "source",
+          "verifiedAt",
+          "reviewedAt",
+          "reviewerId",
+          "rejectionReason",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RegistrationStatus": {
+        "type": "string",
+        "enum": [
+          "pending_email",
+          "pending_review",
+          "accepted",
+          "rejected"
+        ]
+      },
+      "AdminRegistrationProfileSnapshot": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "surnames": {
+            "type": "string"
+          },
+          "phoneE164": {
+            "type": "string"
+          },
+          "phoneDisplay": {
+            "type": "string"
+          },
+          "degree": {
+            "type": "string"
+          },
+          "studyYear": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "surnames",
+          "phoneE164",
+          "phoneDisplay",
+          "degree",
+          "studyYear"
+        ]
+      },
+      "AdminAcceptResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "accepted"
+            ]
+          },
+          "notificationSent": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status",
+          "notificationSent"
+        ]
+      },
+      "AdminAcceptRequest": {
+        "type": "object",
+        "properties": {
+          "reviewerId": {
+            "type": "string",
+            "minLength": 1,
+            "example": "user_123"
+          },
+          "membershipSource": {
+            "type": "string",
+            "minLength": 1,
+            "example": "registration"
+          }
+        },
+        "required": [
+          "reviewerId"
+        ]
+      },
+      "AdminRejectResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "rejected"
+            ]
+          },
+          "notificationSent": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status",
+          "notificationSent"
+        ]
+      },
+      "AdminRejectRequest": {
+        "type": "object",
+        "properties": {
+          "reviewerId": {
+            "type": "string",
+            "minLength": 1,
+            "example": "user_123"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "example": "No hi ha places disponibles aquest curs."
+          }
+        },
+        "required": [
+          "reviewerId",
+          "reason"
         ]
       }
     },
@@ -228,11 +466,21 @@
         },
         "responses": {
           "201": {
-            "description": "The registration was saved.",
+            "description": "The registration was saved and, on a best-effort basis, a verification email was sent. A 201 does not guarantee the email arrived — see POST /v1/registrations/:id/resend-verification.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RegistrationCreated"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Either no campaign is currently open for registration (error code CONFLICT), or this email already has a registration for the open campaign (error code ALREADY_REGISTERED) — check the response body's error.code to tell them apart.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -269,6 +517,297 @@
           },
           "500": {
             "description": "The registration could not be saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/registrations/{id}/resend-verification": {
+      "post": {
+        "operationId": "resendRegistrationVerification",
+        "tags": [
+          "Registrations"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "registration_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Always returned, whether or not a new verification email was actually sent — see the route's doc comment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResendVerificationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/registrations/verify": {
+      "get": {
+        "operationId": "verifyRegistrationEmailGet",
+        "tags": [
+          "Registrations"
+        ],
+        "description": "What an email link naturally is: GET with the token as a query param.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "a1b2c3..."
+            },
+            "required": true,
+            "name": "token",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The email is verified; the registration moved from pending_email to pending_review. This does NOT create a membership.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Verified"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The token is invalid, expired, or already used. Deliberately generic — never distinguishes those cases from each other or from a nonexistent registration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "verifyRegistrationEmailPost",
+        "tags": [
+          "Registrations"
+        ],
+        "description": "What a client-side confirmation page might prefer: POST with the token in the body, so it doesn't sit in server logs / browser history.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The email is verified; the registration moved from pending_email to pending_review. This does NOT create a membership.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Verified"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The token is invalid, expired, or already used. Deliberately generic — never distinguishes those cases from each other or from a nonexistent registration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/registrations": {
+      "get": {
+        "operationId": "adminListRegistrations",
+        "tags": [
+          "Admin"
+        ],
+        "description": "UNAUTHENTICATED (see the block comment above this route in routes.ts). campaignId is required so omitting it can never list across every campaign at once.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "campaign_123"
+            },
+            "required": true,
+            "name": "campaignId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/RegistrationStatus"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registrations for the given campaign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRegistrationList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "campaignId is missing or status is not a valid value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/registrations/{id}/accept": {
+      "post": {
+        "operationId": "adminAcceptRegistration",
+        "tags": [
+          "Admin"
+        ],
+        "description": "UNAUTHENTICATED (see the block comment above adminListRegistrations in routes.ts). `reviewerId` is a self-reported user id, not verified as an admin.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "registration_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAcceptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted: the membership was created. notificationSent is false if the acceptance email failed to send — the membership still stands either way.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAcceptResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No registration with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The registration is not in pending_review.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/registrations/{id}/reject": {
+      "post": {
+        "operationId": "adminRejectRegistration",
+        "tags": [
+          "Admin"
+        ],
+        "description": "UNAUTHENTICATED (see the block comment above adminListRegistrations in routes.ts). `reviewerId` is a self-reported user id, not verified as an admin.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "registration_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRejectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected. notificationSent is false if the rejection email failed to send — the rejection still stands either way.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRejectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No registration with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The registration is not in pending_review.",
             "content": {
               "application/json": {
                 "schema": {

@@ -1,4 +1,4 @@
-import { config } from "@repo/eslint-config/base";
+import { config, dbBoundaryRules } from "@repo/eslint-config/base";
 
 /** @type {import("eslint").Linter.Config} */
 export default [
@@ -15,5 +15,11 @@ export default [
         URL: "readonly",
       },
     },
+  },
+  {
+    // Read by browser-facing apps for their own env access. See base.js's
+    // comment on dbBoundaryRules for why this can't just live in base.js's
+    // own config.
+    rules: dbBoundaryRules,
   },
 ];
