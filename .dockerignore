@@ -1,0 +1,37 @@
+# Keeps the Docker build context small and, more importantly, keeps secrets
+# and other apps' build output out of image layers. The build context is the
+# repo root (see apps/web/Dockerfile) so this file has to think about every
+# workspace, not just apps/web.
+
+# git
+.git
+.gitignore
+
+# dependencies (reinstalled inside the image via `npm ci`)
+**/node_modules
+
+# build output
+**/.next
+**/.turbo
+**/dist
+**/out
+**/build
+**/.swc
+
+# env files -- never bake real secrets into a layer; the Dockerfile takes
+# build-time config as explicit --build-arg values instead
+.env
+.env.*
+!.env.example
+
+# editor / OS cruft
+.DS_Store
+*.pem
+npm-debug.log*
+
+# local tool scratch state
+.impeccable/
+
+# docs and repo metadata aren't needed to build the image
+*.md
+.github
