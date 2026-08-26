@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+  verify:
+    name: Lint, types, tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Cheapest checks first, so a formatting or typing mistake fails in
+      # seconds rather than after the whole suite has run.
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Types
+        run: npm run check-types
+
+      - name: Tests
+        run: npm run test
+
+      # The OpenAPI document and the generated client are build outputs that
+      # live in the tree. If regenerating them changes anything, the committed
+      # copies are stale and the typed client is lying about the API.
+      - name: Generated API client is current
+        run: |
+          npm run generate:api
+          git diff --exit-code -- apps/api/openapi.json packages/api-client/src/generated
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build all workspaces
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3004
+          NEXT_PUBLIC_INSCRIPCIONS_STATE: "on"
+          RESEND_API_KEY: ci-placeholder
+          CONTACT_FORM_FROM: noreply@iaestelleida.cat
+          CONTACT_FORM_TO: ci@example.com
