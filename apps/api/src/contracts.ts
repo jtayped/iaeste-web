@@ -56,6 +56,8 @@ export const apiErrorSchema = z
         "UNSUPPORTED_MEDIA_TYPE",
         "PAYLOAD_TOO_LARGE",
         "NOT_FOUND",
+        "CONFLICT",
+        "INVALID_TOKEN",
         "INTERNAL_ERROR",
       ]),
       message: z.string(),
@@ -71,3 +73,127 @@ export const healthSchema = z
     version: z.literal(API_VERSION),
   })
   .openapi("Health");
+
+// --- Verification -----------------------------------------------------------
+
+/**
+ * Deliberately non-committal wording: this response shape is identical
+ * whether `POST /v1/registrations/:id/resend-verification` actually sent
+ * anything or not (unknown id, wrong status, cooldown/rate limit all no-op
+ * silently) — see routes.ts's doc comment on that route.
+ */
+export const resendVerificationResponseSchema = z
+  .object({
+    status: z.literal("ok"),
+    message: z.string(),
+  })
+  .openapi("ResendVerificationResponse");
+
+export const verifyTokenBodySchema = z
+  .object({
+    token: z.string().min(1).openapi({ example: "a1b2c3..." }),
+  })
+  .openapi("VerifyTokenRequest");
+
+export const verifyTokenQuerySchema = z.object({
+  token: z.string().min(1).openapi({ example: "a1b2c3..." }),
+});
+
+export const verifiedSchema = z
+  .object({
+    status: z.literal("verified"),
+  })
+  .openapi("Verified");
+
+// --- Admin --------------------------------------------------------------
+
+const REGISTRATION_STATUS_VALUES = [
+  "pending_email",
+  "pending_review",
+  "accepted",
+  "rejected",
+] as const;
+
+export const registrationStatusSchema = z
+  .enum(REGISTRATION_STATUS_VALUES)
+  .openapi("RegistrationStatus");
+
+export const adminRegistrationProfileSnapshotSchema = z
+  .object({
+    name: z.string(),
+    surnames: z.string(),
+    phoneE164: z.string(),
+    phoneDisplay: z.string(),
+    degree: z.string(),
+    studyYear: z.number(),
+    note: z.string().optional(),
+  })
+  .openapi("AdminRegistrationProfileSnapshot");
+
+export const adminRegistrationSchema = z
+  .object({
+    id: z.string(),
+    campaignId: z.string(),
+    email: z.string(),
+    status: registrationStatusSchema,
+    profileSnapshot: adminRegistrationProfileSnapshotSchema,
+    source: z.string(),
+    verifiedAt: z.string().nullable(),
+    reviewedAt: z.string().nullable(),
+    reviewerId: z.string().nullable(),
+    rejectionReason: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .openapi("AdminRegistration");
+
+export const adminRegistrationListSchema = z
+  .array(adminRegistrationSchema)
+  .openapi("AdminRegistrationList");
+
+export const adminListQuerySchema = z.object({
+  campaignId: z.string().min(1).openapi({ example: "campaign_123" }),
+  status: registrationStatusSchema.optional(),
+});
+
+export const registrationIdParamSchema = z.object({
+  id: z.string().min(1).openapi({ example: "registration_123" }),
+});
+
+export const adminAcceptBodySchema = z
+  .object({
+    reviewerId: z.string().min(1).openapi({ example: "user_123" }),
+    membershipSource: z.string().min(1).optional().openapi({
+      example: "registration",
+    }),
+  })
+  .openapi("AdminAcceptRequest");
+
+export const adminRejectBodySchema = z
+  .object({
+    reviewerId: z.string().min(1).openapi({ example: "user_123" }),
+    reason: z.string().min(1).max(2_000).openapi({
+      example: "No hi ha places disponibles aquest curs.",
+    }),
+  })
+  .openapi("AdminRejectRequest");
+
+/**
+ * `notificationSent: false` means the admin action itself succeeded (the
+ * registration is accepted/rejected in the database) but the follow-up
+ * email failed to send — a distinct, retryable-later condition from full
+ * success. See services/registration-service.ts's `accept`/`reject`.
+ */
+export const adminAcceptResponseSchema = z
+  .object({
+    status: z.literal("accepted"),
+    notificationSent: z.boolean(),
+  })
+  .openapi("AdminAcceptResponse");
+
+export const adminRejectResponseSchema = z
+  .object({
+    status: z.literal("rejected"),
+    notificationSent: z.boolean(),
+  })
+  .openapi("AdminRejectResponse");

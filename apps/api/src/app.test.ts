@@ -3,30 +3,11 @@ import { describe, it } from "node:test";
 
 import type { Registration } from "@repo/constants/validators/registration";
 
-import { createApp } from "./app";
-import type { RegistrationRepository } from "./repositories/registrations";
-
-const validRegistration: Registration = {
-  name: "Joan",
-  surnames: "Garcia Serra",
-  email: "joan@alumnes.udl.cat",
-  phone: "+34 623 32 42 34",
-  degree: "Grau en Informàtica (Lleida)",
-  year: 2,
-  note: "Hola",
-};
-
-function createRepository(
-  create: RegistrationRepository["create"] = async () => undefined,
-): RegistrationRepository {
-  return { create };
-}
-
-const quietLogger = { error() {} };
-
-function createTestApp(registrationRepository = createRepository()) {
-  return createApp({ registrationRepository, logger: quietLogger });
-}
+import {
+  createRepository,
+  createTestApp,
+  validRegistration,
+} from "./test-support/app";
 
 describe("API", () => {
   it("reports its health", async () => {
