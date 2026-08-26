@@ -19,7 +19,6 @@ const validRegistration: Registration = {
   phone: "+34 623 32 42 34",
   degree: "Grau en Informàtica (Lleida)",
   year: 2,
-  previousMember: false,
   note: "Hola",
 };
 
@@ -100,7 +99,6 @@ describe("createDrizzleRegistrationRepository", () => {
       phoneDisplay: "+34 623 32 42 34",
       degree: "Grau en Informàtica (Lleida)",
       studyYear: 2,
-      previousMember: false,
       note: "Hola",
     });
   });

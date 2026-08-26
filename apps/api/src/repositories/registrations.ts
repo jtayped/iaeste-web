@@ -52,7 +52,9 @@ export function createDrizzleRegistrationRepository(): RegistrationRepository {
         phoneDisplay: registration.phone,
         degree: registration.degree,
         studyYear: registration.year,
-        previousMember: registration.previousMember,
+        // `previousMember` is no longer supplied by the applicant (IA-40):
+        // new vs. returning is now derived from membership history in
+        // @repo/db, not asked on the form.
         note: registration.note,
       };
 
@@ -126,7 +128,6 @@ export function createGoogleSheetsRegistrationRepository(): RegistrationReposito
               registration.phone,
               registration.degree,
               registration.year,
-              registration.previousMember,
               registration.note ?? "",
             ],
           ],

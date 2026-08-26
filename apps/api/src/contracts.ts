@@ -2,6 +2,7 @@ import { z } from "@hono/zod-openapi";
 
 import { DEGREE_OPTIONS } from "@repo/constants/studies";
 
+import { isValidPhone } from "./lib/phone";
 import { API_VERSION } from "./version";
 
 export const registrationRequestSchema = z
@@ -18,12 +19,16 @@ export const registrationRequestSchema = z
         return domain === "udl.cat" || domain?.endsWith(".udl.cat") === true;
       })
       .openapi({ example: "joan@alumnes.udl.cat" }),
-    phone: z.string().trim().min(1).openapi({ example: "+34 623 32 42 34" }),
+    phone: z
+      .string()
+      .trim()
+      .min(1)
+      .refine(isValidPhone, "El número de telèfon no és vàlid")
+      .openapi({ example: "+34 623 32 42 34" }),
     degree: z
       .enum(DEGREE_OPTIONS)
       .openapi({ example: "Grau en Informàtica (Lleida)" }),
     year: z.number().int().min(1).max(6).openapi({ example: 2 }),
-    previousMember: z.boolean().openapi({ example: false }),
     note: z.string().trim().max(2_000).optional().openapi({
       example: "M'interessen els intercanvis internacionals.",
     }),
