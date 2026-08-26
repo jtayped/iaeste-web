@@ -22,7 +22,7 @@
     "googleapis": "^160.0.0",
     "hono": "^4.10.0",
     "libphonenumber-js": "^1.13.11",
-    "react": "^19.2.8",
+    "react": "19.1.1",
     "zod": "^4.0.0"
   },
   "devDependencies": {
