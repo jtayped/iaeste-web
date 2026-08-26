@@ -15,6 +15,13 @@
       "when": 1787731038273,
       "tag": "0001_registration_status_transition_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787752370334,
+      "tag": "0002_useful_tag",
+      "breakpoints": true
     }
   ]
 }
