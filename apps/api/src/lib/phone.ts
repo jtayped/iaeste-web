@@ -1,7 +1,4 @@
-import {
-  parsePhoneNumberWithError,
-  type CountryCode,
-} from "libphonenumber-js";
+import { parsePhoneNumberWithError, type CountryCode } from "libphonenumber-js";
 
 /**
  * IAESTE LC Lleida is a Lleida-based student organisation, so a phone number
