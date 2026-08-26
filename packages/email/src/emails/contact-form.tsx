@@ -53,8 +53,9 @@ export const ContactFormEmail = ({
 };
 
 ContactFormEmail.PreviewProps = {
-  email: "john.doe@gmail.com",
-  name: "John Doe",
+  email: "john.doe@example.com",
+  name: "John",
+  lastname: "Doe",
   subject: "Lorem ipsum dolor.",
   message: "Lorem ipsum dolor sit amet.",
 } as ContactFormProps;

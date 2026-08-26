@@ -54,6 +54,9 @@ describe("every template renders", () => {
       // The shared wrapper's logo, i.e. the template really went through it.
       assert.match(html, /icon-lleida-blue\.png/);
       assert.doesNotMatch(html, /undefined/);
+      // Preview data must stay obviously fake: example.com is reserved for it,
+      // a gmail.com or google.com placeholder reads as someone's real address.
+      assert.doesNotMatch(html, /gmail\.com|google\.com/);
     });
   }
 });

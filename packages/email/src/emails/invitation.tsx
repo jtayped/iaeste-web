@@ -33,8 +33,8 @@ export const UserInvitation = ({ email, invitationLink }: InviteUserProps) => {
 };
 
 UserInvitation.PreviewProps = {
-  email: "john.doe@gmail.com",
-  invitationLink: "https://google.com",
+  email: "john.doe@example.com",
+  invitationLink: "https://example.com/invitacio",
 } as InviteUserProps;
 
 export default UserInvitation;

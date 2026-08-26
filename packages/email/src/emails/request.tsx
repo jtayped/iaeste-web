@@ -31,8 +31,8 @@ export const UserRequest = ({ name, email, requestLink }: UserRequestProps) => {
 
 UserRequest.PreviewProps = {
   name: "John Doe",
-  email: "john.doe@gmail.com",
-  requestLink: "https://google.com",
+  email: "john.doe@example.com",
+  requestLink: "https://example.com/sol-licituds",
 } as UserRequestProps;
 
 export default UserRequest;

@@ -29,8 +29,8 @@ export const VerifyUserEmail = ({ email, link }: VerifyUserEmailProps) => {
 };
 
 VerifyUserEmail.PreviewProps = {
-  email: "john.doe@gmail.com",
-  link: "https://google.com",
+  email: "john.doe@example.com",
+  link: "https://example.com/verificar",
 } as VerifyUserEmailProps;
 
 export default VerifyUserEmail;
