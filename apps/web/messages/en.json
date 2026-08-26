@@ -190,6 +190,22 @@
       "description": "Get in touch with IAESTE Lleida and discover how hosting an international intern can add value to your company."
     }
   },
+  "BlogPage": {
+    "Metadata": {
+      "title": "blog | iaeste lc lleida",
+      "description": "news, activities and guides to the exchange programme run by iaeste lc lleida."
+    },
+    "title": "stories behind the exchange",
+    "description": "committee news, experiences and guides to how iaeste works from lleida.",
+    "readArticle": "read the article",
+    "fallbackLabel": "catalan",
+    "draftLabel": "draft",
+    "back": "back to the blog",
+    "empty": "there are no published articles yet.",
+    "fallbackNotice": "this article is not available in the selected language yet. here is the original in catalan.",
+    "translationsLabel": "other languages",
+    "paginationLabel": "blog pages"
+  },
   "UnderConstructionPage": {
     "title": "This page is under construction!",
     "description": "Our IT people are on it! It will be finished shortly.",
@@ -219,6 +235,11 @@
         "name": "Companies",
         "title": "Are a company?",
         "description": "Partner with IAESTE to access talented international technical students for your organization."
+      },
+      "blog": {
+        "name": "blog",
+        "title": "news and stories",
+        "description": "committee updates and explanations of the iaeste exchange."
       }
     },
     "groups": {

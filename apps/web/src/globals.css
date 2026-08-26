@@ -6,4 +6,46 @@
   .section-padding {
     @apply px-screen-sm md:px-screen-md lg:px-screen-lg;
   }
+
+  ::selection {
+    @apply bg-secondary text-secondary-foreground;
+  }
+}
+
+@layer components {
+  .blog-prose {
+    @apply text-[1.0625rem] leading-8 text-foreground;
+  }
+
+  .blog-prose > * + * {
+    @apply mt-6;
+  }
+
+  .blog-prose h2 {
+    @apply mt-14 text-balance text-3xl font-bold leading-tight tracking-[-0.03em];
+  }
+
+  .blog-prose h3 {
+    @apply mt-10 text-balance text-2xl font-bold leading-tight tracking-[-0.025em];
+  }
+
+  .blog-prose a {
+    @apply font-semibold text-primary underline decoration-secondary decoration-2 underline-offset-4;
+  }
+
+  .blog-prose ul {
+    @apply list-disc space-y-3 pl-6;
+  }
+
+  .blog-prose ol {
+    @apply list-decimal space-y-3 pl-6;
+  }
+
+  .blog-prose blockquote {
+    @apply my-10 border-l border-primary pl-6 text-xl leading-8 text-muted-foreground;
+  }
+
+  .blog-prose img {
+    @apply my-10 h-auto w-full rounded-xl;
+  }
 }

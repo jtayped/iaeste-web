@@ -62,9 +62,9 @@ CI fails if the committed output is stale.
 
 ## API deployment
 
-Deploy `apps/api` as its own project. It can run as a Node service with
-`npm run build` followed by `npm start`, or as a Vercel project using the
-included `vercel.json` and `api/index.ts` entry point.
+Deploy `apps/api` as its own Node service with `npm run build` followed by
+`npm start`. Production images and the Coolify deployment flow are documented
+in `docs/deployment.md`.
 
 Set `CORS_ALLOWED_ORIGINS` to the comma-separated frontend origins that may use
 the API, for example `https://iaestelleida.cat`. Set `NEXT_PUBLIC_API_URL` on

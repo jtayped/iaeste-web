@@ -98,3 +98,7 @@ jobs:
           RESEND_API_KEY: ci-placeholder
           CONTACT_FORM_FROM: noreply@iaestelleida.cat
           CONTACT_FORM_TO: ci@example.com
+          KEYSTATIC_GITHUB_CLIENT_ID: ci-placeholder
+          KEYSTATIC_GITHUB_CLIENT_SECRET: ci-placeholder
+          KEYSTATIC_SECRET: ci-placeholder
+          NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG: ci-placeholder
