@@ -64,19 +64,19 @@ COPY --from=pruner /app/content ./content
 # "Collecting page data", which includes apps/web/src/lib/emails.ts -- the
 # contact-form server action -- because it constructs a Resend client at
 # module scope (`createResendEmailer({ apiKey: env.RESEND_API_KEY, ... })`).
-# @repo/env validates these eagerly on import, so the build fails without
-# *some* value for all four, even though only NEXT_PUBLIC_INSCRIPCIONS_STATE
-# actually gets compiled into the output: Next.js inlines NEXT_PUBLIC_* into
-# both the client and server bundles at build time, but RESEND_API_KEY /
+# @repo/env validates these eagerly on import, so the build fails without the
+# required contact-form values. Next.js inlines both NEXT_PUBLIC_* variables
+# into the client and server bundles, while RESEND_API_KEY /
 # CONTACT_FORM_FROM / CONTACT_FORM_TO are plain server-side `process.env`
-# reads that still happen at container runtime. See docs/deployment.md for
-# the full build-time-vs-runtime breakdown.
+# reads that still happen at container runtime. The Keystatic route also
+# needs temporary server credentials while the production bundle is built.
+# See docs/deployment.md for the full build-time-vs-runtime breakdown.
 #
-# The defaults below are CI/placeholder values, matching .github/ci.yml's
-# build job -- never pass real secrets as build args, since they end up
-# readable in the image's build history. Only NEXT_PUBLIC_INSCRIPCIONS_STATE
-# needs a real value at build time; override it with --build-arg for an
-# actual deploy.
+# The defaults below are CI/placeholder values, matching the build job in
+# .github/workflows/ci.yml -- never pass real secrets as build args; they end up
+# readable in the image's build history. Only the two NEXT_PUBLIC_* values
+# need real values at build time; override them with --build-arg for an actual
+# deploy.
 ARG NEXT_PUBLIC_INSCRIPCIONS_STATE=on
 ARG NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=
 ARG RESEND_API_KEY=build-placeholder
