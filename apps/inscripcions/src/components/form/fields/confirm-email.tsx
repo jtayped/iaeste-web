@@ -1,7 +1,6 @@
 import type { RegistrationForm } from "@/lib/form-schema";
 import React from "react";
-import type { UseFormReturn } from "react-hook-form";
-
+import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
@@ -12,27 +11,30 @@ import {
 } from "@repo/ui/form";
 import { Input } from "@repo/ui/input";
 
-const PhoneField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
+const ConfirmEmailField = ({
+  form,
+}: {
+  form: UseFormReturn<RegistrationForm>;
+}) => {
   return (
     <FormField
       control={form.control}
-      name="phone"
+      name="confirmEmail"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Número de telèfon</FormLabel>
+          <FormLabel>Confirma el correu</FormLabel>
           <FormControl>
             <Input
-              placeholder="+34 623 32 42 34"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
+              placeholder="johndoe@alumnes.udl.cat"
+              type="email"
+              inputMode="email"
+              autoComplete="off"
               {...field}
             />
           </FormControl>
           <FormDescription>
-            Si no hi poses prefix, l&apos;entendrem com un número espanyol.
-            Escriu-lo amb prefix (per exemple <b>+34 623 32 42 34</b>) si és
-            d&apos;un altre país.
+            Escriu-lo un altre cop. Si hi ha una errata no rebràs l&apos;enllaç
+            de verificació i no ens en podrem adonar.
           </FormDescription>
           <FormMessage />
         </FormItem>
@@ -41,4 +43,4 @@ const PhoneField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
   );
 };
 
-export default PhoneField;
+export default ConfirmEmailField;

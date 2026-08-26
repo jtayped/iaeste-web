@@ -1,6 +1,6 @@
 "use client";
 
-import type { Registration } from "@repo/constants/validators/registration";
+import type { RegistrationForm } from "@/lib/form-schema";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
@@ -18,7 +18,7 @@ import {
 } from "@repo/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 
-const NoteField = ({ form }: { form: UseFormReturn<Registration> }) => {
+const NoteField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
   const [open, setOpen] = React.useState(false);
 
   return (
