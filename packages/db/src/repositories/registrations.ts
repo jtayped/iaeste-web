@@ -82,6 +82,14 @@ export function createRegistrationRepository(db: Database) {
       return row;
     },
 
+    /** Every registration for a campaign, regardless of status. */
+    async listByCampaign(campaignId: string) {
+      return db
+        .select()
+        .from(registration)
+        .where(eq(registration.campaignId, campaignId));
+    },
+
     async listByCampaignAndStatus(
       campaignId: string,
       status: RegistrationStatus,

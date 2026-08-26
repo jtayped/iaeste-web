@@ -71,6 +71,43 @@ describe("registrations repository", () => {
     );
   });
 
+  it("listByCampaign lists every status, listByCampaignAndStatus filters to one", async () => {
+    const registrations = createRegistrationRepository(db);
+    const campaign = await createTestCampaign(db);
+    const other = await createTestCampaign(db);
+
+    const pending = await registrations.create({
+      campaignId: campaign.id,
+      email: "pending@alumnes.udl.cat",
+      profileSnapshot: testProfileSnapshot(),
+    });
+    const toVerify = await registrations.create({
+      campaignId: campaign.id,
+      email: "verified@alumnes.udl.cat",
+      profileSnapshot: testProfileSnapshot(),
+    });
+    await registrations.markEmailVerified(toVerify.id);
+    await registrations.create({
+      campaignId: other.id,
+      email: "elsewhere@alumnes.udl.cat",
+      profileSnapshot: testProfileSnapshot(),
+    });
+
+    const all = await registrations.listByCampaign(campaign.id);
+    assert.equal(all.length, 2);
+    assert.deepEqual(
+      new Set(all.map((row) => row.id)),
+      new Set([pending.id, toVerify.id]),
+    );
+
+    const pendingOnly = await registrations.listByCampaignAndStatus(
+      campaign.id,
+      "pending_email",
+    );
+    assert.equal(pendingOnly.length, 1);
+    assert.equal(pendingOnly[0]?.id, pending.id);
+  });
+
   it("walks pending_email -> pending_review -> accepted, creating exactly one membership", async () => {
     const registrations = createRegistrationRepository(db);
     const memberships = createMembershipRepository(db);

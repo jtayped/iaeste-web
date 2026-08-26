@@ -55,6 +55,25 @@ export function createRegistrationVerificationRepository(db: Db) {
       return row;
     },
 
+    /**
+     * Expires every not-yet-consumed verification row for a registration by
+     * setting `expiresAt` to now. Used when resending a verification email
+     * (IA-40) so the previous token stops working immediately instead of
+     * staying valid until its original expiry — `consume()`'s
+     * `expiresAt > now()` check then rejects it on the next attempt.
+     */
+    async invalidateActiveForRegistration(registrationId: string) {
+      await db
+        .update(registrationVerification)
+        .set({ expiresAt: new Date() })
+        .where(
+          and(
+            eq(registrationVerification.registrationId, registrationId),
+            isNull(registrationVerification.consumedAt),
+          ),
+        );
+    },
+
     async recordAttempt(id: string) {
       await db
         .update(registrationVerification)
