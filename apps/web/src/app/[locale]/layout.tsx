@@ -8,7 +8,6 @@ import Header, { NavigationProvider } from "@/components/header";
 import Footer from "@/components/common/footer";
 import "@repo/ui/globals.css";
 import "@/globals.css";
-import AnalyticsWrapper from "./analytics";
 import { generatePageMetadata } from "@/lib/metadata";
 
 const inter = Inter({ weight: "variable", subsets: ["latin"] });
@@ -49,7 +48,6 @@ export default async function LocaleLayout({
             <Footer />
           </NavigationProvider>
         </NextIntlClientProvider>
-        <AnalyticsWrapper />
       </body>
     </html>
   );

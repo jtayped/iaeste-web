@@ -36,13 +36,5 @@
     "NEXT_PUBLIC_INSCRIPCIONS_STATE",
     "NEXT_PUBLIC_WHATSAPP_INVITE"
   ],
-  "globalPassThroughEnv": [
-    "NODE_ENV",
-    "CI",
-    "PORT",
-    "VERCEL",
-    "VERCEL_ENV",
-    "VERCEL_URL",
-    "npm_lifecycle_event"
-  ]
+  "globalPassThroughEnv": ["NODE_ENV", "CI", "PORT", "npm_lifecycle_event"]
 }
