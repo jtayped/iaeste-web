@@ -19,7 +19,8 @@
     "./client": "./src/client.ts",
     "./schema": "./src/schema/index.ts",
     "./repositories": "./src/repositories/index.ts",
-    "./test-connection": "./src/test-connection.ts"
+    "./test-connection": "./src/test-connection.ts",
+    "./test-support": "./src/test-support/db.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
