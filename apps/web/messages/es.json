@@ -194,6 +194,22 @@
       "description": "Contacta con IAESTE Lleida y descubre cómo acoger a un estudiante internacional puede aportar valor a tu empresa."
     }
   },
+  "BlogPage": {
+    "Metadata": {
+      "title": "blog | iaeste lc lleida",
+      "description": "noticias, actividades y explicaciones del programa de intercambio de iaeste lc lleida."
+    },
+    "title": "historias que explican el intercambio",
+    "description": "noticias del comité, experiencias y guías para entender cómo funciona iaeste desde lleida.",
+    "readArticle": "lee el artículo",
+    "fallbackLabel": "catalán",
+    "draftLabel": "borrador",
+    "back": "volver al blog",
+    "empty": "todavía no hay artículos publicados.",
+    "fallbackNotice": "este artículo aún no tiene versión en el idioma seleccionado. te mostramos el original en catalán.",
+    "translationsLabel": "otros idiomas",
+    "paginationLabel": "páginas del blog"
+  },
   "UnderConstructionPage": {
     "title": "¡Esta página está en construcción!",
     "description": "¡Nuestro equipo de IT está trabajando en ello! Estará lista pronto.",
@@ -223,6 +239,11 @@
         "name": "Empresas",
         "title": "¿Eres una empresa?",
         "description": "Colabora con IAESTE para acceder a talento técnico internacional para tu organización."
+      },
+      "blog": {
+        "name": "blog",
+        "title": "noticias e historias",
+        "description": "actualidad del comité y explicaciones sobre el intercambio iaeste."
       }
     },
     "groups": {

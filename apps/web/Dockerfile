@@ -54,6 +54,10 @@ COPY --from=installer /app/ .
 # out/full/ is the pruned source tree (apps/web + its workspace deps only,
 # including its own turbo.json).
 COPY --from=pruner /app/out/full/ .
+# Keystatic's config and git-backed content live at the repository root, so
+# turbo prune does not place them inside the web workspace automatically.
+COPY --from=pruner /app/keystatic.config.ts ./keystatic.config.ts
+COPY --from=pruner /app/content ./content
 
 # --- Build-time configuration -----------------------------------------------
 # `next build` traces every server module reachable from a route while
@@ -113,6 +117,8 @@ RUN addgroup --system --gid 1001 nodejs \
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+# The public image route reads cover images from the git-backed content tree.
+COPY --from=builder --chown=nextjs:nodejs /app/content ./content
 
 USER nextjs
 

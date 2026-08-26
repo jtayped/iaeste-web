@@ -194,6 +194,22 @@
       "twitterDescription": "Descobreix els detalls i el suport necessari per a la teva arribada a Lleida amb IAESTE."
     }
   },
+  "BlogPage": {
+    "Metadata": {
+      "title": "blog | iaeste lc lleida",
+      "description": "notícies, activitats i explicacions del programa d'intercanvi d'iaeste lc lleida."
+    },
+    "title": "històries que expliquen l'intercanvi",
+    "description": "notícies del comitè, experiències i guies per entendre com funciona iaeste des de lleida.",
+    "readArticle": "llegeix l'article",
+    "fallbackLabel": "català",
+    "draftLabel": "esborrany",
+    "back": "torna al blog",
+    "empty": "encara no hi ha cap article publicat.",
+    "fallbackNotice": "aquest article encara no té versió en la llengua seleccionada. et mostrem l'original en català.",
+    "translationsLabel": "altres llengües",
+    "paginationLabel": "pàgines del blog"
+  },
   "UnderConstructionPage": {
     "title": "Aquesta pàgina està en construcció!",
     "description": "El nostre equip de IT hi està treballant! Estarà llesta aviat.",
@@ -223,6 +239,11 @@
         "name": "Empreses",
         "title": "Ets una empresa?",
         "description": "Col·labora amb IAESTE per accedir a talent tècnic internacional per a la teva organització."
+      },
+      "blog": {
+        "name": "blog",
+        "title": "notícies i històries",
+        "description": "actualitat del comitè i explicacions sobre l'intercanvi iaeste."
       }
     },
     "groups": {
