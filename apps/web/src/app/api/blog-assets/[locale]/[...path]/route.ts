@@ -43,7 +43,8 @@ export async function GET(
     const file = await readFile(assetPath);
     return new Response(new Uint8Array(file), {
       headers: {
-        "Cache-Control": "public, max-age=31536000, immutable",
+        // Keystatic can replace an image without changing its public path.
+        "Cache-Control": "public, max-age=0, must-revalidate",
         "Content-Type": contentType,
       },
     });
