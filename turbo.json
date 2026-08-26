@@ -22,6 +22,8 @@
     }
   },
   "globalEnv": [
+    "DATABASE_URL",
+    "TEST_DATABASE_URL",
     "API_PORT",
     "CORS_ALLOWED_ORIGINS",
     "SHEETS_PROJECT_ID",

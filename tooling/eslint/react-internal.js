@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginReact from "eslint-plugin-react";
 import globals from "globals";
-import { boundaryRules, config as baseConfig } from "./base.js";
+import { boundaryRules, dbBoundaryRules, config as baseConfig } from "./base.js";
 
 /**
  * A custom ESLint configuration for libraries that use React.
@@ -37,6 +37,6 @@ export const config = [
     },
   },
   {
-    rules: boundaryRules,
+    rules: { ...boundaryRules, ...dbBoundaryRules },
   },
 ];
