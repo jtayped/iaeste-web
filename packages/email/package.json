@@ -5,22 +5,30 @@
   "type": "module",
   "scripts": {
     "dev": "email dev -p 3002 --dir=./src/emails",
-    "export": "email export"
-  },
-  "dependencies": {
-    "@react-email/components": "^0.5.3",
-    "@repo/eslint-config": "*",
-    "@repo/typescript-config": "*",
-    "@repo/ui": "*",
-    "browserslist": "^4.22.2",
-    "react-email": "^4.0.4",
-    "resend": "^4.1.2"
+    "export": "email export",
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit"
   },
   "exports": {
     "./*": "./src/emails/*.tsx",
     "./resend": "./src/lib/resend.ts"
   },
+  "dependencies": {
+    "@react-email/components": "^0.5.3",
+    "browserslist": "^4.22.2",
+    "resend": "^4.1.2"
+  },
   "devDependencies": {
-    "@react-email/preview-server": "^4.2.11"
+    "@react-email/preview-server": "^4.2.11",
+    "@repo/eslint-config": "*",
+    "@repo/tailwind-config": "*",
+    "@repo/typescript-config": "*",
+    "@types/react": "19.0.10",
+    "react": "^19.1.1",
+    "react-email": "^4.0.4",
+    "typescript": "^5.8.2"
+  },
+  "peerDependencies": {
+    "react": "^19"
   }
 }

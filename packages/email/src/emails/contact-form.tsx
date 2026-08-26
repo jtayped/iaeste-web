@@ -30,7 +30,7 @@ export const ContactFormEmail = ({
         ha fet servir el formulari de la web. Ha enviat el següent missatge:
       </Text>
       <blockquote>
-        <p className="text-lg mb-0">
+        <p className="mb-0 text-lg">
           <b>{subject}</b>
         </p>
         <p className="mt-2">
@@ -40,7 +40,7 @@ export const ContactFormEmail = ({
       <Section>
         <Button
           href={`mailto:${email}`}
-          className="bg-blue-900 text-center rounded-lg text-white w-full py-3"
+          className="w-full rounded-lg bg-blue-900 py-3 text-center text-white"
         >
           Contestar el/la {name}
         </Button>

@@ -15,12 +15,12 @@ export const VerifyUserEmail = ({ email, link }: VerifyUserEmailProps) => {
       <Section>
         <Button
           href={link}
-          className="bg-blue-900 text-center rounded-lg text-white w-full py-3"
+          className="w-full rounded-lg bg-blue-900 py-3 text-center text-white"
         >
           Verificar
         </Button>
       </Section>
-      <Text className="text-xs mb-0">
+      <Text className="mb-0 text-xs">
         Fent clic amb aquest botó, sereu redireccionats a la pagina web per
         verificar el vostre correu <u>({email})</u>.
       </Text>

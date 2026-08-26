@@ -1,58 +1,19 @@
-import { z } from "zod";
+"use client";
+
 import { useTranslations } from "next-intl";
 
-const useFormSchema = () => {
-  const t = useTranslations();
+import { createContactFormSchema } from "@repo/constants/validators/contact-form";
 
-  return z.object({
-    email: z
-      .string({
-        required_error: t("contact.email.required"),
-      })
-      .email({
-        message: t("contact.email.invalid"),
-      }),
-    name: z
-      .string({
-        required_error: t("contact.name.required"),
-      })
-      .min(2, {
-        message: t("contact.name.min", { min: 2 }),
-      })
-      .max(20, {
-        message: t("contact.name.max", { max: 20 }),
-      }),
-    lastname: z
-      .string({
-        required_error: t("contact.lastname.required"),
-      })
-      .min(2, {
-        message: t("contact.lastname.min", { min: 2 }),
-      })
-      .max(20, {
-        message: t("contact.lastname.max", { max: 20 }),
-      }),
-    subject: z
-      .string({
-        required_error: t("contact.subject.required"),
-      })
-      .min(1, {
-        message: t("contact.subject.min", { min: 1 }),
-      })
-      .max(500, {
-        message: t("contact.subject.max", { max: 500 }),
-      }),
-    message: z
-      .string({
-        required_error: t("contact.message.required"),
-      })
-      .min(10, {
-        message: t("contact.message.min", { min: 10 }),
-      })
-      .max(5000, {
-        message: t("contact.message.max", { max: 5000 }),
-      }),
-  });
+/**
+ * Localised contact form schema for client-side validation.
+ *
+ * The shape itself lives in `@repo/constants` so the server action can enforce
+ * the same rules; this hook only supplies translated messages.
+ */
+const useContactFormSchema = () => {
+  const t = useTranslations("contact");
+
+  return createContactFormSchema(t);
 };
 
-export default useFormSchema;
+export default useContactFormSchema;

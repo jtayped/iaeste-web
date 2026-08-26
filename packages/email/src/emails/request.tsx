@@ -20,7 +20,7 @@ export const UserRequest = ({ name, email, requestLink }: UserRequestProps) => {
       <Section>
         <Button
           href={requestLink}
-          className="bg-blue-900 text-center rounded-lg text-white w-full py-3"
+          className="w-full rounded-lg bg-blue-900 py-3 text-center text-white"
         >
           Veure sol·licitud
         </Button>
