@@ -202,9 +202,9 @@ See the IA-08 commit history for the actual output of this run.
   `outputFileTracingRoot` fix in its own `next.config`.
 - `apps/api` is not a Next.js app (Hono), so its Dockerfile doesn't need
   the standalone-output dance at all — it's closer to a plain
-  `npm ci && npm run build && npm start` image. README.md already
-  documents it as independently deployable (Node service or Vercel); a
-  container is a third option, not a replacement for that doc.
+  `npm ci && npm run build && npm start` image. README.md documents it as
+  an independently deployable Node service; IA-60 will add its production
+  container.
 - `admin` doesn't exist yet (later milestone per
   `docs/membership-lifecycle.md`) — nothing to containerize until it does.
 - `deploy.yml` will need a job per app once there's more than one image to
