@@ -32,7 +32,6 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Alert, AlertTitle, AlertDescription } from "@repo/ui/alert";
 import { ALREADY_SUBMITTED } from "@/constants/errors";
-import PreviousMemberField from "./fields/previous-member";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -96,7 +95,6 @@ const UserForm = () => {
       phone: "",
       degree: undefined,
       year: 1,
-      previousMember: false,
       note: "",
     },
   });
@@ -166,8 +164,6 @@ const UserForm = () => {
               <DegreeField form={form} />
               <YearField form={form} />
             </Group>
-
-            <PreviousMemberField form={form} />
 
             <motion.div variants={childVariants}>
               <Card>

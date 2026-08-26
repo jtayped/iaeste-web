@@ -1,16 +1,31 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, describe, it } from "node:test";
 
+import { eq } from "drizzle-orm";
+
 import type { Registration } from "@repo/constants/validators/registration";
 import type { Database } from "@repo/db/client";
 import {
   createCampaignRepository,
   createRegistrationRepository,
 } from "@repo/db/repositories";
+import { registrationVerification } from "@repo/db/schema";
 import { closeTestDb, getTestDb, truncateAll } from "@repo/db/test-support";
+import type { Emailer, SendEmailOptions } from "@repo/email/resend";
 
 import { createApp } from "../app";
 import { createDrizzleRegistrationRepository } from "./registrations";
+
+/** Records every send instead of hitting the real Resend API. */
+function createRecordingEmailer(): Emailer & { sent: SendEmailOptions[] } {
+  const sent: SendEmailOptions[] = [];
+  return {
+    sent,
+    async send(options) {
+      sent.push(options);
+    },
+  };
+}
 
 const validRegistration: Registration = {
   name: "Joan",
@@ -19,7 +34,6 @@ const validRegistration: Registration = {
   phone: "+34 623 32 42 34",
   degree: "Grau en Informàtica (Lleida)",
   year: 2,
-  previousMember: false,
   note: "Hola",
 };
 
@@ -81,7 +95,8 @@ describe("createDrizzleRegistrationRepository", () => {
 
   it("inserts a registration into Postgres when a campaign is open for registration", async () => {
     const campaign = await openCampaignForRegistration(db);
-    const repository = createDrizzleRegistrationRepository();
+    const emailer = createRecordingEmailer();
+    const repository = createDrizzleRegistrationRepository({ emailer });
 
     await repository.create(validRegistration);
 
@@ -96,21 +111,78 @@ describe("createDrizzleRegistrationRepository", () => {
     assert.deepEqual(saved?.profileSnapshot, {
       name: "Joan",
       surnames: "Garcia Serra",
-      phoneE164: "+34 623 32 42 34",
+      // Real E.164/international parsing (IA-40), not a copy of the raw
+      // submitted string.
+      phoneE164: "+34623324234",
       phoneDisplay: "+34 623 32 42 34",
       degree: "Grau en Informàtica (Lleida)",
       studyYear: 2,
-      previousMember: false,
       note: "Hola",
     });
   });
 
   it("throws clearly when no campaign is open for registration", async () => {
-    const repository = createDrizzleRegistrationRepository();
+    const repository = createDrizzleRegistrationRepository({
+      emailer: createRecordingEmailer(),
+    });
 
     await assert.rejects(
       () => repository.create(validRegistration),
       /No campaign is currently open for registration/,
     );
+  });
+
+  it("stores a hashed verification token and emails the applicant", async () => {
+    const campaign = await openCampaignForRegistration(db);
+    const emailer = createRecordingEmailer();
+    const repository = createDrizzleRegistrationRepository({ emailer });
+
+    await repository.create(validRegistration);
+
+    assert.equal(emailer.sent.length, 1);
+    assert.equal(emailer.sent[0]?.to, validRegistration.email);
+
+    const registrations = createRegistrationRepository(db);
+    const saved = await registrations.getByCampaignAndEmail(
+      campaign.id,
+      validRegistration.email,
+    );
+    assert.ok(saved);
+
+    const [verificationRow] = await db
+      .select()
+      .from(registrationVerification)
+      .where(eq(registrationVerification.registrationId, saved!.id));
+    assert.ok(verificationRow);
+    assert.ok(verificationRow.tokenHash);
+    // The raw token is never stored — only its hash, which is not
+    // trivially the raw hex string itself.
+    assert.equal(verificationRow.tokenHash.length, 64); // sha256 hex digest
+    assert.equal(verificationRow.consumedAt, null);
+    const hoursUntilExpiry =
+      (verificationRow.expiresAt.getTime() - Date.now()) / (60 * 60 * 1000);
+    assert.ok(hoursUntilExpiry > 23 && hoursUntilExpiry <= 24);
+  });
+
+  it("still creates the registration when the verification email fails to send", async () => {
+    await openCampaignForRegistration(db);
+    const failingEmailer = {
+      async send() {
+        throw new Error("Resend is down");
+      },
+    };
+    const repository = createDrizzleRegistrationRepository({
+      emailer: failingEmailer,
+    });
+
+    await assert.doesNotReject(() => repository.create(validRegistration));
+
+    const registrations = createRegistrationRepository(db);
+    const saved = await registrations.getByCampaignAndEmail(
+      (await createCampaignRepository(db).getOpenForRegistration())!.id,
+      validRegistration.email,
+    );
+    assert.ok(saved);
+    assert.equal(saved?.status, "pending_email");
   });
 });

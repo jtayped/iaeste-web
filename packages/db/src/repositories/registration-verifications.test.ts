@@ -98,6 +98,40 @@ describe("registration verifications repository", () => {
     assert.equal(results.filter((r) => r.status === "rejected").length, 1);
   });
 
+  it("invalidateActiveForRegistration expires unconsumed tokens but leaves consumed ones alone", async () => {
+    const verifications = createRegistrationVerificationRepository(db);
+    const registration = await createPendingRegistration();
+
+    await verifications.create({
+      registrationId: registration.id,
+      tokenHash: "hash-consumed",
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+    await verifications.consume("hash-consumed");
+
+    const active = await verifications.create({
+      registrationId: registration.id,
+      tokenHash: "hash-active",
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+
+    await verifications.invalidateActiveForRegistration(registration.id);
+
+    // The still-unconsumed token now stops working...
+    await assert.rejects(
+      () => verifications.consume("hash-active"),
+      IllegalTransitionError,
+    );
+    const invalidated = await verifications.getByTokenHash("hash-active");
+    assert.ok(invalidated);
+    assert.equal(invalidated?.id, active.id);
+    assert.ok(invalidated && invalidated.expiresAt.getTime() <= Date.now());
+    // ...but the already-consumed row is untouched (still marked consumed,
+    // not further mutated).
+    const consumedRow = await verifications.getByTokenHash("hash-consumed");
+    assert.ok(consumedRow?.consumedAt);
+  });
+
   it("recordAttempt increments the attempt count", async () => {
     const verifications = createRegistrationVerificationRepository(db);
     const registration = await createPendingRegistration();
