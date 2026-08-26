@@ -95,13 +95,13 @@ export function mapVerifyResult(result: ApiResult<Verified>): VerifyOutcome {
 }
 
 /**
- * Normalises a `?token=` query param. A missing or blank token is treated as
- * an unusable link locally rather than being sent to the API, which would
- * answer `INVALID_TOKEN` anyway.
+ * Normalises a token from the current fragment or a legacy query parameter.
+ * Verification links contain a 32-byte random value encoded as 64 hex
+ * characters, so malformed values never need a request to the API.
  */
 export function readToken(raw: string | null | undefined): string | undefined {
   const token = raw?.trim();
-  return token ? token : undefined;
+  return token && /^[a-f0-9]{64}$/i.test(token) ? token : undefined;
 }
 
 /**

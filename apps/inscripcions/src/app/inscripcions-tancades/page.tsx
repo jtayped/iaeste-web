@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarOff, Globe, Send } from "lucide-react";
+import { Globe, Send } from "lucide-react";
 import { Button } from "@repo/ui/button";
 import ButtonGroup from "@repo/ui/button-group";
 import { Paragraph } from "@repo/ui/typography";
@@ -9,7 +9,7 @@ import { Paragraph } from "@repo/ui/typography";
 import StatusScreen from "@/components/status";
 
 export const metadata: Metadata = {
-  title: "Inscripcions tancades | IAESTE LC Lleida",
+  title: "inscripcions tancades | iaeste lc lleida",
   robots: { index: false, follow: false },
 };
 
@@ -23,32 +23,32 @@ export const metadata: Metadata = {
  */
 const ClosedCampaignPage = () => (
   <StatusScreen
-    icon={CalendarOff}
+    icon="calendar-off"
     tone="neutral"
-    title="Ara mateix no hi ha inscripcions obertes"
+    title="ara mateix no hi ha inscripcions obertes"
     actions={
-      <ButtonGroup className="grid grid-cols-2 md:flex">
+      <ButtonGroup className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex">
         <Button asChild>
           <Link href="mailto:iaeste@udl.cat?subject=Inscripci%C3%B3%20a%20IAESTE%20Lleida">
             <Send />
-            Contacta&apos;ns
+            contacta&apos;ns
           </Link>
         </Button>
         <Button variant="outline" asChild>
           <Link href="https://iaestelleida.cat">
             <Globe />
-            Més informació
+            més informació
           </Link>
         </Button>
       </ButtonGroup>
     }
   >
     <Paragraph>
-      El termini per unir-te a IAESTE LC Lleida està tancat, així que no hem
+      el termini per unir-te a iaeste lc lleida està tancat, així que no hem
       pogut desar la teva inscripció.
     </Paragraph>
     <Paragraph>
-      Obrim inscripcions un cop l&apos;any. Si t&apos;interessa, escriu-nos i
+      obrim inscripcions un cop l&apos;any. si t&apos;interessa, escriu-nos i
       t&apos;avisarem quan torni a estar obert.
     </Paragraph>
   </StatusScreen>

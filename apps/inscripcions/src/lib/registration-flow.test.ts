@@ -108,10 +108,15 @@ describe("mapVerifyResult", () => {
 });
 
 describe("readToken", () => {
-  it("keeps a real token and drops anything blank", () => {
-    assert.equal(readToken(" abc123 "), "abc123");
+  it("keeps a real token and drops malformed values", () => {
+    const token = "a1".repeat(32);
+
+    assert.equal(readToken(` ${token} `), token);
     assert.equal(readToken(""), undefined);
     assert.equal(readToken("   "), undefined);
+    assert.equal(readToken("abc123"), undefined);
+    assert.equal(readToken("g".repeat(64)), undefined);
+    assert.equal(readToken("a".repeat(65)), undefined);
     assert.equal(readToken(null), undefined);
     assert.equal(readToken(undefined), undefined);
   });

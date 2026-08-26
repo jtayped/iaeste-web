@@ -1,14 +1,13 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Link2Off } from "lucide-react";
 import { Button } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 
 import StatusScreen from "@/components/status";
 
 export const metadata: Metadata = {
-  title: "Enllaç no vàlid | IAESTE LC Lleida",
+  title: "enllaç no vàlid | iaeste lc lleida",
   robots: { index: false, follow: false },
 };
 
@@ -24,17 +23,17 @@ export const metadata: Metadata = {
  */
 const ExpiredLinkPage = () => (
   <StatusScreen
-    icon={Link2Off}
+    icon="link-off"
     tone="warning"
-    title="Aquest enllaç ja no serveix"
+    title="aquest enllaç ja no serveix"
     actions={
       <Button variant="link" asChild>
-        <Link href="/">Torna a l&apos;inici</Link>
+        <Link href="/">torna a l&apos;inici</Link>
       </Button>
     }
     footnote={
       <>
-        Si res d&apos;això funciona, escriu-nos a{" "}
+        si res d&apos;això funciona, escriu-nos a{" "}
         <a
           className="font-medium text-primary underline underline-offset-4"
           href="mailto:iaeste@udl.cat"
@@ -46,13 +45,13 @@ const ExpiredLinkPage = () => (
     }
   >
     <Paragraph>
-      L&apos;enllaç de verificació ha caducat, ja s&apos;ha fet servir o no és
-      correcte. No et podem dir quin dels tres és: així evitem donar pistes
+      l&apos;enllaç de verificació ha caducat, ja s&apos;ha fet servir o no és
+      correcte. no et podem dir quin dels tres és: així evitem donar pistes
       sobre inscripcions que no són teves.
     </Paragraph>
     <Paragraph>
-      Busca a la teva safata el correu de verificació més recent i fes clic a
-      l&apos;enllaç d&apos;aquell: cada correu nou invalida els anteriors. Si ja
+      busca a la teva safata el correu de verificació més recent i fes clic a
+      l&apos;enllaç d&apos;aquell: cada correu nou invalida els anteriors. si ja
       havies verificat el correu, no has de fer res més.
     </Paragraph>
   </StatusScreen>

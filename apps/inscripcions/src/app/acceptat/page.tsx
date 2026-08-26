@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus, UserCheck } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 import { env } from "@repo/env/inscripcions";
@@ -9,7 +9,7 @@ import { env } from "@repo/env/inscripcions";
 import StatusScreen from "@/components/status";
 
 export const metadata: Metadata = {
-  title: "Benvingut/da a IAESTE LC Lleida",
+  title: "benvingut/da a iaeste lc lleida",
   robots: { index: false, follow: false },
 };
 
@@ -23,33 +23,33 @@ export const metadata: Metadata = {
  */
 const AcceptedPage = () => (
   <StatusScreen
-    icon={UserCheck}
+    icon="user-check"
     tone="positive"
-    title="Ja ets dels nostres!"
+    title="ja ets dels nostres!"
     celebrate
     actions={
       <>
         {env.NEXT_PUBLIC_WHATSAPP_INVITE && (
           <Button asChild>
             <Link href={env.NEXT_PUBLIC_WHATSAPP_INVITE}>
-              Uneix-te al grup de WhatsApp
+              uneix-te al grup de whatsapp
               <Plus />
             </Link>
           </Button>
         )}
         <Button variant="link" asChild>
-          <Link href="https://iaestelleida.cat">Coneix el que fem</Link>
+          <Link href="https://iaestelleida.cat">coneix el que fem</Link>
         </Button>
       </>
     }
   >
     <Paragraph>
-      El comitè ha revisat la teva sol·licitud i l&apos;ha acceptada: ja ets
-      membre de IAESTE LC Lleida.
+      el comitè ha revisat la teva sol·licitud i l&apos;ha acceptada: ja ets
+      membre d&apos;iaeste lc lleida.
     </Paragraph>
     <Paragraph>
-      Al correu d&apos;acceptació hi trobaràs l&apos;enllaç per entrar per
-      primer cop al teu compte. És personal i d&apos;un sol ús: no el
+      al correu d&apos;acceptació hi trobaràs l&apos;enllaç per entrar per
+      primer cop al teu compte. és personal i d&apos;un sol ús: no el
       comparteixis.
     </Paragraph>
   </StatusScreen>

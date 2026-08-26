@@ -18,10 +18,13 @@ const EmailField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
       name="email"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Correu de la UdL</FormLabel>
+          <FormLabel>correu de la udl</FormLabel>
           <FormControl>
             <Input
               placeholder="johndoe@alumnes.udl.cat"
+              data-field-name="email"
+              className="h-11"
+              required
               type="email"
               inputMode="email"
               autoComplete="email"
@@ -29,8 +32,8 @@ const EmailField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
             />
           </FormControl>
           <FormDescription>
-            Ha de ser <b>@udl.cat</b> o <b>@alumnes.udl.cat</b>: així sabem que
-            ets de la UdL sense demanar-te cap document, i és on t&apos;enviarem
+            ha de ser <b>@udl.cat</b> o <b>@alumnes.udl.cat</b>: així sabem que
+            ets de la udl sense demanar-te cap document, i és on t&apos;enviarem
             l&apos;enllaç per verificar la inscripció.
           </FormDescription>
           <FormMessage />

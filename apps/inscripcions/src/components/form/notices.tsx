@@ -45,7 +45,7 @@ export const Group = ({
     <Card>
       <div className="flex items-center gap-2">
         <Icon size={19} />
-        <p className="text-lg font-medium">{title}</p>
+        <h2 className="text-lg font-medium">{title}</h2>
       </div>
       <div className="mt-6 grid gap-4 md:grid-cols-2">{children}</div>
     </Card>
@@ -55,9 +55,9 @@ export const Group = ({
 export const FormIntro = () => (
   <motion.div variants={childVariants}>
     <Card>
-      <H1>Benvingut/da!</H1>
+      <H1>benvingut/da!</H1>
       <Paragraph>
-        Omple el formulari amb la teva informació per inscriure&apos;t. Després
+        omple el formulari amb la teva informació per inscriure&apos;t. després
         t&apos;enviarem un correu per verificar l&apos;adreça: la inscripció no
         arriba al comitè fins que hi facis clic.
       </Paragraph>
@@ -73,14 +73,14 @@ export const PreviousRegistrationNotice = ({ id }: { id: string }) => (
   <motion.div variants={childVariants}>
     <Alert>
       <Info />
-      <AlertTitle>Ja t&apos;havies inscrit?</AlertTitle>
+      <AlertTitle>ja t&apos;havies inscrit?</AlertTitle>
       <AlertDescription>
-        Des d&apos;aquest dispositiu ja s&apos;ha enviat una inscripció.{" "}
+        des d&apos;aquest dispositiu ja s&apos;ha enviat una inscripció.{" "}
         <Link
           className={inlineLink}
           href={`/verificacio-pendent?id=${encodeURIComponent(id)}`}
         >
-          Consulta&apos;n l&apos;estat
+          consulta&apos;n l&apos;estat
         </Link>{" "}
         o continua omplint el formulari si vols inscriure una altra persona.
       </AlertDescription>
@@ -92,9 +92,13 @@ export const PreviousRegistrationNotice = ({ id }: { id: string }) => (
 export const ErrorSummary = ({
   fields,
   errors,
+  rootMessage,
+  onSelectField,
 }: {
   fields: readonly (keyof typeof FIELD_LABELS)[];
   errors: FieldErrors<RegistrationForm>;
+  rootMessage?: string;
+  onSelectField: (field: string) => void;
 }) => (
   <motion.div variants={childVariants}>
     <Alert
@@ -104,15 +108,28 @@ export const ErrorSummary = ({
       aria-live="polite"
     >
       <AlertCircleIcon />
-      <AlertTitle>Falten dades per revisar</AlertTitle>
+      <AlertTitle>
+        {fields.length > 0
+          ? "revisa les dades marcades"
+          : "no ho hem pogut enviar"}
+      </AlertTitle>
       <AlertDescription>
-        <ul className="ml-4 list-disc">
-          {fields.map((field) => (
-            <li key={field}>
-              {FIELD_LABELS[field]}: {errors[field]?.message}
-            </li>
-          ))}
-        </ul>
+        {rootMessage && <p>{rootMessage}</p>}
+        {fields.length > 0 && (
+          <ul className="ml-4 list-disc">
+            {fields.map((field) => (
+              <li key={field}>
+                <button
+                  type="button"
+                  className="text-left underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => onSelectField(field)}
+                >
+                  {FIELD_LABELS[field]}: {errors[field]?.message}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </AlertDescription>
     </Alert>
   </motion.div>
@@ -123,11 +140,11 @@ export const ExternalMemberNotice = () => (
   <motion.div variants={childVariants}>
     <Alert>
       <MailCheck />
-      <AlertTitle>No estudies a la UdL?</AlertTitle>
+      <AlertTitle>no estudies a la udl?</AlertTitle>
       <AlertDescription>
-        Aquest formulari és per a estudiants de la UdL. Si el comitè t&apos;ha
+        aquest formulari és per a estudiants de la udl. si el comitè t&apos;ha
         convidat a formar-ne part des de fora, rebràs la invitació al teu correu
-        i no cal que passis per aquí. Si tens dubtes,{" "}
+        i no cal que passis per aquí. si tens dubtes,{" "}
         <TextLink href="mailto:iaeste@udl.cat">
           escriu-nos a iaeste@udl.cat
         </TextLink>

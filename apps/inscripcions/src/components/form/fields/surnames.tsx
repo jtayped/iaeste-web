@@ -17,9 +17,16 @@ const SurnameField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
       name="surnames"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Cognoms</FormLabel>
+          <FormLabel>cognoms</FormLabel>
           <FormControl>
-            <Input placeholder="Doe" autoComplete="family-name" {...field} />
+            <Input
+              data-field-name="surnames"
+              className="h-11"
+              placeholder="garcia serra"
+              required
+              autoComplete="family-name"
+              {...field}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

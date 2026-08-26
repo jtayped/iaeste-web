@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi";
 
 import { DEGREE_OPTIONS } from "@repo/constants/studies";
+import { isValidPhone } from "@repo/constants/validators/phone";
 
-import { isValidPhone } from "./lib/phone";
 import { API_VERSION } from "./version";
 
 export const registrationRequestSchema = z
@@ -23,7 +23,7 @@ export const registrationRequestSchema = z
       .string()
       .trim()
       .min(1)
-      .refine(isValidPhone, "El número de telèfon no és vàlid")
+      .refine(isValidPhone, "el número de telèfon no és vàlid")
       .openapi({ example: "+34 623 32 42 34" }),
     degree: z
       .enum(DEGREE_OPTIONS)

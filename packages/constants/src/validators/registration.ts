@@ -1,39 +1,44 @@
 import { z } from "zod";
 
 import { DEGREE_OPTIONS } from "../constants/studies";
+import { isValidPhone } from "./phone";
 
 const universityEmailSchema = z
   .string()
   .trim()
   .toLowerCase()
-  .email("Adreça de correu electrònic no vàlida")
+  .email("adreça de correu electrònic no vàlida")
   .refine((email) => {
     const domain = email.split("@").at(-1);
     return domain === "udl.cat" || domain?.endsWith(".udl.cat") === true;
-  }, "El correu ha de ser de la UdL");
+  }, "el correu ha de ser de la udl");
 
 export const registrationSchema = z.object({
-  name: z.string().trim().min(2, "El nom ha de tenir almenys 2 caràcters"),
+  name: z.string().trim().min(2, "el nom ha de tenir almenys 2 caràcters"),
   surnames: z
     .string()
     .trim()
-    .min(2, "Els cognoms han de tenir almenys 2 caràcters"),
+    .min(2, "els cognoms han de tenir almenys 2 caràcters"),
   email: universityEmailSchema,
-  phone: z.string().trim().min(1, "El número és obligatori"),
+  phone: z
+    .string()
+    .trim()
+    .min(1, "el número és obligatori")
+    .refine(isValidPhone, "el número de telèfon no és vàlid"),
   degree: z.enum(DEGREE_OPTIONS, {
-    error: "Has de seleccionar un grau",
+    error: "has de seleccionar un grau",
   }),
   year: z
     .number({
-      error: "L'any ha de ser un número",
+      error: "l'any ha de ser un número",
     })
-    .int("L'any ha de ser un número enter")
-    .min(1, "L'any ha de ser com a mínim 1")
-    .max(6, "L'any ha d'estar entre 1 i 6"),
+    .int("l'any ha de ser un número enter")
+    .min(1, "l'any ha de ser com a mínim 1")
+    .max(6, "l'any ha d'estar entre 1 i 6"),
   note: z
     .string()
     .trim()
-    .max(2_000, "La nota no pot superar els 2.000 caràcters")
+    .max(2_000, "la nota no pot superar els 2.000 caràcters")
     .optional(),
 });
 

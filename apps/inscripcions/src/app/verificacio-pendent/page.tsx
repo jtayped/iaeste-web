@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import React, { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Verifica el teu correu | IAESTE LC Lleida",
+  title: "verifica el teu correu | iaeste lc lleida",
   robots: { index: false, follow: false },
 };
 

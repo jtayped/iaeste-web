@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, RotateCw, TriangleAlert } from "lucide-react";
+import { RotateCw } from "lucide-react";
 import { Button } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 
@@ -18,23 +18,35 @@ import {
 /**
  * The landing page for the link in the verification email.
  *
- * The token arrives in the URL because that is what an email link can carry,
- * but it is sent to the API in a POST body and the page then replaces itself
- * with a token-free URL, so the token does not linger in history or in a
- * shared link.
+ * New email links carry the token in the URL fragment, which browsers do not
+ * send to Next, proxies, or analytics. Query parameters remain supported for
+ * links issued before IA-41, but the component strips either form from the
+ * address bar before making the API request.
  */
 const Verify = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [failed, setFailed] = useState(false);
   const attempted = useRef(false);
+  const tokenRef = useRef<string | undefined>(undefined);
 
   const verify = useCallback(async () => {
-    const token = readToken(searchParams.get("token"));
+    const fragmentToken = new URLSearchParams(
+      window.location.hash.slice(1),
+    ).get("token");
+    const token =
+      tokenRef.current ??
+      readToken(fragmentToken) ??
+      readToken(searchParams.get("token"));
 
     if (!token) {
       router.replace("/enllac-caducat");
       return;
+    }
+
+    if (!tokenRef.current) {
+      tokenRef.current = token;
+      window.history.replaceState(window.history.state, "", "/verificar");
     }
 
     setFailed(false);
@@ -76,34 +88,34 @@ const Verify = () => {
   if (!failed) {
     return (
       <StatusScreen
-        icon={Loader2}
+        icon="loading"
         iconClassName="animate-spin"
-        title="Verificant el teu correu…"
+        title="verificant el teu correu…"
       >
-        <Paragraph>Un moment, si us plau.</Paragraph>
+        <Paragraph>un moment, si us plau.</Paragraph>
       </StatusScreen>
     );
   }
 
   return (
     <StatusScreen
-      icon={TriangleAlert}
+      icon="warning"
       tone="warning"
-      title="No hem pogut verificar-ho ara mateix"
+      title="no hem pogut verificar-ho ara mateix"
       actions={
         <>
           <Button onClick={retry}>
             <RotateCw />
-            Torna-ho a provar
+            torna-ho a provar
           </Button>
           <Button variant="link" asChild>
-            <Link href="/">Torna a l&apos;inici</Link>
+            <Link href="/">torna a l&apos;inici</Link>
           </Button>
         </>
       }
     >
       <Paragraph>
-        Hi ha hagut un problema de connexió amb el servidor. L&apos;enllaç
+        hi ha hagut un problema de connexió amb el servidor. l&apos;enllaç
         segueix sent vàlid: torna-ho a provar d&apos;aquí a un moment.
       </Paragraph>
     </StatusScreen>

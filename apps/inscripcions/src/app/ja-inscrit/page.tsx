@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Ja estàs inscrit | IAESTE LC Lleida",
+  title: "ja estàs inscrit | iaeste lc lleida",
   robots: { index: false, follow: false },
 };
 

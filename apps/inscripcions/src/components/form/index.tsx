@@ -13,16 +13,9 @@ import EmailField from "./fields/email";
 import ConfirmEmailField from "./fields/confirm-email";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
-import {
-  AlertCircleIcon,
-  CircleUserRound,
-  Loader2,
-  School,
-  Send,
-} from "lucide-react";
+import { CircleUserRound, Loader2, School, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Alert, AlertTitle, AlertDescription } from "@repo/ui/alert";
 import { apiClient } from "@/lib/api";
 import {
   FIELD_ORDER,
@@ -47,9 +40,9 @@ import {
 } from "@/lib/registration-cookie";
 
 const GENERIC_FAILURE =
-  "No hem pogut desar la inscripció. Torna-ho a provar d'aquí a un moment.";
+  "no hem pogut desar la inscripció. torna-ho a provar d'aquí a un moment.";
 const NETWORK_FAILURE =
-  "No hem pogut connectar amb el servidor. Comprova la connexió i torna-ho a provar.";
+  "no hem pogut connectar amb el servidor. comprova la connexió i torna-ho a provar.";
 
 function firstInvalidField(errors: FieldErrors<RegistrationForm>) {
   return FIELD_ORDER.find((field) => errors[field]);
@@ -63,11 +56,16 @@ function firstInvalidField(errors: FieldErrors<RegistrationForm>) {
  */
 function focusField(field: string | undefined) {
   const target =
-    (field ? document.querySelector<HTMLElement>(`[name="${field}"]`) : null) ??
-    document.getElementById("form-error-summary");
+    (field
+      ? document.querySelector<HTMLElement>(`[data-field-name="${field}"]`)
+      : null) ?? document.getElementById("form-error-summary");
 
   target?.focus({ preventScroll: true });
   target?.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+function focusError(field?: string) {
+  requestAnimationFrame(() => focusField(field));
 }
 
 const UserForm = () => {
@@ -111,6 +109,7 @@ const UserForm = () => {
       );
     } catch {
       form.setError("root", { message: NETWORK_FAILURE });
+      focusError();
       return;
     }
 
@@ -142,11 +141,14 @@ const UserForm = () => {
         }
 
         form.setError("root", {
-          message: unmapped.length
-            ? unmapped.join(" ")
-            : "Revisa les dades marcades i torna-ho a provar.",
+          message:
+            unmapped.length > 0
+              ? unmapped.join(" ")
+              : outcome.issues.length === 0
+                ? "les dades no són vàlides. revisa el formulari i torna-ho a provar."
+                : "revisa les dades marcades i torna-ho a provar.",
         });
-        focusField(
+        focusError(
           outcome.issues.map((issue) => issue.field).find(isFormField),
         );
         return;
@@ -154,6 +156,7 @@ const UserForm = () => {
 
       case "failed":
         form.setError("root", { message: GENERIC_FAILURE });
+        focusError();
         return;
     }
   }
@@ -161,15 +164,16 @@ const UserForm = () => {
   return (
     <motion.div
       className="py-10"
-      initial="hidden"
+      initial={false}
       animate="visible"
       variants={containerVariants}
     >
       <Form {...form}>
         <form
           noValidate
+          aria-busy={form.formState.isSubmitting}
           onSubmit={form.handleSubmit(onSubmit, (errors) =>
-            focusField(firstInvalidField(errors)),
+            focusError(firstInvalidField(errors)),
           )}
         >
           <div className="space-y-6">
@@ -177,19 +181,21 @@ const UserForm = () => {
 
             {previousId && <PreviousRegistrationNotice id={previousId} />}
 
-            {invalidFields.length > 0 && (
+            {(invalidFields.length > 0 || form.formState.errors.root) && (
               <ErrorSummary
                 fields={invalidFields}
                 errors={form.formState.errors}
+                rootMessage={form.formState.errors.root?.message}
+                onSelectField={focusField}
               />
             )}
 
-            <Group title="Qui ets?" icon={CircleUserRound}>
+            <Group title="qui ets?" icon={CircleUserRound}>
               <NameField form={form} />
               <SurnameField form={form} />
             </Group>
 
-            <Group title="Com et podem contactar?" icon={Send}>
+            <Group title="com et podem contactar?" icon={Send}>
               <EmailField form={form} />
               <ConfirmEmailField form={form} />
               <PhoneField form={form} />
@@ -197,7 +203,7 @@ const UserForm = () => {
 
             <ExternalMemberNotice />
 
-            <Group title="Què estudies?" icon={School}>
+            <Group title="què estudies?" icon={School}>
               <DegreeField form={form} />
               <YearField form={form} />
             </Group>
@@ -210,30 +216,20 @@ const UserForm = () => {
 
             <motion.div variants={childVariants}>
               <Button
-                className="w-full"
+                className="min-h-11 w-full"
                 type="submit"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? (
                   <>
                     <Loader2 className="animate-spin" />
-                    Enviant…
+                    enviant…
                   </>
                 ) : (
-                  "Inscriu-me"
+                  "inscriu-me"
                 )}
               </Button>
             </motion.div>
-
-            {form.formState.errors.root && (
-              <Alert variant="destructive" aria-live="polite">
-                <AlertCircleIcon />
-                <AlertTitle>Ups!</AlertTitle>
-                <AlertDescription>
-                  {form.formState.errors.root?.message}
-                </AlertDescription>
-              </Alert>
-            )}
           </div>
         </form>
       </Form>

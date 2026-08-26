@@ -92,6 +92,9 @@ describe("registration service", () => {
 
       assert.equal(emailer.sent.length, 1);
       assert.equal(emailer.sent[0]?.to, "resend@alumnes.udl.cat");
+      const emailPayload = JSON.stringify(emailer.sent[0]?.react);
+      assert.match(emailPayload, /\/verificar#token=[0-9a-f]{64}/);
+      assert.doesNotMatch(emailPayload, /\/verificar\?token=/);
 
       // The original token no longer works...
       await assert.rejects(

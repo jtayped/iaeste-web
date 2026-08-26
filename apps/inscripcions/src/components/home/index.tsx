@@ -31,8 +31,8 @@ const childVariants = {
 const HomePage = () => {
   return (
     <motion.div
-      className="flex h-screen items-center"
-      initial="hidden"
+      className="flex min-h-dvh items-center py-8"
+      initial={false}
       animate="visible"
       variants={containerVariants}
     >
@@ -42,42 +42,42 @@ const HomePage = () => {
             src={"/logos/icon-lleida-blue.png"}
             width={100}
             height={100}
-            alt="Logo de IAESTE LC Lleida"
+            alt="logo d'iaeste lc lleida"
             className="mx-auto mb-4"
           />
         </motion.div>
         <motion.div variants={childVariants}>
           <H1>
             {env.NEXT_PUBLIC_INSCRIPCIONS_STATE === "on"
-              ? "Inscriu-te a IAESTE Lleida!"
-              : "Ha finalitzat el plaç per inscriure't a IAESTE :("}
+              ? "inscriu-te a iaeste lleida!"
+              : "el termini d'inscripció ha finalitzat"}
           </H1>
         </motion.div>
         <motion.div variants={childVariants}>
           <Paragraph className="mt-3">
             {env.NEXT_PUBLIC_INSCRIPCIONS_STATE === "on"
-              ? "Només son 2 minuts per inscriure’t. Omple el formulari i uneix-te a nosaltres!"
-              : "Contacta amb nosaltres per correu o visita la nostra web!"}
+              ? "només són dos minuts. omple el formulari i uneix-te al comitè!"
+              : "contacta amb nosaltres per correu o visita el web."}
           </Paragraph>
         </motion.div>
         <motion.div variants={childVariants} className="mx-auto mt-6">
-          <ButtonGroup className="grid grid-cols-2 md:flex">
+          <ButtonGroup className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex [&>*]:min-h-11">
             <Button asChild className="md:px-12">
               {env.NEXT_PUBLIC_INSCRIPCIONS_STATE === "on" ? (
                 <Link href="/formulari">
                   <Check />
-                  Inscriu-te
+                  inscriu-te
                 </Link>
               ) : (
                 <Link href="mailto:iaeste@udl.cat?subject=Inscripci%C3%B3%20a%20IAESTE%20Lleida">
                   <Send />
-                  Contacta&apos;ns
+                  contacta&apos;ns
                 </Link>
               )}
             </Button>
             <Button variant="outline" asChild>
               <Link href={"https://iaestelleida.cat"}>
-                <Globe /> Més informació
+                <Globe /> més informació
               </Link>
             </Button>
           </ButtonGroup>

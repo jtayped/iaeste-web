@@ -19,10 +19,13 @@ const PhoneField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
       name="phone"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Número de telèfon</FormLabel>
+          <FormLabel>número de telèfon</FormLabel>
           <FormControl>
             <Input
               placeholder="+34 623 32 42 34"
+              data-field-name="phone"
+              className="h-11"
+              required
               type="tel"
               inputMode="tel"
               autoComplete="tel"
@@ -30,8 +33,8 @@ const PhoneField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
             />
           </FormControl>
           <FormDescription>
-            Si no hi poses prefix, l&apos;entendrem com un número espanyol.
-            Escriu-lo amb prefix (per exemple <b>+34 623 32 42 34</b>) si és
+            si no hi poses prefix, l&apos;entendrem com un número espanyol.
+            escriu-lo amb prefix (per exemple <b>+34 623 32 42 34</b>) si és
             d&apos;un altre país.
           </FormDescription>
           <FormMessage />

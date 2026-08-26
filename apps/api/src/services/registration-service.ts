@@ -175,7 +175,7 @@ export function createDrizzleRegistrationService(
         expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS),
       });
 
-      const link = `${getInscripcionsPublicOrigin()}/verificar?token=${rawToken}`;
+      const link = `${getInscripcionsPublicOrigin()}/verificar#token=${rawToken}`;
       try {
         await emailer().send({
           to: row.email,

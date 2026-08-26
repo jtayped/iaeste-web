@@ -3,11 +3,10 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Loader2, MailCheck, RotateCw } from "lucide-react";
+import { Info, Loader2, RotateCw, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
 import { Button } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
-import { Info, TriangleAlert } from "lucide-react";
 
 import StatusScreen from "@/components/status";
 import { apiClient } from "@/lib/api";
@@ -44,9 +43,16 @@ const PendingVerification = () => {
 
     setState("sending");
     try {
-      await apiClient.POST("/v1/registrations/{id}/resend-verification", {
-        params: { path: { id } },
-      });
+      const result = await apiClient.POST(
+        "/v1/registrations/{id}/resend-verification",
+        {
+          params: { path: { id } },
+        },
+      );
+      if (result.error) {
+        setState("failed");
+        return;
+      }
       setState("sent");
       setCooldown(COOLDOWN_SECONDS);
     } catch {
@@ -56,9 +62,9 @@ const PendingVerification = () => {
 
   return (
     <StatusScreen
-      icon={MailCheck}
+      icon="mail-check"
       tone="positive"
-      title="Revisa el teu correu"
+      title="revisa el teu correu"
       actions={
         <>
           {id && (
@@ -70,20 +76,20 @@ const PendingVerification = () => {
               {state === "sending" ? (
                 <>
                   <Loader2 className="animate-spin" />
-                  Enviant…
+                  enviant…
                 </>
               ) : cooldown > 0 ? (
-                `Torna-ho a provar en ${cooldown} s`
+                `torna-ho a provar en ${cooldown} s`
               ) : (
                 <>
                   <RotateCw />
-                  Torna&apos;m a enviar el correu
+                  torna&apos;m a enviar el correu
                 </>
               )}
             </Button>
           )}
           <Button variant="link" asChild>
-            <Link href="/">Torna a l&apos;inici</Link>
+            <Link href="/">torna a l&apos;inici</Link>
           </Button>
         </>
       }
@@ -92,10 +98,10 @@ const PendingVerification = () => {
           {state === "sent" && (
             <Alert className="text-left">
               <Info />
-              <AlertTitle>Fet</AlertTitle>
+              <AlertTitle>fet</AlertTitle>
               <AlertDescription>
-                Si la teva inscripció encara està pendent de verificar,
-                t&apos;hem enviat un correu nou. Per seguretat no et podem dir
+                si la teva inscripció encara està pendent de verificar,
+                t&apos;hem enviat un correu nou. per seguretat no et podem dir
                 res més sobre l&apos;estat d&apos;una adreça concreta.
               </AlertDescription>
             </Alert>
@@ -103,9 +109,9 @@ const PendingVerification = () => {
           {state === "failed" && (
             <Alert variant="destructive" className="text-left">
               <TriangleAlert />
-              <AlertTitle>No hem pogut fer la petició</AlertTitle>
+              <AlertTitle>no hem pogut fer la petició</AlertTitle>
               <AlertDescription>
-                Comprova la connexió i torna-ho a provar.
+                comprova la connexió i torna-ho a provar.
               </AlertDescription>
             </Alert>
           )}
@@ -113,11 +119,11 @@ const PendingVerification = () => {
             <Alert className="text-left">
               <Info />
               <AlertTitle>
-                No podem reenviar el correu des d&apos;aquí
+                no podem reenviar el correu des d&apos;aquí
               </AlertTitle>
               <AlertDescription>
-                Has arribat a aquesta pàgina sense la referència de la
-                inscripció. Busca el correu de verificació més recent a la teva
+                has arribat a aquesta pàgina sense la referència de la
+                inscripció. busca el correu de verificació més recent a la teva
                 safata; si no el trobes, escriu-nos a iaeste@udl.cat.
               </AlertDescription>
             </Alert>
@@ -126,12 +132,12 @@ const PendingVerification = () => {
       }
     >
       <Paragraph>
-        Hem enviat un enllaç de verificació al correu de la UdL que ens has
-        indicat. Fes-hi clic per confirmar que l&apos;adreça és teva i que la
+        hem enviat un enllaç de verificació al correu de la udl que ens has
+        indicat. fes-hi clic per confirmar que l&apos;adreça és teva i que la
         inscripció arribi al comitè.
       </Paragraph>
       <Paragraph>
-        Si no el veus, mira la carpeta de correu brossa. L&apos;enllaç caduca,
+        si no el veus, mira la carpeta de correu brossa. l&apos;enllaç caduca,
         així que fes-hi clic com abans millor.
       </Paragraph>
     </StatusScreen>

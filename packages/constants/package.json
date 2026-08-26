@@ -8,6 +8,7 @@
     "test": "tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
+    "libphonenumber-js": "^1.13.11",
     "zod": "^4.0.0"
   },
   "devDependencies": {

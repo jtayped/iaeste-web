@@ -1,9 +1,18 @@
 "use client";
 
 import React, { useEffect, useState, type ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Confetti from "react-confetti";
-import type { LucideIcon } from "lucide-react";
+import {
+  CalendarOff,
+  Link2Off,
+  Loader2,
+  MailCheck,
+  MailQuestion,
+  ShieldCheck,
+  TriangleAlert,
+  UserCheck,
+} from "lucide-react";
 import { H1 } from "@repo/ui/typography";
 import { cn } from "@repo/ui/lib/utils";
 
@@ -34,14 +43,26 @@ const textVariants = {
 const toneClasses = {
   positive: "text-primary",
   neutral: "text-muted-foreground",
-  warning: "text-amber-600",
+  warning: "text-amber-700",
   negative: "text-destructive",
+} as const;
+
+const statusIcons = {
+  "calendar-off": CalendarOff,
+  "link-off": Link2Off,
+  loading: Loader2,
+  "mail-check": MailCheck,
+  "mail-question": MailQuestion,
+  "shield-check": ShieldCheck,
+  warning: TriangleAlert,
+  "user-check": UserCheck,
 } as const;
 
 export type StatusTone = keyof typeof toneClasses;
 
 interface StatusScreenProps {
-  icon: LucideIcon;
+  /** A serializable name so server pages never pass component functions over the RSC boundary. */
+  icon: keyof typeof statusIcons;
   /** Extra classes for the icon, e.g. `animate-spin` while something is in flight. */
   iconClassName?: string;
   title: string;
@@ -56,21 +77,26 @@ interface StatusScreenProps {
 }
 
 const Celebration = () => {
+  const reduceMotion = useReducedMotion();
   const [running, setRunning] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
+    if (reduceMotion) return;
+
     setRunning(true);
     setSize({ width: window.innerWidth, height: window.innerHeight });
 
     const timer = setTimeout(() => setRunning(false), 5000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [reduceMotion]);
 
   if (!running) return null;
 
   return (
     <Confetti
+      aria-hidden="true"
+      className="pointer-events-none"
       width={size.width}
       height={size.height}
       numberOfPieces={200}
@@ -81,7 +107,7 @@ const Celebration = () => {
 };
 
 const StatusScreen = ({
-  icon: Icon,
+  icon,
   iconClassName,
   title,
   tone = "neutral",
@@ -90,22 +116,28 @@ const StatusScreen = ({
   footnote,
   celebrate = false,
 }: StatusScreenProps) => {
+  const Icon = statusIcons[icon];
+
   return (
-    <div className="flex min-h-screen items-center justify-center py-10">
+    <main className="flex min-h-dvh items-center justify-center py-8 sm:py-12">
       {celebrate && <Celebration />}
 
       <div className="w-full text-center">
-        <motion.div variants={iconVariants} initial="hidden" animate="visible">
+        <motion.div variants={iconVariants} initial={false} animate="visible">
           <Icon
-            className={cn("mx-auto mb-6", toneClasses[tone], iconClassName)}
-            size={96}
+            aria-hidden="true"
+            className={cn(
+              "mx-auto mb-6 h-20 w-20 sm:h-24 sm:w-24",
+              toneClasses[tone],
+              iconClassName,
+            )}
           />
         </motion.div>
 
         <motion.div
           custom={0}
           variants={textVariants}
-          initial="hidden"
+          initial={false}
           animate="visible"
         >
           <H1>{title}</H1>
@@ -114,7 +146,7 @@ const StatusScreen = ({
         <motion.div
           custom={1}
           variants={textVariants}
-          initial="hidden"
+          initial={false}
           animate="visible"
           className="mx-auto max-w-prose text-muted-foreground"
         >
@@ -125,9 +157,9 @@ const StatusScreen = ({
           <motion.div
             custom={2}
             variants={textVariants}
-            initial="hidden"
+            initial={false}
             animate="visible"
-            className="mt-8 flex flex-col items-center gap-3"
+            className="mt-8 flex w-full flex-col items-center gap-3 [&>*]:min-h-11 [&>*]:w-full sm:[&>*]:w-auto"
           >
             {actions}
           </motion.div>
@@ -137,7 +169,7 @@ const StatusScreen = ({
           <motion.div
             custom={3}
             variants={textVariants}
-            initial="hidden"
+            initial={false}
             animate="visible"
             className="mx-auto mt-8 max-w-prose text-sm text-muted-foreground"
           >
@@ -145,7 +177,7 @@ const StatusScreen = ({
           </motion.div>
         )}
       </div>
-    </div>
+    </main>
   );
 };
 

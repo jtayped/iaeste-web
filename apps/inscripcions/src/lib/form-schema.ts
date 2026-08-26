@@ -5,24 +5,7 @@ import {
 import { z } from "zod";
 
 /**
- * A deliberately forgiving client-side check: digits, with the separators
- * people actually type, and an optional `+` country code. The real rule lives
- * in `apps/api`'s `parsePhone`, which parses the number properly — this only
- * catches the obvious mistakes before a round trip, and anything it lets
- * through is still re-validated server-side and surfaced on this field.
- */
-const PLAUSIBLE_PHONE = /^\+?[\d\s().-]+$/;
-
-function countsAsPhone(value: string): boolean {
-  if (!PLAUSIBLE_PHONE.test(value)) return false;
-  const digits = value.replace(/\D/g, "").length;
-  return digits >= 6 && digits <= 15;
-}
-
-/**
- * The registration contract plus the two client-only concerns the API has no
- * business knowing about: a confirmed email address and a friendlier phone
- * check.
+ * The shared registration contract plus the client-only email confirmation.
  *
  * A mistyped email is the one unrecoverable error in this flow — the
  * verification link goes to an address the applicant will never read, and the
@@ -33,18 +16,14 @@ function countsAsPhone(value: string): boolean {
  */
 export const registrationFormSchema = registrationSchema
   .extend({
-    phone: registrationSchema.shape.phone.refine(
-      countsAsPhone,
-      "Escriu un número de telèfon vàlid, per exemple +34 623 32 42 34",
-    ),
     confirmEmail: z
       .string()
       .trim()
       .toLowerCase()
-      .min(1, "Repeteix el correu per confirmar-lo"),
+      .min(1, "repeteix el correu per confirmar-lo"),
   })
   .refine((values) => values.email === values.confirmEmail, {
-    message: "Els dos correus no coincideixen",
+    message: "els dos correus no coincideixen",
     path: ["confirmEmail"],
   });
 
@@ -76,14 +55,14 @@ export const FIELD_ORDER = [
 ] as const satisfies readonly (keyof RegistrationForm)[];
 
 export const FIELD_LABELS: Record<(typeof FIELD_ORDER)[number], string> = {
-  name: "Nom",
-  surnames: "Cognoms",
-  email: "Correu de la UdL",
-  confirmEmail: "Confirma el correu",
-  phone: "Número de telèfon",
-  degree: "Grau",
-  year: "Curs",
-  note: "Nota",
+  name: "nom",
+  surnames: "cognoms",
+  email: "correu de la udl",
+  confirmEmail: "confirma el correu",
+  phone: "número de telèfon",
+  degree: "grau",
+  year: "curs",
+  note: "nota",
 };
 
 /** Whether a field name reported by the API maps to a field we can highlight. */

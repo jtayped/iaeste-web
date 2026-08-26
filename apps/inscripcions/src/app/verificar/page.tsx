@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import React, { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Verificant el correu | IAESTE LC Lleida",
+  title: "verificant el correu | iaeste lc lleida",
   robots: { index: false, follow: false },
 };
 
-/** Target of the link in the verification email: `/verificar?token=...`. */
+/** Target of the link in the verification email: `/verificar#token=...`. */
 const VerifyPage = () => (
   <Suspense>
     <Verify />

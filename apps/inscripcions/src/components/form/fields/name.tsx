@@ -17,9 +17,16 @@ const NameField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
       name="name"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Nom</FormLabel>
+          <FormLabel>nom</FormLabel>
           <FormControl>
-            <Input placeholder="John" autoComplete="given-name" {...field} />
+            <Input
+              data-field-name="name"
+              className="h-11"
+              placeholder="joan"
+              required
+              autoComplete="given-name"
+              {...field}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

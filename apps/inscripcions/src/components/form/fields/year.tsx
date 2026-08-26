@@ -17,11 +17,16 @@ const YearField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
       name="year"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Curs</FormLabel>
+          <FormLabel>curs</FormLabel>
           <FormControl>
             <Input
               placeholder="1"
+              data-field-name="year"
+              className="h-11"
               type="number"
+              min={1}
+              max={6}
+              required
               {...field}
               onChange={(e) => field.onChange(e.target.valueAsNumber)}
             />

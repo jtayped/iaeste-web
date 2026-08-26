@@ -22,10 +22,13 @@ const ConfirmEmailField = ({
       name="confirmEmail"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Confirma el correu</FormLabel>
+          <FormLabel>confirma el correu</FormLabel>
           <FormControl>
             <Input
               placeholder="johndoe@alumnes.udl.cat"
+              data-field-name="confirmEmail"
+              className="h-11"
+              required
               type="email"
               inputMode="email"
               autoComplete="off"
@@ -33,7 +36,7 @@ const ConfirmEmailField = ({
             />
           </FormControl>
           <FormDescription>
-            Escriu-lo un altre cop. Si hi ha una errata no rebràs l&apos;enllaç
+            escriu-lo un altre cop. si hi ha una errata no rebràs l&apos;enllaç
             de verificació i no ens en podrem adonar.
           </FormDescription>
           <FormMessage />

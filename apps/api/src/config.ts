@@ -24,7 +24,8 @@ export function getApiPort(value = process.env.API_PORT) {
 
 /**
  * Public origin of `apps/inscripcions`, used to build the email-verification
- * link (`${origin}/verificar?token=...`). Distinct from `apps/inscripcions`'s
+ * link (`${origin}/verificar#token=...`). The fragment keeps the raw token out
+ * of HTTP requests and server logs. Distinct from `apps/inscripcions`'s
  * own `NEXT_PUBLIC_API_URL` (that's the frontend's pointer back to *this*
  * API) — this is the API pointing forward at the frontend, which is why it
  * needs its own variable rather than reusing an existing one.
