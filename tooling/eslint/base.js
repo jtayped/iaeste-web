@@ -27,6 +27,28 @@ export const config = [
     },
   },
   {
+    // A long file is usually doing too much and is harder to review. Warn
+    // rather than error: apps/web, apps/inscripcions and every package/*
+    // already run `eslint . --max-warnings 0`, so a warning fails CI just
+    // as hard as an error would, without needing a second severity to keep
+    // in sync (apps/api is the one workspace that doesn't gate on
+    // warnings, and is out of scope here).
+    rules: {
+      "max-lines": [
+        "warn",
+        { max: 300, skipBlankLines: true, skipComments: true },
+      ],
+    },
+    ignores: [
+      "packages/api-client/src/generated/**",
+      "apps/api/openapi.json",
+      "**/.next/**",
+      "**/dist/**",
+      "**/drizzle/**",
+      "**/emails/.build/**",
+    ],
+  },
+  {
     ignores: ["dist/**", ".*/**"],
   },
 ];
