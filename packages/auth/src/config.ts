@@ -21,9 +21,8 @@ export interface CreateAuthConfig {
   /** Sends the magic-link sign-in email via `@repo/email`'s template. */
   emailer: Emailer;
   /**
-   * Public origin at which Better Auth's own routes are mounted, i.e. this
-   * API's own origin (e.g. `http://localhost:3004` in dev,
-   * `https://api.iaestelleida.cat` in production) — not a frontend origin.
+   * Browser-visible origin for Better Auth. Its handler runs in `apps/api`,
+   * but `apps/admin` exposes it through a same-origin rewrite.
    */
   baseURL: string;
   /**
@@ -32,22 +31,20 @@ export interface CreateAuthConfig {
    */
   secret: string;
   /**
-   * Origins allowed to send credentialed requests to Better Auth's routes,
-   * and to appear in magic-link callback/redirect URLs. Deliberately the
-   * *same list* `apps/api` passes to its own CORS middleware
-   * (`getAllowedOrigins()`) rather than a second, independently-maintained
-   * allowlist — see `apps/api/src/app.ts`'s comment on the `/api/auth/*`
-   * CORS wiring for why the two must never diverge.
+   * Origins allowed to submit state-changing auth requests and to appear in
+   * magic-link callback and redirect URLs. The production value is the
+   * browser-visible admin origin.
    */
   trustedOrigins: string[];
+  /** Runtime selected and validated by the API's environment config. */
+  runtime: "development" | "test" | "production";
   /**
    * Relaxes the session cookie's `Secure` attribute for local development,
    * where there is no HTTPS and a `Secure` cookie would simply never be
    * sent by the browser. Must be `false` (or omitted) whenever the process
-   * is actually running in production — `createAuth` asserts this itself
-   * at construction time (reading `NODE_ENV` directly, independent of
-   * whatever the caller computed), so a misconfigured deploy fails loudly
-   * at startup instead of silently shipping a cookie without `Secure`. See
+   * is actually running in production. `createAuth` checks it against the
+   * validated `runtime`, so a misconfigured deploy fails at startup instead
+   * of shipping a cookie without `Secure`. See
    * the plan's exact wording in the IA-30 task: "Local development auth
    * that does not require production cookies, and that refuses to run
    * under NODE_ENV=production."

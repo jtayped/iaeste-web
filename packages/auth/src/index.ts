@@ -15,6 +15,17 @@ export type { CreateAuthConfig } from "./config";
 // time an intercepted email is exploitable.
 const MAGIC_LINK_EXPIRES_IN_SECONDS = 10 * 60;
 
+export const authRoles = ["member", "admin"] as const;
+export type AuthRole = (typeof authRoles)[number];
+
+export function isAuthRole(value: unknown): value is AuthRole {
+  return authRoles.some((role) => role === value);
+}
+
+export function isAdminRole(value: unknown): value is "admin" {
+  return value === "admin";
+}
+
 /**
  * Builds the Better Auth server instance mounted at `/api/auth/*` in
  * `apps/api` (IA-30). Every config choice below is deliberate — see the
@@ -36,18 +47,20 @@ const MAGIC_LINK_EXPIRES_IN_SECONDS = 10 * 60;
  *   a volunteer-run system with no dedicated security team. Every other
  *   admin-plugin endpoint (ban, set-role, and — the one this task actually
  *   needs — revoking a user's sessions) stays enabled.
+ * - Generic admin create, update, delete, and password routes are disabled.
+ *   Account creation belongs to registration acceptance and invitations;
+ *   email changes need domain-level session revocation; v1 has no password
+ *   login; hard deletion is a manual GDPR operation.
  * - No organization plugin: explicitly out of scope per the plan.
  */
 export function createAuth(config: CreateAuthConfig) {
-  // Independent of whatever the caller computed `insecureCookies` from:
-  // this is the "refuses to run under NODE_ENV=production" assertion the
-  // plan asks for. If this ever fires, `apps/api`'s own dev/prod branch
-  // (see `apps/api/src/lib/auth.ts`) has a bug — this is the last line of
-  // defense against shipping a cookie without `Secure` in production.
-  if (config.insecureCookies && process.env.NODE_ENV === "production") {
+  // The API validates the runtime string before it reaches this package.
+  // Keep this assertion here as the final guard against an insecure
+  // production cookie.
+  if (config.insecureCookies && config.runtime === "production") {
     throw new Error(
-      "createAuth(): insecureCookies must never be true when NODE_ENV=production " +
-        "— this would ship the session cookie without the Secure attribute.",
+      "createAuth(): insecureCookies cannot be true in production; " +
+        "the session cookie would be missing the Secure attribute.",
     );
   }
 
@@ -82,11 +95,11 @@ export function createAuth(config: CreateAuthConfig) {
       // magic-link sign-in silently fail to persist a session in dev.
       useSecureCookies: !config.insecureCookies,
       // Deliberately *not* setting `crossSubDomainCookies`: the session
-      // cookie stays scoped to this API's own host only, per the plan
+      // cookie stays scoped to the browser-visible admin host, per the plan
       // ("no cross-subdomain cookies" — see `docs/membership-lifecycle.md`
-      // question 1). `apps/admin` (IA-50) is planned to reach this API
-      // same-origin via a reverse-proxy rewrite, not a shared-domain
-      // cookie.
+      // question 1). With the admin rewrite, the browser stores this
+      // host-only cookie for the admin origin and sends it back through the
+      // same rewrite. IA-31 owns that integration.
     },
     disabledPaths: [
       // Admin impersonation — see this function's doc comment. Returning a
@@ -97,15 +110,20 @@ export function createAuth(config: CreateAuthConfig) {
       // tweak that forgets about this decision.
       "/admin/impersonate-user",
       "/admin/stop-impersonating",
+      "/admin/create-user",
+      "/admin/update-user",
+      "/admin/remove-user",
+      "/admin/set-user-password",
     ],
     plugins: [
       magicLink({
         expiresIn: MAGIC_LINK_EXPIRES_IN_SECONDS,
+        storeToken: "hashed",
         disableSignUp: true,
         sendMagicLink: async ({ email, url }) => {
           await config.emailer.send({
             to: email,
-            subject: "El teu enllaç d'accés — IAESTE LC Lleida",
+            subject: "el teu enllaç d'accés · iaeste lc lleida",
             react: SignInMagicLink({
               email,
               link: url,
@@ -123,3 +141,10 @@ export function createAuth(config: CreateAuthConfig) {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+export type AuthSession = Auth["$Infer"]["Session"];
+
+/** Used by domain actions such as kick, ban, or a compromised invitation. */
+export async function revokeAllUserSessions(auth: Auth, userId: string) {
+  const context = await auth.$context;
+  await context.internalAdapter.deleteUserSessions(userId);
+}

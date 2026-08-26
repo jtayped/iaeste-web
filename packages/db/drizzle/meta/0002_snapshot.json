@@ -110,12 +110,8 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -208,12 +204,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -223,9 +215,7 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -314,9 +304,7 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -457,12 +445,8 @@
           "name": "member_profile_user_id_user_id_fk",
           "tableFrom": "member_profile",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -797,12 +781,8 @@
           "name": "registration_campaign_id_membership_campaign_id_fk",
           "tableFrom": "registration",
           "tableTo": "membership_campaign",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -810,12 +790,8 @@
           "name": "registration_reviewer_id_user_id_fk",
           "tableFrom": "registration",
           "tableTo": "user",
-          "columnsFrom": [
-            "reviewer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["reviewer_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -903,12 +879,8 @@
           "name": "registration_verification_registration_id_registration_id_fk",
           "tableFrom": "registration_verification",
           "tableTo": "registration",
-          "columnsFrom": [
-            "registration_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["registration_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1033,12 +1005,8 @@
           "name": "membership_user_id_user_id_fk",
           "tableFrom": "membership",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1046,12 +1014,8 @@
           "name": "membership_campaign_id_membership_campaign_id_fk",
           "tableFrom": "membership",
           "tableTo": "membership_campaign",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1167,12 +1131,8 @@
           "name": "member_invitation_campaign_id_membership_campaign_id_fk",
           "tableFrom": "member_invitation",
           "tableTo": "membership_campaign",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1180,12 +1140,8 @@
           "name": "member_invitation_inviter_id_user_id_fk",
           "tableFrom": "member_invitation",
           "tableTo": "user",
-          "columnsFrom": [
-            "inviter_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["inviter_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1267,12 +1223,8 @@
           "name": "membership_event_actor_id_user_id_fk",
           "tableFrom": "membership_event",
           "tableTo": "user",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1280,12 +1232,8 @@
           "name": "membership_event_target_user_id_user_id_fk",
           "tableFrom": "membership_event",
           "tableTo": "user",
-          "columnsFrom": [
-            "target_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["target_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1293,12 +1241,8 @@
           "name": "membership_event_campaign_id_membership_campaign_id_fk",
           "tableFrom": "membership_event",
           "tableTo": "membership_campaign",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["campaign_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1314,47 +1258,27 @@
     "public.membership_campaign_state": {
       "name": "membership_campaign_state",
       "schema": "public",
-      "values": [
-        "draft",
-        "published",
-        "archived"
-      ]
+      "values": ["draft", "published", "archived"]
     },
     "public.registration_status": {
       "name": "registration_status",
       "schema": "public",
-      "values": [
-        "pending_email",
-        "pending_review",
-        "accepted",
-        "rejected"
-      ]
+      "values": ["pending_email", "pending_review", "accepted", "rejected"]
     },
     "public.membership_status": {
       "name": "membership_status",
       "schema": "public",
-      "values": [
-        "active",
-        "left",
-        "kicked"
-      ]
+      "values": ["active", "left", "kicked"]
     },
     "public.member_invitation_role": {
       "name": "member_invitation_role",
       "schema": "public",
-      "values": [
-        "member",
-        "admin"
-      ]
+      "values": ["member", "admin"]
     },
     "public.member_invitation_status": {
       "name": "member_invitation_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "accepted",
-        "cancelled"
-      ]
+      "values": ["pending", "accepted", "cancelled"]
     },
     "public.membership_event_type": {
       "name": "membership_event_type",

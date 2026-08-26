@@ -4,11 +4,13 @@ import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
 
+import type { Auth } from "@repo/auth";
 import { registrationSchema } from "@repo/constants/validators/registration";
 import { IllegalTransitionError, NotFoundError } from "@repo/db/repositories";
 
 import { getAllowedOrigins } from "./config";
 import { apiErrorSchema } from "./contracts";
+import { getAuth } from "./lib/auth";
 import { getOpenAPIDocument } from "./openapi";
 import {
   createDrizzleRegistrationRepository,
@@ -36,6 +38,8 @@ type AppDependencies = {
   logger?: Pick<Console, "error">;
   registrationRepository?: RegistrationRepository;
   registrationService?: RegistrationService;
+  /** Overridable so tests can point Better Auth at the test database and a recording emailer — see `getAuth()`'s doc comment for why this isn't resolved here. */
+  auth?: Auth;
 };
 
 function errorBody(
@@ -136,6 +140,30 @@ export function createApp(dependencies: AppDependencies = {}) {
   app.openapi(healthRoute, (c) =>
     c.json({ status: "ok" as const, version: API_VERSION }, 200),
   );
+
+  // IA-30: Better Auth's own routes (sign-in/magic-link, magic-link/verify,
+  // get-session, the admin-plugin endpoints, etc.), mounted as a raw
+  // fetch-style handler rather than `@hono/zod-openapi` route definitions
+  // — Better Auth owns its own request/response contract, so these are
+  // deliberately NOT part of this app's OpenAPI document (confirmed by
+  // `npm run generate:api` producing no diff after adding this mount).
+  // `OpenAPIHono` extends plain Hono, so `.on(...)` works exactly as it
+  // would on a plain Hono app.
+  //
+  // `getAuth()` is called from *inside* the handler, not at the top of
+  // `createApp()`: constructing it touches `getDb()`/`BETTER_AUTH_SECRET`
+  // (see `lib/auth.ts`'s doc comment), and `createApp()` runs at
+  // module-import time (`apps/api/scripts/generate-openapi.ts`), so
+  // resolving those eagerly here would make merely importing `app.ts`
+  // crash wherever they're unset.
+  //
+  // Better Auth gets its canonical scheme and host from ADMIN_PUBLIC_ORIGIN,
+  // so it does not need to trust client-spoofable X-Forwarded-* headers when
+  // requests arrive through the admin rewrite and Coolify's Traefik proxy.
+  app.on(["GET", "POST", "PUT", "PATCH", "DELETE"], "/api/auth/*", (c) => {
+    const auth = dependencies.auth ?? getAuth();
+    return auth.handler(c.req.raw);
+  });
 
   app.openapi(createRegistrationRoute, async (c) => {
     const parsed = registrationSchema.safeParse(c.req.valid("json"));

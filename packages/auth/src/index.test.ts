@@ -4,7 +4,7 @@ import { describe, it } from "node:test";
 import type { Database } from "@repo/db/client";
 import type { Emailer } from "@repo/email/resend";
 
-import { createAuth } from "./index";
+import { createAuth, isAdminRole, isAuthRole } from "./index";
 import type { CreateAuthConfig } from "./config";
 
 /**
@@ -29,20 +29,11 @@ function fakeEmailer(): Emailer {
 const baseConfig: CreateAuthConfig = {
   db: {} as unknown as Database,
   emailer: fakeEmailer(),
-  baseURL: "http://localhost:3004",
+  baseURL: "http://localhost:3005",
   secret: "test-secret-not-used-for-anything-real",
   trustedOrigins: ["http://localhost:3005"],
+  runtime: "test",
 };
-
-function withNodeEnv<T>(value: string | undefined, fn: () => T): T {
-  const original = process.env.NODE_ENV;
-  process.env.NODE_ENV = value;
-  try {
-    return fn();
-  } finally {
-    process.env.NODE_ENV = original;
-  }
-}
 
 describe("createAuth", () => {
   it("constructs without touching the database or throwing", () => {
@@ -50,27 +41,32 @@ describe("createAuth", () => {
     assert.equal(typeof auth.handler, "function");
   });
 
-  it("refuses insecure cookies when NODE_ENV is production, regardless of the caller", () => {
-    withNodeEnv("production", () => {
-      assert.throws(
-        () => createAuth({ ...baseConfig, insecureCookies: true }),
-        /insecureCookies must never be true/,
-      );
-    });
+  it("refuses insecure cookies in production", () => {
+    assert.throws(
+      () =>
+        createAuth({
+          ...baseConfig,
+          runtime: "production",
+          insecureCookies: true,
+        }),
+      /insecureCookies cannot be true in production/,
+    );
   });
 
   it("allows insecure cookies outside production", () => {
-    withNodeEnv("development", () => {
-      assert.doesNotThrow(() =>
-        createAuth({ ...baseConfig, insecureCookies: true }),
-      );
-    });
+    assert.doesNotThrow(() =>
+      createAuth({
+        ...baseConfig,
+        runtime: "development",
+        insecureCookies: true,
+      }),
+    );
   });
 
   it("never throws for the production-safe default (insecureCookies unset)", () => {
-    withNodeEnv("production", () => {
-      assert.doesNotThrow(() => createAuth(baseConfig));
-    });
+    assert.doesNotThrow(() =>
+      createAuth({ ...baseConfig, runtime: "production" }),
+    );
   });
 
   it("disables self-service sign-up on the magic-link plugin", () => {
@@ -83,18 +79,54 @@ describe("createAuth", () => {
         ?.disableSignUp,
       true,
     );
+    assert.equal(
+      (magicLinkPlugin?.options as { storeToken?: string } | undefined)
+        ?.storeToken,
+      "hashed",
+    );
   });
 
-  it("disables admin impersonation at the router level", async () => {
-    const auth = createAuth(baseConfig);
-    const response = await auth.handler(
-      new Request("http://localhost:3004/api/auth/admin/impersonate-user", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ userId: "someone" }),
-      }),
-    );
+  it("recognises only the two supported roles", () => {
+    assert.equal(isAuthRole("member"), true);
+    assert.equal(isAuthRole("admin"), true);
+    assert.equal(isAuthRole("owner"), false);
+    assert.equal(isAdminRole("admin"), true);
+    assert.equal(isAdminRole("member"), false);
+  });
 
-    assert.equal(response.status, 404);
+  it("configures the admin plugin with member and admin roles", () => {
+    const auth = createAuth(baseConfig);
+    const adminPlugin = auth.options.plugins?.find(
+      (plugin) => plugin.id === "admin",
+    );
+    const options = adminPlugin?.options as
+      | { defaultRole?: string; adminRoles?: string[] }
+      | undefined;
+
+    assert.equal(options?.defaultRole, "member");
+    assert.deepEqual(options?.adminRoles, ["admin"]);
+  });
+
+  it("disables admin routes that bypass the IAESTE domain", async () => {
+    const auth = createAuth(baseConfig);
+    const disabledPaths = [
+      "/admin/impersonate-user",
+      "/admin/stop-impersonating",
+      "/admin/create-user",
+      "/admin/update-user",
+      "/admin/remove-user",
+      "/admin/set-user-password",
+    ];
+
+    for (const path of disabledPaths) {
+      const response = await auth.handler(
+        new Request(`http://localhost:3005/api/auth${path}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ userId: "someone" }),
+        }),
+      );
+      assert.equal(response.status, 404, path);
+    }
   });
 });
