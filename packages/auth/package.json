@@ -1,0 +1,28 @@
+{
+  "name": "@repo/auth",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit",
+    "test": "dotenv -e ../../.env -- tsx --test \"src/**/*.test.ts\""
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@repo/db": "*",
+    "@repo/email": "*",
+    "better-auth": "^1.7.1"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@types/react": "^19.0.10",
+    "dotenv-cli": "^8.0.0",
+    "react": "19.1.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.2"
+  }
+}
