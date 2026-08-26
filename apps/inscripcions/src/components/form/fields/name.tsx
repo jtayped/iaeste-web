@@ -1,4 +1,4 @@
-import { User } from "@repo/constants/validators/user";
+import type { Registration } from "@repo/constants/validators/registration";
 import {
   FormControl,
   FormField,
@@ -10,7 +10,7 @@ import { Input } from "@repo/ui/input";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 
-const NameField = ({ form }: { form: UseFormReturn<User> }) => {
+const NameField = ({ form }: { form: UseFormReturn<Registration> }) => {
   return (
     <FormField
       control={form.control}

@@ -3,13 +3,18 @@ import React, { useEffect } from "react";
 import Cookies from "js-cookie";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { User, userSchema } from "@repo/constants/validators/user";
+import {
+  type Registration,
+  registrationSchema,
+} from "@repo/constants/validators/registration";
+import { createApiClient } from "@repo/api-client";
+import { env } from "@repo/env/inscripcions";
 import { Form } from "@repo/ui/form";
 import NameField from "./fields/name";
 import DegreeField from "./fields/degree";
 import YearField from "./fields/year";
 import NoteField from "./fields/note";
-import NumberField from "./fields/number";
+import PhoneField from "./fields/phone";
 import EmailField from "./fields/email";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
@@ -24,7 +29,6 @@ import {
 } from "lucide-react";
 import { H1, Paragraph } from "@repo/ui/typography";
 import { motion } from "framer-motion";
-import { api } from "@repo/trpc/react";
 import { useRouter } from "next/navigation";
 import { Alert, AlertTitle, AlertDescription } from "@repo/ui/alert";
 import { ALREADY_SUBMITTED } from "@/constants/errors";
@@ -48,6 +52,8 @@ const childVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
 
+const apiClient = createApiClient(env.NEXT_PUBLIC_API_URL);
+
 const Group = ({
   title,
   icon: Icon,
@@ -62,9 +68,9 @@ const Group = ({
       <Card>
         <div className="flex items-center gap-2">
           <Icon size={19} />
-          <p className="font-medium text-lg">{title}</p>
+          <p className="text-lg font-medium">{title}</p>
         </div>
-        <div className="grid md:grid-cols-2 gap-4 mt-6">{children}</div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">{children}</div>
       </Card>
     </motion.div>
   );
@@ -81,13 +87,13 @@ const UserForm = () => {
     }
   }, [router]);
 
-  const form = useForm<User>({
-    resolver: zodResolver(userSchema),
+  const form = useForm<Registration>({
+    resolver: zodResolver(registrationSchema),
     defaultValues: {
       name: "",
       surnames: "",
       email: "",
-      number: "",
+      phone: "",
       degree: undefined,
       year: 1,
       previousMember: false,
@@ -95,15 +101,36 @@ const UserForm = () => {
     },
   });
 
-  const userMutation = api.user.create.useMutation({
-    onSuccess() {
-      Cookies.set("form_submitted", "true");
-      router.push(`/gracies?name=${form.getFieldState("name")}`);
-    },
-  });
+  async function onSubmit(values: Registration) {
+    form.clearErrors("root");
 
-  async function onSubmit(values: User) {
-    await userMutation.mutateAsync(values);
+    try {
+      const { error } = await apiClient.POST("/v1/registrations", {
+        body: values,
+      });
+
+      if (error) {
+        form.setError("root", {
+          message:
+            error.error.code === "VALIDATION_ERROR"
+              ? "Revisa les dades del formulari i torna-ho a provar."
+              : "No hem pogut guardar la inscripció. Torna-ho a provar.",
+        });
+        return;
+      }
+
+      Cookies.set("form_submitted", "true", {
+        expires: 365,
+        sameSite: "strict",
+        secure: window.location.protocol === "https:",
+      });
+      router.push(`/gracies?name=${encodeURIComponent(values.name)}`);
+    } catch {
+      form.setError("root", {
+        message:
+          "No hem pogut connectar amb el servidor. Comprova la connexió i torna-ho a provar.",
+      });
+    }
   }
 
   return (
@@ -132,7 +159,7 @@ const UserForm = () => {
 
             <Group title="Com et podem contactar?" icon={Send}>
               <EmailField form={form} />
-              <NumberField form={form} />
+              <PhoneField form={form} />
             </Group>
 
             <Group title="Què estudies?" icon={School}>

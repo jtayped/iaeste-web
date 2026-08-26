@@ -8,7 +8,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import ButtonGroup from "@repo/ui/button-group";
 import { Globe } from "lucide-react";
-import { INSCRIPCIONS_STATE } from "@repo/constants/inscripcions";
+import { env } from "@repo/env/inscripcions";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -31,7 +31,7 @@ const childVariants = {
 const HomePage = () => {
   return (
     <motion.div
-      className="h-screen flex items-center"
+      className="flex h-screen items-center"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -48,22 +48,22 @@ const HomePage = () => {
         </motion.div>
         <motion.div variants={childVariants}>
           <H1>
-            {INSCRIPCIONS_STATE === "on"
+            {env.NEXT_PUBLIC_INSCRIPCIONS_STATE === "on"
               ? "Inscriu-te a IAESTE Lleida!"
               : "Ha finalitzat el plaç per inscriure't a IAESTE :("}
           </H1>
         </motion.div>
         <motion.div variants={childVariants}>
           <Paragraph className="mt-3">
-            {INSCRIPCIONS_STATE === "on"
+            {env.NEXT_PUBLIC_INSCRIPCIONS_STATE === "on"
               ? "Només son 2 minuts per inscriure’t. Omple el formulari i uneix-te a nosaltres!"
               : "Contacta amb nosaltres per correu o visita la nostra web!"}
           </Paragraph>
         </motion.div>
-        <motion.div variants={childVariants} className="mt-6 mx-auto">
+        <motion.div variants={childVariants} className="mx-auto mt-6">
           <ButtonGroup className="grid grid-cols-2 md:flex">
             <Button asChild className="md:px-12">
-              {INSCRIPCIONS_STATE == "on" ? (
+              {env.NEXT_PUBLIC_INSCRIPCIONS_STATE === "on" ? (
                 <Link href="/formulari">
                   <Check />
                   Inscriu-te

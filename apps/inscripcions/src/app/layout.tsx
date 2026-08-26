@@ -3,8 +3,6 @@ import "@repo/ui/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
-import { TRPCReactProvider } from "@repo/trpc/react";
-
 export const metadata: Metadata = {
   title: "Inscriu-te | IAESTE LC Lleida",
   description: "Uneix-te al nostre equip!",
@@ -48,13 +46,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
+    <html lang="ca" className={`${GeistSans.variable}`}>
       <body className="bg-primary/10">
-        <TRPCReactProvider>
-          <div className="w-full h-screen flex justify-center">
-            <div className="px-4 w-full md:w-[600px] mx-auto">{children}</div>
-          </div>
-        </TRPCReactProvider>
+        <div className="flex h-screen w-full justify-center">
+          <div className="mx-auto w-full px-4 md:w-[600px]">{children}</div>
+        </div>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
-import { User } from "@repo/constants/validators/user";
+import type { Registration } from "@repo/constants/validators/registration";
 import React from "react";
-import { UseFormReturn } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
+
 import {
   FormControl,
   FormField,
@@ -10,11 +11,11 @@ import {
 } from "@repo/ui/form";
 import { Input } from "@repo/ui/input";
 
-const NumberField = ({ form }: { form: UseFormReturn<User> }) => {
+const PhoneField = ({ form }: { form: UseFormReturn<Registration> }) => {
   return (
     <FormField
       control={form.control}
-      name="number"
+      name="phone"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Número de telèfon</FormLabel>
@@ -28,4 +29,4 @@ const NumberField = ({ form }: { form: UseFormReturn<User> }) => {
   );
 };
 
-export default NumberField;
+export default PhoneField;

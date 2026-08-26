@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@repo/constants/validators/user";
+import type { Registration } from "@repo/constants/validators/registration";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
@@ -18,12 +18,12 @@ import {
 } from "@repo/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 
-const NoteField = ({ form }: { form: UseFormReturn<User> }) => {
+const NoteField = ({ form }: { form: UseFormReturn<Registration> }) => {
   const [open, setOpen] = React.useState(false);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex items-center gap-2 text-sm text-primary font-medium">
+      <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-primary">
         <ChevronDown
           className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
         />

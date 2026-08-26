@@ -10,8 +10,9 @@ import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
 import { AlertCircleIcon } from "lucide-react";
 import { Button } from "@repo/ui/button";
 import Link from "next/link";
+import { env } from "@repo/env/inscripcions";
 
-const whastappInviteLink = process.env.NEXT_PUBLIC_WHATSAPP_INVITE;
+const whatsappInviteLink = env.NEXT_PUBLIC_WHATSAPP_INVITE;
 
 const SuccessPageComponent = () => {
   const searchParams = useSearchParams();
@@ -55,7 +56,7 @@ const SuccessPageComponent = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center">
+    <div className="flex h-screen items-center justify-center">
       {showConfetti && (
         <Confetti
           width={dimensions.width}
@@ -66,9 +67,9 @@ const SuccessPageComponent = () => {
         />
       )}
 
-      <div className="text-center px-4">
+      <div className="px-4 text-center">
         <motion.div variants={iconVariants} initial="hidden" animate="visible">
-          <UserCheck className="text-primary mx-auto mb-6" size={120} />
+          <UserCheck className="mx-auto mb-6 text-primary" size={120} />
         </motion.div>
 
         <motion.div
@@ -96,9 +97,9 @@ const SuccessPageComponent = () => {
           initial="hidden"
           animate="visible"
         >
-          {whastappInviteLink && (
+          {whatsappInviteLink && (
             <Button asChild variant={"default"} className="mt-6">
-              <Link href={whastappInviteLink}>
+              <Link href={whatsappInviteLink}>
                 Uneix-te al grup de Whatsapp
                 <Plus />
               </Link>

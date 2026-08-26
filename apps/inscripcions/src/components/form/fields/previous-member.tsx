@@ -1,4 +1,4 @@
-import { User } from "@repo/constants/validators/user";
+import type { Registration } from "@repo/constants/validators/registration";
 import {
   FormControl,
   FormDescription,
@@ -11,7 +11,11 @@ import { UseFormReturn } from "react-hook-form";
 import { Switch } from "@repo/ui/switch";
 import { Card } from "@repo/ui/card";
 
-const PreviousMemberField = ({ form }: { form: UseFormReturn<User> }) => {
+const PreviousMemberField = ({
+  form,
+}: {
+  form: UseFormReturn<Registration>;
+}) => {
   return (
     <FormField
       control={form.control}

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { User } from "@repo/constants/validators/user";
+import type { Registration } from "@repo/constants/validators/registration";
 import { DEGREE_OPTIONS } from "@repo/constants/studies";
 import { DegreeOption } from "@repo/constants/types/studies";
 
@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@repo/ui/form";
 
-const DegreeField = ({ form }: { form: UseFormReturn<User> }) => {
+const DegreeField = ({ form }: { form: UseFormReturn<Registration> }) => {
   return (
     <div className="w-full">
       <FormField
