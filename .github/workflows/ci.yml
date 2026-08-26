@@ -40,6 +40,14 @@ jobs:
       - name: Tests
         run: npm run test
 
+      # Catches a `.env.example` that has drifted from what the schemas in
+      # @repo/env (and apps/api's own process.env reads) actually expect —
+      # a stale or missing key here is exactly what IA-03's typed env config
+      # is meant to prevent. Pure static check: no .env, database, or network
+      # access needed.
+      - name: .env.example matches the schemas
+        run: npm run env:check
+
       # The OpenAPI document and the generated client are build outputs that
       # live in the tree. If regenerating them changes anything, the committed
       # copies are stale and the typed client is lying about the API.
