@@ -1,0 +1,25 @@
+{
+  "name": "@repo/env",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit",
+    "test": "tsx --test \"src/**/*.test.ts\""
+  },
+  "exports": {
+    "./inscripcions": "./src/inscripcions.ts",
+    "./web/client": "./src/web.client.ts",
+    "./web/server": "./src/web.server.ts"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.2"
+  }
+}
