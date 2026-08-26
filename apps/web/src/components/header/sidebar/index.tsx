@@ -54,6 +54,7 @@ const SidebarComponent = () => {
           <Item href="/student">{t("student.name").toUpperCase()}</Item>
           <Item href="/incomming">{t("incomming.name").toUpperCase()}</Item>
           <Item href="/company">{t("company.name").toUpperCase()}</Item>
+          <Item href="/blog">{t("blog.name")}</Item>
         </motion.nav>
       </div>
       <div className="p-screen absolute bottom-0 w-full">

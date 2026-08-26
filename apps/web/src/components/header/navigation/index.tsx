@@ -66,6 +66,11 @@ const Navigation = ({ className = "" }: { className?: string }) => {
             <Link href={"/company"}>{t("groups.companies")}</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink className={navigationMenuTriggerStyle()} asChild>
+            <Link href={"/blog"}>{t("pages.blog.name")}</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
         <ChangeTranslation className="hidden md:flex" />
         <NavigationMenuItem asChild>
           <Button

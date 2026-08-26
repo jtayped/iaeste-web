@@ -9,6 +9,19 @@ name: Deploy
 on:
   push:
     branches: [master]
+    paths:
+      - ".github/workflows/deploy.yml"
+      - "apps/web/**"
+      - "content/**"
+      - "keystatic.config.ts"
+      - "packages/constants/**"
+      - "packages/email/**"
+      - "packages/env/**"
+      - "packages/ui/**"
+      - "tooling/**"
+      - "package.json"
+      - "package-lock.json"
+      - "turbo.json"
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -47,11 +60,9 @@ jobs:
             type=sha,format=long
 
       # Build args are CI-safe placeholders/config, not secrets:
-      # NEXT_PUBLIC_INSCRIPCIONS_STATE is genuinely public (inlined into the
-      # client bundle either way) and the contact-form values only need to
-      # satisfy @repo/env's validation at build time -- the real values are
-      # supplied to the running container at deploy time instead. See
-      # apps/web/Dockerfile and docs/deployment.md.
+      # NEXT_PUBLIC_* values are compiled into the client bundle. Server-only
+      # values here are placeholders; Coolify supplies the real values to the
+      # running container. See apps/web/Dockerfile and docs/deployment.md.
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -62,6 +73,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             NEXT_PUBLIC_INSCRIPCIONS_STATE=on
+            NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=${{ vars.NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG }}
             RESEND_API_KEY=build-placeholder
             CONTACT_FORM_FROM=noreply@iaestelleida.cat
             CONTACT_FORM_TO=ci@example.com
