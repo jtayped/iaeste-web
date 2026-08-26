@@ -16,79 +16,40 @@ import { Card } from "@repo/ui/card";
 import {
   AlertCircleIcon,
   CircleUserRound,
-  Info,
   Loader2,
-  LucideIcon,
-  MailCheck,
   School,
   Send,
 } from "lucide-react";
-import { H1, Link as TextLink, Paragraph } from "@repo/ui/typography";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Alert, AlertTitle, AlertDescription } from "@repo/ui/alert";
-import Link from "next/link";
 import { apiClient } from "@/lib/api";
 import {
-  FIELD_LABELS,
   FIELD_ORDER,
   isFormField,
   registrationFormSchema,
   toRegistration,
   type RegistrationForm,
 } from "@/lib/form-schema";
+import {
+  childVariants,
+  containerVariants,
+  ErrorSummary,
+  ExternalMemberNotice,
+  FormIntro,
+  Group,
+  PreviousRegistrationNotice,
+} from "./notices";
 import { mapSubmitResult, type SubmitOutcome } from "@/lib/registration-flow";
 import {
   recallRegistrationId,
   rememberRegistrationId,
 } from "@/lib/registration-cookie";
 
-const containerVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      when: "beforeChildren",
-      staggerChildren: 0.15,
-      duration: 0.4,
-    },
-  },
-};
-
-const childVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-
 const GENERIC_FAILURE =
   "No hem pogut desar la inscripció. Torna-ho a provar d'aquí a un moment.";
 const NETWORK_FAILURE =
   "No hem pogut connectar amb el servidor. Comprova la connexió i torna-ho a provar.";
-
-const inlineLink = "font-medium text-primary underline underline-offset-4";
-
-const Group = ({
-  title,
-  icon: Icon,
-  children,
-}: {
-  title: string;
-  icon: LucideIcon;
-  children: React.ReactNode;
-}) => {
-  return (
-    <motion.div variants={childVariants}>
-      <Card>
-        <div className="flex items-center gap-2">
-          <Icon size={19} />
-          <p className="text-lg font-medium">{title}</p>
-        </div>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">{children}</div>
-      </Card>
-    </motion.div>
-  );
-};
 
 function firstInvalidField(errors: FieldErrors<RegistrationForm>) {
   return FIELD_ORDER.find((field) => errors[field]);
@@ -212,61 +173,15 @@ const UserForm = () => {
           )}
         >
           <div className="space-y-6">
-            <motion.div variants={childVariants}>
-              <Card>
-                <H1>Benvingut/da!</H1>
-                <Paragraph>
-                  Omple el formulari amb la teva informació per
-                  inscriure&apos;t. Després t&apos;enviarem un correu per
-                  verificar l&apos;adreça: la inscripció no arriba al comitè
-                  fins que hi facis clic.
-                </Paragraph>
-              </Card>
-            </motion.div>
+            <FormIntro />
 
-            {previousId && (
-              <motion.div variants={childVariants}>
-                <Alert>
-                  <Info />
-                  <AlertTitle>Ja t&apos;havies inscrit?</AlertTitle>
-                  <AlertDescription>
-                    Des d&apos;aquest dispositiu ja s&apos;ha enviat una
-                    inscripció.{" "}
-                    <Link
-                      className={inlineLink}
-                      href={`/verificacio-pendent?id=${encodeURIComponent(previousId)}`}
-                    >
-                      Consulta&apos;n l&apos;estat
-                    </Link>{" "}
-                    o continua omplint el formulari si vols inscriure una altra
-                    persona.
-                  </AlertDescription>
-                </Alert>
-              </motion.div>
-            )}
+            {previousId && <PreviousRegistrationNotice id={previousId} />}
 
             {invalidFields.length > 0 && (
-              <motion.div variants={childVariants}>
-                <Alert
-                  variant="destructive"
-                  id="form-error-summary"
-                  tabIndex={-1}
-                  aria-live="polite"
-                >
-                  <AlertCircleIcon />
-                  <AlertTitle>Falten dades per revisar</AlertTitle>
-                  <AlertDescription>
-                    <ul className="ml-4 list-disc">
-                      {invalidFields.map((field) => (
-                        <li key={field}>
-                          {FIELD_LABELS[field]}:{" "}
-                          {form.formState.errors[field]?.message}
-                        </li>
-                      ))}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              </motion.div>
+              <ErrorSummary
+                fields={invalidFields}
+                errors={form.formState.errors}
+              />
             )}
 
             <Group title="Qui ets?" icon={CircleUserRound}>
@@ -280,22 +195,7 @@ const UserForm = () => {
               <PhoneField form={form} />
             </Group>
 
-            <motion.div variants={childVariants}>
-              <Alert>
-                <MailCheck />
-                <AlertTitle>No estudies a la UdL?</AlertTitle>
-                <AlertDescription>
-                  Aquest formulari és per a estudiants de la UdL. Si el comitè
-                  t&apos;ha convidat a formar-ne part des de fora, rebràs la
-                  invitació al teu correu i no cal que passis per aquí. Si tens
-                  dubtes,{" "}
-                  <TextLink href="mailto:iaeste@udl.cat">
-                    escriu-nos a iaeste@udl.cat
-                  </TextLink>
-                  .
-                </AlertDescription>
-              </Alert>
-            </motion.div>
+            <ExternalMemberNotice />
 
             <Group title="Què estudies?" icon={School}>
               <DegreeField form={form} />
