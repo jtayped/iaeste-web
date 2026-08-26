@@ -7,7 +7,7 @@ interface VerifyUserEmailProps {
 }
 
 export const VerifyUserEmail = ({ email, link }: VerifyUserEmailProps) => {
-  const previewText = `Verify your email (${email}) for the IAESTE Admin site. Verify at ${link}`;
+  const previewText = `Confirma que aquest correu (${email}) és teu per continuar amb la inscripció.`;
 
   return (
     <EmailWrapper previewText={previewText}>
