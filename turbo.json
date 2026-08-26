@@ -13,27 +13,33 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "test": {
+      "dependsOn": ["^check-types"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
     }
   },
   "globalEnv": [
-    "AUTH_SECRET",
-    "DATABASE_URL",
-    "RESEND_API_KEY",
-    "CONTACT_FORM_FROM",
-    "CONTACT_FORM_TO",
-    "PORT",
+    "API_PORT",
+    "CORS_ALLOWED_ORIGINS",
     "SHEETS_PROJECT_ID",
     "SHEETS_PRIVATE_KEY",
     "SHEETS_CLIENT_EMAIL",
+    "SHEETS_SPREADSHEET_ID",
+    "SHEETS_RANGE",
+    "RESEND_API_KEY",
+    "CONTACT_FORM_FROM",
+    "CONTACT_FORM_TO",
+    "NEXT_PUBLIC_API_URL",
     "NEXT_PUBLIC_INSCRIPCIONS_STATE",
     "NEXT_PUBLIC_WHATSAPP_INVITE"
   ],
   "globalPassThroughEnv": [
     "NODE_ENV",
     "CI",
+    "PORT",
     "VERCEL",
     "VERCEL_ENV",
     "VERCEL_URL",

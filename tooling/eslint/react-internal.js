@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginReact from "eslint-plugin-react";
 import globals from "globals";
-import { config as baseConfig } from "./base.js";
+import { boundaryRules, config as baseConfig } from "./base.js";
 
 /**
  * A custom ESLint configuration for libraries that use React.
@@ -35,5 +35,8 @@ export const config = [
       // React scope no longer necessary with new JSX transform.
       "react/react-in-jsx-scope": "off",
     },
+  },
+  {
+    rules: boundaryRules,
   },
 ];

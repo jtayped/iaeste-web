@@ -1,0 +1,10 @@
+node_modules
+.next
+.turbo
+dist
+coverage
+package-lock.json
+
+# Generated from apps/api/openapi.json by `npm run generate:api`.
+packages/api-client/src/generated
+apps/api/openapi.json
