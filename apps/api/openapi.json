@@ -46,10 +46,15 @@
             "enum": [
               "created"
             ]
+          },
+          "id": {
+            "type": "string",
+            "example": "registration_123"
           }
         },
         "required": [
-          "status"
+          "status",
+          "id"
         ]
       },
       "ApiError": {
@@ -465,6 +470,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RegistrationCreated"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No campaign is currently open for registration (error code CONFLICT).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }

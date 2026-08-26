@@ -20,7 +20,22 @@ import { parsePhone } from "../lib/phone";
 import "../lib/react-global";
 
 export interface RegistrationRepository {
-  create(registration: Registration): Promise<void>;
+  create(registration: Registration): Promise<{ id: string }>;
+}
+
+/**
+ * Thrown by `.create()` when no campaign is currently open for
+ * registration. A distinct class (rather than a plain `Error`) so
+ * `app.ts`'s route handler can map it to a clear, distinguishable
+ * `CONFLICT` response instead of the generic 500 every other repository
+ * failure gets — the frontend's "registrations are closed" state (IA-41)
+ * depends on being able to tell these apart.
+ */
+export class RegistrationsClosedError extends Error {
+  constructor() {
+    super("No campaign is currently open for registration.");
+    this.name = "RegistrationsClosedError";
+  }
 }
 
 // Email-verification tokens are valid for 24 hours: long enough that
@@ -80,10 +95,7 @@ export function createDrizzleRegistrationRepository(
 
       const openCampaign = await campaigns.getOpenForRegistration();
       if (!openCampaign) {
-        // A nicer "registration closed" response is IA-40's job — for now
-        // this flows through the app's generic 500 handler like any other
-        // repository error (see app.test.ts's "hides repository errors").
-        throw new Error("No campaign is currently open for registration.");
+        throw new RegistrationsClosedError();
       }
 
       // `registrationRequestSchema`'s `.refine()` (contracts.ts) already
@@ -150,6 +162,8 @@ export function createDrizzleRegistrationRepository(
       } catch (error) {
         console.error("Failed to send verification email", error);
       }
+
+      return { id: created.id };
     },
   };
 }
@@ -213,6 +227,12 @@ export function createGoogleSheetsRegistrationRepository(): RegistrationReposito
           ],
         },
       });
+
+      // A spreadsheet row has no natural id. This function is dormant
+      // (IA-12) and never actually invoked as the app's default — kept
+      // only so IA-54 can relocate this logic — so a synthetic id here
+      // satisfies the interface without meaning anything.
+      return { id: crypto.randomUUID() };
     },
   };
 }

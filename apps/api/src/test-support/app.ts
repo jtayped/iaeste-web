@@ -17,7 +17,9 @@ export const validRegistration: Registration = {
 };
 
 export function createRepository(
-  create: RegistrationRepository["create"] = async () => undefined,
+  create: RegistrationRepository["create"] = async () => ({
+    id: "registration_123",
+  }),
 ): RegistrationRepository {
   return { create };
 }

@@ -134,6 +134,8 @@ export interface components {
         RegistrationCreated: {
             /** @enum {string} */
             status: "created";
+            /** @example registration_123 */
+            id: string;
         };
         ApiError: {
             error: {
@@ -280,6 +282,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegistrationCreated"];
+                };
+            };
+            /** @description No campaign is currently open for registration (error code CONFLICT). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
             /** @description The request body is too large. */

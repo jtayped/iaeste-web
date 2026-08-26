@@ -38,6 +38,7 @@ export const registrationRequestSchema = z
 export const registrationCreatedSchema = z
   .object({
     status: z.literal("created"),
+    id: z.string().openapi({ example: "registration_123" }),
   })
   .openapi("RegistrationCreated");
 

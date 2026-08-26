@@ -80,6 +80,13 @@ export const createRegistrationRoute = createRoute({
         "application/json": { schema: apiErrorSchema },
       },
     },
+    409: {
+      description:
+        "No campaign is currently open for registration (error code CONFLICT).",
+      content: {
+        "application/json": { schema: apiErrorSchema },
+      },
+    },
     500: {
       description: "The registration could not be saved.",
       content: {

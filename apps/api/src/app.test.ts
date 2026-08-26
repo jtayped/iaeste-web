@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import type { Registration } from "@repo/constants/validators/registration";
 
+import { RegistrationsClosedError } from "./repositories/registrations";
 import {
   createRepository,
   createTestApp,
@@ -38,6 +39,7 @@ describe("API", () => {
     const app = createTestApp(
       createRepository(async (registration) => {
         saved = registration;
+        return { id: "registration_123" };
       }),
     );
     const response = await app.request("/v1/registrations", {
@@ -48,7 +50,27 @@ describe("API", () => {
 
     assert.equal(response.status, 201);
     assert.deepEqual(saved, validRegistration);
-    assert.deepEqual(await response.json(), { status: "created" });
+    assert.deepEqual(await response.json(), {
+      status: "created",
+      id: "registration_123",
+    });
+  });
+
+  it("reports registration as closed distinctly from other repository errors", async () => {
+    const app = createTestApp(
+      createRepository(async () => {
+        throw new RegistrationsClosedError();
+      }),
+    );
+    const response = await app.request("/v1/registrations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(validRegistration),
+    });
+    const body = (await response.json()) as { error: { code: string } };
+
+    assert.equal(response.status, 409);
+    assert.equal(body.error.code, "CONFLICT");
   });
 
   it("rejects invalid registration data", async () => {
@@ -56,6 +78,7 @@ describe("API", () => {
     const app = createTestApp(
       createRepository(async () => {
         saveCount += 1;
+        return { id: "registration_123" };
       }),
     );
     const response = await app.request("/v1/registrations", {

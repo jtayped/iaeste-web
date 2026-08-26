@@ -12,6 +12,7 @@ import { apiErrorSchema } from "./contracts";
 import { getOpenAPIDocument } from "./openapi";
 import {
   createDrizzleRegistrationRepository,
+  RegistrationsClosedError,
   type RegistrationRepository,
 } from "./repositories/registrations";
 import {
@@ -153,8 +154,22 @@ export function createApp(dependencies: AppDependencies = {}) {
       );
     }
 
-    await registrationRepository.create(parsed.data);
-    return c.json({ status: "created" as const }, 201);
+    try {
+      const created = await registrationRepository.create(parsed.data);
+      return c.json({ status: "created" as const, id: created.id }, 201);
+    } catch (error) {
+      if (error instanceof RegistrationsClosedError) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "CONFLICT",
+            "Registration is not currently open.",
+          ),
+          409,
+        );
+      }
+      throw error;
+    }
   });
 
   // Public, deliberately non-revealing — see resendVerificationRoute's doc
