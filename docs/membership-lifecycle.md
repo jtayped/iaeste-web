@@ -55,7 +55,7 @@ invited address plus completing the profile creates the membership directly,
 with no second review. An invitation grants admin access only if the inviter
 explicitly selected it and had permission to grant it.
 
-**9. Kick and leave.** Both end only the *current campaign* membership, never
+**9. Kick and leave.** Both end only the _current campaign_ membership, never
 delete history. `kicked` requires a reason and revokes active sessions;
 `left` implies nothing about conduct. Restoring a mistaken kick or leave is an
 explicit, audited action — never a silent status flip.
