@@ -7,7 +7,8 @@
     "dev": "email dev -p 3002 --dir=./src/emails",
     "export": "email export",
     "lint": "eslint . --max-warnings 0",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "tsx --test \"src/**/*.test.tsx\""
   },
   "exports": {
     "./*": "./src/emails/*.tsx",
@@ -26,6 +27,7 @@
     "@types/react": "19.0.10",
     "react": "^19.1.1",
     "react-email": "^4.0.4",
+    "tsx": "^4.20.0",
     "typescript": "^5.8.2"
   },
   "peerDependencies": {

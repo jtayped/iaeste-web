@@ -7,7 +7,7 @@ interface InviteUserProps {
 }
 
 export const UserInvitation = ({ email, invitationLink }: InviteUserProps) => {
-  const previewText = `Verify your email (${email}) for the IAESTE Admin site. Verify at ${invitationLink}`;
+  const previewText = `T'hem convidat a unir-te a IAESTE LC Lleida amb aquest correu (${email}).`;
 
   return (
     <EmailWrapper previewText={previewText}>
@@ -33,8 +33,8 @@ export const UserInvitation = ({ email, invitationLink }: InviteUserProps) => {
 };
 
 UserInvitation.PreviewProps = {
-  email: "john.doe@gmail.com",
-  invitationLink: "https://google.com",
+  email: "john.doe@example.com",
+  invitationLink: "https://example.com/invitacio",
 } as InviteUserProps;
 
 export default UserInvitation;
