@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalDependencies": ["content/**", "keystatic.config.ts"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -37,17 +38,13 @@
     "REGISTRATION_EMAIL_FROM",
     "INSCRIPCIONS_PUBLIC_ORIGIN",
     "ADMIN_PUBLIC_ORIGIN",
+    "KEYSTATIC_GITHUB_CLIENT_ID",
+    "KEYSTATIC_GITHUB_CLIENT_SECRET",
+    "KEYSTATIC_SECRET",
     "NEXT_PUBLIC_API_URL",
     "NEXT_PUBLIC_INSCRIPCIONS_STATE",
+    "NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG",
     "NEXT_PUBLIC_WHATSAPP_INVITE"
   ],
-  "globalPassThroughEnv": [
-    "NODE_ENV",
-    "CI",
-    "PORT",
-    "VERCEL",
-    "VERCEL_ENV",
-    "VERCEL_URL",
-    "npm_lifecycle_event"
-  ]
+  "globalPassThroughEnv": ["NODE_ENV", "CI", "PORT", "npm_lifecycle_event"]
 }

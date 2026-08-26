@@ -65,14 +65,18 @@ This is the part worth getting right, because it's not symmetric.
 `AGENTS.md`'s "Configuration goes through `@repo/env`" rule). They split
 along exactly the build/runtime line:
 
-| Variable                         | Schema       | Needed at build time             | Needed at container runtime  |
-| -------------------------------- | ------------ | -------------------------------- | ---------------------------- |
-| `NEXT_PUBLIC_INSCRIPCIONS_STATE` | `web.client` | Yes — must be the **real** value | No — already compiled in     |
-| `RESEND_API_KEY`                 | `web.server` | Yes, but a placeholder is fine   | Yes — must be the real value |
-| `CONTACT_FORM_FROM`              | `web.server` | Yes, but a placeholder is fine   | Yes — must be the real value |
-| `CONTACT_FORM_TO`                | `web.server` | Yes, but a placeholder is fine   | Yes — must be the real value |
+| Variable                                | Schema       | Needed at build time             | Needed at container runtime  |
+| --------------------------------------- | ------------ | -------------------------------- | ---------------------------- |
+| `NEXT_PUBLIC_INSCRIPCIONS_STATE`        | `web.client` | Yes — must be the **real** value | No — already compiled in     |
+| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | `web.client` | Real value when admin is enabled | No — already compiled in     |
+| `RESEND_API_KEY`                        | `web.server` | Yes, but a placeholder is fine   | Yes — must be the real value |
+| `CONTACT_FORM_FROM`                     | `web.server` | Yes, but a placeholder is fine   | Yes — must be the real value |
+| `CONTACT_FORM_TO`                       | `web.server` | Yes, but a placeholder is fine   | Yes — must be the real value |
+| `KEYSTATIC_GITHUB_CLIENT_ID`            | `web.server` | A placeholder is fine            | Real value for the admin     |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET`        | `web.server` | A placeholder is fine            | Real value for the admin     |
+| `KEYSTATIC_SECRET`                      | `web.server` | A placeholder is fine            | Real value for the admin     |
 
-Why all four are needed at build time at all: `next build`'s "Collecting
+Why the required values are needed at build time at all: `next build`'s "Collecting
 page data" step evaluates every server module reachable from a route,
 which includes `apps/web/src/lib/emails.ts` — the contact-form server
 action — because it constructs a Resend client at module scope
@@ -94,18 +98,21 @@ Node process. A placeholder at build time only needs to satisfy
 won't be able to send real email until the real values are set on the
 running container.
 
-Practically: **bake the real `NEXT_PUBLIC_INSCRIPCIONS_STATE` in as a build
-arg, and set the real `RESEND_API_KEY` / `CONTACT_FORM_FROM` /
-`CONTACT_FORM_TO` as runtime environment variables on the Coolify
-resource.** Never put real secrets in a `--build-arg` — Docker records
-build args in the image's build history, and `.github/workflows/deploy.yml`
-only ever passes CI-placeholder values for the three server-only ones.
+Practically: **bake the real `NEXT_PUBLIC_INSCRIPCIONS_STATE` and
+`NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` in as build args, and set the real
+server-only values as runtime environment variables on the Coolify
+resource.** Never put real secrets in a `--build-arg` — Docker records build
+args in the image's build history. The Dockerfile supplies temporary
+Keystatic credentials only to the build process; they are not persisted as
+image environment variables.
 
 ## GHCR push flow
 
-`.github/workflows/deploy.yml` runs on every push to `master` (never on a
-pull request — PRs only get `ci.yml`'s verify/build jobs, so a fork can't
-push an image). It:
+`.github/workflows/deploy.yml` runs on pushes to `master` that can affect the
+web image (never on a pull request — PRs only get `ci.yml`'s verify/build
+jobs, so a fork can't push an image). Its path filter explicitly includes
+`content/**` and `keystatic.config.ts`, so editorial commits produce a fresh
+image too. It:
 
 1. Logs into `ghcr.io` using `github.actor` / `GITHUB_TOKEN` — no PAT
    needed, following
@@ -161,10 +168,16 @@ or the monorepo, it only pulls whatever `deploy.yml` pushed.
    - `RESEND_API_KEY` — the real Resend API key.
    - `CONTACT_FORM_FROM` — the real "from" address for contact-form email.
    - `CONTACT_FORM_TO` — the real destination address.
+   - `KEYSTATIC_GITHUB_CLIENT_ID` — the GitHub App client ID.
+   - `KEYSTATIC_GITHUB_CLIENT_SECRET` — the GitHub App client secret.
+   - `KEYSTATIC_SECRET` — a long random value used to secure Keystatic's
+     session state.
 
-   Do **not** set `NEXT_PUBLIC_INSCRIPCIONS_STATE` here — it has no effect
-   at runtime (see the table above). To change it, rebuild the image with
-   the new build arg and redeploy.
+   Do **not** set either `NEXT_PUBLIC_*` value only here — it has no effect at
+   runtime (see the table above). Set
+   `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` as the GitHub Actions repository
+   variable used by `deploy.yml`; changing either public value requires a
+   rebuild and redeploy.
 
 8. **Deploy** and confirm the container serves traffic on the configured
    domain, then confirm a contact-form submission actually sends an email
@@ -202,9 +215,9 @@ See the IA-08 commit history for the actual output of this run.
   `outputFileTracingRoot` fix in its own `next.config`.
 - `apps/api` is not a Next.js app (Hono), so its Dockerfile doesn't need
   the standalone-output dance at all — it's closer to a plain
-  `npm ci && npm run build && npm start` image. README.md already
-  documents it as independently deployable (Node service or Vercel); a
-  container is a third option, not a replacement for that doc.
+  `npm ci && npm run build && npm start` image. README.md documents it as
+  an independently deployable Node service; IA-60 will add its production
+  container.
 - `admin` doesn't exist yet (later milestone per
   `docs/membership-lifecycle.md`) — nothing to containerize until it does.
 - `deploy.yml` will need a job per app once there's more than one image to

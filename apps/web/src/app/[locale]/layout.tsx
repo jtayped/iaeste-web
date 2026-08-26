@@ -1,5 +1,5 @@
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
@@ -8,7 +8,6 @@ import Header, { NavigationProvider } from "@/components/header";
 import Footer from "@/components/common/footer";
 import "@repo/ui/globals.css";
 import "@/globals.css";
-import AnalyticsWrapper from "./analytics";
 import { generatePageMetadata } from "@/lib/metadata";
 
 const inter = Inter({ weight: "variable", subsets: ["latin"] });
@@ -35,9 +34,13 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  // Avoid reading the locale from request headers so pages with
+  // generateStaticParams can be rendered at build time.
+  setRequestLocale(locale);
+
   // Providing all messages to the client
   // side is the easiest way to get started
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   return (
     <html lang={locale}>
@@ -49,7 +52,6 @@ export default async function LocaleLayout({
             <Footer />
           </NavigationProvider>
         </NextIntlClientProvider>
-        <AnalyticsWrapper />
       </body>
     </html>
   );
