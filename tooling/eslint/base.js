@@ -39,9 +39,17 @@ export const config = [
         { max: 300, skipBlankLines: true, skipComments: true },
       ],
     },
+    // Each workspace has its own eslint.config.js, so ESLint's ignore-match
+    // base path is that workspace's own directory, not the repo root — a
+    // pattern like "packages/api-client/src/generated/**" never matches
+    // anything when linting runs from inside packages/api-client, because
+    // the path relative to that base is just "src/generated/**". A leading
+    // "**/" absorbs whatever prefix (or none) the base path leaves, so the
+    // same pattern matches from any workspace. Verified with
+    // `eslint --print-config` from within packages/api-client.
     ignores: [
-      "packages/api-client/src/generated/**",
-      "apps/api/openapi.json",
+      "**/generated/**",
+      "**/openapi.json",
       "**/.next/**",
       "**/dist/**",
       "**/drizzle/**",

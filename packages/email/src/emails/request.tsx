@@ -8,7 +8,7 @@ interface UserRequestProps {
 }
 
 export const UserRequest = ({ name, email, requestLink }: UserRequestProps) => {
-  const previewText = `Verify your email (${email}) for the IAESTE Admin site. Verify at ${requestLink}`;
+  const previewText = `${name} (${email}) vol unir-se a IAESTE LC Lleida.`;
 
   return (
     <EmailWrapper previewText={previewText}>
