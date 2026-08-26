@@ -1,0 +1,33 @@
+{
+  "name": "@repo/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm run generate:openapi && tsup src/server.ts --format esm --dts --clean --out-dir dist",
+    "check-types": "tsc --noEmit",
+    "dev": "dotenv -e ../../.env -- tsx watch src/server.ts",
+    "generate:openapi": "tsx scripts/generate-openapi.ts",
+    "lint": "eslint .",
+    "start": "node dist/server.js",
+    "test": "tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.0",
+    "@hono/zod-openapi": "^1.4.0",
+    "@repo/constants": "*",
+    "google-auth-library": "^10.3.0",
+    "googleapis": "^160.0.0",
+    "hono": "^4.10.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@types/node": "^22.13.10",
+    "dotenv-cli": "^8.0.0",
+    "tsx": "^4.20.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.2"
+  }
+}

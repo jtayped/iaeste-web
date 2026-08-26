@@ -1,0 +1,285 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "IAESTE Lleida API",
+    "version": "1.0.0",
+    "description": "Public API for IAESTE LC Lleida applications."
+  },
+  "servers": [
+    {
+      "url": "https://api.iaestelleida.cat",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3004",
+      "description": "Local development"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "enum": [
+              "1.0.0"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "version"
+        ]
+      },
+      "RegistrationCreated": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "created"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "VALIDATION_ERROR",
+                  "UNSUPPORTED_MEDIA_TYPE",
+                  "PAYLOAD_TOO_LARGE",
+                  "NOT_FOUND",
+                  "INTERNAL_ERROR"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ValidationIssue"
+                }
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "requestId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "requestId"
+        ]
+      },
+      "ValidationIssue": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "message"
+        ]
+      },
+      "RegistrationRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "example": "Joan"
+          },
+          "surnames": {
+            "type": "string",
+            "minLength": 2,
+            "example": "Garcia Serra"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joan@alumnes.udl.cat"
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "example": "+34 623 32 42 34"
+          },
+          "degree": {
+            "type": "string",
+            "enum": [
+              "Doble Grau en Organització Industrial i ADE",
+              "Doble Grau en Informàtica i ADE",
+              "Doble Grau en Mecànica i Energia",
+              "Grau en Arquitectura Tècnica",
+              "Grau en Disseny Digital",
+              "Grau en Enginyeria de l'Energia",
+              "Grau en Eng. Electrònica Industrial",
+              "Grau en Organització Industrial",
+              "Grau en Informàtica (Igualada)",
+              "Grau en Informàtica (Lleida)",
+              "Grau en Enginyeria Mecànica",
+              "Grau en Enginyeria Química",
+              "Grau en Tècniques d'Interacció Digital",
+              "Altre"
+            ],
+            "example": "Grau en Informàtica (Lleida)"
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6,
+            "example": 2
+          },
+          "previousMember": {
+            "type": "boolean",
+            "example": false
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000,
+            "example": "M'interessen els intercanvis internacionals."
+          }
+        },
+        "required": [
+          "name",
+          "surnames",
+          "email",
+          "phone",
+          "degree",
+          "year",
+          "previousMember"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "tags": [
+          "System"
+        ],
+        "responses": {
+          "200": {
+            "description": "The API is available.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/registrations": {
+      "post": {
+        "operationId": "createRegistration",
+        "tags": [
+          "Registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The registration was saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationCreated"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The request body is not JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request did not match the registration schema.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The registration could not be saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}
