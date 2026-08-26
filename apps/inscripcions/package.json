@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
+    "test": "tsx --test \"src/**/*.test.ts\"",
     "with-env": "dotenv -e ../../.env"
   },
   "dependencies": {
@@ -25,7 +26,8 @@
     "react": "^19.1.1",
     "react-confetti": "^6.4.0",
     "react-dom": "^19.1.1",
-    "react-hook-form": "^7.62.0"
+    "react-hook-form": "^7.62.0",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
@@ -37,6 +39,7 @@
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.22.0",
     "tailwindcss": "^3.4.3",
+    "tsx": "^4.20.0",
     "typescript": "5.8.2"
   }
 }
