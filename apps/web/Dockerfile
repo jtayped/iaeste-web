@@ -74,11 +74,13 @@ COPY --from=pruner /app/out/full/ .
 # needs a real value at build time; override it with --build-arg for an
 # actual deploy.
 ARG NEXT_PUBLIC_INSCRIPCIONS_STATE=on
+ARG NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=
 ARG RESEND_API_KEY=build-placeholder
 ARG CONTACT_FORM_FROM=noreply@iaestelleida.cat
 ARG CONTACT_FORM_TO=ci@example.com
 
 ENV NEXT_PUBLIC_INSCRIPCIONS_STATE=$NEXT_PUBLIC_INSCRIPCIONS_STATE \
+    NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=$NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG \
     RESEND_API_KEY=$RESEND_API_KEY \
     CONTACT_FORM_FROM=$CONTACT_FORM_FROM \
     CONTACT_FORM_TO=$CONTACT_FORM_TO \
@@ -87,7 +89,10 @@ ENV NEXT_PUBLIC_INSCRIPCIONS_STATE=$NEXT_PUBLIC_INSCRIPCIONS_STATE \
 # `turbo` is a devDependency of the root package.json, so `npm ci` in the
 # installer stage already installed it into node_modules/.bin -- `npx` here
 # resolves that local binary rather than fetching anything.
-RUN npx turbo run build --filter=web
+RUN KEYSTATIC_GITHUB_CLIENT_ID=build-placeholder \
+  KEYSTATIC_GITHUB_CLIENT_SECRET=build-placeholder \
+  KEYSTATIC_SECRET=build-placeholder \
+  npx turbo run build --filter=web
 
 # ---------------------------------------------------------------------------
 FROM base AS runner

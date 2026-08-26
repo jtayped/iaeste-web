@@ -13,6 +13,9 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@keystatic/core": "^0.6.9",
+    "@keystatic/next": "^5.0.5",
+    "@markdoc/markdoc": "^0.5.9",
     "@repo/constants": "*",
     "@repo/email": "*",
     "@repo/env": "*",
