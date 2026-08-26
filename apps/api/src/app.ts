@@ -10,7 +10,7 @@ import { getAllowedOrigins } from "./config";
 import { apiErrorSchema } from "./contracts";
 import { getOpenAPIDocument } from "./openapi";
 import {
-  createGoogleSheetsRegistrationRepository,
+  createDrizzleRegistrationRepository,
   type RegistrationRepository,
 } from "./repositories/registrations";
 import { createRegistrationRoute, healthRoute } from "./routes";
@@ -41,7 +41,7 @@ function errorBody(
 export function createApp(dependencies: AppDependencies = {}) {
   const registrationRepository =
     dependencies.registrationRepository ??
-    createGoogleSheetsRegistrationRepository();
+    createDrizzleRegistrationRepository();
   const logger = dependencies.logger ?? console;
   const allowedOrigins = getAllowedOrigins();
   const app = new OpenAPIHono({

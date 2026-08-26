@@ -1,6 +1,8 @@
 // Test-only helpers for running the repository suite against a real
 // Postgres database (`iaeste_test`), never mocks — see IA-11's acceptance
-// criteria. Not part of the package's public `exports`.
+// criteria. Exposed via the package's `./test-support` export so `apps/api`
+// can exercise its Drizzle-backed repositories against the same real
+// database (IA-12) without duplicating this migration/truncation logic.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 

@@ -10,12 +10,13 @@
     "generate:openapi": "tsx scripts/generate-openapi.ts",
     "lint": "eslint .",
     "start": "node dist/server.js",
-    "test": "tsx --test src/**/*.test.ts"
+    "test": "dotenv -e ../../.env -- tsx --test --test-concurrency=1 \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
     "@hono/zod-openapi": "^1.4.0",
     "@repo/constants": "*",
+    "@repo/db": "*",
     "google-auth-library": "^10.3.0",
     "googleapis": "^160.0.0",
     "hono": "^4.10.0",
