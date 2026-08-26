@@ -14,7 +14,10 @@ import { closeTestDb, getTestDb, truncateAll } from "@repo/db/test-support";
 import type { Emailer, SendEmailOptions } from "@repo/email/resend";
 
 import { createApp } from "../app";
-import { createDrizzleRegistrationRepository } from "./registrations";
+import {
+  createDrizzleRegistrationRepository,
+  RegistrationAlreadyExistsError,
+} from "./registrations";
 
 /** Records every send instead of hitting the real Resend API. */
 function createRecordingEmailer(): Emailer & { sent: SendEmailOptions[] } {
@@ -129,6 +132,20 @@ describe("createDrizzleRegistrationRepository", () => {
     await assert.rejects(
       () => repository.create(validRegistration),
       /No campaign is currently open for registration/,
+    );
+  });
+
+  it("throws RegistrationAlreadyExistsError for a second registration with the same email", async () => {
+    await openCampaignForRegistration(db);
+    const repository = createDrizzleRegistrationRepository({
+      emailer: createRecordingEmailer(),
+    });
+
+    await repository.create(validRegistration);
+
+    await assert.rejects(
+      () => repository.create(validRegistration),
+      RegistrationAlreadyExistsError,
     );
   });
 

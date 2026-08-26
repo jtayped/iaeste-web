@@ -58,6 +58,7 @@ export const apiErrorSchema = z
         "PAYLOAD_TOO_LARGE",
         "NOT_FOUND",
         "CONFLICT",
+        "ALREADY_REGISTERED",
         "INVALID_TOKEN",
         "INTERNAL_ERROR",
       ]),

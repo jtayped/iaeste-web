@@ -82,7 +82,10 @@ export const createRegistrationRoute = createRoute({
     },
     409: {
       description:
-        "No campaign is currently open for registration (error code CONFLICT).",
+        "Either no campaign is currently open for registration " +
+        "(error code CONFLICT), or this email already has a " +
+        "registration for the open campaign (error code ALREADY_REGISTERED) " +
+        "— check the response body's error.code to tell them apart.",
       content: {
         "application/json": { schema: apiErrorSchema },
       },

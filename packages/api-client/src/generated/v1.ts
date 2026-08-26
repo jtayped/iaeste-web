@@ -140,7 +140,7 @@ export interface components {
         ApiError: {
             error: {
                 /** @enum {string} */
-                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "NOT_FOUND" | "CONFLICT" | "INVALID_TOKEN" | "INTERNAL_ERROR";
+                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "NOT_FOUND" | "CONFLICT" | "ALREADY_REGISTERED" | "INVALID_TOKEN" | "INTERNAL_ERROR";
                 message: string;
                 details?: components["schemas"]["ValidationIssue"][];
             };
@@ -284,7 +284,7 @@ export interface operations {
                     "application/json": components["schemas"]["RegistrationCreated"];
                 };
             };
-            /** @description No campaign is currently open for registration (error code CONFLICT). */
+            /** @description Either no campaign is currently open for registration (error code CONFLICT), or this email already has a registration for the open campaign (error code ALREADY_REGISTERED) — check the response body's error.code to tell them apart. */
             409: {
                 headers: {
                     [name: string]: unknown;

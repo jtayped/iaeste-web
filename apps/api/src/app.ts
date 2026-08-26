@@ -12,6 +12,7 @@ import { apiErrorSchema } from "./contracts";
 import { getOpenAPIDocument } from "./openapi";
 import {
   createDrizzleRegistrationRepository,
+  RegistrationAlreadyExistsError,
   RegistrationsClosedError,
   type RegistrationRepository,
 } from "./repositories/registrations";
@@ -45,6 +46,7 @@ function errorBody(
     | "PAYLOAD_TOO_LARGE"
     | "NOT_FOUND"
     | "CONFLICT"
+    | "ALREADY_REGISTERED"
     | "INVALID_TOKEN"
     | "INTERNAL_ERROR",
   message: string,
@@ -164,6 +166,16 @@ export function createApp(dependencies: AppDependencies = {}) {
             c.get("requestId"),
             "CONFLICT",
             "Registration is not currently open.",
+          ),
+          409,
+        );
+      }
+      if (error instanceof RegistrationAlreadyExistsError) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "ALREADY_REGISTERED",
+            "A registration already exists for this email.",
           ),
           409,
         );

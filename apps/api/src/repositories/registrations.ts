@@ -38,6 +38,29 @@ export class RegistrationsClosedError extends Error {
   }
 }
 
+/**
+ * Thrown by `.create()` when this email already has a registration for the
+ * open campaign — `@repo/db`'s unique index on (campaignId, email) is what
+ * actually enforces this; this class just gives app.ts something specific
+ * to catch instead of the generic 500 every other unexpected failure gets.
+ * A distinct code from `RegistrationsClosedError`: the frontend (IA-41)
+ * needs "you already registered, check your email" and "registration is
+ * closed" to read as different pages from the same endpoint.
+ */
+export class RegistrationAlreadyExistsError extends Error {
+  constructor() {
+    super("A registration already exists for this email and campaign.");
+    this.name = "RegistrationAlreadyExistsError";
+  }
+}
+
+/** True for a Postgres unique-violation (error code 23505), however Drizzle/pg wrapped it. */
+function isUniqueViolation(error: unknown): boolean {
+  const cause = (error as { cause?: { code?: string } } | undefined)?.cause;
+  const code = (error as { code?: string } | undefined)?.code ?? cause?.code;
+  return code === "23505";
+}
+
 // Email-verification tokens are valid for 24 hours: long enough that
 // someone who registers in the evening can still verify the next morning,
 // short enough that a stale, unclaimed link doesn't stay usable forever.
@@ -123,11 +146,18 @@ export function createDrizzleRegistrationRepository(
       };
 
       const registrations = createRegistrationRepository(db);
-      const created = await registrations.create({
-        campaignId: openCampaign.id,
-        email: registration.email,
-        profileSnapshot,
-      });
+      let created;
+      try {
+        created = await registrations.create({
+          campaignId: openCampaign.id,
+          email: registration.email,
+          profileSnapshot,
+        });
+      } catch (error) {
+        if (isUniqueViolation(error))
+          throw new RegistrationAlreadyExistsError();
+        throw error;
+      }
 
       const rawToken = crypto.randomBytes(32).toString("hex");
       const verifications = createRegistrationVerificationRepository(db);

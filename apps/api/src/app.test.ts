@@ -3,7 +3,10 @@ import { describe, it } from "node:test";
 
 import type { Registration } from "@repo/constants/validators/registration";
 
-import { RegistrationsClosedError } from "./repositories/registrations";
+import {
+  RegistrationAlreadyExistsError,
+  RegistrationsClosedError,
+} from "./repositories/registrations";
 import {
   createRepository,
   createTestApp,
@@ -71,6 +74,23 @@ describe("API", () => {
 
     assert.equal(response.status, 409);
     assert.equal(body.error.code, "CONFLICT");
+  });
+
+  it("reports a duplicate registration distinctly from a closed campaign", async () => {
+    const app = createTestApp(
+      createRepository(async () => {
+        throw new RegistrationAlreadyExistsError();
+      }),
+    );
+    const response = await app.request("/v1/registrations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(validRegistration),
+    });
+    const body = (await response.json()) as { error: { code: string } };
+
+    assert.equal(response.status, 409);
+    assert.equal(body.error.code, "ALREADY_REGISTERED");
   });
 
   it("rejects invalid registration data", async () => {
