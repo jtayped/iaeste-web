@@ -17,7 +17,7 @@ const BackButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {children}
       </Button>
     );
-  }
+  },
 );
 
 BackButton.displayName = "BackButton";

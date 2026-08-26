@@ -24,7 +24,7 @@ const Statistic = ({
       </CardHeader>
       <CardContent>
         <p className="text-lg md:text-xl">{t(`${translationKey}.title`)}</p>
-        <p className="text-xs md:text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground md:text-sm">
           {t(`${translationKey}.subtitle`)}
         </p>
       </CardContent>

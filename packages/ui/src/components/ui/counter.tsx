@@ -13,7 +13,7 @@ interface AnimatedCounterProps {
   to: number;
   duration: number;
   animationOptions?: KeyframeOptions;
-};
+}
 
 const AnimatedCounter = ({
   to,

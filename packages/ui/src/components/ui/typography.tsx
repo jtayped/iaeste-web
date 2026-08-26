@@ -28,7 +28,7 @@ export const H3: React.FC<Props> = ({ children, className = "", ...props }) => (
   <h3
     className={cn(
       "mt-8 scroll-m-20 text-2xl font-semibold tracking-tight",
-      className
+      className,
     )}
     {...props}
   >
@@ -42,7 +42,7 @@ export const Subheader: React.FC<Props> = ({
   ...props
 }) => (
   <p
-    className={`mt-2 scroll-m-20 text-lg text-muted-foreground tracking-tight ${className}`}
+    className={`mt-2 scroll-m-20 text-lg tracking-tight text-muted-foreground ${className}`}
     {...props}
   >
     {children}

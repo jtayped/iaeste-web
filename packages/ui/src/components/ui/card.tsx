@@ -11,17 +11,17 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "relative overflow-hidden border bg-card text-card-foreground shadow-sm p-6 rounded-lg",
-        className
+        "relative overflow-hidden rounded-lg border bg-card p-6 text-card-foreground shadow-sm",
+        className,
       )}
       {...props}
     >
       {accent && (
-        <div className="absolute left-0 h-full w-2 bg-primary rounded-tr-sm" />
+        <div className="absolute left-0 h-full w-2 rounded-tr-sm bg-primary" />
       )}
       {children}
     </div>
-  )
+  ),
 );
 Card.displayName = "Card";
 
