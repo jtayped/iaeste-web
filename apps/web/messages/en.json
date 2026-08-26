@@ -11,7 +11,10 @@
     },
     "hero": {
       "description": "Join a global network connecting talented students with international technical internships. Experience professional growth while discovering new cultures through IAESTE's worldwide exchange program.",
-      "buttons": { "student": "I'm a student", "company": "I'm a company" }
+      "buttons": {
+        "student": "I'm a student",
+        "company": "I'm a company"
+      }
     },
     "about": {
       "title": "What is IAESTE?",
@@ -270,7 +273,8 @@
     "submitBtn": {
       "default": "Send",
       "loading": "Sending...",
-      "success": "Message sent!"
+      "success": "Message sent!",
+      "error": "Something went wrong. Please try again."
     }
   },
   "outgoings": {

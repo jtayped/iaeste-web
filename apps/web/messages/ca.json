@@ -11,7 +11,10 @@
     },
     "hero": {
       "description": "Uneix-te a una xarxa global que connecta estudiants talentosos amb pràctiques tècniques internacionals. Desenvolupa la teva carrera professional mentre descobreixes noves cultures a través del programa d'intercanvi mundial de IAESTE.",
-      "buttons": { "student": "Soc estudiant", "company": "Soc empresa" }
+      "buttons": {
+        "student": "Soc estudiant",
+        "company": "Soc empresa"
+      }
     },
     "about": {
       "title": "Què és IAESTE?",
@@ -274,7 +277,8 @@
     "submitBtn": {
       "default": "Enviar",
       "loading": "Enviant...",
-      "success": "Missatge enviat!"
+      "success": "Missatge enviat!",
+      "error": "Alguna cosa ha anat malament. Torna-ho a provar."
     }
   },
   "outgoings": {

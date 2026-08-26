@@ -5,16 +5,16 @@ import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import React from "react";
-import { INSCRIPCIONS_STATE } from "@repo/constants/inscripcions";
+import { env } from "@repo/env/web/client";
 
 const Inscripcions = () => {
   const t = useTranslations("StudentsPage.registrations");
 
-  if (INSCRIPCIONS_STATE !== "on") return;
+  if (env.NEXT_PUBLIC_INSCRIPCIONS_STATE !== "on") return;
 
   return (
     <Section className="flex justify-center bg-primary py-6">
-      <Card className="flex flex-col md:flex-row items-center justify-between gap-4 w-full max-w-6xl">
+      <Card className="flex w-full max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
         <div className="text-center md:text-left">
           <p className="text-3xl font-extrabold tracking-wide">{t("title")}</p>
           <p className="text-md mt-1 text-muted-foreground">

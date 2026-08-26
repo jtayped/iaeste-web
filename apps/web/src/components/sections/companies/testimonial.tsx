@@ -16,7 +16,7 @@ const Testimonial = () => {
           src={"/factory-data/logo.png"}
           width={500}
           height={800}
-          className="w-full max-w-[280px] object-contain brightness-0 invert drop-shadow-lg opacity-90 md:max-w-md"
+          className="w-full max-w-[280px] object-contain opacity-90 brightness-0 drop-shadow-lg invert md:max-w-md"
           alt="Factory Data"
         />
       </div>
@@ -42,7 +42,7 @@ const Testimonial = () => {
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-white text-lg leading-tight">
+              <span className="text-lg font-bold leading-tight text-white">
                 {t("author")}
               </span>
               <span className="text-sm font-medium text-blue-200/70">

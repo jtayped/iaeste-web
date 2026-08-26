@@ -12,7 +12,7 @@ interface NavigationContextValue {
 }
 
 const NavigationContext = createContext<NavigationContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 export const NavigationProvider = ({
@@ -73,11 +73,7 @@ const Header = () => {
 
   return (
     <header
-      className={`
-        fixed top-0 w-full flex justify-between items-center 
-        transition-all duration-300 z-50 section-padding text-primary-foreground
-        ${isScrolled ? "py-2 bg-primary shadow-lg" : "py-10"}
-      `}
+      className={`section-padding fixed top-0 z-50 flex w-full items-center justify-between text-primary-foreground transition-all duration-300 ${isScrolled ? "bg-primary py-2 shadow-lg" : "py-10"} `}
     >
       <Link href="/">
         <Image

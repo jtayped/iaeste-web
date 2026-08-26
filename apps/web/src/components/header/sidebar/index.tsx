@@ -35,12 +35,12 @@ const SidebarComponent = () => {
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ duration: 0.15 }}
-      className="fixed left-0 top-0 w-full h-full"
+      className="fixed left-0 top-0 h-full w-full"
     >
-      <div className="w-full h-full flex items-center justify-center relative bg-primary text-primary-foreground">
+      <div className="relative flex h-full w-full items-center justify-center bg-primary text-primary-foreground">
         <button
           onClick={toggleSidebar}
-          className="absolute top-8 right-8 outline-none"
+          className="absolute right-8 top-8 outline-none"
         >
           <X size={30} />
         </button>
@@ -56,7 +56,7 @@ const SidebarComponent = () => {
           <Item href="/company">{t("company.name").toUpperCase()}</Item>
         </motion.nav>
       </div>
-      <div className="absolute bottom-0 w-full p-screen">
+      <div className="p-screen absolute bottom-0 w-full">
         <ChangeTranslation className="w-full" />
       </div>
     </motion.div>
@@ -80,7 +80,7 @@ const Item = ({
         {children}
       </Link>
       <motion.div
-        className="h-2 bg-primary-foreground rounded"
+        className="h-2 rounded bg-primary-foreground"
         initial={{ width: 0 }}
         animate={{ width: 30 }}
         transition={{ delay: 0.35 }}

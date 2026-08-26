@@ -16,7 +16,7 @@ const LinkBtn = ({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 hover:underline underline-offset-2 text-sm"
+      className="flex items-center gap-3 text-sm underline-offset-2 hover:underline"
     >
       {children}
       <ArrowUpRight size={18} />
@@ -26,9 +26,9 @@ const LinkBtn = ({
 
 const Footer = () => {
   return (
-    <footer className="bg-primary text-primary-foreground py-8">
+    <footer className="bg-primary py-8 text-primary-foreground">
       <DivideSection>
-        <div className="space-y-4 max-w-sm">
+        <div className="max-w-sm space-y-4">
           <Image
             src={"/logos/horizontal.png"}
             width={300}
@@ -39,16 +39,16 @@ const Footer = () => {
           <div>
             <p className="font-semibold">{legalName}</p>
             <div className="mt-3 space-y-2">
-              <p className="text-sm mt-2">{address}</p>
+              <p className="mt-2 text-sm">{address}</p>
               <p className="text-sm">Tel: {phone}</p>
               <p className="text-sm">Email: {email}</p>
             </div>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col gap-8 md:flex-row">
           <div>
-            <h4 className="font-bold text-lg">Quick Links</h4>
-            <nav className="flex flex-col space-y-2 mt-4">
+            <h4 className="text-lg font-bold">Quick Links</h4>
+            <nav className="mt-4 flex flex-col space-y-2">
               <LinkBtn href="/company">For companies</LinkBtn>
               <LinkBtn href="/student">For students</LinkBtn>
               <LinkBtn href="/incomming">For incomming students</LinkBtn>
@@ -57,7 +57,7 @@ const Footer = () => {
         </div>
       </DivideSection>
       <Section>
-        <div className="border-t border-white/20 mt-8 pt-4 text-center text-sm">
+        <div className="mt-8 border-t border-white/20 pt-4 text-center text-sm">
           <p>
             © {new Date().getFullYear()} {legalName}. All rights reserved. |
             Made by{" "}

@@ -10,7 +10,7 @@ const DivideSection = ({
   className?: string;
 }) => {
   return (
-    <Section className={cn("grid md:grid-cols-2 gap-10", className)}>
+    <Section className={cn("grid gap-10 md:grid-cols-2", className)}>
       {children}
     </Section>
   );

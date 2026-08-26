@@ -9,7 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     locales.map((locale) => {
       const url = `${host}/${locale}${path}`;
       const alternates = Object.fromEntries(
-        locales.map((altLocale) => [altLocale, `${host}/${altLocale}${path}`])
+        locales.map((altLocale) => [altLocale, `${host}/${altLocale}${path}`]),
       );
 
       return {
@@ -21,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         changeFrequency: path === "" ? "weekly" : "monthly", // More specific change frequency
         priority: path === "" ? 1.0 : 0.8, // Prioritize homepage
       } satisfies MetadataRoute.Sitemap[0];
-    })
+    }),
   );
 
   return sitemapEntries;

@@ -7,13 +7,13 @@ const HowItWorks = () => {
   const t = useTranslations("HomePage.steps");
 
   return (
-    <Section className="bg-primary text-primary-foreground py-14 flex flex-col items-center">
+    <Section className="flex flex-col items-center bg-primary py-14 text-primary-foreground">
       <h2 className="sr-only">{t("title")}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-14 lg:gap-28">
+      <div className="grid grid-cols-1 gap-20 md:grid-cols-3 md:gap-14 lg:gap-28">
         {steps.map((s, idx) => (
           <div key={s.key}>
             <s.icon
-              className="text-primary bg-white p-3 rounded-lg shadow"
+              className="rounded-lg bg-white p-3 text-primary shadow"
               size={60}
             />
             <div>

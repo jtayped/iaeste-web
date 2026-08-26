@@ -6,7 +6,7 @@ import Link from "next/link";
 const Collaborators = () => {
   return (
     <Section>
-      <ul className="grid grid-cols-2 md:grid-cols-4 gap-x-10 gap-y-5 items-center">
+      <ul className="grid grid-cols-2 items-center gap-x-10 gap-y-5 md:grid-cols-4">
         {collaborators.map((c, i) => (
           <li key={i}>
             <Link

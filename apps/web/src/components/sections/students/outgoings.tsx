@@ -28,7 +28,7 @@ const Outgoings = () => {
         const originalItems = children.slice(0, children.length / 2);
         const width = originalItems.reduce(
           (acc, child) => acc + child.getBoundingClientRect().width + 20,
-          0
+          0,
         );
         setContentWidth(width);
 
@@ -68,15 +68,15 @@ const Outgoings = () => {
   });
 
   const Outgoing = ({ outgoing }: { outgoing: Outgoing }) => (
-    <Card className="w-[200px] md:w-[450px] h-[300px] md:h-[150px] flex flex-col md:flex-row gap-6 p-4">
+    <Card className="flex h-[300px] w-[200px] flex-col gap-6 p-4 md:h-[150px] md:w-[450px] md:flex-row">
       <Image
         src={outgoing.image}
         alt={`${outgoing.name}'s internship`}
         width={300}
         height={400}
-        className="object-cover h-[100px] md:h-full w-full md:w-[150px] shadow"
+        className="h-[100px] w-full object-cover shadow md:h-full md:w-[150px]"
       />
-      <article className="h-full md:h-auto flex flex-col justify-between">
+      <article className="flex h-full flex-col justify-between md:h-auto">
         <div>
           <p className="text-xl">&quot;{t(`${outgoing.key}.quote`)}&quot;</p>
         </div>
@@ -88,7 +88,7 @@ const Outgoings = () => {
   );
 
   return (
-    <div className="overflow-x-hidden relative">
+    <div className="relative overflow-x-hidden">
       <motion.ul
         ref={ulRef}
         className="flex gap-5"

@@ -1,4 +1,3 @@
-import useFormSchema from "@/validators/contact-form";
 import {
   FormControl,
   FormDescription,
@@ -11,13 +10,9 @@ import { Input } from "@repo/ui/input";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import z from "zod";
+import type { ContactForm } from "@repo/constants/validators/contact-form";
 
-const LastNameField = ({
-  form,
-}: {
-  form: UseFormReturn<z.infer<ReturnType<typeof useFormSchema>>>;
-}) => {
+const LastNameField = ({ form }: { form: UseFormReturn<ContactForm> }) => {
   const t = useTranslations("contact.lastname");
 
   return (

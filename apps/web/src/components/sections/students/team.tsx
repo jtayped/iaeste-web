@@ -37,14 +37,14 @@ const Team = () => {
   return (
     <div className="grid gap-10">
       <DivideSection>
-        <div className="grid grid-cols-2 grid-rows-1 gap-4 max-h-[400px]">
+        <div className="grid max-h-[400px] grid-cols-2 grid-rows-1 gap-4">
           <div>
             <Image
               src={images[0] as string}
               width={300}
               height={300}
               alt="Image1"
-              className="w-full h-full object-cover rounded-lg"
+              className="h-full w-full rounded-lg object-cover"
             />
           </div>
           <div className="grid grid-rows-2 gap-4">
@@ -53,24 +53,24 @@ const Team = () => {
               width={300}
               height={300}
               alt="Image1"
-              className="w-full h-full object-cover rounded-lg"
+              className="h-full w-full rounded-lg object-cover"
             />
             <Image
               src={images[2] as string}
               width={300}
               height={300}
               alt="Image1"
-              className="w-full h-full object-cover rounded-lg"
+              className="h-full w-full rounded-lg object-cover"
             />
           </div>
         </div>
         <article>
           <H2 className="text-3xl font-semibold">{t("title")}</H2>
           <Subheader>{t("subtitle")}</Subheader>
-          <Paragraph className="text-lg mt-3">{t("description")}</Paragraph>
+          <Paragraph className="mt-3 text-lg">{t("description")}</Paragraph>
         </article>
       </DivideSection>
-      <Section className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5">
+      <Section className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-5">
         {teams.map((t) => (
           <TeamComponent key={t.key} team={t} />
         ))}

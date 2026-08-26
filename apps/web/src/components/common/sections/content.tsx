@@ -9,7 +9,7 @@ const Content = ({
   className?: string;
 }) => {
   return (
-    <div className={cn("bg-background pb-10 pt-20 grid gap-20", className)}>
+    <div className={cn("grid gap-20 bg-background pb-10 pt-20", className)}>
       {children}
     </div>
   );

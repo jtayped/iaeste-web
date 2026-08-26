@@ -1,25 +1,26 @@
 "use client";
 import { sendContactFormEmail } from "@/lib/emails";
-import useFormSchema from "@/validators/contact-form";
+import useContactFormSchema from "@/validators/contact-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { ContactForm as ContactFormValues } from "@repo/constants/validators/contact-form";
+import { Alert, AlertDescription } from "@repo/ui/alert";
+import { Button } from "@repo/ui/button";
 import { Form } from "@repo/ui/form";
+import { AlertCircle, Check, Loader } from "lucide-react";
+import { useTranslations } from "next-intl";
 import React from "react";
 import { useForm } from "react-hook-form";
 import EmailField from "./fields/email";
+import LastNameField from "./fields/lastname";
+import MessageField from "./fields/message";
 import NameField from "./fields/name";
 import SubjectField from "./fields/subject";
-import MessageField from "./fields/message";
-import { Button } from "@repo/ui/button";
-import { Check, Loader } from "lucide-react";
-import { useTranslations } from "next-intl";
-import z from "zod";
-import LastNameField from "./fields/lastname";
 
 const ContactForm = () => {
   const t = useTranslations("contact");
-  const formSchema = useFormSchema();
+  const formSchema = useContactFormSchema();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<ContactFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
@@ -30,14 +31,25 @@ const ContactForm = () => {
     },
   });
 
-  const { isSubmitting, isSubmitSuccessful } = form.formState;
+  const { isSubmitting, isSubmitSuccessful, errors } = form.formState;
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    await sendContactFormEmail(values);
+  async function onSubmit(values: ContactFormValues) {
+    form.clearErrors("root");
 
-    // Clear the form after submission
+    const result = await sendContactFormEmail(values);
+
+    if (!result.ok) {
+      // Keep the user's input so they can retry without retyping it.
+      form.setError("root", { message: t("submitBtn.error") });
+      return;
+    }
+
     form.reset();
   }
+
+  // `isSubmitSuccessful` only means the handler resolved; a failed send sets a
+  // root error, so success is the absence of one.
+  const sent = isSubmitSuccessful && !errors.root;
 
   return (
     <Form {...form}>
@@ -54,12 +66,19 @@ const ContactForm = () => {
         <SubjectField form={form} />
         <MessageField form={form} />
 
+        {errors.root && (
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertDescription>{errors.root.message}</AlertDescription>
+          </Alert>
+        )}
+
         <Button
           type="submit"
-          disabled={isSubmitting || isSubmitSuccessful}
+          disabled={isSubmitting || sent}
           className="w-full"
         >
-          {isSubmitSuccessful ? (
+          {sent ? (
             <>
               <Check />
               {t("submitBtn.success")}

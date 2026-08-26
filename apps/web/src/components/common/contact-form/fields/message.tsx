@@ -1,6 +1,5 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import useFormSchema from "@/validators/contact-form";
 import { useTranslations } from "next-intl";
 import {
   FormControl,
@@ -11,13 +10,9 @@ import {
   FormMessage,
 } from "@repo/ui/form";
 import { Textarea } from "@repo/ui/textarea";
-import z from "zod";
+import type { ContactForm } from "@repo/constants/validators/contact-form";
 
-const MessageField = ({
-  form,
-}: {
-  form: UseFormReturn<z.infer<ReturnType<typeof useFormSchema>>>;
-}) => {
+const MessageField = ({ form }: { form: UseFormReturn<ContactForm> }) => {
   const t = useTranslations(`contact.message`);
 
   return (

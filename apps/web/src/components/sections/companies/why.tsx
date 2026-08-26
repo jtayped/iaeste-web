@@ -25,7 +25,7 @@ const WhySection = () => {
       <div>
         <H2>{t("title")}</H2>
       </div>
-      <div className="grid gap-6 md:grid-cols-3 mt-9">
+      <div className="mt-9 grid gap-6 md:grid-cols-3">
         <Reason tKey="talent" />
         <Reason tKey="innovation" />
         <Reason tKey="growth" />

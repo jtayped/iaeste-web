@@ -18,13 +18,13 @@ const Hero = () => {
         width={768}
         height={1200}
         alt="Hero background"
-        className="w-full h-full object-cover -z-10 fixed"
+        className="fixed -z-10 h-full w-full object-cover"
         priority
       />
-      <div className="h-screen flex justify-center items-center bg-primary/60 text-white section-padding">
-        <div className="flex flex-col items-center text-center max-w-3xl">
+      <div className="section-padding flex h-screen items-center justify-center bg-primary/60 text-white">
+        <div className="flex max-w-3xl flex-col items-center text-center">
           <div className="flex items-center gap-1">
-            <h1 className="text-6xl lg:text-8xl font-extrabold">IAESTE</h1>
+            <h1 className="text-6xl font-extrabold lg:text-8xl">IAESTE</h1>
             <div className="flex flex-col items-start">
               <div className="flex items-end">
                 <motion.span
@@ -51,7 +51,7 @@ const Hero = () => {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-xl lg:text-3xl font-extrabold leading-none"
+                className="text-xl font-extrabold leading-none lg:text-3xl"
               >
                 LLEIDA
               </motion.span>

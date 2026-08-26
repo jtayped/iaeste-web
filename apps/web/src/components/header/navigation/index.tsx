@@ -41,7 +41,7 @@ const Navigation = ({ className = "" }: { className?: string }) => {
                       width={56}
                       height={56}
                       alt="IAESTE Square Logo"
-                      className="invert h-14 w-14"
+                      className="h-14 w-14 invert"
                     />
                     <div className="mb-2 mt-4 text-lg font-medium">
                       {t("pages.home.title")}
@@ -100,7 +100,7 @@ const ListItem = ({
         <Link
           className={cn(
             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
+            className,
           )}
           href={href}
         >
