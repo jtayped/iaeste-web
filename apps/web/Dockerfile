@@ -23,13 +23,11 @@
 #   4. runner    - slim runtime image containing only the standalone server
 #                  output, static assets and public/, run as a non-root user.
 #                  No node_modules, no source, no devDependencies.
-FROM node:22-alpine AS base
+FROM node:22-slim AS base
 
 # ---------------------------------------------------------------------------
 FROM base AS pruner
 WORKDIR /app
-# turbo prune's own package.json parsing wants this on alpine.
-RUN apk add --no-cache libc6-compat
 # Installed once here (not via `npx`) so pruning doesn't need network access
 # beyond this single package fetch.
 RUN npm install -g turbo@^2.6.1
@@ -39,17 +37,15 @@ RUN turbo prune web --docker
 # ---------------------------------------------------------------------------
 FROM base AS installer
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
 # out/json/ is the pruned set of package.json files plus the root lockfile --
 # copying just this (before the full source) is what lets Docker cache the
 # `npm ci` layer across source-only changes.
 COPY --from=pruner /app/out/json/ .
-RUN npm ci
+RUN SKIP_INSTALL_SIMPLE_GIT_HOOKS=1 npm ci
 
 # ---------------------------------------------------------------------------
 FROM base AS builder
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
 COPY --from=installer /app/ .
 # out/full/ is the pruned source tree (apps/web + its workspace deps only,
 # including its own turbo.json).
@@ -102,15 +98,13 @@ RUN KEYSTATIC_GITHUB_CLIENT_ID=build-placeholder \
 FROM base AS runner
 WORKDIR /app
 
-RUN apk add --no-cache libc6-compat
-
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nextjs
+RUN groupadd --gid 1001 nodejs \
+  && useradd --uid 1001 --gid nodejs --create-home nextjs
 
 # Standalone output does not include public/ or .next/static -- Next.js
 # expects the Dockerfile to copy them in manually.
@@ -123,5 +117,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/content ./content
 USER nextjs
 
 EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3000/ca').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
 CMD ["node", "apps/web/server.js"]

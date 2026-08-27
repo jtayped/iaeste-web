@@ -13,7 +13,7 @@ RUN turbo prune @repo/api --docker
 FROM base AS installer
 WORKDIR /app
 COPY --from=pruner /app/out/json/ .
-RUN npm ci
+RUN SKIP_INSTALL_SIMPLE_GIT_HOOKS=1 npm ci
 
 FROM base AS builder
 WORKDIR /app

@@ -1,7 +1,6 @@
 # Keeps the Docker build context small and, more importantly, keeps secrets
 # and other apps' build output out of image layers. The build context is the
-# repo root (see apps/web/Dockerfile) so this file has to think about every
-# workspace, not just apps/web.
+# repo root (see docs/deployment.md) so this file has to cover every workspace.
 
 # git
 .git
@@ -22,7 +21,6 @@
 # build-time config as explicit --build-arg values instead
 .env
 .env.*
-!.env.example
 
 # editor / OS cruft
 .DS_Store
