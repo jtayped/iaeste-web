@@ -12,6 +12,7 @@ import {
   registrationCreatedSchema,
   registrationIdParamSchema,
   registrationRequestSchema,
+  publicRegistrationStatusSchema,
   resendVerificationResponseSchema,
   verifiedSchema,
   verifyTokenBodySchema,
@@ -28,6 +29,22 @@ export const healthRoute = createRoute({
       description: "The API is available.",
       content: {
         "application/json": { schema: healthSchema },
+      },
+    },
+  },
+});
+
+export const registrationStatusRoute = createRoute({
+  method: "get",
+  path: "/v1/registrations/status",
+  operationId: "getRegistrationStatus",
+  tags: ["Registrations"],
+  responses: {
+    200: {
+      description:
+        "Whether a campaign is currently accepting public registrations.",
+      content: {
+        "application/json": { schema: publicRegistrationStatusSchema },
       },
     },
   },

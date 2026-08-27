@@ -42,6 +42,12 @@ export const registrationCreatedSchema = z
   })
   .openapi("RegistrationCreated");
 
+export const publicRegistrationStatusSchema = z
+  .object({
+    open: z.boolean(),
+  })
+  .openapi("PublicRegistrationStatus");
+
 export const validationIssueSchema = z
   .object({
     path: z.array(z.union([z.string(), z.number()])),

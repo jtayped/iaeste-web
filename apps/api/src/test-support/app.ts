@@ -42,8 +42,10 @@ export const quietLogger = { error() {} };
 export function createTestApp(
   registrationRepository = createRepository(),
   registrationService = createRegistrationServiceStub(),
+  isRegistrationOpen: () => Promise<boolean> = async () => true,
 ) {
   return createApp({
+    isRegistrationOpen,
     registrationRepository,
     registrationService,
     logger: quietLogger,

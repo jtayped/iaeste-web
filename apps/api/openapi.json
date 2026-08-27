@@ -38,6 +38,17 @@
           "version"
         ]
       },
+      "PublicRegistrationStatus": {
+        "type": "object",
+        "properties": {
+          "open": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "open"
+        ]
+      },
       "RegistrationCreated": {
         "type": "object",
         "properties": {
@@ -441,6 +452,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/registrations/status": {
+      "get": {
+        "operationId": "getRegistrationStatus",
+        "tags": [
+          "Registrations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Whether a campaign is currently accepting public registrations.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicRegistrationStatus"
                 }
               }
             }

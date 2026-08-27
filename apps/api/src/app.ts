@@ -5,7 +5,12 @@ import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
 
 import { registrationSchema } from "@repo/constants/validators/registration";
-import { IllegalTransitionError, NotFoundError } from "@repo/db/repositories";
+import { getDb } from "@repo/db/client";
+import {
+  createCampaignRepository,
+  IllegalTransitionError,
+  NotFoundError,
+} from "@repo/db/repositories";
 
 import { getAllowedOrigins } from "./config";
 import { apiErrorSchema } from "./contracts";
@@ -22,6 +27,7 @@ import {
   adminRejectRegistrationRoute,
   createRegistrationRoute,
   healthRoute,
+  registrationStatusRoute,
   resendVerificationRoute,
   verifyRegistrationGetRoute,
   verifyRegistrationPostRoute,
@@ -33,6 +39,7 @@ import {
 import { API_VERSION } from "./version";
 
 type AppDependencies = {
+  isRegistrationOpen?: () => Promise<boolean>;
   logger?: Pick<Console, "error">;
   registrationRepository?: RegistrationRepository;
   registrationService?: RegistrationService;
@@ -59,6 +66,13 @@ function errorBody(
 }
 
 export function createApp(dependencies: AppDependencies = {}) {
+  const isRegistrationOpen =
+    dependencies.isRegistrationOpen ??
+    (async () => {
+      const campaign =
+        await createCampaignRepository(getDb()).getOpenForRegistration();
+      return campaign !== undefined;
+    });
   const registrationRepository =
     dependencies.registrationRepository ??
     createDrizzleRegistrationRepository();
@@ -135,6 +149,10 @@ export function createApp(dependencies: AppDependencies = {}) {
 
   app.openapi(healthRoute, (c) =>
     c.json({ status: "ok" as const, version: API_VERSION }, 200),
+  );
+
+  app.openapi(registrationStatusRoute, async (c) =>
+    c.json({ open: await isRegistrationOpen() }, 200),
   );
 
   app.openapi(createRegistrationRoute, async (c) => {
