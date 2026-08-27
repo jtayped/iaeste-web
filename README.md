@@ -36,6 +36,12 @@ Scope any of them to a workspace while iterating, e.g.
 
 Working on this repo with a coding agent? See [AGENTS.md](./AGENTS.md).
 
+## Documentation
+
+- [Authentication](./docs/auth.md)
+- [Deployment](./docs/deployment.md)
+- [Membership lifecycle](./docs/membership-lifecycle.md)
+
 ## API
 
 The API is an independent Hono app under `apps/api`. Its initial endpoints are:

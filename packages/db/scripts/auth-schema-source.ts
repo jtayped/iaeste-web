@@ -5,7 +5,7 @@
 // enough shape to know which plugins add which tables.
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { magicLink } from "better-auth/plugins";
+import { admin, magicLink } from "better-auth/plugins";
 
 export const auth = betterAuth({
   database: drizzleAdapter({}, { provider: "pg" }),
@@ -16,5 +16,10 @@ export const auth = betterAuth({
         // Never called: this config only drives schema generation.
       },
     }),
+    // IA-30: the `member`/`admin` roles from docs/membership-lifecycle.md.
+    // Options that only affect runtime behaviour (defaultRole, adminRoles,
+    // disabledPaths on the real betterAuth() call) don't change the schema
+    // shape, so they're omitted here — see packages/auth for the real config.
+    admin(),
   ],
 });

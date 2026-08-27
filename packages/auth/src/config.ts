@@ -1,0 +1,53 @@
+import type { Database } from "@repo/db/client";
+import type { Emailer } from "@repo/email/resend";
+
+/**
+ * Everything `createAuth` needs, injected rather than read from
+ * `process.env` — mirrors `@repo/email`'s `createResendEmailer(config)` and
+ * `apps/api`'s repository factories: this package stays pure/testable, and
+ * `apps/api` (the only real caller) owns resolving env vars via its own
+ * `requireEnvironmentVariable` helper. See `apps/api/src/lib/auth.ts`.
+ */
+export interface CreateAuthConfig {
+  /**
+   * A real `@repo/db` client (from `getDb()`), or a test database. Passed
+   * in rather than constructed here so `createAuth` never has to call
+   * `getDb()` (and therefore `getDatabaseUrl()`, which throws synchronously
+   * if `DATABASE_URL` is unset) itself — the caller controls exactly when
+   * that happens. See `apps/api/src/lib/auth.ts`'s `getAuth()` for why that
+   * timing matters.
+   */
+  db: Database;
+  /** Sends the magic-link sign-in email via `@repo/email`'s template. */
+  emailer: Emailer;
+  /**
+   * Browser-visible origin for Better Auth. Its handler runs in `apps/api`,
+   * but `apps/admin` exposes it through a same-origin rewrite.
+   */
+  baseURL: string;
+  /**
+   * Signs and encrypts sessions, magic-link tokens, etc. Must be a long,
+   * random, secret value in production — never a shared or default one.
+   */
+  secret: string;
+  /**
+   * Origins allowed to submit state-changing auth requests and to appear in
+   * magic-link callback and redirect URLs. The production value is the
+   * browser-visible admin origin.
+   */
+  trustedOrigins: string[];
+  /** Runtime selected and validated by the API's environment config. */
+  runtime: "development" | "test" | "production";
+  /**
+   * Relaxes the session cookie's `Secure` attribute for local development,
+   * where there is no HTTPS and a `Secure` cookie would simply never be
+   * sent by the browser. Must be `false` (or omitted) whenever the process
+   * is actually running in production. `createAuth` checks it against the
+   * validated `runtime`, so a misconfigured deploy fails at startup instead
+   * of shipping a cookie without `Secure`. See
+   * the plan's exact wording in the IA-30 task: "Local development auth
+   * that does not require production cookies, and that refuses to run
+   * under NODE_ENV=production."
+   */
+  insecureCookies?: boolean;
+}
