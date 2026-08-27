@@ -62,9 +62,10 @@ CI fails if the committed output is stale.
 
 ## API deployment
 
-Deploy `apps/api` as its own Node service with `npm run build` followed by
-`npm start`. Production images and the Coolify deployment flow are documented
-in `docs/deployment.md`.
+Deploy `apps/api` from the `iaeste-api` image. Its container entrypoint applies
+the committed Drizzle migrations under a PostgreSQL advisory lock before it
+starts Hono. Image names, runtime variables, Coolify setup, deployment order,
+and rollback are documented in `docs/deployment.md`.
 
 Set `CORS_ALLOWED_ORIGINS` to the comma-separated frontend origins that may use
 the API, for example `https://iaestelleida.cat`. Set `NEXT_PUBLIC_API_URL` on

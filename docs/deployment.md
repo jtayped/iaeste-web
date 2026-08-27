@@ -1,225 +1,233 @@
-# Deployment (IA-08 spike)
+# Deployment
 
-Status: `apps/web`'s Docker image builds and runs locally, verified with
-`docker build` / `docker run` (see "Local verification" below). **The
-Coolify deployment described in this document has not been performed.**
-Nobody has pushed an image to GHCR from CI, and no Coolify resource exists
-yet — this is the recipe to follow when that happens, not a record that it
-did. GHCR credentials and a Coolify instance weren't available while writing
-this, so the GitHub Actions workflow and the Coolify steps below are
-written correctly per the platforms' documented flows but are unverified
-end to end.
+Three applications have production images. All three images build and run
+locally. The GHCR push and Coolify deployment have not run against real
+infrastructure yet, so the Coolify sections below are setup instructions, not
+a record of a completed production deployment. `apps/admin` does not exist yet
+and has no image.
 
-This is deliberately scoped to one app. The point of IA-08 was to hit the
-friction of containerizing a Turborepo workspace — root-hoisted
-dependencies, file tracing across workspace packages, GHCR auth, Coolify's
-prebuilt-image mode — while only `apps/web` was involved, before repeating
-the exercise three more times for `inscripcions`, `admin`, and `api`
-(IA-60/IA-61). Read this doc before doing those; most of the friction here
-generalizes.
+| Image                 | Dockerfile                     | Port | Health URL |
+| --------------------- | ------------------------------ | ---- | ---------- |
+| `iaeste-web`          | `apps/web/Dockerfile`          | 3000 | `/ca`      |
+| `iaeste-inscripcions` | `apps/inscripcions/Dockerfile` | 3003 | `/`        |
+| `iaeste-api`          | `apps/api/Dockerfile`          | 3004 | `/health`  |
 
-## Why the Dockerfile looks like this
+## Image layout
 
-`apps/web/Dockerfile` builds from the **repository root**, not
-`apps/web/`. This is an npm-workspaces monorepo: `apps/web` imports
-`@repo/ui`, `@repo/env`, `@repo/constants` and `@repo/email` as TypeScript
-source (none of them has a compiled `dist`), and `npm ci` needs the root
-`package-lock.json` to install reproducibly. A build context scoped to
-`apps/web/` can see neither.
+Build every image from the repository root. npm workspaces need the root
+lockfile, and each application imports TypeScript source from workspace
+packages.
 
 ```sh
 docker build -f apps/web/Dockerfile -t iaeste-web .
+docker build -f apps/inscripcions/Dockerfile -t iaeste-inscripcions .
+docker build -f apps/api/Dockerfile -t iaeste-api .
 ```
 
-**`next.config.ts` sets `output: "standalone"`.** Next.js's standalone
-output produces a self-contained `server.js` plus a `node_modules` pruned
-by file-tracing the actual import graph, so the runtime image needs neither
-`npm install` nor the source tree. It also sets `outputFileTracingRoot` to
-the repo root: the default tracing root is `apps/web` itself, which is
-correct for a single-package app but wrong here — the trace has to follow
-symlinked workspace dependencies up through `node_modules/@repo/*` to their
-real location under `packages/*` at the monorepo root, or those packages
-silently drop out of the traced `node_modules`.
+Each Dockerfile starts with `turbo prune <workspace> --docker`. The pruned
+package manifests form a cacheable `npm ci` layer; the pruned source then feeds
+the application build. The root `.dockerignore` excludes Git data, dependency
+directories, build output, local environment files, and editor files from the
+build context.
 
-**The image has four stages** (`pruner` → `installer` → `builder` →
-`runner`), using `turbo prune web --docker` in the first stage. `turbo
-prune` trims the workspace down to exactly `apps/web` and the workspace
-packages it actually depends on (`@repo/ui`, `@repo/env`,
-`@repo/constants`, `@repo/email`, plus their tooling configs), split into
-`out/json/` (just the package.json files and the lockfile, for a
-cacheable `npm ci` layer) and `out/full/` (the pruned source). This is the
-documented Turborepo pattern for exactly this problem — see
-[turbo.build's Docker guide](https://turbo.build/repo/docs/guides/tools/docker)
-— and it's what keeps the `installer` stage from installing `apps/api`'s
-and `apps/inscripcions`'s dependencies too. The final `runner` stage copies
-only `.next/standalone`, `.next/static` and `public/` out of the builder,
-runs as a non-root user (`nextjs`, uid 1001), binds `0.0.0.0:3000`, and
-ships no `node_modules`, no source, and no devDependencies.
+The two Next.js applications use `output: "standalone"` and set
+`outputFileTracingRoot` to the repository root. Their runtime stages contain
+only the standalone server, static files, and `public`. Both run as uid 1001
+and bind `0.0.0.0`.
 
-## Build-time vs. runtime configuration
+The API compiles `server.ts` and `migrate.ts` with its workspace imports
+bundled. Third-party production dependencies remain in a pruned
+`node_modules`; source files and dev dependencies do not enter the runtime
+image. Its entrypoint runs the compiled migrator before starting Hono. The
+migrator:
 
-This is the part worth getting right, because it's not symmetric.
+1. opens the configured PostgreSQL connection;
+2. takes the `iaeste-schema-migrations` PostgreSQL advisory lock;
+3. applies the committed files under `packages/db/drizzle`;
+4. releases the lock and connection;
+5. starts the HTTP server only after migration succeeds.
 
-`packages/env/src/web.client.ts` and `web.server.ts` are the two schemas
-`apps/web` validates against (see `packages/env/AGENTS.md` and
-`AGENTS.md`'s "Configuration goes through `@repo/env`" rule). They split
-along exactly the build/runtime line:
+A migration or connection failure exits the container before it can become
+healthy. This deployment assumes one API replica, as specified in the project
+plan. The advisory lock still prevents two overlapping deployment attempts
+from applying migrations together. `SIGTERM` and `SIGINT` stop new HTTP
+connections and close the shared PostgreSQL pool, with a ten-second forced-exit
+limit.
 
-| Variable                                | Schema       | Needed at build time             | Needed at container runtime  |
-| --------------------------------------- | ------------ | -------------------------------- | ---------------------------- |
-| `NEXT_PUBLIC_INSCRIPCIONS_STATE`        | `web.client` | Yes — must be the **real** value | No — already compiled in     |
-| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | `web.client` | Real value when admin is enabled | No — already compiled in     |
-| `RESEND_API_KEY`                        | `web.server` | Yes, but a placeholder is fine   | Yes — must be the real value |
-| `CONTACT_FORM_FROM`                     | `web.server` | Yes, but a placeholder is fine   | Yes — must be the real value |
-| `CONTACT_FORM_TO`                       | `web.server` | Yes, but a placeholder is fine   | Yes — must be the real value |
-| `KEYSTATIC_GITHUB_CLIENT_ID`            | `web.server` | A placeholder is fine            | Real value for the admin     |
-| `KEYSTATIC_GITHUB_CLIENT_SECRET`        | `web.server` | A placeholder is fine            | Real value for the admin     |
-| `KEYSTATIC_SECRET`                      | `web.server` | A placeholder is fine            | Real value for the admin     |
+## Configuration boundary
 
-Why the required values are needed at build time at all: `next build`'s "Collecting
-page data" step evaluates every server module reachable from a route,
-which includes `apps/web/src/lib/emails.ts` — the contact-form server
-action — because it constructs a Resend client at module scope
-(`createResendEmailer({ apiKey: env.RESEND_API_KEY, ... })`), and
-`packages/env/src/parse.ts` validates eagerly on import. No value at all
-means the build fails, even for a variable nothing renders.
+Never pass real secrets as Docker build arguments. Docker records build
+arguments in image history.
 
-Why they diverge after that: Next.js inlines `NEXT_PUBLIC_*` variables into
-both the client _and_ server webpack bundles at build time via a literal
-text substitution — the compiled output no longer contains
-`process.env.NEXT_PUBLIC_INSCRIPCIONS_STATE`, it contains the string `"on"`
-(or whatever it was at build time). Setting it again on the running
-container does nothing; changing it requires rebuilding and redeploying
-the image. `RESEND_API_KEY`, `CONTACT_FORM_FROM` and `CONTACT_FORM_TO` are
-not `NEXT_PUBLIC_*`, so they are never inlined — the compiled server action
-still reads `process.env.RESEND_API_KEY` fresh, every time, in the running
-Node process. A placeholder at build time only needs to satisfy
-`parseEnv`'s validation (any well-formed string / email); the container
-won't be able to send real email until the real values are set on the
-running container.
+### Public web site
 
-Practically: **bake the real `NEXT_PUBLIC_INSCRIPCIONS_STATE` and
-`NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` in as build args, and set the real
-server-only values as runtime environment variables on the Coolify
-resource.** Never put real secrets in a `--build-arg` — Docker records build
-args in the image's build history. The Dockerfile supplies temporary
-Keystatic credentials only to the build process; they are not persisted as
-image environment variables.
+Next.js compiles both `NEXT_PUBLIC_*` values into the bundle. Changing either
+one requires a new image.
 
-## GHCR push flow
+| Variable                                | Build value                          | Runtime value |
+| --------------------------------------- | ------------------------------------ | ------------- |
+| `NEXT_PUBLIC_INSCRIPCIONS_STATE`        | real value                           | none          |
+| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | real value when Keystatic is enabled | none          |
 
-`.github/workflows/deploy.yml` runs on pushes to `master` that can affect the
-web image (never on a pull request — PRs only get `ci.yml`'s verify/build
-jobs, so a fork can't push an image). Its path filter explicitly includes
-`content/**` and `keystatic.config.ts`, so editorial commits produce a fresh
-image too. It:
+The web build also receives non-secret placeholders for the server values that
+Next.js validates while collecting page data. Coolify must supply their real
+values at runtime:
 
-1. Logs into `ghcr.io` using `github.actor` / `GITHUB_TOKEN` — no PAT
-   needed, following
-   [GHCR's documented GitHub Actions flow](https://docs.github.com/en/actions/publishing-packages/publishing-docker-images).
-2. Builds `apps/web/Dockerfile` with the repo root as context, using
-   `docker/build-push-action` (buildx under the hood, with GitHub Actions
-   layer caching).
-3. Tags the image `ghcr.io/<owner>/iaeste-web:latest` and
-   `ghcr.io/<owner>/iaeste-web:sha-<full-sha>`, and attaches OCI labels
-   (`org.opencontainers.image.revision`, `.source`, etc.) via
-   `docker/metadata-action`.
-4. Pushes both tags.
+- `RESEND_API_KEY`
+- `CONTACT_FORM_FROM`
+- `CONTACT_FORM_TO`
+- `KEYSTATIC_GITHUB_CLIENT_ID`
+- `KEYSTATIC_GITHUB_CLIENT_SECRET`
+- `KEYSTATIC_SECRET`
 
-The job's permissions are scoped to `contents: read` and `packages:
-write` — nothing else.
+### Registration site
 
-**Unverified**: this workflow has not actually run against a real GHCR
-registry from this repo. The GHCR package needs to exist (or be created on
-first push) and be linked to the repo; if the package's visibility
-defaults to private, the Coolify resource below will need a registry
-credential, not just a public image URL.
+All registration-site configuration is public and compiled into the bundle.
+Coolify does not need runtime variables for this image.
 
-## Wiring up the Coolify resource
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_INSCRIPCIONS_STATE`
+- `NEXT_PUBLIC_WHATSAPP_INVITE`
 
-Coolify supports two ways to deploy a project: build from source, or run a
-prebuilt image. This uses the second — Coolify never sees the Dockerfile
-or the monorepo, it only pulls whatever `deploy.yml` pushed.
+### API
 
-1. **Create a new resource** in the target Coolify project/environment,
-   choosing **"Docker Image"** (not "Public Repository" / "Dockerfile") as
-   the resource type. This is the prebuilt-image path, not a source build.
-2. **Image**: `ghcr.io/<owner>/iaeste-web:latest` (or pin to a
-   `sha-<commit>` tag for a specific, reproducible deploy instead of
-   tracking `latest`).
-3. **Registry credentials**: if the GHCR package ends up private, add a
-   registry credential in Coolify (a GitHub PAT with `read:packages`
-   scope, or a GHCR-scoped token) so Coolify can pull it. A public GHCR
-   package needs no credential.
-4. **Port**: the container listens on `3000` (see `EXPOSE 3000` in the
-   Dockerfile and `PORT=3000` / `HOSTNAME=0.0.0.0` baked into its runtime
-   env) — set Coolify's exposed/target port to `3000`.
-5. **Domain / hostname**: set the resource's hostname to the intended
-   production domain (e.g. `iaestelleida.cat`). Coolify's built-in Traefik
-   instance picks this up automatically to generate the routing labels —
-   no manual Traefik config needed for a single-container HTTP service
-   like this one.
-6. **TLS**: enable "Force HTTPS" / automatic Let's Encrypt on the
-   resource. Coolify's Traefik handles ACME issuance once the domain's DNS
-   points at the Coolify host.
-7. **Runtime environment variables** — set these on the Coolify resource
-   itself (not as build args, they're irrelevant post-build):
+The API image contains placeholder configuration only while compiling the
+OpenAPI document. Set the real values on the Coolify resource:
 
-   - `RESEND_API_KEY` — the real Resend API key.
-   - `CONTACT_FORM_FROM` — the real "from" address for contact-form email.
-   - `CONTACT_FORM_TO` — the real destination address.
-   - `KEYSTATIC_GITHUB_CLIENT_ID` — the GitHub App client ID.
-   - `KEYSTATIC_GITHUB_CLIENT_SECRET` — the GitHub App client secret.
-   - `KEYSTATIC_SECRET` — a long random value used to secure Keystatic's
-     session state.
+- `DATABASE_URL`
+- `CORS_ALLOWED_ORIGINS`
+- `RESEND_API_KEY`
+- `REGISTRATION_EMAIL_FROM`
+- `INSCRIPCIONS_PUBLIC_ORIGIN`
+- `ADMIN_PUBLIC_ORIGIN`
 
-   Do **not** set either `NEXT_PUBLIC_*` value only here — it has no effect at
-   runtime (see the table above). Set
-   `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` as the GitHub Actions repository
-   variable used by `deploy.yml`; changing either public value requires a
-   rebuild and redeploy.
+The image fixes `API_PORT=3004`. The dormant Google Sheets projection reads
+the `SHEETS_*` variables only when called; it is not part of registration or
+container startup.
 
-8. **Deploy** and confirm the container serves traffic on the configured
-   domain, then confirm a contact-form submission actually sends an email
-   end to end (this exercises the one server-only code path that a bare
-   "does it boot" check doesn't).
+## GitHub Actions and GHCR
 
-None of step 8 has been done — there is no Coolify instance available to
-this spike. Whoever wires this up for real should treat this document as a
-checklist, not a confirmation.
+`.github/workflows/deploy.yml` runs only for relevant pushes to `master` and
+manual rollbacks. Pull requests run `.github/workflows/ci.yml`, which compiles
+the workspaces and builds all three Dockerfiles without logging in to GHCR,
+pushing images, or calling Coolify.
+
+On an ordinary push, the workflow builds all three images. A change limited to
+`content/**` or `keystatic.config.ts` is the one exception: it selects only
+`iaeste-web`, preserving the blog publishing flow without rerunning the API
+migration entrypoint.
+
+The selected images build in parallel and receive two tags:
+
+- `main`, the moving production tag configured in Coolify;
+- `sha-<full commit SHA>`, the immutable rollback tag.
+
+`docker/metadata-action` also attaches OCI source and revision labels. Each
+image has a separate GitHub Actions build cache. Build jobs have only
+`contents: read` and `packages: write`; deployment jobs have `contents: read`.
+
+After all selected builds finish, the workflow deploys in this order:
+
+1. API, except for a content-only deployment;
+2. registration site and public web site, in parallel, after the API reports a
+   finished deployment and passes its public health check.
+
+The API gate matters because its entrypoint applies migrations. A failed image
+build, migration, Coolify deployment, or health check blocks both frontend
+deployments. Only content-only changes skip the API deployment.
+
+The workflow uses each resource's authenticated Coolify deploy webhook, then
+polls `GET /api/v1/deployments/{uuid}`. An accepted webhook is not treated as a
+successful deployment. Once Coolify reports `finished`, the workflow also
+checks the configured public health URL.
+
+## GitHub repository setup
+
+Add these Actions secrets:
+
+| Secret                                | Purpose                                      |
+| ------------------------------------- | -------------------------------------------- |
+| `COOLIFY_TOKEN`                       | Coolify API token with deploy permission     |
+| `COOLIFY_API_DEPLOY_WEBHOOK`          | Deploy webhook copied from the API resource  |
+| `COOLIFY_INSCRIPCIONS_DEPLOY_WEBHOOK` | Deploy webhook for the registration resource |
+| `COOLIFY_WEB_DEPLOY_WEBHOOK`          | Deploy webhook for the public web resource   |
+
+Add these repository variables:
+
+| Variable                                | Value                                    |
+| --------------------------------------- | ---------------------------------------- |
+| `NEXT_PUBLIC_API_URL`                   | public API origin                        |
+| `NEXT_PUBLIC_INSCRIPCIONS_STATE`        | `on` or `off`; defaults to `on` in CI    |
+| `NEXT_PUBLIC_WHATSAPP_INVITE`           | committee invitation URL                 |
+| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | Keystatic GitHub App slug                |
+| `COOLIFY_API_HEALTH_URL`                | public API `/health` URL                 |
+| `COOLIFY_INSCRIPCIONS_HEALTH_URL`       | public registration-site URL             |
+| `COOLIFY_WEB_HEALTH_URL`                | public web URL, normally ending in `/ca` |
+
+`GITHUB_TOKEN` handles the GHCR login. If GHCR keeps the packages private, add
+a registry credential with `read:packages` to the Coolify server.
+
+## Coolify resources
+
+Create one **Docker Image** resource per application. Do not choose a source
+repository, Dockerfile, Nixpacks, or another source-build option. Configure:
+
+| Resource     | Image                                      | Port | Health path |
+| ------------ | ------------------------------------------ | ---- | ----------- |
+| web          | `ghcr.io/<owner>/iaeste-web:main`          | 3000 | `/ca`       |
+| inscripcions | `ghcr.io/<owner>/iaeste-inscripcions:main` | 3003 | `/`         |
+| api          | `ghcr.io/<owner>/iaeste-api:main`          | 3004 | `/health`   |
+
+Set each hostname, enable automatic TLS and HTTP-to-HTTPS redirects, and copy
+its authenticated deploy webhook into the matching GitHub secret. Put database
+and registration-email credentials only on the API resource. Keep the database
+on Coolify's managed network rather than exposing PostgreSQL publicly.
+
+## Rollback
+
+Open the **Deploy** workflow in GitHub Actions and choose **Run workflow**.
+Enter an existing `sha-<40 lowercase hex characters>` tag and select one
+resource. Select `all` only when that SHA tag exists for all three images, such
+as a commit that changed the workflow or root lockfile.
+
+The rollback uses Coolify's application rollback endpoint. An `all` rollback
+still runs the API first and waits for migration, deployment completion, and
+health before it starts either frontend rollback. The workflow rejects `main`
+and malformed tags so rollback cannot silently select a moving image. The
+admin image and resource must be added here when `apps/admin` is implemented.
 
 ## Local verification
 
-Since there's no GHCR/Coolify access available here, verification was
-scoped to what `docker build` / `docker run` can confirm locally:
+The registration image can run without runtime variables because its public
+configuration is already compiled:
 
 ```sh
-docker build -f apps/web/Dockerfile -t iaeste-web:spike .
-docker run --rm -p 3000:3000 \
-  -e RESEND_API_KEY=runtime-placeholder \
-  -e CONTACT_FORM_FROM=noreply@iaestelleida.cat \
-  -e CONTACT_FORM_TO=ci@example.com \
-  iaeste-web:spike
-curl -sf http://localhost:3000/ca
+docker run --rm -p 3003:3003 iaeste-inscripcions
+curl -fsS http://localhost:3003/
 ```
 
-See the IA-08 commit history for the actual output of this run.
+For the API, start a disposable PostgreSQL container on a private Docker
+network, then point the API at it:
 
-## Follow-up for IA-60/IA-61 (containerizing inscripcions, admin, api)
+```sh
+docker network create iaeste-local
+docker run --rm -d --name iaeste-postgres --network iaeste-local \
+  -e POSTGRES_USER=iaeste \
+  -e POSTGRES_PASSWORD=local-password \
+  -e POSTGRES_DB=iaeste_dev \
+  postgres:16-alpine
 
-- The `pruner`/`installer`/`builder`/`runner` shape and the
-  `turbo prune <app> --docker` step generalize directly — copy
-  `apps/web/Dockerfile`, swap the `turbo prune` target and the final
-  `CMD`/`EXPOSE`.
-- `apps/inscripcions` will need `output: "standalone"` and the same
-  `outputFileTracingRoot` fix in its own `next.config`.
-- `apps/api` is not a Next.js app (Hono), so its Dockerfile doesn't need
-  the standalone-output dance at all — it's closer to a plain
-  `npm ci && npm run build && npm start` image. README.md documents it as
-  an independently deployable Node service; IA-60 will add its production
-  container.
-- `admin` doesn't exist yet (later milestone per
-  `docs/membership-lifecycle.md`) — nothing to containerize until it does.
-- `deploy.yml` will need a job per app once there's more than one image to
-  push; consider whether they should share the workflow file or split,
-  once it's clear whether they deploy on the same cadence.
+docker run --rm --name iaeste-api --network iaeste-local -p 3004:3004 \
+  -e DATABASE_URL=postgres://iaeste:local-password@iaeste-postgres:5432/iaeste_dev \
+  -e CORS_ALLOWED_ORIGINS=http://localhost:3003 \
+  -e RESEND_API_KEY=local-placeholder \
+  -e REGISTRATION_EMAIL_FROM=noreply@iaestelleida.cat \
+  -e INSCRIPCIONS_PUBLIC_ORIGIN=http://localhost:3003 \
+  -e ADMIN_PUBLIC_ORIGIN=http://localhost:3005 \
+  iaeste-api
+```
+
+The API log should print `Database migrations are current` before its listening
+message. `curl -fsS http://localhost:3004/health` should return status `ok`.
+Stopping the container should log the `SIGTERM` shutdown message and exit with
+code zero.

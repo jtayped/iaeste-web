@@ -17,6 +17,9 @@
     "test": {
       "dependsOn": ["^check-types"]
     },
+    "@repo/api#test": {
+      "dependsOn": ["^check-types", "@repo/db#test"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
