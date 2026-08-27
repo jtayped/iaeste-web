@@ -77,14 +77,11 @@ the normal web delivery path:
 
 1. `.github/workflows/ci.yml` runs formatting, lint, types, tests, environment
    drift checks and the production build.
-2. `.github/workflows/deploy.yml` builds and pushes a new `apps/web` image to
-   GHCR. Its path filter explicitly includes both content and the Keystatic
-   config.
-3. Once the Coolify resource described in [deployment.md](./deployment.md) is
-   connected to the image update, it pulls and redeploys that image. The blog
-   files and their images are baked into it, so publishing is not live until
-   this rebuild completes.
-
-Only `apps/web` is containerised today, so a content commit cannot rebuild the
-wrong deployable. When `inscripcions`, admin and API images are added, preserve
-the explicit web content/config paths while splitting deploy jobs by image.
+2. `.github/workflows/deploy.yml` selects only `iaeste-web` for a change limited
+   to `content/**` or `keystatic.config.ts`, then builds and pushes `main` plus
+   an immutable commit-SHA tag to GHCR. The API and registration images do not
+   rebuild for editorial commits.
+3. The workflow calls the web resource's Coolify deploy webhook, waits for the
+   deployment to finish, then checks the public health URL. The blog files and
+   their images are baked into the image, so publishing is not live until this
+   step passes.
