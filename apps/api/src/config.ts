@@ -147,3 +147,48 @@ export function getAuthSecret(value = process.env.BETTER_AUTH_SECRET): string {
   }
   return secret;
 }
+
+export interface WebPushConfig {
+  publicKey: string;
+  privateKey: string;
+  /** VAPID `sub` claim: a `mailto:` or `https:` URL identifying this sender. */
+  subject: string;
+}
+
+/**
+ * VAPID keys for the admin PWA's web-push notifications. Returns `null` when
+ * unconfigured so local development and the two public apps run without push
+ * rather than crashing — the notifier degrades to a no-op. Configuring only
+ * some of the three is a mistake, not a "disabled" state, so that throws.
+ *
+ * Generate a keypair with `npx web-push generate-vapid-keys`.
+ */
+export function getWebPushConfig(
+  publicKey = process.env.WEB_PUSH_VAPID_PUBLIC_KEY,
+  privateKey = process.env.WEB_PUSH_VAPID_PRIVATE_KEY,
+  subject = process.env.WEB_PUSH_SUBJECT,
+): WebPushConfig | null {
+  const values = { publicKey, privateKey, subject };
+  const present = Object.entries(values).filter(([, v]) => v?.trim());
+  if (present.length === 0) return null;
+  if (present.length < 3) {
+    const missing = Object.entries(values)
+      .filter(([, v]) => !v?.trim())
+      .map(([k]) => k);
+    throw new Error(
+      `Web push is partially configured; also set: ${missing.join(", ")}`,
+    );
+  }
+  const trimmedSubject = subject!.trim();
+  if (
+    !trimmedSubject.startsWith("mailto:") &&
+    !trimmedSubject.startsWith("https:")
+  ) {
+    throw new Error("WEB_PUSH_SUBJECT must be a mailto: or https: URL");
+  }
+  return {
+    publicKey: publicKey!.trim(),
+    privateKey: privateKey!.trim(),
+    subject: trimmedSubject,
+  };
+}

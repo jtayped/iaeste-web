@@ -80,6 +80,8 @@
                   "VALIDATION_ERROR",
                   "UNSUPPORTED_MEDIA_TYPE",
                   "PAYLOAD_TOO_LARGE",
+                  "UNAUTHENTICATED",
+                  "FORBIDDEN",
                   "NOT_FOUND",
                   "CONFLICT",
                   "ALREADY_REGISTERED",
@@ -245,11 +247,185 @@
           "token"
         ]
       },
+      "PushPublicKey": {
+        "type": "object",
+        "properties": {
+          "publicKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "publicKey"
+        ]
+      },
+      "PushSubscribeResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "subscribed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "PushSubscribeRequest": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "format": "uri"
+          },
+          "keys": {
+            "type": "object",
+            "properties": {
+              "p256dh": {
+                "type": "string",
+                "minLength": 1
+              },
+              "auth": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "p256dh",
+              "auth"
+            ]
+          },
+          "userAgent": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "endpoint",
+          "keys"
+        ]
+      },
+      "PushUnsubscribeResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "unsubscribed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "PushUnsubscribeRequest": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "endpoint"
+        ]
+      },
+      "AdminOverview": {
+        "type": "object",
+        "properties": {
+          "currentCampaign": {
+            "$ref": "#/components/schemas/AdminCampaignRef"
+          },
+          "registrationOpenCampaign": {
+            "$ref": "#/components/schemas/AdminCampaignRef"
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "pendingVerification": {
+                "type": "integer"
+              },
+              "pendingReview": {
+                "type": "integer"
+              },
+              "activeMembers": {
+                "type": "integer"
+              },
+              "newMembers": {
+                "type": "integer"
+              },
+              "returningMembers": {
+                "type": "integer"
+              },
+              "unrenewedPastMembers": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "pendingVerification",
+              "pendingReview",
+              "activeMembers",
+              "newMembers",
+              "returningMembers",
+              "unrenewedPastMembers"
+            ]
+          }
+        },
+        "required": [
+          "currentCampaign",
+          "registrationOpenCampaign",
+          "counts"
+        ]
+      },
+      "AdminCampaignRef": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "label"
+        ]
+      },
       "AdminRegistrationList": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/AdminRegistration"
-        }
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminRegistration"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rows",
+          "total",
+          "limit",
+          "offset"
+        ]
       },
       "AdminRegistration": {
         "type": "object",
@@ -361,6 +537,121 @@
           "studyYear"
         ]
       },
+      "AdminRegistrationDetail": {
+        "type": "object",
+        "properties": {
+          "registration": {
+            "$ref": "#/components/schemas/AdminRegistration"
+          },
+          "existingUserId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "priorMemberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPriorMembership"
+            }
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "new",
+              "returning"
+            ]
+          },
+          "duplicateRegistrations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminDuplicateRegistration"
+            }
+          }
+        },
+        "required": [
+          "registration",
+          "existingUserId",
+          "priorMemberships",
+          "classification",
+          "duplicateRegistrations"
+        ]
+      },
+      "AdminPriorMembership": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "campaignSlug": {
+            "type": "string"
+          },
+          "campaignLabel": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "joinedAt": {
+            "type": "string"
+          },
+          "endedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "campaignId",
+          "campaignSlug",
+          "campaignLabel",
+          "status",
+          "joinedAt",
+          "endedAt"
+        ]
+      },
+      "AdminDuplicateRegistration": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "campaignLabel": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RegistrationStatus"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "campaignId",
+          "campaignLabel",
+          "status",
+          "createdAt"
+        ]
+      },
+      "AdminRestoreResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "restored"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
       "AdminAcceptResponse": {
         "type": "object",
         "properties": {
@@ -382,20 +673,12 @@
       "AdminAcceptRequest": {
         "type": "object",
         "properties": {
-          "reviewerId": {
-            "type": "string",
-            "minLength": 1,
-            "example": "user_123"
-          },
           "membershipSource": {
             "type": "string",
             "minLength": 1,
             "example": "registration"
           }
-        },
-        "required": [
-          "reviewerId"
-        ]
+        }
       },
       "AdminRejectResponse": {
         "type": "object",
@@ -418,11 +701,6 @@
       "AdminRejectRequest": {
         "type": "object",
         "properties": {
-          "reviewerId": {
-            "type": "string",
-            "minLength": 1,
-            "example": "user_123"
-          },
           "reason": {
             "type": "string",
             "minLength": 1,
@@ -431,8 +709,834 @@
           }
         },
         "required": [
-          "reviewerId",
           "reason"
+        ]
+      },
+      "AdminCampaignList": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCampaignWithCounts"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rows",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "AdminCampaignWithCounts": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "membershipStartsAt": {
+            "type": "string"
+          },
+          "membershipEndsAt": {
+            "type": "string"
+          },
+          "registrationOpensAt": {
+            "type": "string"
+          },
+          "registrationClosesAt": {
+            "type": "string"
+          },
+          "isCurrent": {
+            "type": "boolean"
+          },
+          "isRegistrationOpen": {
+            "type": "boolean"
+          },
+          "state": {
+            "$ref": "#/components/schemas/CampaignState"
+          },
+          "sheetTabName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sheetSyncedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sheetStale": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "activeMembers": {
+            "type": "integer"
+          },
+          "pendingReview": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "label",
+          "membershipStartsAt",
+          "membershipEndsAt",
+          "registrationOpensAt",
+          "registrationClosesAt",
+          "isCurrent",
+          "isRegistrationOpen",
+          "state",
+          "sheetTabName",
+          "sheetSyncedAt",
+          "sheetStale",
+          "createdAt",
+          "updatedAt",
+          "activeMembers",
+          "pendingReview"
+        ]
+      },
+      "CampaignState": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "published",
+          "archived"
+        ]
+      },
+      "AdminCampaign": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "membershipStartsAt": {
+            "type": "string"
+          },
+          "membershipEndsAt": {
+            "type": "string"
+          },
+          "registrationOpensAt": {
+            "type": "string"
+          },
+          "registrationClosesAt": {
+            "type": "string"
+          },
+          "isCurrent": {
+            "type": "boolean"
+          },
+          "isRegistrationOpen": {
+            "type": "boolean"
+          },
+          "state": {
+            "$ref": "#/components/schemas/CampaignState"
+          },
+          "sheetTabName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sheetSyncedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sheetStale": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "label",
+          "membershipStartsAt",
+          "membershipEndsAt",
+          "registrationOpensAt",
+          "registrationClosesAt",
+          "isCurrent",
+          "isRegistrationOpen",
+          "state",
+          "sheetTabName",
+          "sheetSyncedAt",
+          "sheetStale",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AdminCreateCampaignRequest": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "membershipStartsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "membershipEndsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "registrationOpensAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "registrationClosesAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "slug",
+          "label",
+          "membershipStartsAt",
+          "membershipEndsAt",
+          "registrationOpensAt",
+          "registrationClosesAt"
+        ]
+      },
+      "AdminUpdateCampaignRequest": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "membershipStartsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "membershipEndsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "registrationOpensAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "registrationClosesAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AdminCampaignRegistrationRequest": {
+        "type": "object",
+        "properties": {
+          "open": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "open"
+        ]
+      },
+      "AdminMemberList": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminMemberListItem"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rows",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "AdminMemberListItem": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "surnames": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "degree": {
+            "type": "string"
+          },
+          "studyYear": {
+            "type": "number"
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currentStatus": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "totalMemberships": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "surnames",
+          "email",
+          "degree",
+          "studyYear",
+          "role",
+          "currentStatus",
+          "totalMemberships"
+        ]
+      },
+      "AdminMemberDetail": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/AdminMemberProfile"
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminMemberTimelineMembership"
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminMemberTimelineEvent"
+            }
+          }
+        },
+        "required": [
+          "profile",
+          "memberships",
+          "events"
+        ]
+      },
+      "AdminMemberProfile": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "surnames": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneE164": {
+            "type": "string"
+          },
+          "phoneDisplay": {
+            "type": "string"
+          },
+          "degree": {
+            "type": "string"
+          },
+          "studyYear": {
+            "type": "number"
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "surnames",
+          "email",
+          "phoneE164",
+          "phoneDisplay",
+          "degree",
+          "studyYear",
+          "role",
+          "createdAt"
+        ]
+      },
+      "AdminMemberTimelineMembership": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "campaignSlug": {
+            "type": "string"
+          },
+          "campaignLabel": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "joinedAt": {
+            "type": "string"
+          },
+          "endedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "endedReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "campaignId",
+          "campaignSlug",
+          "campaignLabel",
+          "status",
+          "source",
+          "joinedAt",
+          "endedAt",
+          "endedReason"
+        ]
+      },
+      "AdminMemberTimelineEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "actorId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "campaignId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "details": {},
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventType",
+          "actorId",
+          "campaignId",
+          "createdAt"
+        ]
+      },
+      "AdminMemberStatusResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "left",
+              "kicked",
+              "restored"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "AdminLeaveRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      },
+      "AdminKickRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "AdminSetRoleResponse": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "AdminSetRoleRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "member",
+              "admin"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "AdminInvitationList": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminInvitation"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rows",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "AdminInvitation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "intendedRole": {
+            "$ref": "#/components/schemas/InvitationRole"
+          },
+          "prefillName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prefillSurnames": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "cancelled"
+            ]
+          },
+          "expired": {
+            "type": "boolean"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "acceptedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "campaignId",
+          "email",
+          "intendedRole",
+          "prefillName",
+          "prefillSurnames",
+          "status",
+          "expired",
+          "expiresAt",
+          "acceptedAt",
+          "createdAt"
+        ]
+      },
+      "InvitationRole": {
+        "type": "string",
+        "enum": [
+          "member",
+          "admin"
+        ]
+      },
+      "AdminCreateInvitationRequest": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "intendedRole": {
+            "$ref": "#/components/schemas/InvitationRole"
+          },
+          "prefillName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "prefillSurnames": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "allowExternalDomain": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "campaignId",
+          "email"
+        ]
+      },
+      "AdminInvitationActionResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "InvitationLookupResponse": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "prefillName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prefillSurnames": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "campaignLabel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "prefillName",
+          "prefillSurnames",
+          "campaignLabel"
+        ]
+      },
+      "InvitationLookupRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "InvitationAcceptResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "accepted"
+            ]
+          },
+          "alreadyMember": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status",
+          "alreadyMember"
+        ]
+      },
+      "InvitationAcceptRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "surnames": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "degree": {
+            "type": "string",
+            "enum": [
+              "Doble Grau en Organització Industrial i ADE",
+              "Doble Grau en Informàtica i ADE",
+              "Doble Grau en Mecànica i Energia",
+              "Grau en Arquitectura Tècnica",
+              "Grau en Disseny Digital",
+              "Grau en Enginyeria de l'Energia",
+              "Grau en Eng. Electrònica Industrial",
+              "Grau en Organització Industrial",
+              "Grau en Informàtica (Igualada)",
+              "Grau en Informàtica (Lleida)",
+              "Grau en Enginyeria Mecànica",
+              "Grau en Enginyeria Química",
+              "Grau en Tècniques d'Interacció Digital",
+              "Altre"
+            ]
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          }
+        },
+        "required": [
+          "token",
+          "name",
+          "surnames",
+          "phone",
+          "degree",
+          "year"
         ]
       }
     },
@@ -673,13 +1777,197 @@
         }
       }
     },
+    "/v1/admin/push/public-key": {
+      "get": {
+        "operationId": "adminPushPublicKey",
+        "tags": [
+          "Admin"
+        ],
+        "description": "The VAPID public key the admin PWA needs to create a push subscription. Fetched at runtime so no key is compiled into the browser bundle. Empty string when push is not configured on the server. Requires the `admin.access` capability.",
+        "responses": {
+          "200": {
+            "description": "The VAPID public key, or an empty string.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushPublicKey"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/push/subscribe": {
+      "post": {
+        "operationId": "adminPushSubscribe",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Register (or refresh) this browser's push subscription for the signed-in admin. Idempotent on the endpoint. Requires `admin.access`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSubscribeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The subscription is stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushSubscribeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/push/unsubscribe": {
+      "post": {
+        "operationId": "adminPushUnsubscribe",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Drop this browser's push subscription. Idempotent. Requires `admin.access`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushUnsubscribeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The subscription is gone.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushUnsubscribeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/overview": {
+      "get": {
+        "operationId": "adminOverview",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Dashboard counts for the current campaign plus the current / registration-open campaign refs for the header. Requires the `admin.access` capability.",
+        "responses": {
+          "200": {
+            "description": "Counts and campaign context.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/registrations": {
       "get": {
         "operationId": "adminListRegistrations",
         "tags": [
           "Admin"
         ],
-        "description": "UNAUTHENTICATED (see the block comment above this route in routes.ts). campaignId is required so omitting it can never list across every campaign at once.",
+        "description": "Requires the `registrations.review` capability. campaignId is required so omitting it can never list across every campaign at once.",
         "parameters": [
           {
             "schema": {
@@ -698,6 +1986,39 @@
             "required": false,
             "name": "status",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
           }
         ],
         "responses": {
@@ -707,6 +2028,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminRegistrationList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }
@@ -724,13 +2065,149 @@
         }
       }
     },
+    "/v1/admin/registrations/{id}": {
+      "get": {
+        "operationId": "adminGetRegistration",
+        "tags": [
+          "Admin"
+        ],
+        "description": "One registration with its profile snapshot, the applicant's prior memberships, a new/returning classification and any duplicate registrations for the same email. Requires `registrations.review`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "registration_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The registration and its review context.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRegistrationDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No registration with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/registrations/{id}/restore": {
+      "post": {
+        "operationId": "adminRestoreRegistration",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Move a rejected registration back to pending_review. Never goes straight to accepted. Requires `registrations.review`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "registration_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The registration is back in the review queue.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestoreResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No registration with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The registration is not in the rejected state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/registrations/{id}/accept": {
       "post": {
         "operationId": "adminAcceptRegistration",
         "tags": [
           "Admin"
         ],
-        "description": "UNAUTHENTICATED (see the block comment above adminListRegistrations in routes.ts). `reviewerId` is a self-reported user id, not verified as an admin.",
+        "description": "Requires the `registrations.review` capability. The reviewer is the session user.",
         "parameters": [
           {
             "schema": {
@@ -764,6 +2241,26 @@
               }
             }
           },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "404": {
             "description": "No registration with that id.",
             "content": {
@@ -793,7 +2290,7 @@
         "tags": [
           "Admin"
         ],
-        "description": "UNAUTHENTICATED (see the block comment above adminListRegistrations in routes.ts). `reviewerId` is a self-reported user id, not verified as an admin.",
+        "description": "Requires the `registrations.review` capability. The reviewer is the session user.",
         "parameters": [
           {
             "schema": {
@@ -827,6 +2324,26 @@
               }
             }
           },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "404": {
             "description": "No registration with that id.",
             "content": {
@@ -839,6 +2356,1299 @@
           },
           "409": {
             "description": "The registration is not in pending_review.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/campaigns": {
+      "get": {
+        "operationId": "adminListCampaigns",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Campaigns with active-member and pending-review counts, newest membership start first. Paginated for a uniform table contract even though the set is small. Requires `campaigns.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/CampaignState"
+            },
+            "required": false,
+            "name": "state",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 100
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All campaigns, newest membership start first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCampaignList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "adminCreateCampaign",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Create a draft campaign (all four dates required). Requires `campaigns.write`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateCampaignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The draft campaign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCampaign"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The slug is already taken, or the date ranges are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/campaigns/{id}": {
+      "patch": {
+        "operationId": "adminUpdateCampaign",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Edit a campaign. The slug can only change while it is a draft. Requires `campaigns.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "campaign_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateCampaignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The campaign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCampaign"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No campaign with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Illegal edit (e.g. renaming a published campaign's slug).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/campaigns/{id}/registration": {
+      "post": {
+        "operationId": "adminSetCampaignRegistration",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Open or close public registration for this campaign. Opening it closes whichever other campaign was open, in one transaction. Requires `campaigns.rollover`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "campaign_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCampaignRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The campaign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCampaign"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No campaign with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/campaigns/{id}/current": {
+      "post": {
+        "operationId": "adminSetCampaignCurrent",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Make this the current campaign, clearing the flag from whichever campaign held it, in one transaction. Requires `campaigns.rollover`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "campaign_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The campaign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCampaign"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No campaign with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/campaigns/{id}/archive": {
+      "post": {
+        "operationId": "adminArchiveCampaign",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Archive a campaign. Never deletes; clears both coexistence flags. Requires `campaigns.rollover`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "campaign_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The campaign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCampaign"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No campaign with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/members": {
+      "get": {
+        "operationId": "adminListMembers",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past. Requires `members.read`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "current",
+                "past"
+              ]
+            },
+            "required": false,
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of members plus the total match count.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMemberList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/members/{userId}": {
+      "get": {
+        "operationId": "adminGetMember",
+        "tags": [
+          "Admin"
+        ],
+        "description": "One member: profile, every membership row with its campaign, and the full audit timeline. Requires `members.read`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "user_123"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The member's profile and history.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMemberDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No member (member_profile row) with that user id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/members/{userId}/leave": {
+      "post": {
+        "operationId": "adminMemberLeave",
+        "tags": [
+          "Admin"
+        ],
+        "description": "End this member's current-campaign membership as `left`. Requires `members.status.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "user_123"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminLeaveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The action was applied to the current-campaign membership.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMemberStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No member with that id, or no membership for them in the current campaign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The membership is not in a state that allows this transition, or no campaign is current.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/members/{userId}/kick": {
+      "post": {
+        "operationId": "adminMemberKick",
+        "tags": [
+          "Admin"
+        ],
+        "description": "End this member's current-campaign membership as `kicked` (reason required) and revoke all their sessions. Requires `members.status.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "user_123"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminKickRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The action was applied to the current-campaign membership.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMemberStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No member with that id, or no membership for them in the current campaign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The membership is not in a state that allows this transition, or no campaign is current.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/members/{userId}/restore": {
+      "post": {
+        "operationId": "adminMemberRestore",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Reactivate a `left` or `kicked` current-campaign membership. Requires `members.status.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "user_123"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The action was applied to the current-campaign membership.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMemberStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No member with that id, or no membership for them in the current campaign.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The membership is not in a state that allows this transition, or no campaign is current.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/members/{userId}/role": {
+      "patch": {
+        "operationId": "adminMemberSetRole",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Promote or demote a member between `member` and `admin`. Writes a `role_changed` audit event, separate from membership changes. Requires `members.role.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "user_123"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The member's new role.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSetRoleResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No member (member_profile row) with that user id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/invitations": {
+      "get": {
+        "operationId": "adminListInvitations",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Invitations for a campaign, `expired` computed at read time. Requires `invitations.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "campaignId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "accepted",
+                "cancelled",
+                "expired"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitations for the campaign, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminInvitationList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "adminCreateInvitation",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Invite someone to a campaign. Requires `invitations.write`, and `invitations.grant_admin` as well when intendedRole is admin. A non-udl.cat email needs allowExternalDomain: true.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateInvitationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The pending invitation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminInvitation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "An invitation for this email + campaign already exists, or the email domain needs confirmation, or admin was requested without the capability.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/invitations/{id}/resend": {
+      "post": {
+        "operationId": "adminResendInvitation",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Rotate the token on a pending invitation and email it again. Requires `invitations.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "invitation_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A fresh link was sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminInvitationActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No invitation with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The invitation is not pending.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/invitations/{id}/cancel": {
+      "post": {
+        "operationId": "adminCancelInvitation",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Cancel a pending invitation and notify the invitee. Requires `invitations.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "invitation_123"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The invitation was cancelled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminInvitationActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No invitation with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The invitation is not pending.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/invitations/lookup": {
+      "post": {
+        "operationId": "lookupInvitation",
+        "tags": [
+          "Invitations"
+        ],
+        "description": "Resolve an invitation token (in the body, never the query string) to the bound email, prefilled name, and campaign label. A generic 400 for any invalid / expired / used / unknown token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationLookupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The invitation is valid and pending.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationLookupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The token is invalid, expired, cancelled, or used.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many lookups from this address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/invitations/accept": {
+      "post": {
+        "operationId": "acceptInvitation",
+        "tags": [
+          "Invitations"
+        ],
+        "description": "Complete onboarding from an invitation. The email and campaign come from the token, never the body. Creates the account, profile, membership and the annual registration snapshot, then emails the welcome message.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationAcceptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Onboarding is complete. `alreadyMember` is true if the person was already a member (idempotent).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationAcceptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The token is invalid, expired, cancelled, or used.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many attempts from this address.",
             "content": {
               "application/json": {
                 "schema": {

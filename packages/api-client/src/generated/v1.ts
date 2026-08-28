@@ -86,6 +86,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/push/public-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The VAPID public key the admin PWA needs to create a push subscription. Fetched at runtime so no key is compiled into the browser bundle. Empty string when push is not configured on the server. Requires the `admin.access` capability. */
+        get: operations["adminPushPublicKey"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/push/subscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Register (or refresh) this browser's push subscription for the signed-in admin. Idempotent on the endpoint. Requires `admin.access`. */
+        post: operations["adminPushSubscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/push/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Drop this browser's push subscription. Idempotent. Requires `admin.access`. */
+        post: operations["adminPushUnsubscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Dashboard counts for the current campaign plus the current / registration-open campaign refs for the header. Requires the `admin.access` capability. */
+        get: operations["adminOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/registrations": {
         parameters: {
             query?: never;
@@ -93,10 +161,44 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description UNAUTHENTICATED (see the block comment above this route in routes.ts). campaignId is required so omitting it can never list across every campaign at once. */
+        /** @description Requires the `registrations.review` capability. campaignId is required so omitting it can never list across every campaign at once. */
         get: operations["adminListRegistrations"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/registrations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description One registration with its profile snapshot, the applicant's prior memberships, a new/returning classification and any duplicate registrations for the same email. Requires `registrations.review`. */
+        get: operations["adminGetRegistration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/registrations/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Move a rejected registration back to pending_review. Never goes straight to accepted. Requires `registrations.review`. */
+        post: operations["adminRestoreRegistration"];
         delete?: never;
         options?: never;
         head?: never;
@@ -112,7 +214,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description UNAUTHENTICATED (see the block comment above adminListRegistrations in routes.ts). `reviewerId` is a self-reported user id, not verified as an admin. */
+        /** @description Requires the `registrations.review` capability. The reviewer is the session user. */
         post: operations["adminAcceptRegistration"];
         delete?: never;
         options?: never;
@@ -129,8 +231,282 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description UNAUTHENTICATED (see the block comment above adminListRegistrations in routes.ts). `reviewerId` is a self-reported user id, not verified as an admin. */
+        /** @description Requires the `registrations.review` capability. The reviewer is the session user. */
         post: operations["adminRejectRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/campaigns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Campaigns with active-member and pending-review counts, newest membership start first. Paginated for a uniform table contract even though the set is small. Requires `campaigns.write`. */
+        get: operations["adminListCampaigns"];
+        put?: never;
+        /** @description Create a draft campaign (all four dates required). Requires `campaigns.write`. */
+        post: operations["adminCreateCampaign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/campaigns/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Edit a campaign. The slug can only change while it is a draft. Requires `campaigns.write`. */
+        patch: operations["adminUpdateCampaign"];
+        trace?: never;
+    };
+    "/v1/admin/campaigns/{id}/registration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Open or close public registration for this campaign. Opening it closes whichever other campaign was open, in one transaction. Requires `campaigns.rollover`. */
+        post: operations["adminSetCampaignRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/campaigns/{id}/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Make this the current campaign, clearing the flag from whichever campaign held it, in one transaction. Requires `campaigns.rollover`. */
+        post: operations["adminSetCampaignCurrent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/campaigns/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Archive a campaign. Never deletes; clears both coexistence flags. Requires `campaigns.rollover`. */
+        post: operations["adminArchiveCampaign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past. Requires `members.read`. */
+        get: operations["adminListMembers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/members/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description One member: profile, every membership row with its campaign, and the full audit timeline. Requires `members.read`. */
+        get: operations["adminGetMember"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/members/{userId}/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description End this member's current-campaign membership as `left`. Requires `members.status.write`. */
+        post: operations["adminMemberLeave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/members/{userId}/kick": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description End this member's current-campaign membership as `kicked` (reason required) and revoke all their sessions. Requires `members.status.write`. */
+        post: operations["adminMemberKick"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/members/{userId}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Reactivate a `left` or `kicked` current-campaign membership. Requires `members.status.write`. */
+        post: operations["adminMemberRestore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/members/{userId}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Promote or demote a member between `member` and `admin`. Writes a `role_changed` audit event, separate from membership changes. Requires `members.role.write`. */
+        patch: operations["adminMemberSetRole"];
+        trace?: never;
+    };
+    "/v1/admin/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Invitations for a campaign, `expired` computed at read time. Requires `invitations.write`. */
+        get: operations["adminListInvitations"];
+        put?: never;
+        /** @description Invite someone to a campaign. Requires `invitations.write`, and `invitations.grant_admin` as well when intendedRole is admin. A non-udl.cat email needs allowExternalDomain: true. */
+        post: operations["adminCreateInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/invitations/{id}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Rotate the token on a pending invitation and email it again. Requires `invitations.write`. */
+        post: operations["adminResendInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/invitations/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Cancel a pending invitation and notify the invitee. Requires `invitations.write`. */
+        post: operations["adminCancelInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invitations/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Resolve an invitation token (in the body, never the query string) to the bound email, prefilled name, and campaign label. A generic 400 for any invalid / expired / used / unknown token. */
+        post: operations["lookupInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invitations/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Complete onboarding from an invitation. The email and campaign come from the token, never the body. Creates the account, profile, membership and the annual registration snapshot, then emails the welcome message. */
+        post: operations["acceptInvitation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -159,7 +535,7 @@ export interface components {
         ApiError: {
             error: {
                 /** @enum {string} */
-                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "NOT_FOUND" | "CONFLICT" | "ALREADY_REGISTERED" | "INVALID_TOKEN" | "INTERNAL_ERROR";
+                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "ALREADY_REGISTERED" | "INVALID_TOKEN" | "INTERNAL_ERROR";
                 message: string;
                 details?: components["schemas"]["ValidationIssue"][];
             };
@@ -204,7 +580,53 @@ export interface components {
             /** @example a1b2c3... */
             token: string;
         };
-        AdminRegistrationList: components["schemas"]["AdminRegistration"][];
+        PushPublicKey: {
+            publicKey: string;
+        };
+        PushSubscribeResponse: {
+            /** @enum {string} */
+            status: "subscribed";
+        };
+        PushSubscribeRequest: {
+            /** Format: uri */
+            endpoint: string;
+            keys: {
+                p256dh: string;
+                auth: string;
+            };
+            userAgent?: string;
+        };
+        PushUnsubscribeResponse: {
+            /** @enum {string} */
+            status: "unsubscribed";
+        };
+        PushUnsubscribeRequest: {
+            /** Format: uri */
+            endpoint: string;
+        };
+        AdminOverview: {
+            currentCampaign: components["schemas"]["AdminCampaignRef"];
+            registrationOpenCampaign: components["schemas"]["AdminCampaignRef"];
+            counts: {
+                pendingVerification: number;
+                pendingReview: number;
+                activeMembers: number;
+                newMembers: number;
+                returningMembers: number;
+                unrenewedPastMembers: number;
+            };
+        };
+        AdminCampaignRef: {
+            id: string;
+            slug: string;
+            label: string;
+        } | null;
+        AdminRegistrationList: {
+            rows: components["schemas"]["AdminRegistration"][];
+            total: number;
+            limit: number;
+            offset: number;
+        };
         AdminRegistration: {
             id: string;
             campaignId: string;
@@ -230,14 +652,39 @@ export interface components {
             studyYear: number;
             note?: string;
         };
+        AdminRegistrationDetail: {
+            registration: components["schemas"]["AdminRegistration"];
+            existingUserId: string | null;
+            priorMemberships: components["schemas"]["AdminPriorMembership"][];
+            /** @enum {string} */
+            classification: "new" | "returning";
+            duplicateRegistrations: components["schemas"]["AdminDuplicateRegistration"][];
+        };
+        AdminPriorMembership: {
+            campaignId: string;
+            campaignSlug: string;
+            campaignLabel: string;
+            status: string;
+            joinedAt: string;
+            endedAt: string | null;
+        };
+        AdminDuplicateRegistration: {
+            id: string;
+            campaignId: string;
+            campaignLabel: string;
+            status: components["schemas"]["RegistrationStatus"];
+            createdAt: string;
+        };
+        AdminRestoreResponse: {
+            /** @enum {string} */
+            status: "restored";
+        };
         AdminAcceptResponse: {
             /** @enum {string} */
             status: "accepted";
             notificationSent: boolean;
         };
         AdminAcceptRequest: {
-            /** @example user_123 */
-            reviewerId: string;
             /** @example registration */
             membershipSource?: string;
         };
@@ -247,10 +694,207 @@ export interface components {
             notificationSent: boolean;
         };
         AdminRejectRequest: {
-            /** @example user_123 */
-            reviewerId: string;
             /** @example No hi ha places disponibles aquest curs. */
             reason: string;
+        };
+        AdminCampaignList: {
+            rows: components["schemas"]["AdminCampaignWithCounts"][];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        AdminCampaignWithCounts: {
+            id: string;
+            slug: string;
+            label: string;
+            membershipStartsAt: string;
+            membershipEndsAt: string;
+            registrationOpensAt: string;
+            registrationClosesAt: string;
+            isCurrent: boolean;
+            isRegistrationOpen: boolean;
+            state: components["schemas"]["CampaignState"];
+            sheetTabName: string | null;
+            sheetSyncedAt: string | null;
+            sheetStale: boolean;
+            createdAt: string;
+            updatedAt: string;
+            activeMembers: number;
+            pendingReview: number;
+        };
+        /** @enum {string} */
+        CampaignState: "draft" | "published" | "archived";
+        AdminCampaign: {
+            id: string;
+            slug: string;
+            label: string;
+            membershipStartsAt: string;
+            membershipEndsAt: string;
+            registrationOpensAt: string;
+            registrationClosesAt: string;
+            isCurrent: boolean;
+            isRegistrationOpen: boolean;
+            state: components["schemas"]["CampaignState"];
+            sheetTabName: string | null;
+            sheetSyncedAt: string | null;
+            sheetStale: boolean;
+            createdAt: string;
+            updatedAt: string;
+        };
+        AdminCreateCampaignRequest: {
+            slug: string;
+            label: string;
+            /** Format: date-time */
+            membershipStartsAt: string;
+            /** Format: date-time */
+            membershipEndsAt: string;
+            /** Format: date-time */
+            registrationOpensAt: string;
+            /** Format: date-time */
+            registrationClosesAt: string;
+        };
+        AdminUpdateCampaignRequest: {
+            slug?: string;
+            label?: string;
+            /** Format: date-time */
+            membershipStartsAt?: string;
+            /** Format: date-time */
+            membershipEndsAt?: string;
+            /** Format: date-time */
+            registrationOpensAt?: string;
+            /** Format: date-time */
+            registrationClosesAt?: string;
+        };
+        AdminCampaignRegistrationRequest: {
+            open: boolean;
+        };
+        AdminMemberList: {
+            rows: components["schemas"]["AdminMemberListItem"][];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        AdminMemberListItem: {
+            userId: string;
+            name: string;
+            surnames: string;
+            email: string;
+            degree: string;
+            studyYear: number;
+            role: string | null;
+            currentStatus: string | null;
+            totalMemberships: number;
+        };
+        AdminMemberDetail: {
+            profile: components["schemas"]["AdminMemberProfile"];
+            memberships: components["schemas"]["AdminMemberTimelineMembership"][];
+            events: components["schemas"]["AdminMemberTimelineEvent"][];
+        };
+        AdminMemberProfile: {
+            userId: string;
+            name: string;
+            surnames: string;
+            email: string;
+            phoneE164: string;
+            phoneDisplay: string;
+            degree: string;
+            studyYear: number;
+            role: string | null;
+            createdAt: string;
+        };
+        AdminMemberTimelineMembership: {
+            id: string;
+            campaignId: string;
+            campaignSlug: string;
+            campaignLabel: string;
+            status: string;
+            source: string;
+            joinedAt: string;
+            endedAt: string | null;
+            endedReason: string | null;
+        };
+        AdminMemberTimelineEvent: {
+            id: string;
+            eventType: string;
+            actorId: string | null;
+            campaignId: string | null;
+            details?: unknown;
+            createdAt: string;
+        };
+        AdminMemberStatusResponse: {
+            /** @enum {string} */
+            status: "left" | "kicked" | "restored";
+        };
+        AdminLeaveRequest: {
+            reason?: string;
+        };
+        AdminKickRequest: {
+            reason: string;
+        };
+        AdminSetRoleResponse: {
+            role: string;
+        };
+        AdminSetRoleRequest: {
+            /** @enum {string} */
+            role: "member" | "admin";
+        };
+        AdminInvitationList: {
+            rows: components["schemas"]["AdminInvitation"][];
+            total: number;
+            limit: number;
+            offset: number;
+        };
+        AdminInvitation: {
+            id: string;
+            campaignId: string;
+            email: string;
+            intendedRole: components["schemas"]["InvitationRole"];
+            prefillName: string | null;
+            prefillSurnames: string | null;
+            /** @enum {string} */
+            status: "pending" | "accepted" | "cancelled";
+            expired: boolean;
+            expiresAt: string;
+            acceptedAt: string | null;
+            createdAt: string;
+        };
+        /** @enum {string} */
+        InvitationRole: "member" | "admin";
+        AdminCreateInvitationRequest: {
+            campaignId: string;
+            /** Format: email */
+            email: string;
+            intendedRole?: components["schemas"]["InvitationRole"];
+            prefillName?: string;
+            prefillSurnames?: string;
+            allowExternalDomain?: boolean;
+        };
+        AdminInvitationActionResponse: {
+            /** @enum {string} */
+            status: "ok";
+        };
+        InvitationLookupResponse: {
+            email: string;
+            prefillName: string | null;
+            prefillSurnames: string | null;
+            campaignLabel: string;
+        };
+        InvitationLookupRequest: {
+            token: string;
+        };
+        InvitationAcceptResponse: {
+            /** @enum {string} */
+            status: "accepted";
+            alreadyMember: boolean;
+        };
+        InvitationAcceptRequest: {
+            token: string;
+            name: string;
+            surnames: string;
+            phone: string;
+            /** @enum {string} */
+            degree: "Doble Grau en Organització Industrial i ADE" | "Doble Grau en Informàtica i ADE" | "Doble Grau en Mecànica i Energia" | "Grau en Arquitectura Tècnica" | "Grau en Disseny Digital" | "Grau en Enginyeria de l'Energia" | "Grau en Eng. Electrònica Industrial" | "Grau en Organització Industrial" | "Grau en Informàtica (Igualada)" | "Grau en Informàtica (Lleida)" | "Grau en Enginyeria Mecànica" | "Grau en Enginyeria Química" | "Grau en Tècniques d'Interacció Digital" | "Altre";
+            year: number;
         };
     };
     responses: never;
@@ -456,11 +1100,174 @@ export interface operations {
             };
         };
     };
+    adminPushPublicKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The VAPID public key, or an empty string. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushPublicKey"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminPushSubscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSubscribeRequest"];
+            };
+        };
+        responses: {
+            /** @description The subscription is stored. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushSubscribeResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminPushUnsubscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushUnsubscribeRequest"];
+            };
+        };
+        responses: {
+            /** @description The subscription is gone. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushUnsubscribeResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Counts and campaign context. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOverview"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     adminListRegistrations: {
         parameters: {
             query: {
                 campaignId: string;
                 status?: components["schemas"]["RegistrationStatus"];
+                q?: string;
+                limit?: number;
+                offset?: number | null;
             };
             header?: never;
             path?: never;
@@ -477,8 +1284,133 @@ export interface operations {
                     "application/json": components["schemas"]["AdminRegistrationList"];
                 };
             };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description campaignId is missing or status is not a valid value. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminGetRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The registration and its review context. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRegistrationDetail"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No registration with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminRestoreRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The registration is back in the review queue. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestoreResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No registration with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The registration is not in the rejected state. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -510,6 +1442,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminAcceptResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
             /** @description No registration with that id. */
@@ -556,6 +1506,24 @@ export interface operations {
                     "application/json": components["schemas"]["AdminRejectResponse"];
                 };
             };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description No registration with that id. */
             404: {
                 headers: {
@@ -567,6 +1535,935 @@ export interface operations {
             };
             /** @description The registration is not in pending_review. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminListCampaigns: {
+        parameters: {
+            query?: {
+                q?: string;
+                state?: components["schemas"]["CampaignState"];
+                limit?: number;
+                offset?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description All campaigns, newest membership start first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCampaignList"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminCreateCampaign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCreateCampaignRequest"];
+            };
+        };
+        responses: {
+            /** @description The draft campaign. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCampaign"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The slug is already taken, or the date ranges are invalid. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminUpdateCampaign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUpdateCampaignRequest"];
+            };
+        };
+        responses: {
+            /** @description The campaign. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCampaign"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No campaign with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Illegal edit (e.g. renaming a published campaign's slug). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminSetCampaignRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCampaignRegistrationRequest"];
+            };
+        };
+        responses: {
+            /** @description The campaign. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCampaign"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No campaign with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminSetCampaignCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The campaign. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCampaign"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No campaign with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminArchiveCampaign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The campaign. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCampaign"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No campaign with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminListMembers: {
+        parameters: {
+            query?: {
+                q?: string;
+                filter?: "all" | "current" | "past";
+                limit?: number;
+                offset?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of members plus the total match count. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMemberList"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminGetMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The member's profile and history. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMemberDetail"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No member (member_profile row) with that user id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminMemberLeave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminLeaveRequest"];
+            };
+        };
+        responses: {
+            /** @description The action was applied to the current-campaign membership. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMemberStatusResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No member with that id, or no membership for them in the current campaign. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The membership is not in a state that allows this transition, or no campaign is current. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminMemberKick: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminKickRequest"];
+            };
+        };
+        responses: {
+            /** @description The action was applied to the current-campaign membership. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMemberStatusResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No member with that id, or no membership for them in the current campaign. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The membership is not in a state that allows this transition, or no campaign is current. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminMemberRestore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The action was applied to the current-campaign membership. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMemberStatusResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No member with that id, or no membership for them in the current campaign. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The membership is not in a state that allows this transition, or no campaign is current. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminMemberSetRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetRoleRequest"];
+            };
+        };
+        responses: {
+            /** @description The member's new role. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSetRoleResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No member (member_profile row) with that user id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminListInvitations: {
+        parameters: {
+            query: {
+                campaignId: string;
+                q?: string;
+                status?: "pending" | "accepted" | "cancelled" | "expired";
+                limit?: number;
+                offset?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Invitations for the campaign, newest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInvitationList"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminCreateInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCreateInvitationRequest"];
+            };
+        };
+        responses: {
+            /** @description The pending invitation. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInvitation"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description An invitation for this email + campaign already exists, or the email domain needs confirmation, or admin was requested without the capability. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminResendInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A fresh link was sent. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInvitationActionResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No invitation with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The invitation is not pending. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminCancelInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The invitation was cancelled. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInvitationActionResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No invitation with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The invitation is not pending. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    lookupInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationLookupRequest"];
+            };
+        };
+        responses: {
+            /** @description The invitation is valid and pending. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationLookupResponse"];
+                };
+            };
+            /** @description The token is invalid, expired, cancelled, or used. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Too many lookups from this address. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    acceptInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationAcceptRequest"];
+            };
+        };
+        responses: {
+            /** @description Onboarding is complete. `alreadyMember` is true if the person was already a member (idempotent). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationAcceptResponse"];
+                };
+            };
+            /** @description The token is invalid, expired, cancelled, or used. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Too many attempts from this address. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

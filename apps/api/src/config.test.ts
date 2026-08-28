@@ -42,14 +42,30 @@ describe("auth configuration", () => {
   });
 
   it("requires explicit production origins", () => {
-    assert.throws(
-      () => getAuthBaseUrl(undefined, "production"),
-      /Missing required environment variable: ADMIN_PUBLIC_ORIGIN/,
-    );
-    assert.throws(
-      () => getAuthTrustedOrigins(undefined, "production"),
-      /Missing required environment variable: BETTER_AUTH_TRUSTED_ORIGINS/,
-    );
+    // Hermetic: these two are set in the repo's local `.env` (which the test
+    // runner loads via `dotenv -e`), so the ambient values are cleared for
+    // the duration of this check rather than assumed absent.
+    const saved = {
+      ADMIN_PUBLIC_ORIGIN: process.env.ADMIN_PUBLIC_ORIGIN,
+      BETTER_AUTH_TRUSTED_ORIGINS: process.env.BETTER_AUTH_TRUSTED_ORIGINS,
+    };
+    delete process.env.ADMIN_PUBLIC_ORIGIN;
+    delete process.env.BETTER_AUTH_TRUSTED_ORIGINS;
+    try {
+      assert.throws(
+        () => getAuthBaseUrl(undefined, "production"),
+        /Missing required environment variable: ADMIN_PUBLIC_ORIGIN/,
+      );
+      assert.throws(
+        () => getAuthTrustedOrigins(undefined, "production"),
+        /Missing required environment variable: BETTER_AUTH_TRUSTED_ORIGINS/,
+      );
+    } finally {
+      for (const [key, value] of Object.entries(saved)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
   });
 
   it("rejects unknown runtime names", () => {

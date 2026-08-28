@@ -2,6 +2,40 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   adminAcceptBodySchema,
+  adminCampaignListSchema,
+  adminCampaignListQuerySchema,
+  adminCampaignRegistrationBodySchema,
+  adminCampaignSchema,
+  adminCreateCampaignBodySchema,
+  adminOverviewSchema,
+  pushPublicKeySchema,
+  pushSubscribeBodySchema,
+  pushSubscribeResponseSchema,
+  pushUnsubscribeBodySchema,
+  pushUnsubscribeResponseSchema,
+  adminCreateInvitationBodySchema,
+  adminInvitationActionResponseSchema,
+  adminInvitationListQuerySchema,
+  adminInvitationListSchema,
+  adminInvitationSchema,
+  adminKickBodySchema,
+  adminLeaveBodySchema,
+  adminMemberDetailSchema,
+  adminMemberListQuerySchema,
+  adminMemberListSchema,
+  adminMemberStatusResponseSchema,
+  adminRegistrationDetailSchema,
+  adminRestoreResponseSchema,
+  adminSetRoleBodySchema,
+  adminSetRoleResponseSchema,
+  invitationAcceptBodySchema,
+  invitationAcceptResponseSchema,
+  invitationIdParamSchema,
+  invitationLookupBodySchema,
+  invitationLookupResponseSchema,
+  userIdParamSchema,
+  adminUpdateCampaignBodySchema,
+  campaignIdParamSchema,
   adminAcceptResponseSchema,
   adminListQuerySchema,
   adminRegistrationListSchema,
@@ -200,23 +234,29 @@ export const verifyRegistrationPostRoute = createRoute({
 // ---------------------------------------------------------------------------
 // Admin routes.
 //
-// UNAUTHENTICATED BY DESIGN — READ BEFORE TOUCHING THESE ROUTES.
-//
-// The plan places this task (IA-40) in Milestone 1 and real authentication
-// (IA-30/IA-31, which protects admin API routes in Hono) in Milestone 2,
-// strictly after it. There is currently NO session, NO admin-role check,
-// and NO authorization of any kind on the three routes below — anyone who
-// can reach this API can list every registration for a campaign, accept
-// one (creating a real user + membership), or reject one. `reviewerId` is
-// an unchecked, self-reported string; nothing verifies it names an actual
-// admin.
-//
-// This is not an oversight. Do NOT bolt on an ad-hoc API key or other
-// improvised auth here — IA-30/IA-31 will replace it wholesale, and a
-// homemade scheme would just be thrown away. Until that lands:
-//   - these routes MUST NOT be exposed on a public ingress, and
-//   - MUST NOT be linked from any deployed frontend.
+// AUTHORIZED (IA-31). `app.ts` mounts `requireCapability("registrations.review")`
+// on each of these paths: the session is resolved from the forwarded cookie,
+// a missing session is 401, a role without the capability (or a user with no
+// `member_profile` row) is 403. The reviewer is the session user — there is
+// no `reviewerId` in any request body.
 // ---------------------------------------------------------------------------
+
+const adminAuthResponses = {
+  401: {
+    description: "No session cookie, or the session is expired or revoked.",
+    content: {
+      "application/json": { schema: apiErrorSchema },
+    },
+  },
+  403: {
+    description:
+      "The session's role lacks the required capability, or the user has " +
+      "not completed onboarding.",
+    content: {
+      "application/json": { schema: apiErrorSchema },
+    },
+  },
+};
 
 export const adminListRegistrationsRoute = createRoute({
   method: "get",
@@ -224,9 +264,8 @@ export const adminListRegistrationsRoute = createRoute({
   operationId: "adminListRegistrations",
   tags: ["Admin"],
   description:
-    "UNAUTHENTICATED (see the block comment above this route in " +
-    "routes.ts). campaignId is required so omitting it can never list " +
-    "across every campaign at once.",
+    "Requires the `registrations.review` capability. campaignId is " +
+    "required so omitting it can never list across every campaign at once.",
   request: {
     query: adminListQuerySchema,
   },
@@ -243,6 +282,7 @@ export const adminListRegistrationsRoute = createRoute({
         "application/json": { schema: apiErrorSchema },
       },
     },
+    ...adminAuthResponses,
   },
 });
 
@@ -252,9 +292,8 @@ export const adminAcceptRegistrationRoute = createRoute({
   operationId: "adminAcceptRegistration",
   tags: ["Admin"],
   description:
-    "UNAUTHENTICATED (see the block comment above adminListRegistrations " +
-    "in routes.ts). `reviewerId` is a self-reported user id, not verified " +
-    "as an admin.",
+    "Requires the `registrations.review` capability. The reviewer is the " +
+    "session user.",
   request: {
     params: registrationIdParamSchema,
     body: {
@@ -286,6 +325,7 @@ export const adminAcceptRegistrationRoute = createRoute({
         "application/json": { schema: apiErrorSchema },
       },
     },
+    ...adminAuthResponses,
   },
 });
 
@@ -295,9 +335,8 @@ export const adminRejectRegistrationRoute = createRoute({
   operationId: "adminRejectRegistration",
   tags: ["Admin"],
   description:
-    "UNAUTHENTICATED (see the block comment above adminListRegistrations " +
-    "in routes.ts). `reviewerId` is a self-reported user id, not verified " +
-    "as an admin.",
+    "Requires the `registrations.review` capability. The reviewer is the " +
+    "session user.",
   request: {
     params: registrationIdParamSchema,
     body: {
@@ -327,6 +366,682 @@ export const adminRejectRegistrationRoute = createRoute({
       content: {
         "application/json": { schema: apiErrorSchema },
       },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+// --- Admin: overview ---------------------------------------------------
+
+export const adminOverviewRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/overview",
+  operationId: "adminOverview",
+  tags: ["Admin"],
+  description:
+    "Dashboard counts for the current campaign plus the current / " +
+    "registration-open campaign refs for the header. Requires the " +
+    "`admin.access` capability.",
+  responses: {
+    200: {
+      description: "Counts and campaign context.",
+      content: {
+        "application/json": { schema: adminOverviewSchema },
+      },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminPushPublicKeyRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/push/public-key",
+  operationId: "adminPushPublicKey",
+  tags: ["Admin"],
+  description:
+    "The VAPID public key the admin PWA needs to create a push " +
+    "subscription. Fetched at runtime so no key is compiled into the " +
+    "browser bundle. Empty string when push is not configured on the " +
+    "server. Requires the `admin.access` capability.",
+  responses: {
+    200: {
+      description: "The VAPID public key, or an empty string.",
+      content: { "application/json": { schema: pushPublicKeySchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminPushSubscribeRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/push/subscribe",
+  operationId: "adminPushSubscribe",
+  tags: ["Admin"],
+  description:
+    "Register (or refresh) this browser's push subscription for the " +
+    "signed-in admin. Idempotent on the endpoint. Requires `admin.access`.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: pushSubscribeBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "The subscription is stored.",
+      content: {
+        "application/json": { schema: pushSubscribeResponseSchema },
+      },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminPushUnsubscribeRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/push/unsubscribe",
+  operationId: "adminPushUnsubscribe",
+  tags: ["Admin"],
+  description:
+    "Drop this browser's push subscription. Idempotent. Requires " +
+    "`admin.access`.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: pushUnsubscribeBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "The subscription is gone.",
+      content: {
+        "application/json": { schema: pushUnsubscribeResponseSchema },
+      },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+// --- Admin: campaigns ------------------------------------------------------
+
+export const adminListCampaignsRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/campaigns",
+  operationId: "adminListCampaigns",
+  tags: ["Admin"],
+  description:
+    "Campaigns with active-member and pending-review counts, newest " +
+    "membership start first. Paginated for a uniform table contract even " +
+    "though the set is small. Requires `campaigns.write`.",
+  request: { query: adminCampaignListQuerySchema },
+  responses: {
+    200: {
+      description: "All campaigns, newest membership start first.",
+      content: { "application/json": { schema: adminCampaignListSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminCreateCampaignRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/campaigns",
+  operationId: "adminCreateCampaign",
+  tags: ["Admin"],
+  description:
+    "Create a draft campaign (all four dates required). Requires `campaigns.write`.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: adminCreateCampaignBodySchema },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "The draft campaign.",
+      content: { "application/json": { schema: adminCampaignSchema } },
+    },
+    409: {
+      description: "The slug is already taken, or the date ranges are invalid.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminUpdateCampaignRoute = createRoute({
+  method: "patch",
+  path: "/v1/admin/campaigns/{id}",
+  operationId: "adminUpdateCampaign",
+  tags: ["Admin"],
+  description:
+    "Edit a campaign. The slug can only change while it is a draft. Requires `campaigns.write`.",
+  request: {
+    params: campaignIdParamSchema,
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: adminUpdateCampaignBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "The campaign.",
+      content: { "application/json": { schema: adminCampaignSchema } },
+    },
+    404: {
+      description: "No campaign with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description: "Illegal edit (e.g. renaming a published campaign's slug).",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminSetCampaignRegistrationRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/campaigns/{id}/registration",
+  operationId: "adminSetCampaignRegistration",
+  tags: ["Admin"],
+  description:
+    "Open or close public registration for this campaign. Opening it " +
+    "closes whichever other campaign was open, in one transaction. " +
+    "Requires `campaigns.rollover`.",
+  request: {
+    params: campaignIdParamSchema,
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: adminCampaignRegistrationBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "The campaign.",
+      content: { "application/json": { schema: adminCampaignSchema } },
+    },
+    404: {
+      description: "No campaign with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminSetCampaignCurrentRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/campaigns/{id}/current",
+  operationId: "adminSetCampaignCurrent",
+  tags: ["Admin"],
+  description:
+    "Make this the current campaign, clearing the flag from whichever " +
+    "campaign held it, in one transaction. Requires `campaigns.rollover`.",
+  request: { params: campaignIdParamSchema },
+  responses: {
+    200: {
+      description: "The campaign.",
+      content: { "application/json": { schema: adminCampaignSchema } },
+    },
+    404: {
+      description: "No campaign with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminArchiveCampaignRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/campaigns/{id}/archive",
+  operationId: "adminArchiveCampaign",
+  tags: ["Admin"],
+  description:
+    "Archive a campaign. Never deletes; clears both coexistence flags. " +
+    "Requires `campaigns.rollover`.",
+  request: { params: campaignIdParamSchema },
+  responses: {
+    200: {
+      description: "The campaign.",
+      content: { "application/json": { schema: adminCampaignSchema } },
+    },
+    404: {
+      description: "No campaign with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+// --- Admin: registration detail + restore --------------------------------
+
+export const adminGetRegistrationRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/registrations/{id}",
+  operationId: "adminGetRegistration",
+  tags: ["Admin"],
+  description:
+    "One registration with its profile snapshot, the applicant's prior " +
+    "memberships, a new/returning classification and any duplicate " +
+    "registrations for the same email. Requires `registrations.review`.",
+  request: { params: registrationIdParamSchema },
+  responses: {
+    200: {
+      description: "The registration and its review context.",
+      content: {
+        "application/json": { schema: adminRegistrationDetailSchema },
+      },
+    },
+    404: {
+      description: "No registration with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminRestoreRegistrationRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/registrations/{id}/restore",
+  operationId: "adminRestoreRegistration",
+  tags: ["Admin"],
+  description:
+    "Move a rejected registration back to pending_review. Never goes " +
+    "straight to accepted. Requires `registrations.review`.",
+  request: { params: registrationIdParamSchema },
+  responses: {
+    200: {
+      description: "The registration is back in the review queue.",
+      content: {
+        "application/json": { schema: adminRestoreResponseSchema },
+      },
+    },
+    404: {
+      description: "No registration with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description: "The registration is not in the rejected state.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+// --- Admin: members ---------------------------------------------------
+
+export const adminListMembersRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/members",
+  operationId: "adminListMembers",
+  tags: ["Admin"],
+  description:
+    "Paginated, searchable member list. `q` matches name / surnames / " +
+    "email; `filter` is all | current | past. Requires `members.read`.",
+  request: { query: adminMemberListQuerySchema },
+  responses: {
+    200: {
+      description: "A page of members plus the total match count.",
+      content: { "application/json": { schema: adminMemberListSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminGetMemberRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/members/{userId}",
+  operationId: "adminGetMember",
+  tags: ["Admin"],
+  description:
+    "One member: profile, every membership row with its campaign, and the " +
+    "full audit timeline. Requires `members.read`.",
+  request: { params: userIdParamSchema },
+  responses: {
+    200: {
+      description: "The member's profile and history.",
+      content: { "application/json": { schema: adminMemberDetailSchema } },
+    },
+    404: {
+      description: "No member (member_profile row) with that user id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminMemberLeaveRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/members/{userId}/leave",
+  operationId: "adminMemberLeave",
+  tags: ["Admin"],
+  description:
+    "End this member's current-campaign membership as `left`. Requires " +
+    "`members.status.write`.",
+  request: {
+    params: userIdParamSchema,
+    body: {
+      required: true,
+      content: { "application/json": { schema: adminLeaveBodySchema } },
+    },
+  },
+  responses: {
+    200: {
+      description: "The action was applied to the current-campaign membership.",
+      content: {
+        "application/json": { schema: adminMemberStatusResponseSchema },
+      },
+    },
+    404: {
+      description:
+        "No member with that id, or no membership for them in the " +
+        "current campaign.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description:
+        "The membership is not in a state that allows this transition, " +
+        "or no campaign is current.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminMemberKickRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/members/{userId}/kick",
+  operationId: "adminMemberKick",
+  tags: ["Admin"],
+  description:
+    "End this member's current-campaign membership as `kicked` (reason " +
+    "required) and revoke all their sessions. Requires " +
+    "`members.status.write`.",
+  request: {
+    params: userIdParamSchema,
+    body: {
+      required: true,
+      content: { "application/json": { schema: adminKickBodySchema } },
+    },
+  },
+  responses: {
+    200: {
+      description: "The action was applied to the current-campaign membership.",
+      content: {
+        "application/json": { schema: adminMemberStatusResponseSchema },
+      },
+    },
+    404: {
+      description:
+        "No member with that id, or no membership for them in the " +
+        "current campaign.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description:
+        "The membership is not in a state that allows this transition, " +
+        "or no campaign is current.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminMemberRestoreRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/members/{userId}/restore",
+  operationId: "adminMemberRestore",
+  tags: ["Admin"],
+  description:
+    "Reactivate a `left` or `kicked` current-campaign membership. " +
+    "Requires `members.status.write`.",
+  request: { params: userIdParamSchema },
+  responses: {
+    200: {
+      description: "The action was applied to the current-campaign membership.",
+      content: {
+        "application/json": { schema: adminMemberStatusResponseSchema },
+      },
+    },
+    404: {
+      description:
+        "No member with that id, or no membership for them in the " +
+        "current campaign.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description:
+        "The membership is not in a state that allows this transition, " +
+        "or no campaign is current.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminMemberSetRoleRoute = createRoute({
+  method: "patch",
+  path: "/v1/admin/members/{userId}/role",
+  operationId: "adminMemberSetRole",
+  tags: ["Admin"],
+  description:
+    "Promote or demote a member between `member` and `admin`. Writes a " +
+    "`role_changed` audit event, separate from membership changes. " +
+    "Requires `members.role.write`.",
+  request: {
+    params: userIdParamSchema,
+    body: {
+      required: true,
+      content: { "application/json": { schema: adminSetRoleBodySchema } },
+    },
+  },
+  responses: {
+    200: {
+      description: "The member's new role.",
+      content: {
+        "application/json": { schema: adminSetRoleResponseSchema },
+      },
+    },
+    404: {
+      description: "No member (member_profile row) with that user id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+// --- Admin: invitations -----------------------------------------------
+
+export const adminListInvitationsRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/invitations",
+  operationId: "adminListInvitations",
+  tags: ["Admin"],
+  description:
+    "Invitations for a campaign, `expired` computed at read time. " +
+    "Requires `invitations.write`.",
+  request: { query: adminInvitationListQuerySchema },
+  responses: {
+    200: {
+      description: "Invitations for the campaign, newest first.",
+      content: {
+        "application/json": { schema: adminInvitationListSchema },
+      },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminCreateInvitationRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/invitations",
+  operationId: "adminCreateInvitation",
+  tags: ["Admin"],
+  description:
+    "Invite someone to a campaign. Requires `invitations.write`, and " +
+    "`invitations.grant_admin` as well when intendedRole is admin. A " +
+    "non-udl.cat email needs allowExternalDomain: true.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: adminCreateInvitationBodySchema },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "The pending invitation.",
+      content: { "application/json": { schema: adminInvitationSchema } },
+    },
+    409: {
+      description:
+        "An invitation for this email + campaign already exists, or the " +
+        "email domain needs confirmation, or admin was requested without " +
+        "the capability.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminResendInvitationRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/invitations/{id}/resend",
+  operationId: "adminResendInvitation",
+  tags: ["Admin"],
+  description:
+    "Rotate the token on a pending invitation and email it again. " +
+    "Requires `invitations.write`.",
+  request: { params: invitationIdParamSchema },
+  responses: {
+    200: {
+      description: "A fresh link was sent.",
+      content: {
+        "application/json": { schema: adminInvitationActionResponseSchema },
+      },
+    },
+    404: {
+      description: "No invitation with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description: "The invitation is not pending.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminCancelInvitationRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/invitations/{id}/cancel",
+  operationId: "adminCancelInvitation",
+  tags: ["Admin"],
+  description:
+    "Cancel a pending invitation and notify the invitee. Requires " +
+    "`invitations.write`.",
+  request: { params: invitationIdParamSchema },
+  responses: {
+    200: {
+      description: "The invitation was cancelled.",
+      content: {
+        "application/json": { schema: adminInvitationActionResponseSchema },
+      },
+    },
+    404: {
+      description: "No invitation with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description: "The invitation is not pending.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+// --- Public: invitation onboarding ----------------------------------
+
+export const invitationLookupRoute = createRoute({
+  method: "post",
+  path: "/v1/invitations/lookup",
+  operationId: "lookupInvitation",
+  tags: ["Invitations"],
+  description:
+    "Resolve an invitation token (in the body, never the query string) " +
+    "to the bound email, prefilled name, and campaign label. A generic " +
+    "400 for any invalid / expired / used / unknown token.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: invitationLookupBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "The invitation is valid and pending.",
+      content: {
+        "application/json": { schema: invitationLookupResponseSchema },
+      },
+    },
+    400: {
+      description: "The token is invalid, expired, cancelled, or used.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    429: {
+      description: "Too many lookups from this address.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+  },
+});
+
+export const invitationAcceptRoute = createRoute({
+  method: "post",
+  path: "/v1/invitations/accept",
+  operationId: "acceptInvitation",
+  tags: ["Invitations"],
+  description:
+    "Complete onboarding from an invitation. The email and campaign come " +
+    "from the token, never the body. Creates the account, profile, " +
+    "membership and the annual registration snapshot, then emails the " +
+    "welcome message.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: invitationAcceptBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description:
+        "Onboarding is complete. `alreadyMember` is true if the person " +
+        "was already a member (idempotent).",
+      content: {
+        "application/json": { schema: invitationAcceptResponseSchema },
+      },
+    },
+    400: {
+      description: "The token is invalid, expired, cancelled, or used.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    429: {
+      description: "Too many attempts from this address.",
+      content: { "application/json": { schema: apiErrorSchema } },
     },
   },
 });
