@@ -1013,7 +1013,13 @@ export function createApp(dependencies: AppDependencies = {}) {
   app.openapi(adminListInvitationsRoute, async (c) => {
     const { campaignId, q, status, limit, offset } = c.req.valid("query");
     return c.json(
-      await invitationService.listPage({ campaignId, q, status, limit, offset }),
+      await invitationService.listPage({
+        campaignId,
+        q,
+        status,
+        limit,
+        offset,
+      }),
       200,
     );
   });

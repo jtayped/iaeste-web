@@ -186,9 +186,8 @@ export function createDrizzleRegistrationService(
   return {
     async list(params) {
       const db = resolveDb();
-      const { rows, total } = await createRegistrationRepository(
-        db,
-      ).listForAdmin(params);
+      const { rows, total } =
+        await createRegistrationRepository(db).listForAdmin(params);
       return {
         rows: rows.map(toView),
         total,

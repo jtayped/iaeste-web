@@ -246,7 +246,8 @@ export function createCampaignRepository(db: Database) {
       } = { limit: 100, offset: 0 },
     ) {
       const clauses = [];
-      if (params.state) clauses.push(eq(membershipCampaign.state, params.state));
+      if (params.state)
+        clauses.push(eq(membershipCampaign.state, params.state));
       const needle = params.q?.trim();
       if (needle) {
         const like = `%${needle}%`;

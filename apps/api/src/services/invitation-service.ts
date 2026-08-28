@@ -143,9 +143,10 @@ export function createInvitationService(
     },
 
     async listPage(params) {
-      const { rows, total } = await createInvitationRepository(
-        resolveDb(),
-      ).listPageForCampaign(params);
+      const { rows, total } =
+        await createInvitationRepository(resolveDb()).listPageForCampaign(
+          params,
+        );
       return {
         rows: rows.map(toView),
         total,
