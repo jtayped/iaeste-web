@@ -148,3 +148,5 @@ export async function revokeAllUserSessions(auth: Auth, userId: string) {
   const context = await auth.$context;
   await context.internalAdapter.deleteUserSessions(userId);
 }
+
+export { capabilities, can, type Capability } from "./permissions";
