@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0B3E5B"/>
+  <text x="256" y="256" font-family="Helvetica, Arial, sans-serif" font-size="224" font-weight="700"
+        letter-spacing="-6" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">IA</text>
+</svg>

@@ -1,0 +1,4 @@
+Keeps apps/admin/public/ in git. The Dockerfile COPYs this directory into the
+runner stage, and git does not track empty directories, so without this file a
+fresh clone builds an image that fails at that COPY. Delete once there is a
+real static asset here.
