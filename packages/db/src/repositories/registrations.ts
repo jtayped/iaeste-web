@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 
 import type { Database, Db } from "../client";
 import {
@@ -105,6 +105,53 @@ export function createRegistrationRepository(db: Database) {
         );
     },
 
+    /**
+     * The admin review-queue query: one campaign, optional status, optional
+     * `q` (ILIKE over email + the snapshot's name/surnames), newest first,
+     * `limit`/`offset` paged. Returns the page plus the unpaged `total` for
+     * the pager. All filtering is in SQL — the admin table never filters
+     * rows it already holds.
+     */
+    async listForAdmin(params: {
+      campaignId: string;
+      status?: RegistrationStatus;
+      q?: string;
+      limit: number;
+      offset: number;
+    }): Promise<{ rows: (typeof registration.$inferSelect)[]; total: number }> {
+      const clauses = [eq(registration.campaignId, params.campaignId)];
+      if (params.status) clauses.push(eq(registration.status, params.status));
+
+      const needle = params.q?.trim();
+      if (needle) {
+        const like = `%${needle}%`;
+        const search = or(
+          ilike(registration.email, like),
+          sql`${registration.profileSnapshot} ->> 'name' ilike ${like}`,
+          sql`${registration.profileSnapshot} ->> 'surnames' ilike ${like}`,
+        );
+        if (search) clauses.push(search);
+      }
+
+      const where = and(...clauses);
+
+      const [rows, [countRow]] = await Promise.all([
+        db
+          .select()
+          .from(registration)
+          .where(where)
+          .orderBy(desc(registration.createdAt))
+          .limit(params.limit)
+          .offset(params.offset),
+        db
+          .select({ value: sql<number>`count(*)` })
+          .from(registration)
+          .where(where),
+      ]);
+
+      return { rows, total: Number(countRow?.value ?? 0) };
+    },
+
     /** Registrations still waiting on the applicant to click the email link. */
     async listPendingVerification() {
       return db
@@ -128,6 +175,33 @@ export function createRegistrationRepository(db: Database) {
 
       if (!row)
         throw await illegalOrMissing(db, registrationId, "pending_email");
+      return row;
+    },
+
+    /**
+     * `rejected` -> `pending_review`. The only way back for a rejected
+     * registration (docs/membership-lifecycle.md): it re-enters the queue,
+     * it is never flipped straight to `accepted`. Clears the rejection
+     * fields. Compare-and-set on status.
+     */
+    async restore(registrationId: string, input: { reviewerId: string }) {
+      const [row] = await db
+        .update(registration)
+        .set({
+          status: "pending_review",
+          rejectionReason: null,
+          reviewedAt: null,
+          reviewerId: input.reviewerId,
+        })
+        .where(
+          and(
+            eq(registration.id, registrationId),
+            eq(registration.status, "rejected"),
+          ),
+        )
+        .returning();
+
+      if (!row) throw await illegalOrMissing(db, registrationId, "rejected");
       return row;
     },
 

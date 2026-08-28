@@ -20,7 +20,8 @@
     "./schema": "./src/schema/index.ts",
     "./repositories": "./src/repositories/index.ts",
     "./test-connection": "./src/test-connection.ts",
-    "./test-support": "./src/test-support/db.ts"
+    "./test-support": "./src/test-support/db.ts",
+    "./test-support/fixtures": "./src/test-support/fixtures.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

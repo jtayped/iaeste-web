@@ -40,6 +40,11 @@ export const memberInvitation = pgTable(
     intendedRole: memberInvitationRoleEnum("intended_role")
       .notNull()
       .default("member"),
+    // Optional "invite with a name" prefill for the onboarding form (IA-32).
+    // The onboarding form renders these editable; the person can correct or
+    // fill them. Never authoritative — the submitted form is.
+    prefillName: text("prefill_name"),
+    prefillSurnames: text("prefill_surnames"),
     tokenHash: text("token_hash").notNull(),
     status: memberInvitationStatusEnum("status").notNull().default("pending"),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),

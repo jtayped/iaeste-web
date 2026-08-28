@@ -1,4 +1,4 @@
-import { and, count, eq, notInArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, notInArray, sql } from "drizzle-orm";
 
 import type { Db } from "../client";
 import { membership, type membershipStatusEnum } from "../schema/membership";
@@ -61,6 +61,19 @@ export function createMembershipRepository(db: Db) {
       getForUserAndCampaign(db, userId, campaignId),
 
     countForUser: (userId: string) => countForUser(db, userId),
+
+    /** Every membership row this user has, with its campaign, newest first. */
+    async listForUser(userId: string) {
+      return db
+        .select({ membership, campaign: membershipCampaign })
+        .from(membership)
+        .innerJoin(
+          membershipCampaign,
+          eq(membership.campaignId, membershipCampaign.id),
+        )
+        .where(eq(membership.userId, userId))
+        .orderBy(desc(membershipCampaign.membershipStartsAt));
+    },
 
     /**
      * Creates the membership row and its audit event together. "New" vs
