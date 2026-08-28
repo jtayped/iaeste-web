@@ -94,6 +94,7 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3004
+          API_INTERNAL_URL: http://localhost:3004
           NEXT_PUBLIC_INSCRIPCIONS_STATE: "on"
           RESEND_API_KEY: ci-placeholder
           CONTACT_FORM_FROM: noreply@iaestelleida.cat
@@ -149,3 +150,15 @@ jobs:
             CONTACT_FORM_TO=ci@example.com
           cache-from: type=gha,scope=web-pr
           cache-to: type=gha,mode=max,scope=web-pr
+
+      # No build args: apps/admin compiles no NEXT_PUBLIC_* values into the
+      # bundle (next.config.ts reads API_INTERNAL_URL at runtime), so the
+      # image build needs nothing threaded through here.
+      - name: Build admin image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/admin/Dockerfile
+          push: false
+          cache-from: type=gha,scope=admin-pr
+          cache-to: type=gha,mode=max,scope=admin-pr

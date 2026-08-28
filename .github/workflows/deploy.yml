@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/scripts/deploy-coolify.mjs"
       - ".github/workflows/deploy.yml"
+      - "apps/admin/**"
       - "apps/api/**"
       - "apps/inscripcions/**"
       - "apps/web/**"
@@ -35,6 +36,7 @@ on:
         options:
           - all
           - api
+          - admin
           - inscripcions
           - web
 
@@ -65,6 +67,7 @@ jobs:
             full:
               - '.github/scripts/deploy-coolify.mjs'
               - '.github/workflows/deploy.yml'
+              - 'apps/admin/**'
               - 'apps/api/**'
               - 'apps/inscripcions/**'
               - 'apps/web/**'
@@ -81,6 +84,39 @@ jobs:
             content:
               - 'content/**'
               - 'keystatic.config.ts'
+
+  build-admin:
+    name: Build and push iaeste-admin
+    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-admin
+          tags: |
+            type=raw,value=main
+            type=sha,format=long
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/admin/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=admin
+          cache-to: type=gha,mode=max,scope=admin
 
   build-api:
     name: Build and push iaeste-api
@@ -198,9 +234,10 @@ jobs:
     if: >-
       always() && !cancelled() &&
       ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-api.result == 'success' &&
+      needs.build-admin.result == 'success' &&
       needs.build-inscripcions.result == 'success' && needs.build-web.result == 'success') ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'api')))
-    needs: [detect-changes, build-api, build-inscripcions, build-web]
+    needs: [detect-changes, build-api, build-admin, build-inscripcions, build-web]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -211,6 +248,29 @@ jobs:
         env:
           COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_API_DEPLOY_WEBHOOK }}
           COOLIFY_HEALTH_URL: ${{ vars.COOLIFY_API_HEALTH_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          ROLLBACK: ${{ github.event_name == 'workflow_dispatch' }}
+
+  deploy-admin:
+    name: Deploy admin
+    if: >-
+      always() && !cancelled() &&
+      ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-admin.result == 'success' &&
+      needs.deploy-api.result == 'success') ||
+      (github.event_name == 'workflow_dispatch' && (inputs.target == 'admin' ||
+      (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
+    needs: [detect-changes, build-admin, deploy-api]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy and wait for health
+        run: node .github/scripts/deploy-coolify.mjs
+        env:
+          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_ADMIN_DEPLOY_WEBHOOK }}
+          COOLIFY_HEALTH_URL: ${{ vars.COOLIFY_ADMIN_HEALTH_URL }}
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
           IMAGE_TAG: ${{ inputs.image_tag }}
           ROLLBACK: ${{ github.event_name == 'workflow_dispatch' }}
