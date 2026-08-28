@@ -135,4 +135,50 @@ describe("campaigns repository", () => {
     assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
     assert.equal(results.filter((r) => r.status === "rejected").length, 1);
   });
+
+  describe("listWithCounts", () => {
+    it("filters by q and state, paginates, and returns a full total", async () => {
+      const repo = createCampaignRepository(db);
+      await repo.create(
+        campaignInput({ slug: "2025-2026", label: "Curs 2025-2026" }),
+      );
+      const published = await repo.create(
+        campaignInput({
+          slug: "2026-2027",
+          label: "Curs 2026-2027",
+          state: "published",
+        }),
+      );
+      await repo.create(campaignInput({ slug: "misc-2027", label: "Altre" }));
+
+      // q matches the slug or the label, case-insensitively.
+      const byNeedle = await repo.listWithCounts({
+        q: "curs",
+        limit: 50,
+        offset: 0,
+      });
+      assert.equal(byNeedle.total, 2);
+      assert.deepEqual(
+        new Set(byNeedle.rows.map((row) => row.slug)),
+        new Set(["2025-2026", "2026-2027"]),
+      );
+      assert.equal(byNeedle.rows[0]?.activeMembers, 0);
+      assert.equal(byNeedle.rows[0]?.pendingReview, 0);
+
+      const onlyPublished = await repo.listWithCounts({
+        state: "published",
+        limit: 50,
+        offset: 0,
+      });
+      assert.equal(onlyPublished.total, 1);
+      assert.equal(onlyPublished.rows[0]?.id, published.id);
+
+      // limit/offset slice one page; total stays the unpaginated count.
+      const firstPage = await repo.listWithCounts({ limit: 2, offset: 0 });
+      assert.equal(firstPage.total, 3);
+      assert.equal(firstPage.rows.length, 2);
+      const secondPage = await repo.listWithCounts({ limit: 2, offset: 2 });
+      assert.equal(secondPage.rows.length, 1);
+    });
+  });
 });

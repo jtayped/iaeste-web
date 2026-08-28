@@ -248,4 +248,55 @@ describe("invitations repository", () => {
     const results = await invitations.listExpired();
     assert.equal(results.length, 1);
   });
+
+  it("listPageForCampaign filters by status and q and paginates", async () => {
+    const { invitations, campaign, inviter } = await invite({
+      email: "carla@alumnes.udl.cat",
+      prefillName: "Carla",
+      prefillSurnames: "Vidal",
+      expiresAt: new Date(Date.now() - 1000),
+    });
+    await invitations.create({
+      campaignId: campaign.id,
+      email: "dan@alumnes.udl.cat",
+      inviterId: inviter.id,
+      tokenHash: `hash-dan-${seq}`,
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+
+    const all = await invitations.listPageForCampaign({
+      campaignId: campaign.id,
+      limit: 50,
+      offset: 0,
+    });
+    assert.equal(all.total, 2);
+
+    // "expired" is a read-time predicate: still pending, past its expiry.
+    const expired = await invitations.listPageForCampaign({
+      campaignId: campaign.id,
+      status: "expired",
+      limit: 50,
+      offset: 0,
+    });
+    assert.equal(expired.total, 1);
+    assert.equal(expired.rows[0]?.email, "carla@alumnes.udl.cat");
+    assert.equal(expired.rows[0]?.expired, true);
+
+    const byName = await invitations.listPageForCampaign({
+      campaignId: campaign.id,
+      q: "vidal",
+      limit: 50,
+      offset: 0,
+    });
+    assert.equal(byName.total, 1);
+    assert.equal(byName.rows[0]?.email, "carla@alumnes.udl.cat");
+
+    const firstPage = await invitations.listPageForCampaign({
+      campaignId: campaign.id,
+      limit: 1,
+      offset: 0,
+    });
+    assert.equal(firstPage.total, 2);
+    assert.equal(firstPage.rows.length, 1);
+  });
 });
