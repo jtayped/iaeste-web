@@ -12,7 +12,7 @@ import { useDebouncedValue } from "@/lib/use-debounced-value";
 /** The row that holds a table's search box and its filters. */
 export function TableToolbar({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between [&>*]:min-w-0">
       {children}
     </div>
   );
@@ -102,14 +102,14 @@ export function TableFilter({
   label?: string;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="min-w-0 space-y-1.5">
       {label ? (
         <span className="block text-xs text-muted-foreground">{label}</span>
       ) : null}
       <Tabs value={value} onValueChange={onChange}>
         {/* Four options do not fit 360px: the list scrolls sideways in its own
             container rather than wrapping or shrinking the labels. */}
-        <div className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+        <div className="max-w-full overflow-x-auto pb-1">
           <TabsList className="w-max">
             {options.map((option) => (
               <TabsTrigger

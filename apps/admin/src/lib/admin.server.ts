@@ -68,8 +68,10 @@ export const fetchMember = cache(
 export const fetchCampaigns = cache(
   async (): Promise<ServerFetch<AdminCampaignWithCounts[]>> => {
     const client = await getServerApiClient();
-    return run(async () =>
-      unwrap(await client.GET("/v1/admin/campaigns", { cache: "no-store" })),
+    return run(
+      async () =>
+        unwrap(await client.GET("/v1/admin/campaigns", { cache: "no-store" }))
+          .rows,
     );
   },
 );

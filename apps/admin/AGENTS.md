@@ -155,10 +155,9 @@ bar.
   result set is meaningless against a new one.
 - `router.replace`, not `push`: paging should not build a history stack that
   the back button has to walk out of.
-- A pager is rendered only where the list route actually takes
-  `limit`/`offset`. Today that is `GET /v1/admin/members` alone; the
-  registrations, invitations and campaigns routes return their whole set, and
-  those tables correctly show no pager rather than a client-side imitation.
+- Every list table is searched and paginated by its server route with `q`,
+  `limit` and `offset`; endpoint-specific filters go to that route too. Follow
+  `src/components/members/members-table.tsx` as the reference implementation.
 
 **Columns are declared once** as `DataTableColumn<Row>[]`, usually at module
 scope. `primary: true` marks the one cell that links to the record. Responsive
