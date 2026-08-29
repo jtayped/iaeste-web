@@ -70,9 +70,10 @@ export default async function AppLayout({
   const defaultOpen =
     (await cookies()).get(SIDEBAR_COOKIE_NAME)?.value !== "false";
 
-  // Resolved here because `WEB_PUBLIC_ORIGIN` is server-only config: the
-  // sidebar is a client component and must never import `@repo/env`.
-  const externalHrefs = { blog: `${env.WEB_PUBLIC_ORIGIN}/keystatic` };
+  // Resolved here because `CMS_PUBLIC_ORIGIN` is server-only config: the
+  // sidebar is a client component and must never import `@repo/env`. The blog
+  // CMS is a separate product with its own accounts — no SSO in v1.
+  const externalHrefs = { blog: `${env.CMS_PUBLIC_ORIGIN}/admin` };
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>

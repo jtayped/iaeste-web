@@ -20,18 +20,18 @@ const schema = z.object({
    */
   API_INTERNAL_URL: z.string().url(),
   /**
-   * Public origin of `apps/web`. Used only to link the admin sidebar out to
-   * the blog CMS at `${WEB_PUBLIC_ORIGIN}/keystatic`. Rendered server-side
-   * and passed down as a prop, so it never reaches the browser bundle.
+   * Public origin of `apps/cms`. Used only to link the admin sidebar out to
+   * the blog CMS at `${CMS_PUBLIC_ORIGIN}/admin`. Rendered server-side and
+   * passed down as a prop, so it never reaches the browser bundle.
    */
-  WEB_PUBLIC_ORIGIN: z.string().url().default("http://localhost:3000"),
+  CMS_PUBLIC_ORIGIN: z.string().url().default("http://localhost:3006"),
 });
 
 export const env = parseEnv(
   schema,
   {
     API_INTERNAL_URL: process.env.API_INTERNAL_URL,
-    WEB_PUBLIC_ORIGIN: process.env.WEB_PUBLIC_ORIGIN,
+    CMS_PUBLIC_ORIGIN: process.env.CMS_PUBLIC_ORIGIN,
   },
   "admin server",
 );

@@ -106,8 +106,8 @@ async function main() {
   });
 
   const report: Report = { created: [], skipped: [], failed: [] };
-  const mediaByHash = new Map<string, string>();
-  const tagByKey = new Map<string, string>();
+  const mediaByHash = new Map<string, number>();
+  const tagByKey = new Map<string, number>();
 
   const groups = new Map<string, SourceDoc[]>();
   for (const locale of LOCALES) {
@@ -146,12 +146,12 @@ async function main() {
         (a, b) => LOCALES.indexOf(a.locale) - LOCALES.indexOf(b.locale),
       );
 
-      let postId: string | number | undefined;
+      let postId: number | undefined;
       for (const doc of ordered) {
         // One upload per unique image.
         const hash = await sha256(doc.coverImageAbsPath);
         let mediaId = mediaByHash.get(hash);
-        if (!mediaId) {
+        if (mediaId == null) {
           const created = await payload.create({
             collection: "media",
             locale: doc.locale,
@@ -162,16 +162,16 @@ async function main() {
             filePath: doc.coverImageAbsPath,
             overrideAccess: true,
           });
-          mediaId = String(created.id);
+          mediaId = created.id;
           mediaByHash.set(hash, mediaId);
         }
 
         // Upsert the tag docs for this locale.
-        const tagIds: string[] = [];
+        const tagIds: number[] = [];
         for (const label of doc.tags) {
           const tagKey = slugify(label);
           let tagId = tagByKey.get(tagKey);
-          if (!tagId) {
+          if (tagId == null) {
             const found = await payload.find({
               collection: "tags",
               where: { key: { equals: tagKey } },
@@ -179,18 +179,16 @@ async function main() {
               depth: 0,
               overrideAccess: true,
             });
-            tagId = found.docs[0]
-              ? String(found.docs[0].id)
-              : String(
-                  (
-                    await payload.create({
-                      collection: "tags",
-                      locale: doc.locale,
-                      data: { key: tagKey, label },
-                      overrideAccess: true,
-                    })
-                  ).id,
-                );
+            tagId =
+              found.docs[0]?.id ??
+              (
+                await payload.create({
+                  collection: "tags",
+                  locale: doc.locale,
+                  data: { key: tagKey, label },
+                  overrideAccess: true,
+                })
+              ).id;
             tagByKey.set(tagKey, tagId);
           }
           tagIds.push(tagId);

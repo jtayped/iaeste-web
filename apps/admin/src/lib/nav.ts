@@ -72,9 +72,9 @@ export const navGroups: NavGroup[] = [
  * purpose: they are not routes of this app, so they must never match
  * `isActive`, never resolve a breadcrumb, and never be prefetched by `<Link>`.
  *
- * The href is not here either — `blog` points at `${WEB_PUBLIC_ORIGIN}/keystatic`,
- * and `WEB_PUBLIC_ORIGIN` is server-only config. The layout resolves it and
- * passes it down, so nothing about the marketing origin reaches this module.
+ * The href is not here either — `blog` points at `${CMS_PUBLIC_ORIGIN}/admin`,
+ * and `CMS_PUBLIC_ORIGIN` is server-only config. The layout resolves it and
+ * passes it down, so nothing about the CMS origin reaches this module.
  */
 export type ExternalNavKey = "blog";
 
@@ -86,7 +86,7 @@ export interface ExternalNavItem {
 }
 
 export const externalNavItems: ExternalNavItem[] = [
-  { key: "blog", label: "blog", icon: Newspaper, group: "organitzacio" },
+  { key: "blog", label: "continguts", icon: Newspaper, group: "organitzacio" },
 ];
 
 /** Resolved at render time by the server layout, one href per external item. */

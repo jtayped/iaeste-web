@@ -109,8 +109,8 @@ export function SidebarNav({
  * A plain `<a>`, not a `<Link>`: this leaves the Next app entirely, so there is
  * no route to prefetch and client navigation would only get in the way. The
  * trailing icon is there because the tab it opens is a different product
- * (Keystatic on the marketing site) and a new tab you did not expect is
- * disorienting.
+ * (the Payload CMS, with its own accounts) and a new tab you did not expect
+ * is disorienting.
  */
 function ExternalNavRow({
   item,
