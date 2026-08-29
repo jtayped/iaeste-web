@@ -20,17 +20,16 @@ WORKDIR /app
 COPY --from=installer /app/ .
 COPY --from=pruner /app/out/full/ .
 
-# Unlike apps/inscripcions there are no NEXT_PUBLIC_* build args: the admin app
-# compiles no configuration into the browser bundle, so there is nothing here
-# that CI needs to thread through per environment.
-#
-# API_INTERNAL_URL is still needed *during* the build because next.config.ts
-# imports @repo/env/admin/server, which validates at module load. The value
-# below is a throwaway that satisfies that check; `next start` re-reads
-# next.config.ts at boot, so the runtime value the container is given is the
-# one the rewrite and the server components actually use.
+# The admin app compiles no NEXT_PUBLIC_* values into the browser bundle, but
+# API_INTERNAL_URL *is* baked in at build time: next.config.ts serialises the
+# rewrite destinations into .next/routes-manifest.json, and the standalone
+# server (node server.js) never re-reads next.config.ts. So the build-time value
+# has to be the real internal address of the API on the container network.
+# Server components re-read the runtime env, so keep the container's
+# API_INTERNAL_URL set to the same value.
+ARG API_INTERNAL_URL=http://iaeste-api:3004
 ENV NEXT_TELEMETRY_DISABLED=1 \
-    API_INTERNAL_URL=http://build-time-placeholder.invalid
+    API_INTERNAL_URL=$API_INTERNAL_URL
 
 RUN npx turbo run build --filter=admin
 

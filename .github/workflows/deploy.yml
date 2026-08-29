@@ -115,6 +115,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            API_INTERNAL_URL=${{ vars.ADMIN_API_INTERNAL_URL || 'http://iaeste-api:3004' }}
           cache-from: type=gha,scope=admin
           cache-to: type=gha,mode=max,scope=admin
 
