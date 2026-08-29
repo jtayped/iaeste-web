@@ -52,11 +52,24 @@ ENV NODE_ENV=production \
 RUN groupadd --gid 1001 nodejs \
   && useradd --uid 1001 --gid nodejs --create-home nextjs
 
+# Payload's admin panel and its migration CLI both need the real, complete
+# node_modules — Next's standalone tracer under-includes the `payload`
+# package (it drops `payload/bin.js` and most of `payload/dist`), so the
+# `payload migrate` entrypoint and parts of the admin fail against a traced
+# tree. Ship the pruned production install instead of the standalone output.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+# The pruned workspace packages `@repo/env` / `@repo/constants` are symlinked
+# from node_modules; their real source must travel too.
+COPY --from=builder --chown=nextjs:nodejs /app/packages ./packages
+COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/node_modules ./apps/cms/node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/package.json ./apps/cms/package.json
+COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/tsconfig.json ./apps/cms/tsconfig.json
+COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/next.config.mjs ./apps/cms/next.config.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/.next ./apps/cms/.next
 COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/public ./apps/cms/public
-COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/.next/static ./apps/cms/.next/static
-# Payload config, generated types/import map and committed migrations travel
-# with the runtime image so `payload migrate` can run at boot.
+# Config + collections + generated types + committed migrations, so the
+# entrypoint's `payload migrate` can load the config and apply them.
 COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/src ./apps/cms/src
 COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/docker-entrypoint.sh ./apps/cms/docker-entrypoint.sh
 
