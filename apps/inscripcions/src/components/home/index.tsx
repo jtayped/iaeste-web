@@ -1,14 +1,14 @@
 "use client";
 import { Button } from "@repo/ui/button";
 import { H1, Paragraph } from "@repo/ui/typography";
-import { Check, Send } from "lucide-react";
+import { Check, RotateCw, Send } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { motion } from "framer-motion";
 import ButtonGroup from "@repo/ui/button-group";
 import { Globe } from "lucide-react";
-import { env } from "@repo/env/inscripcions";
+import type { RegistrationAvailability } from "@/lib/registration-status";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -28,11 +28,18 @@ const childVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
 
-const HomePage = () => {
+const HomePage = ({
+  availability,
+}: {
+  availability: RegistrationAvailability;
+}) => {
+  const isOpen = availability === "open";
+  const isUnavailable = availability === "unavailable";
+
   return (
     <motion.div
-      className="flex h-screen items-center"
-      initial="hidden"
+      className="flex min-h-dvh items-center py-8"
+      initial={false}
       animate="visible"
       variants={containerVariants}
     >
@@ -42,42 +49,51 @@ const HomePage = () => {
             src={"/logos/icon-lleida-blue.png"}
             width={100}
             height={100}
-            alt="Logo de IAESTE LC Lleida"
+            alt="logo d'iaeste lc lleida"
             className="mx-auto mb-4"
           />
         </motion.div>
         <motion.div variants={childVariants}>
           <H1>
-            {env.NEXT_PUBLIC_INSCRIPCIONS_STATE === "on"
-              ? "Inscriu-te a IAESTE Lleida!"
-              : "Ha finalitzat el plaç per inscriure't a IAESTE :("}
+            {isOpen
+              ? "inscriu-te a iaeste lleida!"
+              : isUnavailable
+                ? "no podem comprovar les inscripcions"
+                : "el termini d'inscripció ha finalitzat"}
           </H1>
         </motion.div>
         <motion.div variants={childVariants}>
           <Paragraph className="mt-3">
-            {env.NEXT_PUBLIC_INSCRIPCIONS_STATE === "on"
-              ? "Només son 2 minuts per inscriure’t. Omple el formulari i uneix-te a nosaltres!"
-              : "Contacta amb nosaltres per correu o visita la nostra web!"}
+            {isOpen
+              ? "només són dos minuts. omple el formulari i uneix-te al comitè!"
+              : isUnavailable
+                ? "no hem pogut connectar amb el servidor. torna-ho a provar d'aquí a un moment."
+                : "contacta amb nosaltres per correu o visita el web."}
           </Paragraph>
         </motion.div>
         <motion.div variants={childVariants} className="mx-auto mt-6">
-          <ButtonGroup className="grid grid-cols-2 md:flex">
+          <ButtonGroup className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex [&>*]:min-h-11">
             <Button asChild className="md:px-12">
-              {env.NEXT_PUBLIC_INSCRIPCIONS_STATE === "on" ? (
+              {isOpen ? (
                 <Link href="/formulari">
                   <Check />
-                  Inscriu-te
+                  inscriu-te
+                </Link>
+              ) : isUnavailable ? (
+                <Link href="/">
+                  <RotateCw />
+                  torna-ho a provar
                 </Link>
               ) : (
                 <Link href="mailto:iaeste@udl.cat?subject=Inscripci%C3%B3%20a%20IAESTE%20Lleida">
                   <Send />
-                  Contacta&apos;ns
+                  contacta&apos;ns
                 </Link>
               )}
             </Button>
             <Button variant="outline" asChild>
               <Link href={"https://iaestelleida.cat"}>
-                <Globe /> Més informació
+                <Globe /> més informació
               </Link>
             </Button>
           </ButtonGroup>

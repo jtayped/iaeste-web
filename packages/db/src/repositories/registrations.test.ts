@@ -267,4 +267,65 @@ describe("registrations repository", () => {
 
     assert.equal(secondUser.id, firstUser.id);
   });
+
+  it("listForAdmin scopes to a campaign, filters by status and q, and paginates", async () => {
+    const registrations = createRegistrationRepository(db);
+    const campaign = await createTestCampaign(db);
+    const other = await createTestCampaign(db);
+
+    const pending = await registrations.create({
+      campaignId: campaign.id,
+      email: "aina@alumnes.udl.cat",
+      profileSnapshot: testProfileSnapshot({ name: "Aina", surnames: "Roca" }),
+    });
+    const reviewed = await registrations.create({
+      campaignId: campaign.id,
+      email: "bru@alumnes.udl.cat",
+      profileSnapshot: testProfileSnapshot({ name: "Bru", surnames: "Camps" }),
+    });
+    await registrations.markEmailVerified(reviewed.id);
+    await registrations.create({
+      campaignId: other.id,
+      email: "elsewhere@alumnes.udl.cat",
+      profileSnapshot: testProfileSnapshot(),
+    });
+
+    const all = await registrations.listForAdmin({
+      campaignId: campaign.id,
+      limit: 50,
+      offset: 0,
+    });
+    assert.equal(all.total, 2);
+    assert.deepEqual(
+      new Set(all.rows.map((row) => row.id)),
+      new Set([pending.id, reviewed.id]),
+    );
+
+    const onlyReviewed = await registrations.listForAdmin({
+      campaignId: campaign.id,
+      status: "pending_review",
+      limit: 50,
+      offset: 0,
+    });
+    assert.equal(onlyReviewed.total, 1);
+    assert.equal(onlyReviewed.rows[0]?.id, reviewed.id);
+
+    // q reaches into the profile snapshot, not just the email column.
+    const byName = await registrations.listForAdmin({
+      campaignId: campaign.id,
+      q: "roca",
+      limit: 50,
+      offset: 0,
+    });
+    assert.equal(byName.total, 1);
+    assert.equal(byName.rows[0]?.id, pending.id);
+
+    const firstPage = await registrations.listForAdmin({
+      campaignId: campaign.id,
+      limit: 1,
+      offset: 0,
+    });
+    assert.equal(firstPage.total, 2);
+    assert.equal(firstPage.rows.length, 1);
+  });
 });

@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi";
 
 import { DEGREE_OPTIONS } from "@repo/constants/studies";
+import { isValidPhone } from "@repo/constants/validators/phone";
 
-import { isValidPhone } from "./lib/phone";
 import { API_VERSION } from "./version";
 
 export const registrationRequestSchema = z
@@ -23,7 +23,7 @@ export const registrationRequestSchema = z
       .string()
       .trim()
       .min(1)
-      .refine(isValidPhone, "El número de telèfon no és vàlid")
+      .refine(isValidPhone, "el número de telèfon no és vàlid")
       .openapi({ example: "+34 623 32 42 34" }),
     degree: z
       .enum(DEGREE_OPTIONS)
@@ -42,6 +42,12 @@ export const registrationCreatedSchema = z
   })
   .openapi("RegistrationCreated");
 
+export const publicRegistrationStatusSchema = z
+  .object({
+    open: z.boolean(),
+  })
+  .openapi("PublicRegistrationStatus");
+
 export const validationIssueSchema = z
   .object({
     path: z.array(z.union([z.string(), z.number()])),
@@ -56,6 +62,8 @@ export const apiErrorSchema = z
         "VALIDATION_ERROR",
         "UNSUPPORTED_MEDIA_TYPE",
         "PAYLOAD_TOO_LARGE",
+        "UNAUTHENTICATED",
+        "FORBIDDEN",
         "NOT_FOUND",
         "CONFLICT",
         "ALREADY_REGISTERED",
@@ -150,21 +158,31 @@ export const adminRegistrationSchema = z
   .openapi("AdminRegistration");
 
 export const adminRegistrationListSchema = z
-  .array(adminRegistrationSchema)
+  .object({
+    rows: z.array(adminRegistrationSchema),
+    total: z.number().int(),
+    limit: z.number().int(),
+    offset: z.number().int(),
+  })
   .openapi("AdminRegistrationList");
 
 export const adminListQuerySchema = z.object({
   campaignId: z.string().min(1).openapi({ example: "campaign_123" }),
   status: registrationStatusSchema.optional(),
+  /** ILIKE over email, snapshot name, and snapshot surnames. */
+  q: z.string().trim().max(200).optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
 });
 
 export const registrationIdParamSchema = z.object({
   id: z.string().min(1).openapi({ example: "registration_123" }),
 });
 
+// IA-31: the reviewer is the authenticated session user, resolved by the
+// `requireCapability` middleware — never a self-reported id in the body.
 export const adminAcceptBodySchema = z
   .object({
-    reviewerId: z.string().min(1).openapi({ example: "user_123" }),
     membershipSource: z.string().min(1).optional().openapi({
       example: "registration",
     }),
@@ -173,7 +191,6 @@ export const adminAcceptBodySchema = z
 
 export const adminRejectBodySchema = z
   .object({
-    reviewerId: z.string().min(1).openapi({ example: "user_123" }),
     reason: z.string().min(1).max(2_000).openapi({
       example: "No hi ha places disponibles aquest curs.",
     }),
@@ -199,3 +216,404 @@ export const adminRejectResponseSchema = z
     notificationSent: z.boolean(),
   })
   .openapi("AdminRejectResponse");
+
+// --- Admin: overview ---------------------------------------------------
+
+export const adminCampaignRefSchema = z
+  .object({
+    id: z.string(),
+    slug: z.string(),
+    label: z.string(),
+  })
+  .openapi("AdminCampaignRef");
+
+export const adminOverviewSchema = z
+  .object({
+    /** The `is_current` campaign, or null if none is current. */
+    currentCampaign: adminCampaignRefSchema.nullable(),
+    /** The `is_registration_open` campaign — may differ from the current one. */
+    registrationOpenCampaign: adminCampaignRefSchema.nullable(),
+    counts: z.object({
+      pendingVerification: z.number().int(),
+      pendingReview: z.number().int(),
+      activeMembers: z.number().int(),
+      newMembers: z.number().int(),
+      returningMembers: z.number().int(),
+      unrenewedPastMembers: z.number().int(),
+    }),
+  })
+  .openapi("AdminOverview");
+
+// --- Admin: campaigns ------------------------------------------------------
+
+export const campaignStateSchema = z
+  .enum(["draft", "published", "archived"])
+  .openapi("CampaignState");
+
+const campaignBaseShape = {
+  id: z.string(),
+  slug: z.string(),
+  label: z.string(),
+  membershipStartsAt: z.string(),
+  membershipEndsAt: z.string(),
+  registrationOpensAt: z.string(),
+  registrationClosesAt: z.string(),
+  isCurrent: z.boolean(),
+  isRegistrationOpen: z.boolean(),
+  state: campaignStateSchema,
+  sheetTabName: z.string().nullable(),
+  sheetSyncedAt: z.string().nullable(),
+  sheetStale: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+};
+
+export const adminCampaignSchema = z
+  .object(campaignBaseShape)
+  .openapi("AdminCampaign");
+
+export const adminCampaignWithCountsSchema = z
+  .object({
+    ...campaignBaseShape,
+    activeMembers: z.number().int(),
+    pendingReview: z.number().int(),
+  })
+  .openapi("AdminCampaignWithCounts");
+
+export const adminCampaignListSchema = z
+  .object({
+    rows: z.array(adminCampaignWithCountsSchema),
+    total: z.number().int(),
+    limit: z.number().int(),
+    offset: z.number().int(),
+  })
+  .openapi("AdminCampaignList");
+export const adminCampaignListQuerySchema = z.object({
+  /** ILIKE over slug and label. */
+  q: z.string().trim().max(200).optional(),
+  state: campaignStateSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(100),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+export const campaignIdParamSchema = z.object({
+  id: z.string().min(1).openapi({ example: "campaign_123" }),
+});
+
+const isoDate = z.string().datetime({ offset: true });
+
+export const adminCreateCampaignBodySchema = z
+  .object({
+    slug: z
+      .string()
+      .trim()
+      .min(1)
+      .max(64)
+      .regex(
+        /^[a-z0-9-]+$/,
+        "slug must be lowercase letters, digits and dashes",
+      ),
+    label: z.string().trim().min(1).max(120),
+    membershipStartsAt: isoDate,
+    membershipEndsAt: isoDate,
+    registrationOpensAt: isoDate,
+    registrationClosesAt: isoDate,
+  })
+  .openapi("AdminCreateCampaignRequest");
+
+export const adminUpdateCampaignBodySchema = z
+  .object({
+    slug: z
+      .string()
+      .trim()
+      .min(1)
+      .max(64)
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
+    label: z.string().trim().min(1).max(120).optional(),
+    membershipStartsAt: isoDate.optional(),
+    membershipEndsAt: isoDate.optional(),
+    registrationOpensAt: isoDate.optional(),
+    registrationClosesAt: isoDate.optional(),
+  })
+  .openapi("AdminUpdateCampaignRequest");
+
+export const adminCampaignRegistrationBodySchema = z
+  .object({
+    open: z.boolean(),
+  })
+  .openapi("AdminCampaignRegistrationRequest");
+
+// --- Admin: registration detail + restore --------------------------------
+
+export const adminPriorMembershipSchema = z
+  .object({
+    campaignId: z.string(),
+    campaignSlug: z.string(),
+    campaignLabel: z.string(),
+    status: z.string(),
+    joinedAt: z.string(),
+    endedAt: z.string().nullable(),
+  })
+  .openapi("AdminPriorMembership");
+
+export const adminDuplicateRegistrationSchema = z
+  .object({
+    id: z.string(),
+    campaignId: z.string(),
+    campaignLabel: z.string(),
+    status: registrationStatusSchema,
+    createdAt: z.string(),
+  })
+  .openapi("AdminDuplicateRegistration");
+
+export const adminRegistrationDetailSchema = z
+  .object({
+    registration: adminRegistrationSchema,
+    existingUserId: z.string().nullable(),
+    priorMemberships: z.array(adminPriorMembershipSchema),
+    classification: z.enum(["new", "returning"]),
+    duplicateRegistrations: z.array(adminDuplicateRegistrationSchema),
+  })
+  .openapi("AdminRegistrationDetail");
+
+export const adminRestoreResponseSchema = z
+  .object({ status: z.literal("restored") })
+  .openapi("AdminRestoreResponse");
+
+// --- Admin: members -----------------------------------------------------
+
+export const userIdParamSchema = z.object({
+  userId: z.string().min(1).openapi({ example: "user_123" }),
+});
+
+export const adminMemberListQuerySchema = z.object({
+  q: z.string().trim().max(120).optional(),
+  filter: z.enum(["all", "current", "past"]).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+  offset: z.coerce.number().int().min(0).optional(),
+});
+
+export const adminMemberListItemSchema = z
+  .object({
+    userId: z.string(),
+    name: z.string(),
+    surnames: z.string(),
+    email: z.string(),
+    degree: z.string(),
+    studyYear: z.number(),
+    role: z.string().nullable(),
+    currentStatus: z.string().nullable(),
+    totalMemberships: z.number().int(),
+  })
+  .openapi("AdminMemberListItem");
+
+export const adminMemberListSchema = z
+  .object({
+    rows: z.array(adminMemberListItemSchema),
+    total: z.number().int(),
+    limit: z.number().int(),
+    offset: z.number().int(),
+  })
+  .openapi("AdminMemberList");
+
+export const adminMemberProfileSchema = z
+  .object({
+    userId: z.string(),
+    name: z.string(),
+    surnames: z.string(),
+    email: z.string(),
+    phoneE164: z.string(),
+    phoneDisplay: z.string(),
+    degree: z.string(),
+    studyYear: z.number(),
+    role: z.string().nullable(),
+    createdAt: z.string(),
+  })
+  .openapi("AdminMemberProfile");
+
+export const adminMemberTimelineMembershipSchema = z
+  .object({
+    id: z.string(),
+    campaignId: z.string(),
+    campaignSlug: z.string(),
+    campaignLabel: z.string(),
+    status: z.string(),
+    source: z.string(),
+    joinedAt: z.string(),
+    endedAt: z.string().nullable(),
+    endedReason: z.string().nullable(),
+  })
+  .openapi("AdminMemberTimelineMembership");
+
+export const adminMemberTimelineEventSchema = z
+  .object({
+    id: z.string(),
+    eventType: z.string(),
+    actorId: z.string().nullable(),
+    campaignId: z.string().nullable(),
+    details: z.unknown(),
+    createdAt: z.string(),
+  })
+  .openapi("AdminMemberTimelineEvent");
+
+export const adminMemberDetailSchema = z
+  .object({
+    profile: adminMemberProfileSchema,
+    memberships: z.array(adminMemberTimelineMembershipSchema),
+    events: z.array(adminMemberTimelineEventSchema),
+  })
+  .openapi("AdminMemberDetail");
+
+export const adminLeaveBodySchema = z
+  .object({ reason: z.string().trim().max(2_000).optional() })
+  .openapi("AdminLeaveRequest");
+
+export const adminKickBodySchema = z
+  .object({ reason: z.string().trim().min(1).max(2_000) })
+  .openapi("AdminKickRequest");
+
+export const adminSetRoleBodySchema = z
+  .object({ role: z.enum(["member", "admin"]) })
+  .openapi("AdminSetRoleRequest");
+
+export const adminMemberStatusResponseSchema = z
+  .object({ status: z.enum(["left", "kicked", "restored"]) })
+  .openapi("AdminMemberStatusResponse");
+
+export const adminSetRoleResponseSchema = z
+  .object({ role: z.string() })
+  .openapi("AdminSetRoleResponse");
+
+// --- Invitations: admin + public onboarding ----------------------------
+
+export const invitationRoleSchema = z
+  .enum(["member", "admin"])
+  .openapi("InvitationRole");
+
+export const adminInvitationSchema = z
+  .object({
+    id: z.string(),
+    campaignId: z.string(),
+    email: z.string(),
+    intendedRole: invitationRoleSchema,
+    prefillName: z.string().nullable(),
+    prefillSurnames: z.string().nullable(),
+    status: z.enum(["pending", "accepted", "cancelled"]),
+    expired: z.boolean(),
+    expiresAt: z.string(),
+    acceptedAt: z.string().nullable(),
+    createdAt: z.string(),
+  })
+  .openapi("AdminInvitation");
+
+export const adminInvitationListSchema = z
+  .object({
+    rows: z.array(adminInvitationSchema),
+    total: z.number().int(),
+    limit: z.number().int(),
+    offset: z.number().int(),
+  })
+  .openapi("AdminInvitationList");
+
+export const adminInvitationListQuerySchema = z.object({
+  campaignId: z.string().min(1),
+  /** ILIKE over the invitee email and the prefill name/surnames. */
+  q: z.string().trim().max(200).optional(),
+  /** `expired` is the read-time computed state, not a stored status. */
+  status: z.enum(["pending", "accepted", "cancelled", "expired"]).optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+export const invitationIdParamSchema = z.object({
+  id: z.string().min(1).openapi({ example: "invitation_123" }),
+});
+
+export const adminCreateInvitationBodySchema = z
+  .object({
+    campaignId: z.string().min(1),
+    email: z.string().trim().toLowerCase().email(),
+    intendedRole: invitationRoleSchema.default("member"),
+    prefillName: z.string().trim().min(1).max(120).optional(),
+    prefillSurnames: z.string().trim().min(1).max(120).optional(),
+    /**
+     * Required when `email` is not a `udl.cat` address — the invite form's
+     * explicit confirmation step (lifecycle question 11).
+     */
+    allowExternalDomain: z.boolean().optional(),
+  })
+  .openapi("AdminCreateInvitationRequest");
+
+export const adminInvitationActionResponseSchema = z
+  .object({ status: z.literal("ok") })
+  .openapi("AdminInvitationActionResponse");
+
+export const invitationLookupBodySchema = z
+  .object({ token: z.string().min(1) })
+  .openapi("InvitationLookupRequest");
+
+export const invitationLookupResponseSchema = z
+  .object({
+    email: z.string(),
+    prefillName: z.string().nullable(),
+    prefillSurnames: z.string().nullable(),
+    campaignLabel: z.string(),
+  })
+  .openapi("InvitationLookupResponse");
+
+export const invitationAcceptBodySchema = z
+  .object({
+    token: z.string().min(1),
+    name: z.string().trim().min(2).max(120),
+    surnames: z.string().trim().min(2).max(120),
+    phone: z
+      .string()
+      .trim()
+      .min(1)
+      .refine(isValidPhone, "el número de telèfon no és vàlid"),
+    degree: z.enum(DEGREE_OPTIONS),
+    year: z.number().int().min(1).max(6),
+  })
+  .openapi("InvitationAcceptRequest");
+
+export const invitationAcceptResponseSchema = z
+  .object({
+    status: z.literal("accepted"),
+    alreadyMember: z.boolean(),
+  })
+  .openapi("InvitationAcceptResponse");
+
+// --- Admin: web-push notifications ------------------------------------------
+
+export const pushPublicKeySchema = z
+  .object({
+    /** VAPID public key, base64url. Empty string means push is not configured. */
+    publicKey: z.string(),
+  })
+  .openapi("PushPublicKey");
+
+export const pushSubscribeBodySchema = z
+  .object({
+    /** `PushSubscription.endpoint` from the browser. */
+    endpoint: z.string().url(),
+    keys: z.object({
+      p256dh: z.string().min(1),
+      auth: z.string().min(1),
+    }),
+    /** `navigator.userAgent`, so a device list can name the browser. */
+    userAgent: z.string().max(500).optional(),
+  })
+  .openapi("PushSubscribeRequest");
+
+export const pushSubscribeResponseSchema = z
+  .object({ status: z.literal("subscribed") })
+  .openapi("PushSubscribeResponse");
+
+export const pushUnsubscribeBodySchema = z
+  .object({ endpoint: z.string().url() })
+  .openapi("PushUnsubscribeRequest");
+
+export const pushUnsubscribeResponseSchema = z
+  .object({ status: z.literal("unsubscribed") })
+  .openapi("PushUnsubscribeResponse");

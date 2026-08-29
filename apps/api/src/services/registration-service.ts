@@ -1,14 +1,18 @@
 import crypto from "node:crypto";
 
 import { getDb } from "@repo/db/client";
+import { eq } from "drizzle-orm";
+
 import {
   createCampaignRepository,
+  createMembershipRepository,
   createRegistrationRepository,
   createRegistrationVerificationRepository,
   IllegalTransitionError,
   type RegistrationProfileSnapshot,
   type RegistrationStatus,
 } from "@repo/db/repositories";
+import { registration as registrationTable, user } from "@repo/db/schema";
 import MembershipAccepted from "@repo/email/acceptance";
 import RegistrationPending from "@repo/email/pending-review";
 import MembershipRejected from "@repo/email/rejection";
@@ -87,6 +91,32 @@ function toView(row: RegistrationRow): AdminRegistrationView {
   };
 }
 
+export interface AdminPriorMembership {
+  campaignId: string;
+  campaignSlug: string;
+  campaignLabel: string;
+  status: string;
+  joinedAt: string;
+  endedAt: string | null;
+}
+
+export interface AdminDuplicateRegistration {
+  id: string;
+  campaignId: string;
+  campaignLabel: string;
+  status: RegistrationStatus;
+  createdAt: string;
+}
+
+export interface AdminRegistrationDetail {
+  registration: AdminRegistrationView;
+  /** Whether a Better Auth account already exists for this email. */
+  existingUserId: string | null;
+  priorMemberships: AdminPriorMembership[];
+  classification: "new" | "returning";
+  duplicateRegistrations: AdminDuplicateRegistration[];
+}
+
 export interface AcceptInput {
   reviewerId: string;
   membershipSource?: string;
@@ -97,11 +127,23 @@ export interface RejectInput {
   reason: string;
 }
 
+export interface AdminRegistrationListParams {
+  campaignId: string;
+  status?: RegistrationStatus;
+  q?: string;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminRegistrationListPage {
+  rows: AdminRegistrationView[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface RegistrationService {
-  list(
-    campaignId: string,
-    status?: RegistrationStatus,
-  ): Promise<AdminRegistrationView[]>;
+  list(params: AdminRegistrationListParams): Promise<AdminRegistrationListPage>;
   resendVerification(registrationId: string): Promise<void>;
   verify(rawToken: string): Promise<void>;
   accept(
@@ -112,11 +154,18 @@ export interface RegistrationService {
     registrationId: string,
     input: RejectInput,
   ): Promise<{ notificationSent: boolean }>;
+  restore(registrationId: string, input: { reviewerId: string }): Promise<void>;
+  detail(registrationId: string): Promise<AdminRegistrationDetail | undefined>;
 }
 
 export interface RegistrationServiceDependencies {
   /** Overridable so tests never need a real `RESEND_API_KEY`. */
   emailer?: Emailer;
+  /**
+   * Overridable so integration tests can point every method at
+   * `iaeste_test`. Defaults to the app-wide `getDb()`.
+   */
+  db?: import("@repo/db/client").Database;
 }
 
 /**
@@ -132,15 +181,19 @@ export function createDrizzleRegistrationService(
   dependencies: RegistrationServiceDependencies = {},
 ): RegistrationService {
   const emailer = () => dependencies.emailer ?? defaultEmailer();
+  const resolveDb = () => dependencies.db ?? getDb();
 
   return {
-    async list(campaignId, status) {
-      const db = getDb();
-      const registrations = createRegistrationRepository(db);
-      const rows = status
-        ? await registrations.listByCampaignAndStatus(campaignId, status)
-        : await registrations.listByCampaign(campaignId);
-      return rows.map(toView);
+    async list(params) {
+      const db = resolveDb();
+      const { rows, total } =
+        await createRegistrationRepository(db).listForAdmin(params);
+      return {
+        rows: rows.map(toView),
+        total,
+        limit: params.limit,
+        offset: params.offset,
+      };
     },
 
     /**
@@ -151,7 +204,7 @@ export function createDrizzleRegistrationService(
      * routes.ts's doc comment on that route for the full argument.
      */
     async resendVerification(registrationId) {
-      const db = getDb();
+      const db = resolveDb();
       const registrations = createRegistrationRepository(db);
       const row = await registrations.getById(registrationId);
 
@@ -175,7 +228,7 @@ export function createDrizzleRegistrationService(
         expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS),
       });
 
-      const link = `${getInscripcionsPublicOrigin()}/verificar?token=${rawToken}`;
+      const link = `${getInscripcionsPublicOrigin()}/verificar#token=${rawToken}`;
       try {
         await emailer().send({
           to: row.email,
@@ -195,7 +248,7 @@ export function createDrizzleRegistrationService(
      * waiting on the committee's review.
      */
     async verify(rawToken) {
-      const db = getDb();
+      const db = resolveDb();
       const tokenHash = hashToken(rawToken);
       const verifications = createRegistrationVerificationRepository(db);
       // Throws IllegalTransitionError for an invalid/expired/already-used
@@ -244,7 +297,7 @@ export function createDrizzleRegistrationService(
     },
 
     async accept(registrationId, input) {
-      const db = getDb();
+      const db = resolveDb();
       const registrations = createRegistrationRepository(db);
       // Throws NotFoundError | IllegalTransitionError. Unlike the public
       // verify/resend methods above, the admin surface is allowed to
@@ -287,7 +340,7 @@ export function createDrizzleRegistrationService(
     },
 
     async reject(registrationId, input) {
-      const db = getDb();
+      const db = resolveDb();
       const registrations = createRegistrationRepository(db);
       const result = await registrations.reject(registrationId, input);
 
@@ -313,6 +366,65 @@ export function createDrizzleRegistrationService(
       }
 
       return { notificationSent };
+    },
+
+    async restore(registrationId, input) {
+      const db = resolveDb();
+      await createRegistrationRepository(db).restore(registrationId, input);
+    },
+
+    async detail(registrationId) {
+      const db = resolveDb();
+      const registrations = createRegistrationRepository(db);
+      const row = await registrations.getById(registrationId);
+      if (!row) return undefined;
+
+      const campaigns = createCampaignRepository(db);
+      const memberships = createMembershipRepository(db);
+
+      const [account] = await db
+        .select({ id: user.id })
+        .from(user)
+        .where(eq(user.email, row.email));
+
+      const priorRows = account
+        ? await memberships.listForUser(account.id)
+        : [];
+      const priorMemberships: AdminPriorMembership[] = priorRows.map((r) => ({
+        campaignId: r.campaign.id,
+        campaignSlug: r.campaign.slug,
+        campaignLabel: r.campaign.label,
+        status: r.membership.status,
+        joinedAt: r.membership.joinedAt.toISOString(),
+        endedAt: r.membership.endedAt
+          ? r.membership.endedAt.toISOString()
+          : null,
+      }));
+
+      const sameEmail = await db
+        .select()
+        .from(registrationTable)
+        .where(eq(registrationTable.email, row.email));
+      const duplicateRegistrations: AdminDuplicateRegistration[] = [];
+      for (const other of sameEmail) {
+        if (other.id === row.id) continue;
+        const campaign = await campaigns.getById(other.campaignId);
+        duplicateRegistrations.push({
+          id: other.id,
+          campaignId: other.campaignId,
+          campaignLabel: campaign?.label ?? other.campaignId,
+          status: other.status as RegistrationStatus,
+          createdAt: other.createdAt.toISOString(),
+        });
+      }
+
+      return {
+        registration: toView(row as RegistrationRow),
+        existingUserId: account?.id ?? null,
+        priorMemberships,
+        classification: priorMemberships.length > 0 ? "returning" : "new",
+        duplicateRegistrations,
+      };
     },
   };
 }

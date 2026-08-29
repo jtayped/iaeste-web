@@ -1,6 +1,6 @@
 "use client";
 
-import type { Registration } from "@repo/constants/validators/registration";
+import type { RegistrationForm } from "@/lib/form-schema";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
@@ -18,16 +18,19 @@ import {
 } from "@repo/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 
-const NoteField = ({ form }: { form: UseFormReturn<Registration> }) => {
+const NoteField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
   const [open, setOpen] = React.useState(false);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-primary">
+      <CollapsibleTrigger
+        type="button"
+        className="flex min-h-11 items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
         <ChevronDown
           className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
         />
-        Afegir nota opcional
+        afegir nota opcional
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-2">
         <FormField
@@ -35,10 +38,12 @@ const NoteField = ({ form }: { form: UseFormReturn<Registration> }) => {
           name="note"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nota</FormLabel>
+              <FormLabel>nota</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Un comentari que vulguis afegir..."
+                  data-field-name="note"
+                  maxLength={2_000}
+                  placeholder="un comentari que vulguis afegir..."
                   {...field}
                 />
               </FormControl>

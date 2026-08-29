@@ -1,4 +1,6 @@
 import type { Registration } from "@repo/constants/validators/registration";
+import type { Auth } from "@repo/auth";
+import type { Database } from "@repo/db/client";
 
 import { createApp } from "../app";
 import type { RegistrationRepository } from "../repositories/registrations";
@@ -28,24 +30,67 @@ export function createRegistrationServiceStub(
   overrides: Partial<RegistrationService> = {},
 ): RegistrationService {
   return {
-    list: async () => [],
+    list: async () => ({ rows: [], total: 0, limit: 50, offset: 0 }),
     resendVerification: async () => undefined,
     verify: async () => undefined,
     accept: async () => ({ notificationSent: true }),
     reject: async () => ({ notificationSent: true }),
+    restore: async () => undefined,
+    detail: async () => undefined,
     ...overrides,
   };
 }
 
 export const quietLogger = { error() {} };
 
+/**
+ * A stand-in Better Auth whose `getSession` returns a fixed session — lets
+ * the admin route *behaviour* tests (status mapping, notificationSent) run
+ * without a real Postgres. The signed-out / member / expired / revoked
+ * contract matrix is covered against a real `createAuth` in
+ * `routes/admin-auth.test.ts`.
+ */
+export function createStubAuth(
+  user: {
+    id?: string;
+    role?: string | null;
+    email?: string;
+    name?: string;
+  } | null = {},
+): Auth {
+  return {
+    api: {
+      getSession: async () =>
+        user === null
+          ? null
+          : {
+              session: { id: "session_stub", userId: user.id ?? "user_admin" },
+              user: {
+                id: user.id ?? "user_admin",
+                role: user.role === undefined ? "admin" : user.role,
+                email: user.email ?? "admin@iaestelleida.cat",
+                name: user.name ?? "Admin",
+              },
+            },
+    },
+  } as unknown as Auth;
+}
+
 export function createTestApp(
   registrationRepository = createRepository(),
   registrationService = createRegistrationServiceStub(),
+  isRegistrationOpen: () => Promise<boolean> = async () => true,
+  auth: Auth = createStubAuth(),
+  hasMemberProfile: (userId: string) => Promise<boolean> = async () => true,
+  db?: Database,
 ) {
   return createApp({
+    isRegistrationOpen,
     registrationRepository,
     registrationService,
     logger: quietLogger,
+    auth,
+    hasMemberProfile,
+    db,
   });
 }

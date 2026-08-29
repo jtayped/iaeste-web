@@ -4,11 +4,11 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Inscriu-te | IAESTE LC Lleida",
-  description: "Uneix-te al nostre equip!",
+  title: "inscriu-te | iaeste lc lleida",
+  description: "uneix-te al comitè local d'iaeste lleida",
   openGraph: {
-    title: "Inscriu-te | IAESTE LC Lleida",
-    description: "Uneix-te al nostre equip!",
+    title: "inscriu-te | iaeste lc lleida",
+    description: "uneix-te al comitè local d'iaeste lleida",
     url: "https://iaestelleida.cat/",
     type: "website",
     images: [
@@ -16,15 +16,15 @@ export const metadata: Metadata = {
         url: "https://iaestelleida.cat/twitter.png",
         width: 700,
         height: 350,
-        alt: "Inscriu-te | IAESTE LC Lleida",
+        alt: "inscriu-te | iaeste lc lleida",
       },
     ],
-    siteName: "Inscriu-te | IAESTE LC Lleida",
+    siteName: "inscriu-te | iaeste lc lleida",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Inscriu-te | IAESTE LC Lleida",
-    description: "Uneix-te al nostre equip!",
+    title: "inscriu-te | iaeste lc lleida",
+    description: "uneix-te al comitè local d'iaeste lleida",
     creator: "@IAESTELCLleida",
     site: "@IAESTELCLleida",
     images: ["https://iaestelleida.cat/twitter.png"],
@@ -48,7 +48,7 @@ export default function RootLayout({
   return (
     <html lang="ca" className={`${GeistSans.variable}`}>
       <body className="bg-primary/10">
-        <div className="flex h-screen w-full justify-center">
+        <div className="flex min-h-dvh w-full justify-center">
           <div className="mx-auto w-full px-4 md:w-[600px]">{children}</div>
         </div>
       </body>

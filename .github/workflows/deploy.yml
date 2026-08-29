@@ -1,20 +1,20 @@
 name: Deploy
 
-# Builds and pushes the apps/web container image to GHCR. Nothing else in
-# this repo is containerized yet (see docs/deployment.md) -- inscripcions,
-# admin and api are IA-60/IA-61, deliberately out of scope here.
-#
-# Pull requests only get as far as `verify` in ci.yml; this workflow never
-# runs on a PR, so a fork or branch can't push an image to the registry.
 on:
   push:
     branches: [master]
     paths:
+      - ".github/scripts/deploy-coolify.mjs"
       - ".github/workflows/deploy.yml"
+      - "apps/admin/**"
+      - "apps/api/**"
+      - "apps/inscripcions/**"
       - "apps/web/**"
       - "content/**"
       - "keystatic.config.ts"
+      - "packages/api-client/**"
       - "packages/constants/**"
+      - "packages/db/**"
       - "packages/email/**"
       - "packages/env/**"
       - "packages/ui/**"
@@ -22,49 +22,198 @@ on:
       - "package.json"
       - "package-lock.json"
       - "turbo.json"
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Existing immutable image tag, such as sha-0123... (40 hex characters)
+        required: true
+        type: string
+      target:
+        description: Resource to roll back
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - api
+          - admin
+          - inscripcions
+          - web
 
 concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
+  group: deploy-production
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/iaeste-web
 
 jobs:
-  build-and-push:
-    name: Build and push apps/web image
+  detect-changes:
+    name: Select images
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      full: ${{ steps.filter.outputs.full }}
+      content: ${{ steps.filter.outputs.content }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            full:
+              - '.github/scripts/deploy-coolify.mjs'
+              - '.github/workflows/deploy.yml'
+              - 'apps/admin/**'
+              - 'apps/api/**'
+              - 'apps/inscripcions/**'
+              - 'apps/web/**'
+              - 'packages/api-client/**'
+              - 'packages/constants/**'
+              - 'packages/db/**'
+              - 'packages/email/**'
+              - 'packages/env/**'
+              - 'packages/ui/**'
+              - 'tooling/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'turbo.json'
+            content:
+              - 'content/**'
+              - 'keystatic.config.ts'
+
+  build-admin:
+    name: Build and push iaeste-admin
+    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v4
-
       - uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Derive image tags and OCI labels
+      - uses: docker/metadata-action@v5
         id: meta
-        uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-admin
           tags: |
-            type=raw,value=latest
+            type=raw,value=main
             type=sha,format=long
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/admin/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=admin
+          cache-to: type=gha,mode=max,scope=admin
 
-      # Build args are CI-safe placeholders/config, not secrets:
-      # NEXT_PUBLIC_* values are compiled into the client bundle. Server-only
-      # values here are placeholders; Coolify supplies the real values to the
-      # running container. See apps/web/Dockerfile and docs/deployment.md.
-      - name: Build and push
-        uses: docker/build-push-action@v6
+  build-api:
+    name: Build and push iaeste-api
+    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-api
+          tags: |
+            type=raw,value=main
+            type=sha,format=long
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+  build-inscripcions:
+    name: Build and push iaeste-inscripcions
+    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-inscripcions
+          tags: |
+            type=raw,value=main
+            type=sha,format=long
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/inscripcions/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_INSCRIPCIONS_STATE=${{ vars.NEXT_PUBLIC_INSCRIPCIONS_STATE || 'on' }}
+            NEXT_PUBLIC_WHATSAPP_INVITE=${{ vars.NEXT_PUBLIC_WHATSAPP_INVITE }}
+          cache-from: type=gha,scope=inscripcions
+          cache-to: type=gha,mode=max,scope=inscripcions
+
+  build-web:
+    name: Build and push iaeste-web
+    if: >-
+      github.event_name == 'push' &&
+      (needs.detect-changes.outputs.full == 'true' || needs.detect-changes.outputs.content == 'true')
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-web
+          tags: |
+            type=raw,value=main
+            type=sha,format=long
+      - uses: docker/build-push-action@v6
         with:
           context: .
           file: apps/web/Dockerfile
@@ -72,10 +221,102 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            NEXT_PUBLIC_INSCRIPCIONS_STATE=on
+            NEXT_PUBLIC_INSCRIPCIONS_STATE=${{ vars.NEXT_PUBLIC_INSCRIPCIONS_STATE || 'on' }}
             NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=${{ vars.NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG }}
             RESEND_API_KEY=build-placeholder
             CONTACT_FORM_FROM=noreply@iaestelleida.cat
             CONTACT_FORM_TO=ci@example.com
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+  deploy-api:
+    name: Deploy API first
+    if: >-
+      always() && !cancelled() &&
+      ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-api.result == 'success' &&
+      needs.build-admin.result == 'success' &&
+      needs.build-inscripcions.result == 'success' && needs.build-web.result == 'success') ||
+      (github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'api')))
+    needs: [detect-changes, build-api, build-admin, build-inscripcions, build-web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy and wait for health
+        run: node .github/scripts/deploy-coolify.mjs
+        env:
+          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_API_DEPLOY_WEBHOOK }}
+          COOLIFY_HEALTH_URL: ${{ vars.COOLIFY_API_HEALTH_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          ROLLBACK: ${{ github.event_name == 'workflow_dispatch' }}
+
+  deploy-admin:
+    name: Deploy admin
+    if: >-
+      always() && !cancelled() &&
+      ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-admin.result == 'success' &&
+      needs.deploy-api.result == 'success') ||
+      (github.event_name == 'workflow_dispatch' && (inputs.target == 'admin' ||
+      (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
+    needs: [detect-changes, build-admin, deploy-api]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy and wait for health
+        run: node .github/scripts/deploy-coolify.mjs
+        env:
+          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_ADMIN_DEPLOY_WEBHOOK }}
+          COOLIFY_HEALTH_URL: ${{ vars.COOLIFY_ADMIN_HEALTH_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          ROLLBACK: ${{ github.event_name == 'workflow_dispatch' }}
+
+  deploy-inscripcions:
+    name: Deploy inscripcions
+    if: >-
+      always() && !cancelled() &&
+      ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-inscripcions.result == 'success' &&
+      needs.deploy-api.result == 'success') ||
+      (github.event_name == 'workflow_dispatch' && (inputs.target == 'inscripcions' ||
+      (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
+    needs: [detect-changes, build-inscripcions, deploy-api]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy and wait for health
+        run: node .github/scripts/deploy-coolify.mjs
+        env:
+          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_INSCRIPCIONS_DEPLOY_WEBHOOK }}
+          COOLIFY_HEALTH_URL: ${{ vars.COOLIFY_INSCRIPCIONS_HEALTH_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          ROLLBACK: ${{ github.event_name == 'workflow_dispatch' }}
+
+  deploy-web:
+    name: Deploy web
+    if: >-
+      always() && !cancelled() &&
+      ((github.event_name == 'push' && needs.build-web.result == 'success' &&
+      (needs.detect-changes.outputs.full != 'true' || needs.deploy-api.result == 'success')) ||
+      (github.event_name == 'workflow_dispatch' && (inputs.target == 'web' ||
+      (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
+    needs: [detect-changes, build-web, deploy-api]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy and wait for health
+        run: node .github/scripts/deploy-coolify.mjs
+        env:
+          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_WEB_DEPLOY_WEBHOOK }}
+          COOLIFY_HEALTH_URL: ${{ vars.COOLIFY_WEB_HEALTH_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          ROLLBACK: ${{ github.event_name == 'workflow_dispatch' }}

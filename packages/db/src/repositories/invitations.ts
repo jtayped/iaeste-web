@@ -1,16 +1,14 @@
-import { and, eq, lt } from "drizzle-orm";
+import { and, desc, eq, ilike, lt, or, sql } from "drizzle-orm";
 
-import type { Database, Db } from "../client";
+import type { Database } from "../client";
 import {
   memberInvitation,
   type memberInvitationRoleEnum,
   type memberInvitationStatusEnum,
 } from "../schema/member-invitation";
 import { user } from "../schema/auth";
-import { memberProfile } from "../schema/member-profile";
-import { createMembershipRepository } from "./memberships";
-import { IllegalTransitionError, NotFoundError } from "./errors";
 import { firstOrThrow } from "./util";
+import { acceptInvitationTx, illegalOrMissing } from "./invitations-accept";
 import type { RegistrationProfileSnapshot } from "./registrations";
 
 export type InvitationStatus =
@@ -23,12 +21,24 @@ export interface CreateInvitationInput {
   email: string;
   inviterId: string;
   intendedRole?: InvitationRole;
+  prefillName?: string | null;
+  prefillSurnames?: string | null;
   tokenHash: string;
   expiresAt: Date;
 }
 
 export interface AcceptInvitationInput {
   profile: RegistrationProfileSnapshot;
+}
+
+export interface AcceptInvitationResult {
+  invitation: typeof memberInvitation.$inferSelect;
+  user: typeof user.$inferSelect;
+  membershipId: string;
+  /** True when the person already had an accepted membership — idempotent. */
+  alreadyMember: boolean;
+  /** How the annual `registration` snapshot was reconciled. */
+  registrationOutcome: "inserted" | "reused" | "override" | "unchanged";
 }
 
 export function createInvitationRepository(db: Database) {
@@ -42,6 +52,8 @@ export function createInvitationRepository(db: Database) {
             email: input.email.toLowerCase(),
             inviterId: input.inviterId,
             intendedRole: input.intendedRole ?? "member",
+            prefillName: input.prefillName ?? null,
+            prefillSurnames: input.prefillSurnames ?? null,
             tokenHash: input.tokenHash,
             expiresAt: input.expiresAt,
           })
@@ -55,6 +67,92 @@ export function createInvitationRepository(db: Database) {
         .from(memberInvitation)
         .where(eq(memberInvitation.tokenHash, tokenHash));
       return row;
+    },
+
+    async getById(invitationId: string) {
+      const [row] = await db
+        .select()
+        .from(memberInvitation)
+        .where(eq(memberInvitation.id, invitationId));
+      return row;
+    },
+
+    /** Every invitation for a campaign, with `expired` computed at read time. */
+    async listByCampaign(campaignId: string) {
+      const rows = await db
+        .select()
+        .from(memberInvitation)
+        .where(eq(memberInvitation.campaignId, campaignId))
+        .orderBy(desc(memberInvitation.createdAt));
+      const now = Date.now();
+      return rows.map((row) => ({
+        ...row,
+        expired: row.status === "pending" && row.expiresAt.getTime() < now,
+      }));
+    },
+
+    /**
+     * The admin table query: one campaign, optional `q` (ILIKE over email and
+     * the prefill name/surnames), optional status where `"expired"` means
+     * `pending` past `expiresAt` (a computed state, never stored), newest
+     * first, `limit`/`offset` paged, plus the unpaged `total`. All filtering
+     * is in SQL.
+     */
+    async listPageForCampaign(params: {
+      campaignId: string;
+      q?: string;
+      status?: "pending" | "accepted" | "cancelled" | "expired";
+      limit: number;
+      offset: number;
+    }): Promise<{
+      rows: (typeof memberInvitation.$inferSelect & { expired: boolean })[];
+      total: number;
+    }> {
+      const nowSql = sql`now()`;
+      const clauses = [eq(memberInvitation.campaignId, params.campaignId)];
+
+      if (params.status === "expired") {
+        clauses.push(eq(memberInvitation.status, "pending"));
+        clauses.push(lt(memberInvitation.expiresAt, nowSql));
+      } else if (params.status) {
+        clauses.push(eq(memberInvitation.status, params.status));
+      }
+
+      const needle = params.q?.trim();
+      if (needle) {
+        const like = `%${needle}%`;
+        const search = or(
+          ilike(memberInvitation.email, like),
+          ilike(memberInvitation.prefillName, like),
+          ilike(memberInvitation.prefillSurnames, like),
+        );
+        if (search) clauses.push(search);
+      }
+
+      const where = and(...clauses);
+
+      const [rows, [countRow]] = await Promise.all([
+        db
+          .select()
+          .from(memberInvitation)
+          .where(where)
+          .orderBy(desc(memberInvitation.createdAt))
+          .limit(params.limit)
+          .offset(params.offset),
+        db
+          .select({ value: sql<number>`count(*)` })
+          .from(memberInvitation)
+          .where(where),
+      ]);
+
+      const now = Date.now();
+      return {
+        rows: rows.map((row) => ({
+          ...row,
+          expired: row.status === "pending" && row.expiresAt.getTime() < now,
+        })),
+        total: Number(countRow?.value ?? 0),
+      };
     },
 
     async cancel(invitationId: string) {
@@ -73,7 +171,29 @@ export function createInvitationRepository(db: Database) {
       return row;
     },
 
-    /** Pending invitations already past `expiresAt` — never a stored state, see `member-invitation.ts`. */
+    /**
+     * IA-32 reinvite: rotate the token + expiry on the existing pending
+     * row (never a second row). Compare-and-set on `status = 'pending'`.
+     */
+    async rotateToken(
+      invitationId: string,
+      input: { tokenHash: string; expiresAt: Date },
+    ) {
+      const [row] = await db
+        .update(memberInvitation)
+        .set({ tokenHash: input.tokenHash, expiresAt: input.expiresAt })
+        .where(
+          and(
+            eq(memberInvitation.id, invitationId),
+            eq(memberInvitation.status, "pending"),
+          ),
+        )
+        .returning();
+      if (!row) throw await illegalOrMissing(db, invitationId);
+      return row;
+    },
+
+    /** Pending invitations already past `expiresAt` — never a stored state. */
     async listExpired(now: Date = new Date()) {
       return db
         .select()
@@ -87,92 +207,20 @@ export function createInvitationRepository(db: Database) {
     },
 
     /**
-     * Proving control of the invited address plus completing the profile
-     * creates the membership directly, no second review (see
-     * docs/membership-lifecycle.md question 8). Same shape as
-     * `registrations.ts`'s `accept`: one transaction creates/reuses the
-     * `user`, upserts `member_profile`, and joins the membership.
+     * The onboarding transaction — implemented in `invitations-accept.ts` to
+     * keep this file under the line limit. See `acceptInvitationTx` for the
+     * full contract (expiry-checked compare-and-set, user/profile upsert,
+     * registration-snapshot reconciliation, membership join).
      */
-    async accept(invitationId: string, input: AcceptInvitationInput) {
-      return db.transaction(async (tx) => {
-        const [invitation] = await tx
-          .update(memberInvitation)
-          .set({ status: "accepted", acceptedAt: new Date() })
-          .where(
-            and(
-              eq(memberInvitation.id, invitationId),
-              eq(memberInvitation.status, "pending"),
-            ),
-          )
-          .returning();
-
-        if (!invitation) throw await illegalOrMissing(tx, invitationId);
-
-        const [existingUser] = await tx
-          .select()
-          .from(user)
-          .where(eq(user.email, invitation.email));
-
-        const memberUser =
-          existingUser ??
-          firstOrThrow(
-            await tx
-              .insert(user)
-              .values({
-                id: crypto.randomUUID(),
-                name: `${input.profile.name} ${input.profile.surnames}`.trim(),
-                email: invitation.email,
-                emailVerified: true,
-              })
-              .returning(),
-          );
-
-        await tx
-          .insert(memberProfile)
-          .values({
-            userId: memberUser.id,
-            name: input.profile.name,
-            surnames: input.profile.surnames,
-            phoneE164: input.profile.phoneE164,
-            phoneDisplay: input.profile.phoneDisplay,
-            degree: input.profile.degree,
-            studyYear: input.profile.studyYear,
-          })
-          .onConflictDoUpdate({
-            target: memberProfile.userId,
-            set: {
-              name: input.profile.name,
-              surnames: input.profile.surnames,
-              phoneE164: input.profile.phoneE164,
-              phoneDisplay: input.profile.phoneDisplay,
-              degree: input.profile.degree,
-              studyYear: input.profile.studyYear,
-            },
-          });
-
-        const memberships = createMembershipRepository(tx);
-        const membershipRow = await memberships.join({
-          userId: memberUser.id,
-          campaignId: invitation.campaignId,
-          source: "invitation",
-          actorId: invitation.inviterId,
-        });
-
-        return { invitation, user: memberUser, membership: membershipRow };
-      });
+    async accept(
+      invitationId: string,
+      input: AcceptInvitationInput,
+    ): Promise<AcceptInvitationResult> {
+      return db.transaction((tx) =>
+        acceptInvitationTx(tx, invitationId, input),
+      );
     },
   };
-}
-
-async function illegalOrMissing(db: Db, invitationId: string) {
-  const [row] = await db
-    .select()
-    .from(memberInvitation)
-    .where(eq(memberInvitation.id, invitationId));
-  if (!row) return new NotFoundError(`No invitation with id ${invitationId}`);
-  return new IllegalTransitionError(
-    `Cannot transition invitation ${invitationId}: expected status pending, found ${row.status}`,
-  );
 }
 
 export type InvitationRepository = ReturnType<

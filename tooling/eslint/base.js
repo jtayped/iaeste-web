@@ -81,18 +81,20 @@ export const boundaryRules = {
 /**
  * `@repo/db` opens a Postgres connection pool at import time and exposes
  * repositories that assume a server runtime. Only `apps/api` (the sole
- * writer) and `packages/db` itself (its own internals, tests, and seed
- * scripts) may import it.
+ * writer), `packages/db` itself (its own internals, tests, and seed
+ * scripts), and `packages/auth` (its Better Auth config needs the Drizzle
+ * adapter and `getDb()` directly — see `packages/auth/src/index.ts`) may
+ * import it.
  *
  * `next-js.js` and `react-internal.js` mix this into `boundaryRules`
  * automatically, which covers `apps/web`, `apps/inscripcions`,
  * `packages/ui`, and `packages/email`. Everything else that lints through
- * plain `base.js` (`apps/api`, `packages/db`, `packages/constants`,
- * `packages/api-client`, `packages/env`) has to opt in itself, because
- * `apps/api` and `packages/db` share that same base config and must NOT get
- * this rule. `packages/constants`, `packages/api-client`, and `packages/env`
- * each mix `dbBoundaryRules` into their own `eslint.config.mjs` — see those
- * files.
+ * plain `base.js` (`apps/api`, `packages/db`, `packages/auth`,
+ * `packages/constants`, `packages/api-client`, `packages/env`) has to opt in
+ * itself, because `apps/api`, `packages/db`, and `packages/auth` share that
+ * same base config and must NOT get this rule. `packages/constants`,
+ * `packages/api-client`, and `packages/env` each mix `dbBoundaryRules` into
+ * their own `eslint.config.mjs` — see those files.
  */
 export const dbBoundaryRules = {
   "no-restricted-imports": [

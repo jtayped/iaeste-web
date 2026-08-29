@@ -50,3 +50,26 @@ export function recordSend(key: string, now: number = Date.now()): void {
   ];
   buckets.set(key, bucket);
 }
+
+/**
+ * Generic fixed-window limiter for the invitation onboarding endpoints
+ * (IA-32), keyed by client IP. Same rationale as above: one API container,
+ * a `Map` is enough, a restart only ever loosens the limit.
+ */
+const windows = new Map<string, number[]>();
+
+export function allowRequest(
+  key: string,
+  maxPerWindow: number,
+  windowMs: number,
+  now: number = Date.now(),
+): boolean {
+  const hits = (windows.get(key) ?? []).filter((at) => now - at < windowMs);
+  if (hits.length >= maxPerWindow) {
+    windows.set(key, hits);
+    return false;
+  }
+  hits.push(now);
+  windows.set(key, hits);
+  return true;
+}

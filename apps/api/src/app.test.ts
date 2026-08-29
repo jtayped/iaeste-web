@@ -35,6 +35,23 @@ describe("API", () => {
     assert.equal(response.status, 200);
     assert.equal(document.openapi, "3.1.0");
     assert.ok(document.paths["/v1/registrations"]);
+    assert.ok(document.paths["/v1/registrations/status"]);
+  });
+
+  it("reports whether a campaign accepts public registrations", async () => {
+    const openResponse = await createTestApp().request(
+      "/v1/registrations/status",
+    );
+    const closedResponse = await createTestApp(
+      undefined,
+      undefined,
+      async () => false,
+    ).request("/v1/registrations/status");
+
+    assert.equal(openResponse.status, 200);
+    assert.deepEqual(await openResponse.json(), { open: true });
+    assert.equal(closedResponse.status, 200);
+    assert.deepEqual(await closedResponse.json(), { open: false });
   });
 
   it("creates a validated registration", async () => {

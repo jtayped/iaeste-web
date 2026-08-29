@@ -5,6 +5,7 @@ import { IllegalTransitionError, NotFoundError } from "@repo/db/repositories";
 
 import {
   createRegistrationServiceStub,
+  createStubAuth,
   createTestApp,
 } from "./test-support/app";
 
@@ -111,9 +112,9 @@ describe("admin registrations", () => {
     const app = createTestApp(
       undefined,
       createRegistrationServiceStub({
-        list: async (campaignId, status) => {
+        list: async ({ campaignId, status, limit, offset }) => {
           receivedArgs = [campaignId, status];
-          return [];
+          return { rows: [], total: 0, limit, offset };
         },
       }),
     );
@@ -139,7 +140,7 @@ describe("admin registrations", () => {
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ reviewerId: "user_1" }),
+        body: JSON.stringify({}),
       },
     );
 
@@ -163,7 +164,7 @@ describe("admin registrations", () => {
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ reviewerId: "user_1" }),
+        body: JSON.stringify({}),
       },
     );
 
@@ -189,7 +190,7 @@ describe("admin registrations", () => {
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ reviewerId: "user_1" }),
+        body: JSON.stringify({}),
       },
     );
     const body = (await response.json()) as { error: { code: string } };
@@ -213,7 +214,7 @@ describe("admin registrations", () => {
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ reviewerId: "user_1" }),
+        body: JSON.stringify({}),
       },
     );
     const body = (await response.json()) as { error: { code: string } };
@@ -239,10 +240,7 @@ describe("admin registrations", () => {
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          reviewerId: "user_1",
-          reason: "No hi ha places.",
-        }),
+        body: JSON.stringify({ reason: "No hi ha places." }),
       },
     );
 
@@ -253,8 +251,104 @@ describe("admin registrations", () => {
     });
     assert.deepEqual(receivedInput, {
       id: "registration_1",
-      reviewerId: "user_1",
+      reviewerId: "user_admin",
       reason: "No hi ha places.",
+    });
+  });
+});
+
+describe("admin authorization (IA-31)", () => {
+  const listUrl = "/v1/admin/registrations?campaignId=campaign_1";
+
+  it("401s when there is no session", async () => {
+    const app = createTestApp(
+      undefined,
+      createRegistrationServiceStub(),
+      undefined,
+      createStubAuth(null),
+    );
+    const response = await app.request(listUrl);
+    const body = (await response.json()) as { error: { code: string } };
+
+    assert.equal(response.status, 401);
+    assert.equal(body.error.code, "UNAUTHENTICATED");
+  });
+
+  it("403s a member (role lacks registrations.review)", async () => {
+    const app = createTestApp(
+      undefined,
+      createRegistrationServiceStub(),
+      undefined,
+      createStubAuth({ role: "member" }),
+    );
+    const response = await app.request(listUrl);
+    const body = (await response.json()) as { error: { code: string } };
+
+    assert.equal(response.status, 403);
+    assert.equal(body.error.code, "FORBIDDEN");
+  });
+
+  it("403s an admin who has not completed onboarding", async () => {
+    const app = createTestApp(
+      undefined,
+      createRegistrationServiceStub(),
+      undefined,
+      createStubAuth({ role: "admin" }),
+      async () => false,
+    );
+    const response = await app.request(listUrl);
+    const body = (await response.json()) as { error: { code: string } };
+
+    assert.equal(response.status, 403);
+    assert.equal(body.error.code, "FORBIDDEN");
+  });
+
+  it("lets an onboarded admin through", async () => {
+    let called = false;
+    const app = createTestApp(
+      undefined,
+      createRegistrationServiceStub({
+        list: async ({ limit, offset }) => {
+          called = true;
+          return { rows: [], total: 0, limit, offset };
+        },
+      }),
+      undefined,
+      createStubAuth({ role: "admin" }),
+    );
+    const response = await app.request(listUrl);
+
+    assert.equal(response.status, 200);
+    assert.equal(called, true);
+  });
+
+  it("uses the session user as the reviewer on accept, ignoring the body", async () => {
+    let receivedInput: unknown;
+    const app = createTestApp(
+      undefined,
+      createRegistrationServiceStub({
+        accept: async (id, input) => {
+          receivedInput = { id, ...input };
+          return { notificationSent: true };
+        },
+      }),
+      undefined,
+      createStubAuth({ id: "user_reviewer_9", role: "admin" }),
+    );
+
+    const response = await app.request(
+      "/v1/admin/registrations/registration_1/accept",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reviewerId: "user_forged" }),
+      },
+    );
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(receivedInput, {
+      id: "registration_1",
+      reviewerId: "user_reviewer_9",
     });
   });
 });

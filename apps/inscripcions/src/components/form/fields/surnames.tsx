@@ -1,4 +1,4 @@
-import type { Registration } from "@repo/constants/validators/registration";
+import type { RegistrationForm } from "@/lib/form-schema";
 import {
   FormControl,
   FormField,
@@ -10,16 +10,23 @@ import { Input } from "@repo/ui/input";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 
-const SurnameField = ({ form }: { form: UseFormReturn<Registration> }) => {
+const SurnameField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
   return (
     <FormField
       control={form.control}
       name="surnames"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Cognoms</FormLabel>
+          <FormLabel>cognoms</FormLabel>
           <FormControl>
-            <Input placeholder="Doe" autoComplete="family-name" {...field} />
+            <Input
+              data-field-name="surnames"
+              className="h-11"
+              placeholder="garcia serra"
+              required
+              autoComplete="family-name"
+              {...field}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

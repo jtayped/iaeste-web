@@ -1,197 +1,197 @@
 {
   "HomePage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Pràctiques Internacionals",
-      "description": "Organització sense ànim de lucre de l'Escola Politècnica Superior de la Universitat de Lleida.",
-      "keywords": "pràctiques internacionals, pràctiques globals, pràctiques tècniques, intercanvi cultural, IAESTE Lleida",
-      "ogTitle": "IAESTE Lleida - Pràctiques Internacionals per a Estudiants",
-      "ogDescription": "Intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món.",
-      "twitterTitle": "IAESTE Lleida - Pràctiques Internacionals per a Estudiants",
-      "twitterDescription": "Intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món."
+      "title": "iaeste lleida | pràctiques internacionals",
+      "description": "organització sense ànim de lucre de l'escola politècnica superior de la universitat de lleida.",
+      "keywords": "pràctiques internacionals, pràctiques globals, pràctiques tècniques, intercanvi cultural, iaeste lleida",
+      "ogTitle": "iaeste lleida - pràctiques internacionals per a estudiants",
+      "ogDescription": "intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món.",
+      "twitterTitle": "iaeste lleida - pràctiques internacionals per a estudiants",
+      "twitterDescription": "intercanviant estudiants per a experiència laboral tècnica en més de 100 països arreu del món."
     },
     "hero": {
-      "description": "Uneix-te a una xarxa global que connecta estudiants talentosos amb pràctiques tècniques internacionals. Desenvolupa la teva carrera professional mentre descobreixes noves cultures a través del programa d'intercanvi mundial de IAESTE.",
+      "description": "uneix-te a una xarxa global que connecta estudiants talentosos amb pràctiques tècniques internacionals. desenvolupa la teva carrera professional mentre descobreixes noves cultures a través del programa d'intercanvi mundial de iaeste.",
       "buttons": {
-        "student": "Soc estudiant",
-        "company": "Soc empresa"
+        "student": "soc estudiant",
+        "company": "soc empresa"
       }
     },
     "about": {
-      "title": "Què és IAESTE?",
-      "subtitle": "Connectant el talent català amb oportunitats globals",
-      "description": "Com a IAESTE LC Lleida, part de la xarxa nacional de IAESTE Espanya, facilitem pràctiques tècniques remunerades a través de la nostra plataforma sense ànim de lucre a l'Escola Politècnica Superior. Des de 1948, hem connectat estudiants de la UdL amb més de 100 països mitjançant el nostre sistema estructurat d'intercanvi."
+      "title": "què és iaeste?",
+      "subtitle": "connectant el talent català amb oportunitats globals",
+      "description": "com a iaeste lc lleida, part de la xarxa nacional de iaeste espanya, facilitem pràctiques tècniques remunerades a través de la nostra plataforma sense ànim de lucre a l'escola politècnica superior. des de 1948, hem connectat estudiants de la udl amb més de 100 països mitjançant el nostre sistema estructurat d'intercanvi."
     },
     "stats": {
       "countries": {
-        "title": "Països",
-        "subtitle": "Amb pràctiques IAESTE."
+        "title": "països",
+        "subtitle": "amb pràctiques iaeste."
       },
       "students": {
-        "title": "Estudiants",
-        "subtitle": "Enviats a pràctiques."
+        "title": "estudiants",
+        "subtitle": "enviats a pràctiques."
       },
       "organisations": {
-        "title": "Organitzacions",
-        "subtitle": "Que acullen estudiants."
+        "title": "organitzacions",
+        "subtitle": "que acullen estudiants."
       },
       "volunteers": {
-        "title": "Voluntaris",
-        "subtitle": "Que fan IAESTE possible."
+        "title": "voluntaris",
+        "subtitle": "que fan iaeste possible."
       }
     },
     "steps": {
-      "title": "Com funciona?",
+      "title": "com funciona?",
       "internship": {
-        "title": "Pràctiques",
-        "subtitle": "De Lleida al món",
-        "description": "Els estudiants de la UdL envien els seus perfils i IAESTE LC Lleida col·labora amb IAESTE Espanya per trobar oportunitats globals."
+        "title": "pràctiques",
+        "subtitle": "de lleida al món",
+        "description": "els estudiants de la udl envien els seus perfils i iaeste lc lleida col·labora amb iaeste espanya per trobar oportunitats globals."
       },
       "auction": {
-        "title": "Subhasta",
-        "subtitle": "Sistema de doble plaça",
-        "description": "Per cada estudiant que marxa, acollim un intern internacional, mantenint l'equilibri mitjançant la coordinació nacional."
+        "title": "subhasta",
+        "subtitle": "sistema de doble plaça",
+        "description": "per cada estudiant que marxa, acollim un intern internacional, mantenint l'equilibri mitjançant la coordinació nacional."
       },
       "exchange": {
-        "title": "Intercanvi",
-        "subtitle": "Suport integral",
-        "description": "IAESTE LC Lleida gestiona visats i allotjament per garantir transicions fluides per als estudiants que marxen i arriben."
+        "title": "intercanvi",
+        "subtitle": "suport integral",
+        "description": "iaeste lc lleida gestiona visats i allotjament per garantir transicions fluides per als estudiants que marxen i arriben."
       }
     }
   },
   "StudentsPage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Pràctiques UDL per Estudiants Internacionals",
-      "description": "Descobreix oportunitats de pràctiques internacionals remunerades a la UdL amb IAESTE Lleida. Impulsa la teva carrera amb experiències globals i un enriquit intercanvi cultural.",
+      "title": "iaeste lleida | pràctiques udl per estudiants internacionals",
+      "description": "descobreix oportunitats de pràctiques internacionals remunerades a la udl amb iaeste lleida. impulsa la teva carrera amb experiències globals i un enriquit intercanvi cultural.",
       "keywords": "practiques udl, pràctiques internacionals, estudiants udl, intercanvi cultural, creixement professional",
-      "ogTitle": "IAESTE Lleida - Pràctiques UDL per Estudiants Internacionals",
-      "ogDescription": "Uneix-te a IAESTE Lleida i accedeix a pràctiques remunerades a la UdL que impulsen la teva carrera a nivell internacional.",
-      "twitterTitle": "IAESTE Lleida - Pràctiques UDL per Estudiants",
-      "twitterDescription": "Impulsa la teva carrera amb pràctiques internacionals remunerades i un intercanvi cultural únic amb IAESTE Lleida."
+      "ogTitle": "iaeste lleida - pràctiques udl per estudiants internacionals",
+      "ogDescription": "uneix-te a iaeste lleida i accedeix a pràctiques remunerades a la udl que impulsen la teva carrera a nivell internacional.",
+      "twitterTitle": "iaeste lleida - pràctiques udl per estudiants",
+      "twitterDescription": "impulsa la teva carrera amb pràctiques internacionals remunerades i un intercanvi cultural únic amb iaeste lleida."
     },
     "hero": {
-      "title": "Uneix-te a IAESTE Lleida",
-      "subtitle": "Forma la teva carrera internacional",
-      "description": "Fes el primer pas cap a una experiència internacional enriquidora. Uneix-te a IAESTE LC Lleida per accedir a oportunitats globals i desenvolupar-te professional i personalment."
+      "title": "uneix-te a iaeste lleida",
+      "subtitle": "forma la teva carrera internacional",
+      "description": "fes el primer pas cap a una experiència internacional enriquidora. uneix-te a iaeste lc lleida per accedir a oportunitats globals i desenvolupar-te professional i personalment."
     },
     "registrations": {
-      "title": "Les inscripcions estan obertes!",
-      "description": "Omple el formulari per formar part del nostre equip!",
-      "button": "Inscriu-te"
+      "title": "les inscripcions estan obertes!",
+      "description": "omple el formulari per formar part del nostre equip!",
+      "button": "inscriu-te"
     },
     "why-iaeste": {
-      "title": "Per què IAESTE?",
-      "subtitle": "Mobilitat global estructurada",
-      "description": "Uneix-te a IAESTE LC Lleida per accedir a pràctiques internacionals exclusives i verificades que impulsaran la teva carrera. Adquireix experiència professional, amplia la teva xarxa global i gaudeix d’un intercanvi cultural mentre obtens reconeixement acadèmic en empreses i institucions de prestigi arreu del món.",
+      "title": "per què iaeste?",
+      "subtitle": "mobilitat global estructurada",
+      "description": "uneix-te a iaeste lc lleida per accedir a pràctiques internacionals exclusives i verificades que impulsaran la teva carrera. adquireix experiència professional, amplia la teva xarxa global i gaudeix d’un intercanvi cultural mentre obtens reconeixement acadèmic en empreses i institucions de prestigi arreu del món.",
       "reasons": {
         "oportunities": {
-          "title": "Oportunitats globals",
-          "description": "Accedeix a pràctiques en 80+ països i construeix xarxa internacional."
+          "title": "oportunitats globals",
+          "description": "accedeix a pràctiques en 80+ països i construeix xarxa internacional."
         },
         "growth": {
-          "title": "Creixement professional",
-          "description": "Desenvolupa habilitats reals, millora el teu CV i obté coneixements professionals."
+          "title": "creixement professional",
+          "description": "desenvolupa habilitats reals, millora el teu cv i obté coneixements professionals."
         },
         "exchange": {
-          "title": "Intercanvi cultural",
-          "description": "Submergeix-te en noves cultures, aprèn competències interculturals i forma amistats internacionals."
+          "title": "intercanvi cultural",
+          "description": "submergeix-te en noves cultures, aprèn competències interculturals i forma amistats internacionals."
         },
         "internship": {
-          "title": "Pràctiques remunerades",
-          "description": "Gaudeix de pràctiques remunerades que cobreixen despeses mentre guanyes experiència."
+          "title": "pràctiques remunerades",
+          "description": "gaudeix de pràctiques remunerades que cobreixen despeses mentre guanyes experiència."
         }
       }
     },
     "teams": {
-      "title": "Tria un equip",
-      "subtitle": "Sigues part d'alguna cosa més gran",
-      "description": "Uneix-te a un dels nostres equips dinàmics a IAESTE LC Lleida. Desenvolupa habilitats de lideratge, guanya experiència organitzativa i marca la diferència mentre ajudes altres estudiants a accedir a oportunitats internacionals.",
+      "title": "tria un equip",
+      "subtitle": "sigues part d'alguna cosa més gran",
+      "description": "uneix-te a un dels nostres equips dinàmics a iaeste lc lleida. desenvolupa habilitats de lideratge, guanya experiència organitzativa i marca la diferència mentre ajudes altres estudiants a accedir a oportunitats internacionals.",
       "teams": {
         "junta": {
-          "name": "Junta directiva",
-          "description": "Lidera iniciatives estratègiques i guia la direcció de la nostra organització."
+          "name": "junta directiva",
+          "description": "lidera iniciatives estratègiques i guia la direcció de la nostra organització."
         },
         "empreses": {
-          "name": "Empreses",
-          "description": "Construeix relacions amb ocupadors locals i internacionals."
+          "name": "empreses",
+          "description": "construeix relacions amb ocupadors locals i internacionals."
         },
         "marketing": {
-          "name": "Màrqueting",
-          "description": "Crea contingut atractiu i promociona la missió de IAESTE."
+          "name": "màrqueting",
+          "description": "crea contingut atractiu i promociona la missió de iaeste."
         },
         "it": {
-          "name": "IT",
-          "description": "Mantén i millora la nostra infraestructura digital."
+          "name": "it",
+          "description": "mantén i millora la nostra infraestructura digital."
         },
         "eventos": {
-          "name": "Esdeveniments",
-          "description": "Organitza activitats i esdeveniments professionals atractius."
+          "name": "esdeveniments",
+          "description": "organitza activitats i esdeveniments professionals atractius."
         }
       }
     },
     "contact": {
-      "title": "Inicia el teu viatge IAESTE",
-      "description": "Uneix-te als estudiants d'enginyeria de la UdL que han llançat carreres globals a través del nostre programa LC Lleida."
+      "title": "inicia el teu viatge iaeste",
+      "description": "uneix-te als estudiants d'enginyeria de la udl que han llançat carreres globals a través del nostre programa lc lleida."
     }
   },
   "CompanyPage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Empreses i Talent Internacional",
-      "description": "Col·labora amb IAESTE Lleida per acollir estudiants internacionals qualificats. Accedeix a pràctiques remunerades que aporten noves idees i perspectives globals a la teva empresa.",
+      "title": "iaeste lleida | empreses i talent internacional",
+      "description": "col·labora amb iaeste lleida per acollir estudiants internacionals qualificats. accedeix a pràctiques remunerades que aporten noves idees i perspectives globals a la teva empresa.",
       "keywords": "iaeste empresa, talent internacional, pràctiques remunerades, pràctiques tècniques, col·laboració global",
-      "ogTitle": "IAESTE Lleida - Empreses i Talent Internacional",
-      "ogDescription": "Col·labora amb IAESTE Lleida per connectar amb estudiants tècnics motivats d’arreu del món, impulsant la innovació i la diversitat a la teva organització.",
-      "twitterTitle": "IAESTE Lleida - Empreses i Talent Internacional",
-      "twitterDescription": "Descobreix com col·laborar amb IAESTE et dona accés a estudiants tècnics internacionals mitjançant pràctiques remunerades."
+      "ogTitle": "iaeste lleida - empreses i talent internacional",
+      "ogDescription": "col·labora amb iaeste lleida per connectar amb estudiants tècnics motivats d’arreu del món, impulsant la innovació i la diversitat a la teva organització.",
+      "twitterTitle": "iaeste lleida - empreses i talent internacional",
+      "twitterDescription": "descobreix com col·laborar amb iaeste et dona accés a estudiants tècnics internacionals mitjançant pràctiques remunerades."
     },
     "hero": {
-      "title": "Col·labora amb IAESTE Lleida",
-      "subtitle": "Aporta experiència internacional al teu equip",
-      "description": "Uneix-te al programa global d’intercanvi d’IAESTE i accedeix a estudiants de més de 100 països. Acull pràctiques remunerades que enriquiran la teva empresa amb innovació, diversitat cultural i excel·lència professional."
+      "title": "col·labora amb iaeste lleida",
+      "subtitle": "aporta experiència internacional al teu equip",
+      "description": "uneix-te al programa global d’intercanvi d’iaeste i accedeix a estudiants de més de 100 països. acull pràctiques remunerades que enriquiran la teva empresa amb innovació, diversitat cultural i excel·lència professional."
     },
     "why": {
-      "title": "Per què col·laborar amb IAESTE?",
-      "subtitle": "Talent internacional de manera senzilla",
-      "description": "Acollint estudiants d’IAESTE, la teva empresa accedeix a joves motivats formats en àrees tècniques. El nostre sistema d’intercanvi garantit ofereix qualitat, fiabilitat i suport en tot moment.",
+      "title": "per què col·laborar amb iaeste?",
+      "subtitle": "talent internacional de manera senzilla",
+      "description": "acollint estudiants d’iaeste, la teva empresa accedeix a joves motivats formats en àrees tècniques. el nostre sistema d’intercanvi garantit ofereix qualitat, fiabilitat i suport en tot moment.",
       "reasons": {
         "talent": {
-          "title": "Talent global",
-          "description": "Accedeix a estudiants qualificats de les millors universitats d’arreu del món."
+          "title": "talent global",
+          "description": "accedeix a estudiants qualificats de les millors universitats d’arreu del món."
         },
         "innovation": {
-          "title": "Innovació i diversitat",
-          "description": "Aporta noves perspectives i solucions creatives a través de l’intercanvi cultural."
+          "title": "innovació i diversitat",
+          "description": "aporta noves perspectives i solucions creatives a través de l’intercanvi cultural."
         },
         "growth": {
-          "title": "Creixement empresarial",
-          "description": "Amplia l’abast de la teva empresa mentre contribueixes a la mobilitat internacional."
+          "title": "creixement empresarial",
+          "description": "amplia l’abast de la teva empresa mentre contribueixes a la mobilitat internacional."
         },
         "support": {
-          "title": "Suport complet",
-          "description": "IAESTE s’encarrega de la logística com visats i allotjament per facilitar el procés."
+          "title": "suport complet",
+          "description": "iaeste s’encarrega de la logística com visats i allotjament per facilitar el procés."
         }
       }
     },
     "testimonial": {
-      "tag": "Destacat",
-      "title": "L'experiència de Factory Data amb en Jonathan.",
-      "text": "Excel·lent experiència amb en Jonathan Gruss durant les seves pràctiques IAESTE l'estiu del 2021. Va contribuir en un projecte d'anàlisi de demanda utilitzant Apache Spark, va treballar de manera independent, va resoldre problemes amb creativitat i es va integrar perfectament a l'equip. El recomanem encaridament.",
-      "author": "Joan Cabós",
-      "role": "CEO @ Factory Data"
+      "tag": "destacat",
+      "title": "l'experiència de factory data amb en jonathan.",
+      "text": "excel·lent experiència amb en jonathan gruss durant les seves pràctiques iaeste l'estiu del 2021. va contribuir en un projecte d'anàlisi de demanda utilitzant apache spark, va treballar de manera independent, va resoldre problemes amb creativitat i es va integrar perfectament a l'equip. el recomanem encaridament.",
+      "author": "joan cabós",
+      "role": "ceo @ factory data"
     },
     "contact": {
-      "title": "Comença a col·laborar amb nosaltres",
-      "description": "Posa’t en contacte amb IAESTE Lleida i descobreix com acollir un estudiant internacional pot aportar valor a la teva empresa."
+      "title": "comença a col·laborar amb nosaltres",
+      "description": "posa’t en contacte amb iaeste lleida i descobreix com acollir un estudiant internacional pot aportar valor a la teva empresa."
     }
   },
   "IncommingPage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Informació per a Estudiants Internacionals Entrants",
-      "description": "Tota la informació que necessites per preparar la teva arribada a Lleida. Suport, requisits i consells per estudiants internacionals entrants amb IAESTE.",
+      "title": "iaeste lleida | informació per a estudiants internacionals entrants",
+      "description": "tota la informació que necessites per preparar la teva arribada a lleida. suport, requisits i consells per estudiants internacionals entrants amb iaeste.",
       "keywords": "estudiants internacionals entrants, incoming lleida, informació estudiants entrants, intercanvi cultural, suport per estudiants internacionals",
-      "ogTitle": "IAESTE Lleida - Benvinguts Estudiants Internacionals Entrants",
-      "ogDescription": "Prepara la teva experiència d'intercanvi a Lleida amb tota la informació i suport que ofereix IAESTE per estudiants internacionals entrants.",
-      "twitterTitle": "IAESTE Lleida - Estudiants Internacionals Entrants",
-      "twitterDescription": "Descobreix els detalls i el suport necessari per a la teva arribada a Lleida amb IAESTE."
+      "ogTitle": "iaeste lleida - benvinguts estudiants internacionals entrants",
+      "ogDescription": "prepara la teva experiència d'intercanvi a lleida amb tota la informació i suport que ofereix iaeste per estudiants internacionals entrants.",
+      "twitterTitle": "iaeste lleida - estudiants internacionals entrants",
+      "twitterDescription": "descobreix els detalls i el suport necessari per a la teva arribada a lleida amb iaeste."
     }
   },
   "BlogPage": {
@@ -199,7 +199,7 @@
       "title": "blog | iaeste lc lleida",
       "description": "notícies, activitats i explicacions del programa d'intercanvi d'iaeste lc lleida."
     },
-    "title": "històries que expliquen l'intercanvi",
+    "title": "blog",
     "description": "notícies del comitè, experiències i guies per entendre com funciona iaeste des de lleida.",
     "readArticle": "llegeix l'article",
     "fallbackLabel": "català",
@@ -211,34 +211,34 @@
     "paginationLabel": "pàgines del blog"
   },
   "UnderConstructionPage": {
-    "title": "Aquesta pàgina està en construcció!",
-    "description": "El nostre equip de IT hi està treballant! Estarà llesta aviat.",
+    "title": "aquesta pàgina està en construcció!",
+    "description": "el nostre equip de it hi està treballant! estarà llesta aviat.",
     "buttons": {
-      "home": "Inici",
-      "back": "Tornar"
+      "home": "inici",
+      "back": "tornar"
     }
   },
   "header": {
     "pages": {
       "home": {
-        "name": "Inici",
-        "title": "IAESTE Lleida",
-        "description": "La teva porta d'entrada a pràctiques tècniques internacionals i oportunitats d'intercanvi cultural a través de la Universitat de Lleida."
+        "name": "inici",
+        "title": "iaeste lleida",
+        "description": "la teva porta d'entrada a pràctiques tècniques internacionals i oportunitats d'intercanvi cultural a través de la universitat de lleida."
       },
       "student": {
-        "name": "Estudiants",
-        "title": "Vols unir-te?",
-        "description": "Descobreix com accedir a pràctiques internacionals remunerades i formar part de la nostra xarxa global d'estudiants tècnics."
+        "name": "estudiants",
+        "title": "vols unir-te?",
+        "description": "descobreix com accedir a pràctiques internacionals remunerades i formar part de la nostra xarxa global d'estudiants tècnics."
       },
       "incomming": {
-        "name": "Incoming",
-        "title": "Ets estudiant entrant?",
-        "description": "Informació essencial per a estudiants internacionals que venen a Lleida per a la seva experiència de pràctiques IAESTE."
+        "name": "incoming",
+        "title": "ets estudiant entrant?",
+        "description": "informació essencial per a estudiants internacionals que venen a lleida per a la seva experiència de pràctiques iaeste."
       },
       "company": {
-        "name": "Empreses",
-        "title": "Ets una empresa?",
-        "description": "Col·labora amb IAESTE per accedir a talent tècnic internacional per a la teva organització."
+        "name": "empreses",
+        "title": "ets una empresa?",
+        "description": "col·labora amb iaeste per accedir a talent tècnic internacional per a la teva organització."
       },
       "blog": {
         "name": "blog",
@@ -247,90 +247,90 @@
       }
     },
     "groups": {
-      "students": "Estudiants",
-      "companies": "Companyies"
+      "students": "estudiants",
+      "companies": "companyies"
     },
-    "contact-btn": "Contacta'ns"
+    "contact-btn": "contacta'ns"
   },
   "contact": {
-    "title": "Contacta'ns",
-    "description": "Obtén detalls sobre intercanvis d'estudiants de la UdL o acollida de talent internacional.",
-    "btn": "Enviar email",
+    "title": "contacta'ns",
+    "description": "obtén detalls sobre intercanvis d'estudiants de la udl o acollida de talent internacional.",
+    "btn": "enviar email",
     "email": {
-      "label": "Email",
+      "label": "email",
       "placeholder": "johndoe@gmail.com",
-      "description": "Et respondrem a aquest correu.",
-      "invalid": "Si us plau, introdueix una adreça d'email vàlida",
-      "required": "L'email és obligatori"
+      "description": "et respondrem a aquest correu.",
+      "invalid": "si us plau, introdueix una adreça d'email vàlida",
+      "required": "l'email és obligatori"
     },
     "name": {
-      "label": "Nom",
-      "placeholder": "John",
+      "label": "nom",
+      "placeholder": "john",
       "description": "",
-      "required": "El nom és obligatori",
-      "min": "El nom ha de tenir almenys {min} caràcters",
-      "max": "El nom no pot excedir els {max} caràcters"
+      "required": "el nom és obligatori",
+      "min": "el nom ha de tenir almenys {min} caràcters",
+      "max": "el nom no pot excedir els {max} caràcters"
     },
     "lastname": {
-      "label": "Cognoms",
-      "placeholder": "Doe",
+      "label": "cognoms",
+      "placeholder": "doe",
       "description": "",
-      "required": "Els cognoms és obligatori",
-      "min": "Els cognoms han de tenir almenys {min} caràcters",
-      "max": "Els cognoms no poden excedir els {max} caràcters"
+      "required": "els cognoms és obligatori",
+      "min": "els cognoms han de tenir almenys {min} caràcters",
+      "max": "els cognoms no poden excedir els {max} caràcters"
     },
     "subject": {
-      "label": "Assumpte",
-      "placeholder": "El teu assumpte",
-      "description": "Descriu la teva consulta breument",
-      "required": "L'assumpte és obligatori",
-      "min": "L'assumpte ha de tenir almenys {min} caràcters",
-      "max": "L'assumpte no pot excedir els {max} caràcters"
+      "label": "assumpte",
+      "placeholder": "el teu assumpte",
+      "description": "descriu la teva consulta breument",
+      "required": "l'assumpte és obligatori",
+      "min": "l'assumpte ha de tenir almenys {min} caràcters",
+      "max": "l'assumpte no pot excedir els {max} caràcters"
     },
     "message": {
-      "label": "Missatge",
-      "placeholder": "El teu missatge",
+      "label": "missatge",
+      "placeholder": "el teu missatge",
       "description": "",
-      "required": "El missatge és obligatori",
-      "min": "El missatge ha de tenir almenys {min} caràcters",
-      "max": "El missatge no pot excedir els {max} caràcters"
+      "required": "el missatge és obligatori",
+      "min": "el missatge ha de tenir almenys {min} caràcters",
+      "max": "el missatge no pot excedir els {max} caràcters"
     },
     "submitBtn": {
-      "default": "Enviar",
-      "loading": "Enviant...",
-      "success": "Missatge enviat!",
-      "error": "Alguna cosa ha anat malament. Torna-ho a provar."
+      "default": "enviar",
+      "loading": "enviant...",
+      "success": "missatge enviat!",
+      "error": "alguna cosa ha anat malament. torna-ho a provar."
     }
   },
   "outgoings": {
     "jaume": {
-      "quote": "IAESTE em va obrir portes que ni sabia que existien.",
-      "title": "Innovació en enginyeria a Alemanya",
-      "description": "Durant les meves pràctiques en una empresa líder del sector automotriu a Munic, vaig obtenir experiència pràctica amb tecnologies d'avantguarda mentre desenvolupava la meva xarxa professional. L'experiència va millorar tant les meves habilitats tècniques com la meva comprensió cultural.",
-      "location": "Alemanya"
+      "quote": "iaeste em va obrir portes que ni sabia que existien.",
+      "title": "innovació en enginyeria a alemanya",
+      "description": "durant les meves pràctiques en una empresa líder del sector automotriu a munic, vaig obtenir experiència pràctica amb tecnologies d'avantguarda mentre desenvolupava la meva xarxa professional. l'experiència va millorar tant les meves habilitats tècniques com la meva comprensió cultural.",
+      "location": "alemanya"
     },
     "jordi": {
-      "quote": "La combinació perfecta de creixement professional i personal.",
-      "title": "Excel·lència en recerca",
-      "description": "Treballar a la Universitat Tècnica de Berlín em va permetre contribuir a investigacions pioneres mentre experimentava la vida en una de les ciutats més dinàmiques d'Europa. IAESTE va fer que tot el procés fos fluid i em va donar suport en tot moment.",
-      "location": "Alemanya"
+      "quote": "la combinació perfecta de creixement professional i personal.",
+      "title": "excel·lència en recerca",
+      "description": "treballar a la universitat tècnica de berlín em va permetre contribuir a investigacions pioneres mentre experimentava la vida en una de les ciutats més dinàmiques d'europa. iaeste va fer que tot el procés fos fluid i em va donar suport en tot moment.",
+      "location": "alemanya"
     },
     "pepito": {
-      "quote": "Una experiència que va definir la meva trajectòria professional.",
-      "title": "Innovació industrial",
-      "description": "Les meves pràctiques en una planta manufacturera alemanya em van donar coneixements pràctics sobre tecnologies de la Indústria 4.0. L'entorn internacional i els reptes professionals em van ajudar a créixer tant tècnicament com personalment.",
-      "location": "Alemanya"
+      "quote": "una experiència que va definir la meva trajectòria professional.",
+      "title": "innovació industrial",
+      "description": "les meves pràctiques en una planta manufacturera alemanya em van donar coneixements pràctics sobre tecnologies de la indústria 4.0. l'entorn internacional i els reptes professionals em van ajudar a créixer tant tècnicament com personalment.",
+      "location": "alemanya"
     },
     "pep": {
-      "quote": "Més que unes pràctiques - una experiència que va canviar la meva vida.",
-      "title": "Lideratge tecnològic",
-      "description": "Participar en un projecte de desenvolupament de programari en una empresa tecnològica líder a Hamburg em va ensenyar valuoses lliçons sobre col·laboració internacional i comunicació professional mentre avançava en la meva experiència tècnica.",
-      "location": "Alemanya"
+      "quote": "més que unes pràctiques - una experiència que va canviar la meva vida.",
+      "title": "lideratge tecnològic",
+      "description": "participar en un projecte de desenvolupament de programari en una empresa tecnològica líder a hamburg em va ensenyar valuoses lliçons sobre col·laboració internacional i comunicació professional mentre avançava en la meva experiència tècnica.",
+      "location": "alemanya"
     }
   },
   "buttons": {
-    "send-email": "Envia'ns un correu",
-    "contact-form": "Contacta'ns",
-    "learn-more": "Saber-ne més"
+    "send-email": "envia'ns un correu",
+    "contact-form": "contacta'ns",
+    "learn-more": "saber-ne més"
   }
 }

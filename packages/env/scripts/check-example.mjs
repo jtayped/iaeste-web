@@ -151,6 +151,18 @@ async function main() {
     failures,
   );
 
+  // apps/admin
+  const adminServerKeys = await loadSchemaKeys(
+    path.join(rootDir, "packages/env/src/admin.server.ts"),
+    fakeEnv,
+  );
+  diffSections(
+    "apps/admin",
+    documentedSections.get("apps/admin") ?? new Set(),
+    adminServerKeys,
+    failures,
+  );
+
   // apps/web (client + server schemas share one .env.example section)
   const webClientKeys = await loadSchemaKeys(
     path.join(rootDir, "packages/env/src/web.client.ts"),

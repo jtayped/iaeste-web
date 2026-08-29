@@ -1,14 +1,48 @@
 import { requireEnvironmentVariable } from "./lib/env";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:3003"];
+const DEFAULT_AUTH_TRUSTED_ORIGINS = ["http://localhost:3005"];
 
-export function getAllowedOrigins(value = process.env.CORS_ALLOWED_ORIGINS) {
-  if (!value) return DEFAULT_ALLOWED_ORIGINS;
+function parseOriginList(value: string | undefined, defaults: string[]) {
+  if (!value) return defaults;
 
   return value
     .split(",")
     .map((origin) => origin.trim().replace(/\/$/, ""))
     .filter(Boolean);
+}
+
+export function getAllowedOrigins(value = process.env.CORS_ALLOWED_ORIGINS) {
+  return parseOriginList(value, DEFAULT_ALLOWED_ORIGINS);
+}
+
+export function getAuthTrustedOrigins(
+  value = process.env.BETTER_AUTH_TRUSTED_ORIGINS,
+  runtime = getRuntimeEnvironment(),
+) {
+  if (!value && runtime === "production") {
+    requireEnvironmentVariable("BETTER_AUTH_TRUSTED_ORIGINS");
+  }
+  const origins = parseOriginList(value, DEFAULT_AUTH_TRUSTED_ORIGINS);
+  return origins.map((origin) => {
+    if (origin.includes("*")) {
+      throw new Error("BETTER_AUTH_TRUSTED_ORIGINS cannot contain wildcards");
+    }
+    const url = new URL(origin);
+    if (
+      !["http:", "https:"].includes(url.protocol) ||
+      url.pathname !== "/" ||
+      url.search ||
+      url.hash ||
+      url.username ||
+      url.password
+    ) {
+      throw new Error(
+        "BETTER_AUTH_TRUSTED_ORIGINS entries must be http(s) origins",
+      );
+    }
+    return url.origin;
+  });
 }
 
 export function getApiPort(value = process.env.API_PORT) {
@@ -24,7 +58,8 @@ export function getApiPort(value = process.env.API_PORT) {
 
 /**
  * Public origin of `apps/inscripcions`, used to build the email-verification
- * link (`${origin}/verificar?token=...`). Distinct from `apps/inscripcions`'s
+ * link (`${origin}/verificar#token=...`). The fragment keeps the raw token out
+ * of HTTP requests and server logs. Distinct from `apps/inscripcions`'s
  * own `NEXT_PUBLIC_API_URL` (that's the frontend's pointer back to *this*
  * API) — this is the API pointing forward at the frontend, which is why it
  * needs its own variable rather than reusing an existing one.
@@ -36,10 +71,9 @@ export function getInscripcionsPublicOrigin(
 }
 
 /**
- * Placeholder origin for the first-login link sent in the acceptance email.
- * There is no real admin app or magic-link auth yet (IA-30/IA-31 build
- * that) — this just needs to point somewhere sane so the email isn't
- * broken, and is documented as a placeholder wherever it's used.
+ * Browser-visible origin of the admin app. Acceptance email and Better Auth
+ * links both enter through this origin. IA-31 adds the same-origin rewrite
+ * from `/api/auth/*` to `apps/api`.
  */
 export function getAdminPublicOrigin(
   value = process.env.ADMIN_PUBLIC_ORIGIN,
@@ -57,5 +91,104 @@ export function getEmailConfig(): EmailConfig {
   return {
     apiKey: requireEnvironmentVariable("RESEND_API_KEY"),
     from: requireEnvironmentVariable("REGISTRATION_EMAIL_FROM"),
+  };
+}
+
+/**
+ * Stable browser-visible auth origin. Better Auth runs inside `apps/api`, but
+ * the browser reaches it through `apps/admin`'s same-origin rewrite.
+ */
+export function getAuthBaseUrl(
+  value = process.env.ADMIN_PUBLIC_ORIGIN,
+  runtime = getRuntimeEnvironment(),
+): string {
+  if (!value && runtime === "production") {
+    requireEnvironmentVariable("ADMIN_PUBLIC_ORIGIN");
+  }
+  const configured = value ?? "http://localhost:3005";
+  const url = new URL(configured);
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.pathname !== "/" ||
+    url.search ||
+    url.hash ||
+    url.username ||
+    url.password
+  ) {
+    throw new Error(
+      "ADMIN_PUBLIC_ORIGIN must be an http(s) origin without a path",
+    );
+  }
+  return url.origin;
+}
+
+/** Validates the runtime before cookie policy is derived from it. */
+export function getRuntimeEnvironment(
+  value = process.env.NODE_ENV,
+): "development" | "test" | "production" {
+  if (!value) return "development";
+  if (value === "development" || value === "test" || value === "production") {
+    return value;
+  }
+  throw new Error("NODE_ENV must be development, test, or production");
+}
+
+/**
+ * Signs Better Auth's session data. Must be a long, random secret in production.
+ * Generate one with
+ * `openssl rand -base64 32`.
+ */
+export function getAuthSecret(value = process.env.BETTER_AUTH_SECRET): string {
+  const secret = (
+    value ?? requireEnvironmentVariable("BETTER_AUTH_SECRET")
+  ).trim();
+  if (secret.length < 32) {
+    throw new Error("BETTER_AUTH_SECRET must be at least 32 characters long");
+  }
+  return secret;
+}
+
+export interface WebPushConfig {
+  publicKey: string;
+  privateKey: string;
+  /** VAPID `sub` claim: a `mailto:` or `https:` URL identifying this sender. */
+  subject: string;
+}
+
+/**
+ * VAPID keys for the admin PWA's web-push notifications. Returns `null` when
+ * unconfigured so local development and the two public apps run without push
+ * rather than crashing — the notifier degrades to a no-op. Configuring only
+ * some of the three is a mistake, not a "disabled" state, so that throws.
+ *
+ * Generate a keypair with `npx web-push generate-vapid-keys`.
+ */
+export function getWebPushConfig(
+  publicKey = process.env.WEB_PUSH_VAPID_PUBLIC_KEY,
+  privateKey = process.env.WEB_PUSH_VAPID_PRIVATE_KEY,
+  subject = process.env.WEB_PUSH_SUBJECT,
+): WebPushConfig | null {
+  const values = { publicKey, privateKey, subject };
+  const present = Object.entries(values).filter(([, v]) => v?.trim());
+  if (present.length === 0) return null;
+  if (present.length < 3) {
+    const missing = Object.entries(values)
+      .filter(([, v]) => !v?.trim())
+      .map(([k]) => k);
+    throw new Error(
+      `Web push is partially configured; also set: ${missing.join(", ")}`,
+    );
+  }
+  const trimmedSubject = subject!.trim();
+  if (
+    !trimmedSubject.startsWith("mailto:") &&
+    !trimmedSubject.startsWith("https:")
+  ) {
+    throw new Error("WEB_PUSH_SUBJECT must be a mailto: or https: URL");
+  }
+  return {
+    publicKey: publicKey!.trim(),
+    privateKey: privateKey!.trim(),
+    subject: trimmedSubject,
   };
 }

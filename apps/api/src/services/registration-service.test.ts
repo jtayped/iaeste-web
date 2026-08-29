@@ -55,18 +55,29 @@ describe("registration service", () => {
         emailer: createRecordingEmailer(),
       });
 
-      const all = await service.list(campaign.id);
-      assert.equal(all.length, 2);
+      const all = await service.list({
+        campaignId: campaign.id,
+        limit: 50,
+        offset: 0,
+      });
+      assert.equal(all.total, 2);
+      assert.equal(all.rows.length, 2);
       assert.deepEqual(
-        new Set(all.map((row) => row.id)),
+        new Set(all.rows.map((row) => row.id)),
         new Set([pending.id, reviewed.id]),
       );
 
-      const onlyReviewed = await service.list(campaign.id, "pending_review");
-      assert.equal(onlyReviewed.length, 1);
-      assert.equal(onlyReviewed[0]?.id, reviewed.id);
+      const onlyReviewed = await service.list({
+        campaignId: campaign.id,
+        status: "pending_review",
+        limit: 50,
+        offset: 0,
+      });
+      assert.equal(onlyReviewed.total, 1);
+      assert.equal(onlyReviewed.rows.length, 1);
+      assert.equal(onlyReviewed.rows[0]?.id, reviewed.id);
       // Dates are serialised, not raw Date objects.
-      assert.equal(typeof onlyReviewed[0]?.createdAt, "string");
+      assert.equal(typeof onlyReviewed.rows[0]?.createdAt, "string");
     });
   });
 
@@ -92,6 +103,9 @@ describe("registration service", () => {
 
       assert.equal(emailer.sent.length, 1);
       assert.equal(emailer.sent[0]?.to, "resend@alumnes.udl.cat");
+      const emailPayload = JSON.stringify(emailer.sent[0]?.react);
+      assert.match(emailPayload, /\/verificar#token=[0-9a-f]{64}/);
+      assert.doesNotMatch(emailPayload, /\/verificar\?token=/);
 
       // The original token no longer works...
       await assert.rejects(

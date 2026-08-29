@@ -158,6 +158,9 @@ describe("createDrizzleRegistrationRepository", () => {
 
     assert.equal(emailer.sent.length, 1);
     assert.equal(emailer.sent[0]?.to, validRegistration.email);
+    const emailPayload = JSON.stringify(emailer.sent[0]?.react);
+    assert.match(emailPayload, /\/verificar#token=[0-9a-f]{64}/);
+    assert.doesNotMatch(emailPayload, /\/verificar\?token=/);
 
     const registrations = createRegistrationRepository(db);
     const saved = await registrations.getByCampaignAndEmail(

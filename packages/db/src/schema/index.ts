@@ -6,3 +6,4 @@ export * from "./registration-verification";
 export * from "./membership";
 export * from "./member-invitation";
 export * from "./membership-event";
+export * from "./push-subscription";

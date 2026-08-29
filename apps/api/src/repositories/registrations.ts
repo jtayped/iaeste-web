@@ -4,6 +4,7 @@ import { GoogleAuth } from "google-auth-library";
 import { google } from "googleapis";
 
 import type { Registration } from "@repo/constants/validators/registration";
+import { parsePhone } from "@repo/constants/validators/phone";
 import { getDb } from "@repo/db/client";
 import {
   createCampaignRepository,
@@ -16,7 +17,6 @@ import VerifyUserEmail from "@repo/email/verify-email";
 
 import { getEmailConfig, getInscripcionsPublicOrigin } from "../config";
 import { requireEnvironmentVariable } from "../lib/env";
-import { parsePhone } from "../lib/phone";
 import "../lib/react-global";
 
 export interface RegistrationRepository {
@@ -167,7 +167,7 @@ export function createDrizzleRegistrationRepository(
         expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS),
       });
 
-      const link = `${getInscripcionsPublicOrigin()}/verificar?token=${rawToken}`;
+      const link = `${getInscripcionsPublicOrigin()}/verificar#token=${rawToken}`;
 
       // Decision (IA-40): nothing past this point may roll back or fail the
       // request — `getEmailer()` construction (e.g. a misconfigured

@@ -94,6 +94,7 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3004
+          API_INTERNAL_URL: http://localhost:3004
           NEXT_PUBLIC_INSCRIPCIONS_STATE: "on"
           RESEND_API_KEY: ci-placeholder
           CONTACT_FORM_FROM: noreply@iaestelleida.cat
@@ -102,3 +103,62 @@ jobs:
           KEYSTATIC_GITHUB_CLIENT_SECRET: ci-placeholder
           KEYSTATIC_SECRET: ci-placeholder
           NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG: ci-placeholder
+
+  container-images:
+    name: Build container images
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: false
+          cache-from: type=gha,scope=api-pr
+          cache-to: type=gha,mode=max,scope=api-pr
+
+      - name: Build inscripcions image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/inscripcions/Dockerfile
+          push: false
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://localhost:3004
+            NEXT_PUBLIC_INSCRIPCIONS_STATE=on
+            NEXT_PUBLIC_WHATSAPP_INVITE=https://chat.whatsapp.com/example
+          cache-from: type=gha,scope=inscripcions-pr
+          cache-to: type=gha,mode=max,scope=inscripcions-pr
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: false
+          build-args: |
+            NEXT_PUBLIC_INSCRIPCIONS_STATE=on
+            NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=
+            RESEND_API_KEY=build-placeholder
+            CONTACT_FORM_FROM=noreply@iaestelleida.cat
+            CONTACT_FORM_TO=ci@example.com
+          cache-from: type=gha,scope=web-pr
+          cache-to: type=gha,mode=max,scope=web-pr
+
+      # No build args: apps/admin compiles no NEXT_PUBLIC_* values into the
+      # bundle (next.config.ts reads API_INTERNAL_URL at runtime), so the
+      # image build needs nothing threaded through here.
+      - name: Build admin image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/admin/Dockerfile
+          push: false
+          cache-from: type=gha,scope=admin-pr
+          cache-to: type=gha,mode=max,scope=admin-pr

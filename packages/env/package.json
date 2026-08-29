@@ -10,6 +10,7 @@
   },
   "exports": {
     "./inscripcions": "./src/inscripcions.ts",
+    "./admin/server": "./src/admin.server.ts",
     "./web/client": "./src/web.client.ts",
     "./web/server": "./src/web.server.ts"
   },

@@ -15,7 +15,9 @@
     --secondary: 206 78% 47%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 0 0% 61%;
+    /* 6.1:1 on --background, 5.6:1 on --muted. The previous 46.9% sat at
+       4.75:1 on white and dropped below 4.5:1 over any tinted surface. */
+    --muted-foreground: 215.4 16.3% 40%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
@@ -29,12 +31,65 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --sidebar-background: 210 40% 98%;
+    /* 11.6:1 solid; the group labels render it at 70% and still clear 4.5:1. */
+    --sidebar-foreground: 215.4 16.3% 22%;
+    --sidebar-primary: 202 78% 20%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 94%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 206 78% 47%;
+  }
+
+  /* Activated by a `.dark` class on an ancestor (`darkMode: "class"`).
+     Neither apps/web nor apps/inscripcions sets it, so both keep the light
+     palette above; the admin app opts in. */
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    /* The brand navy is unreadable on a dark surface, so it is lifted to the
+       same hue at 60% lightness (8.1:1 on --background) and paired with a
+       navy foreground (6.4:1 on the lifted primary). */
+    --primary: 202 78% 60%;
+    --primary-foreground: 202 80% 12%;
+    /* Kept vivid: it carries links and focus in both themes. */
+    --secondary: 206 78% 47%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 217.2 32.6% 17.5%;
+    /* 7.9:1 on --background, 5.7:1 on --muted. */
+    --muted-foreground: 215 16% 65%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 206 78% 60%;
+    --radius: 0.5rem;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 222.2 47% 8%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 202 78% 60%;
+    --sidebar-primary-foreground: 202 80% 12%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 206 78% 60%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
@@ -65,13 +120,4 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }
