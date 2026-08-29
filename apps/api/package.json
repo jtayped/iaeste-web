@@ -24,7 +24,7 @@
     "googleapis": "^160.0.0",
     "hono": "^4.10.0",
     "pg": "^8.23.0",
-    "react": "19.1.1",
+    "react": "19.2.0",
     "web-push": "^3.6.7",
     "zod": "^4.0.0"
   },
@@ -33,7 +33,7 @@
     "@repo/typescript-config": "*",
     "@types/node": "^22.13.10",
     "@types/pg": "^8.23.1",
-    "@types/react": "^19.0.10",
+    "@types/react": "^19.2.16",
     "@types/web-push": "^3.6.4",
     "dotenv-cli": "^8.0.0",
     "tsup": "^8.5.0",

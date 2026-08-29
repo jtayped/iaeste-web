@@ -24,13 +24,13 @@
     "@repo/eslint-config": "*",
     "@repo/tailwind-config": "*",
     "@repo/typescript-config": "*",
-    "@types/react": "19.0.10",
-    "react": "^19.1.1",
+    "@types/react": "19.2.16",
+    "react": "^19.2.0",
     "react-email": "^4.0.4",
     "tsx": "^4.20.0",
     "typescript": "^5.8.2"
   },
   "peerDependencies": {
-    "react": "^19"
+    "react": "^19.2.0"
   }
 }
