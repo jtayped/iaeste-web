@@ -1,0 +1,4 @@
+# continguts iaeste — media & build artefacts
+
+This directory is served at the CMS root. Keep it minimal; uploaded media lives
+on the Coolify volume at `CMS_MEDIA_DIR`, never here.

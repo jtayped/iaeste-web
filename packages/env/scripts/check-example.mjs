@@ -98,7 +98,8 @@ function listFilesRecursively(dir) {
 function findApiEnvKeys(apiSrcDir) {
   const keys = new Set();
   const directAccess = /process\.env\.([A-Z][A-Z0-9_]*)/g;
-  const requireHelper = /requireEnvironmentVariable\(\s*["']([A-Z][A-Z0-9_]*)["']/g;
+  const requireHelper =
+    /requireEnvironmentVariable\(\s*["']([A-Z][A-Z0-9_]*)["']/g;
 
   for (const file of listFilesRecursively(apiSrcDir)) {
     const content = readFileSync(file, "utf8");
@@ -137,7 +138,9 @@ async function main() {
   const fakeEnv = buildFakeEnv(envExampleContent);
   const failures = [];
 
-  console.log("Checking .env.example against @repo/env schemas and apps/api...");
+  console.log(
+    "Checking .env.example against @repo/env schemas and apps/api...",
+  );
 
   // apps/inscripcions
   const inscripcionsKeys = await loadSchemaKeys(
@@ -160,6 +163,18 @@ async function main() {
     "apps/admin",
     documentedSections.get("apps/admin") ?? new Set(),
     adminServerKeys,
+    failures,
+  );
+
+  // apps/cms
+  const cmsServerKeys = await loadSchemaKeys(
+    path.join(rootDir, "packages/env/src/cms.server.ts"),
+    fakeEnv,
+  );
+  diffSections(
+    "apps/cms",
+    documentedSections.get("apps/cms") ?? new Set(),
+    cmsServerKeys,
     failures,
   );
 

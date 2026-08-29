@@ -1,0 +1,25 @@
+# next
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+
+# local media uploads — files live on a Coolify volume in production, and in
+# a throwaway directory here. Payload keeps their metadata in Postgres.
+/.data/
+
+# env files
+.env
+.env*.local
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
