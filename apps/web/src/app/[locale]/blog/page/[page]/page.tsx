@@ -2,13 +2,9 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import BlogIndex from "@/components/blog/blog-index";
-import {
-  blogIsDynamic,
-  getStaticPaginationParams,
-  type BlogLocale,
-} from "@/lib/blog";
+import { getStaticPaginationParams, type BlogLocale } from "@/lib/blog";
 
-export const dynamicParams = blogIsDynamic ? true : false;
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return getStaticPaginationParams();

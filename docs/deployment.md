@@ -1,6 +1,6 @@
 # Deployment
 
-Four applications have production images, built from the repository root and
+Five applications have production images, built from the repository root and
 pushed to GHCR by `.github/workflows/deploy.yml` on every relevant push to
 `master`. They run on a self-hosted Coolify instance (project `iaeste-lleida`,
 one `localhost` server) behind Traefik, which terminates TLS with Let's Encrypt
@@ -71,13 +71,12 @@ arguments in image history.
 
 ### Public web site
 
-Next.js compiles both `NEXT_PUBLIC_*` values into the bundle. Changing either
-one requires a new image.
+Next.js compiles `NEXT_PUBLIC_*` values into the bundle. Changing one requires
+a new image.
 
-| Variable                                | Build value                          | Runtime value |
-| --------------------------------------- | ------------------------------------ | ------------- |
-| `NEXT_PUBLIC_INSCRIPCIONS_STATE`        | real value                           | none          |
-| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | real value when Keystatic is enabled | none          |
+| Variable                         | Build value | Runtime value |
+| -------------------------------- | ----------- | ------------- |
+| `NEXT_PUBLIC_INSCRIPCIONS_STATE` | real value  | none          |
 
 The web build also receives non-secret placeholders for the server values that
 Next.js validates while collecting page data. Coolify must supply their real
@@ -86,9 +85,9 @@ values at runtime:
 - `RESEND_API_KEY`
 - `CONTACT_FORM_FROM`
 - `CONTACT_FORM_TO`
-- `KEYSTATIC_GITHUB_CLIENT_ID`
-- `KEYSTATIC_GITHUB_CLIENT_SECRET`
-- `KEYSTATIC_SECRET`
+- `CMS_INTERNAL_URL` — internal address of `apps/cms` for the blog API
+- `CMS_PUBLIC_ORIGIN` — browser-facing CMS origin, for `next/image` media URLs
+- `CMS_PREVIEW_SECRET`, `WEB_REVALIDATE_SECRET` — shared with `apps/cms`
 
 ### Registration site
 
@@ -132,7 +131,7 @@ Set the real values on the Coolify resource:
 - `WEB_PUBLIC_ORIGIN`, `WEB_REVALIDATE_URL`, `WEB_REVALIDATE_SECRET` — the
   public site origin and its protected cache-invalidation endpoint + secret
 
-`apps/web` gains the matching `BLOG_SOURCE` (`keystatic` until cutover),
+`apps/web` reads the blog from this CMS and carries the matching
 `CMS_INTERNAL_URL`, `CMS_PUBLIC_ORIGIN`, `CMS_PREVIEW_SECRET` and
 `WEB_REVALIDATE_SECRET`.
 
@@ -156,15 +155,12 @@ a web change never ships ahead of the CMS it reads. New secrets/variables:
 
 `.github/workflows/deploy.yml` runs only for relevant pushes to `master` and
 manual rollbacks. Pull requests run `.github/workflows/ci.yml`, which compiles
-the workspaces and builds all four Dockerfiles without logging in to GHCR,
+the workspaces and builds all five Dockerfiles without logging in to GHCR,
 pushing images, or calling Coolify.
 
-On an ordinary push, the workflow builds all four images. A change limited to
-`content/**` or `keystatic.config.ts` is the one exception: it selects only
-`iaeste-web`, preserving the blog publishing flow without rerunning the API
-migration entrypoint.
+On an ordinary push, the workflow builds all five images.
 
-The selected images build in parallel and receive two tags:
+The images build in parallel and receive two tags:
 
 - `main`, the moving production tag configured in Coolify;
 - `sha-<full commit SHA>`, the immutable rollback tag.
@@ -173,15 +169,18 @@ The selected images build in parallel and receive two tags:
 image has a separate GitHub Actions build cache. Build jobs have only
 `contents: read` and `packages: write`; deployment jobs have `contents: read`.
 
-After all selected builds finish, the workflow deploys in this order:
+After all builds finish, the workflow deploys in this order:
 
-1. API, except for a content-only deployment;
-2. registration site and public web site, in parallel, after the API reports a
-   finished deployment and passes its public health check.
+1. API;
+2. admin, registration site and CMS, in parallel, after the API reports a
+   finished deployment and passes its public health check;
+3. public web site, after the CMS it reads reports a finished deployment and
+   passes its health check.
 
-The API gate matters because its entrypoint applies migrations. A failed image
-build, migration, Coolify deployment, or health check blocks both frontend
-deployments. Only content-only changes skip the API deployment.
+The API gate matters because its entrypoint applies migrations; the CMS gate
+before web matters because the CMS entrypoint applies its own migrations and
+web reads the CMS. A failed image build, migration, Coolify deployment, or
+health check anywhere on that chain blocks the deployments downstream of it.
 
 The workflow uses each resource's authenticated Coolify deploy webhook, then
 polls `GET /api/v1/deployments/{uuid}`. An accepted webhook is not treated as a
@@ -197,19 +196,22 @@ Add these Actions secrets:
 | `COOLIFY_TOKEN`                       | Coolify API token with deploy permission     |
 | `COOLIFY_API_DEPLOY_WEBHOOK`          | Deploy webhook copied from the API resource  |
 | `COOLIFY_INSCRIPCIONS_DEPLOY_WEBHOOK` | Deploy webhook for the registration resource |
+| `COOLIFY_ADMIN_DEPLOY_WEBHOOK`        | Deploy webhook for the admin resource        |
+| `COOLIFY_CMS_DEPLOY_WEBHOOK`          | Deploy webhook for the CMS resource          |
 | `COOLIFY_WEB_DEPLOY_WEBHOOK`          | Deploy webhook for the public web resource   |
 
 Add these repository variables:
 
-| Variable                                | Value                                    |
-| --------------------------------------- | ---------------------------------------- |
-| `NEXT_PUBLIC_API_URL`                   | public API origin                        |
-| `NEXT_PUBLIC_INSCRIPCIONS_STATE`        | `on` or `off`; defaults to `on` in CI    |
-| `NEXT_PUBLIC_WHATSAPP_INVITE`           | committee invitation URL                 |
-| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | Keystatic GitHub App slug                |
-| `COOLIFY_API_HEALTH_URL`                | public API `/health` URL                 |
-| `COOLIFY_INSCRIPCIONS_HEALTH_URL`       | public registration-site URL             |
-| `COOLIFY_WEB_HEALTH_URL`                | public web URL, normally ending in `/ca` |
+| Variable                          | Value                                    |
+| --------------------------------- | ---------------------------------------- |
+| `NEXT_PUBLIC_API_URL`             | public API origin                        |
+| `NEXT_PUBLIC_INSCRIPCIONS_STATE`  | `on` or `off`; defaults to `on` in CI    |
+| `NEXT_PUBLIC_WHATSAPP_INVITE`     | committee invitation URL                 |
+| `COOLIFY_API_HEALTH_URL`          | public API `/health` URL                 |
+| `COOLIFY_INSCRIPCIONS_HEALTH_URL` | public registration-site URL             |
+| `COOLIFY_ADMIN_HEALTH_URL`        | public admin URL, ending in `/sign-in`   |
+| `COOLIFY_CMS_HEALTH_URL`          | public CMS URL, ending in `/api/health`  |
+| `COOLIFY_WEB_HEALTH_URL`          | public web URL, normally ending in `/ca` |
 
 `GITHUB_TOKEN` handles the GHCR login. If GHCR keeps the packages private, add
 a registry credential with `read:packages` to the Coolify server.
@@ -219,24 +221,28 @@ a registry credential with `read:packages` to the Coolify server.
 Create one **Docker Image** resource per application. Do not choose a source
 repository, Dockerfile, Nixpacks, or another source-build option. Configure:
 
-| Resource     | Image                                      | Port | Health path |
-| ------------ | ------------------------------------------ | ---- | ----------- |
-| web          | `ghcr.io/<owner>/iaeste-web:main`          | 3000 | `/ca`       |
-| inscripcions | `ghcr.io/<owner>/iaeste-inscripcions:main` | 3003 | `/`         |
-| api          | `ghcr.io/<owner>/iaeste-api:main`          | 3004 | `/health`   |
-| admin        | `ghcr.io/<owner>/iaeste-admin:main`        | 3005 | `/sign-in`  |
+| Resource     | Image                                      | Port | Health path   |
+| ------------ | ------------------------------------------ | ---- | ------------- |
+| web          | `ghcr.io/<owner>/iaeste-web:main`          | 3000 | `/ca`         |
+| inscripcions | `ghcr.io/<owner>/iaeste-inscripcions:main` | 3003 | `/`           |
+| api          | `ghcr.io/<owner>/iaeste-api:main`          | 3004 | `/health`     |
+| admin        | `ghcr.io/<owner>/iaeste-admin:main`        | 3005 | `/sign-in`    |
+| cms          | `ghcr.io/<owner>/iaeste-cms:main`          | 3006 | `/api/health` |
 
 Set each hostname, enable automatic TLS and HTTP-to-HTTPS redirects, disable
 Coolify's own healthcheck (see the intro), and copy the authenticated deploy
 webhook into the matching GitHub secret. Put database and registration-email
-credentials only on the API resource. Keep the database on Coolify's managed
-network rather than exposing PostgreSQL publicly.
+credentials only on the API resource; the CMS carries its own isolated
+`iaeste_cms` credentials and nothing else's. Keep both databases on Coolify's
+managed network rather than exposing PostgreSQL publicly. Give the CMS resource
+a `/data/media` persistent volume and a stable `iaeste-cms` network alias (web
+reaches it at `http://iaeste-cms:3006`).
 
 ## Rollback
 
 Open the **Deploy** workflow in GitHub Actions and choose **Run workflow**.
 Enter an existing `sha-<40 lowercase hex characters>` tag and select one
-resource. Select `all` only when that SHA tag exists for all four images, such
+resource. Select `all` only when that SHA tag exists for all five images, such
 as a commit that changed the workflow or root lockfile.
 
 The rollback uses Coolify's application rollback endpoint. An `all` rollback

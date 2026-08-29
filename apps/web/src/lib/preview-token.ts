@@ -13,6 +13,13 @@ import { env } from "@repo/env/web/server";
 const LOCALES = ["ca", "es", "en"] as const;
 export type PreviewLocale = (typeof LOCALES)[number];
 
+/**
+ * Name of the httpOnly cookie that remembers which document/locale a preview
+ * session is showing. Lives here rather than in the preview route because a
+ * Next.js `route.ts` may only export route handlers and config.
+ */
+export const PREVIEW_COOKIE = "blog-preview";
+
 export type PreviewClaims = {
   id: string;
   locale: PreviewLocale;

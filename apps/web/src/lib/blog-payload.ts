@@ -7,7 +7,7 @@ import {
   type BlogPostSummary,
 } from "@repo/constants/validators/blog";
 
-import { PREVIEW_COOKIE } from "@/app/api/preview/blog/[id]/route";
+import { PREVIEW_COOKIE } from "@/lib/preview-token";
 
 import {
   fetchBlogList,
@@ -23,9 +23,9 @@ import {
 } from "./blog-types";
 
 /**
- * CMS-backed blog reader. Same surface as `blog-keystatic.ts`; every function
- * returns the shared `BlogPost` shape. Publication filtering, locale fallback
- * and alternates all come resolved from the narrow CMS API.
+ * CMS-backed blog reader. Every function returns the `BlogPost` shape.
+ * Publication filtering, locale fallback and alternates all come resolved
+ * from the narrow CMS API.
  */
 
 function toBlogPost(dto: BlogPostSummary | BlogPostDetail): BlogPost {
@@ -40,7 +40,9 @@ function toBlogPost(dto: BlogPostSummary | BlogPostDetail): BlogPost {
     title: dto.title,
     excerpt: dto.excerpt,
     author: dto.author,
-    publishDate: dto.publishDate,
+    // Consumers format `publishDate` as a calendar date; the CMS returns a
+    // full ISO timestamp, so trim it to `YYYY-MM-DD`.
+    publishDate: dto.publishDate.slice(0, 10),
     tags: dto.tags.map((tag) => tag.label),
     coverImage: dto.coverImage?.hero?.url ?? dto.coverImage?.original.url ?? "",
     coverImageMeta: dto.coverImage
@@ -49,7 +51,6 @@ function toBlogPost(dto: BlogPostSummary | BlogPostDetail): BlogPost {
           height: (dto.coverImage.hero ?? dto.coverImage.original).height,
         }
       : null,
-    body: null,
     bodyLexical: detail?.body ?? null,
     alternates: detail
       ? detail.alternates.map(

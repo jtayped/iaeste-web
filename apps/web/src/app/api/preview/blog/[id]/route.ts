@@ -2,11 +2,9 @@ import { cookies, draftMode } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { fetchBlogPreview } from "@/lib/cms-blog-client";
-import { verifyPreviewToken } from "@/lib/preview-token";
+import { PREVIEW_COOKIE, verifyPreviewToken } from "@/lib/preview-token";
 
 export const dynamic = "force-dynamic";
-
-export const PREVIEW_COOKIE = "blog-preview";
 
 /**
  * Entry point for a CMS preview link. Verifies the short-lived HMAC token,

@@ -1,7 +1,7 @@
 import { cookies, draftMode } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { PREVIEW_COOKIE } from "../[id]/route";
+import { PREVIEW_COOKIE } from "@/lib/preview-token";
 
 export const dynamic = "force-dynamic";
 

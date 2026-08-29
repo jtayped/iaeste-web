@@ -197,16 +197,16 @@ display classes go in `className`, which is applied to the `<th>` and every
 
 ## The blog CMS link
 
-The marketing site's Keystatic CMS is linked from the sidebar's `organització`
+The blog's Payload CMS (`apps/cms`) is linked from the sidebar's `organització`
 group. It is modelled in `src/lib/nav.ts` as an `externalNavItems` entry, kept
 out of `navGroups` on purpose: it is not a route of this app, so it must never
 match `isActive`, resolve a breadcrumb, or be prefetched by `<Link>` (it renders
 as a plain `<a target="_blank" rel="noopener noreferrer">`).
 
-Its href is not in that module either. `WEB_PUBLIC_ORIGIN` is server-only
-config, so the `(app)` layout resolves `${env.WEB_PUBLIC_ORIGIN}/keystatic` and
+Its href is not in that module either. `CMS_PUBLIC_ORIGIN` is server-only
+config, so the `(app)` layout resolves `${env.CMS_PUBLIC_ORIGIN}/admin` and
 passes it down as `externalHrefs` — the client sidebar never imports
-`@repo/env`, and nothing about the marketing origin reaches the browser bundle
+`@repo/env`, and nothing about the CMS origin reaches the browser bundle
 beyond the one resolved URL.
 
 ## Data fetching

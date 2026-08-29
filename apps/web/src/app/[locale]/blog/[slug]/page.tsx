@@ -7,7 +7,6 @@ import { notFound } from "next/navigation";
 import { BlogArticleBody } from "@/components/blog/blog-article-body";
 import { Link } from "@/i18n/routing";
 import {
-  blogIsDynamic,
   getBlogPost,
   getPostVersions,
   getStaticPostParams,
@@ -21,9 +20,9 @@ const localeLabels: Record<BlogLocale, string> = {
   en: "english",
 };
 
-// With the CMS backend a new article must be routable without rebuilding the
-// site, so dynamic params are allowed and nothing is pre-generated.
-export const dynamicParams = blogIsDynamic ? true : false;
+// A new article must be routable without rebuilding the site, so dynamic
+// params are allowed and nothing is pre-generated.
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return getStaticPostParams();

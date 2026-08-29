@@ -33,7 +33,7 @@ npm run generate:api  # regenerate openapi.json + the typed client
 Scope to one workspace while iterating: `npm run --workspace @repo/constants test`.
 
 `apps/cms` also has Payload commands — `generate:types`, `generate:importmap`,
-`migrate:create`, `migrate`, `migrate:blog`. Its `payload-types.ts` and
+`migrate:create`, `migrate`. Its `payload-types.ts` and
 `src/app/(payload)/admin/importMap.js` are generated; CI fails when they are
 stale. See `apps/cms/AGENTS.md`.
 

@@ -18,8 +18,7 @@ const nextConfig: NextConfig = {
   // them.
   outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
   images: {
-    // Cover images served by apps/cms once BLOG_SOURCE=payload. The Keystatic
-    // path uses same-origin /api/blog-assets/* and needs no entry here.
+    // Blog cover images are served by apps/cms (the Payload CMS).
     remotePatterns: [
       { protocol: "https", hostname: "cms.iaestelleida.cat", pathname: "/**" },
       {

@@ -1,4 +1,9 @@
-/* Payload writes migration files here via `npm run --workspace cms migrate:create`.
- * They are committed alongside the collection change that produced them and run
- * before the production server starts. Do not hand-edit generated migrations. */
-export {};
+import * as migration_20260829_201004 from './20260829_201004';
+
+export const migrations = [
+  {
+    up: migration_20260829_201004.up,
+    down: migration_20260829_201004.down,
+    name: '20260829_201004'
+  },
+];

@@ -1,7 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalDependencies": ["content/**", "keystatic.config.ts"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -48,9 +47,6 @@
     "WEB_PUSH_VAPID_PUBLIC_KEY",
     "WEB_PUSH_VAPID_PRIVATE_KEY",
     "WEB_PUSH_SUBJECT",
-    "KEYSTATIC_GITHUB_CLIENT_ID",
-    "KEYSTATIC_GITHUB_CLIENT_SECRET",
-    "KEYSTATIC_SECRET",
     "CMS_DATABASE_URL",
     "CMS_PAYLOAD_SECRET",
     "CMS_PUBLIC_ORIGIN",
@@ -60,10 +56,8 @@
     "CMS_INTERNAL_URL",
     "WEB_REVALIDATE_URL",
     "WEB_REVALIDATE_SECRET",
-    "BLOG_SOURCE",
     "NEXT_PUBLIC_API_URL",
     "NEXT_PUBLIC_INSCRIPCIONS_STATE",
-    "NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG",
     "NEXT_PUBLIC_WHATSAPP_INVITE"
   ],
   "globalPassThroughEnv": ["NODE_ENV", "CI", "PORT", "npm_lifecycle_event"]

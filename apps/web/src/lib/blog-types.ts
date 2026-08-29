@@ -1,9 +1,8 @@
 import type { LexicalState } from "@repo/constants/validators/blog";
 
 /**
- * Backend-agnostic blog types. Both readers — `blog-keystatic.ts` (Markdown
- * files) and `blog-payload.ts` (the CMS API) — produce exactly this shape, so
- * page components never branch on `BLOG_SOURCE`.
+ * Blog types produced by the Payload CMS reader (`blog-payload.ts`). Page
+ * components import these from `@/lib/blog`.
  */
 
 export const blogLocales = ["ca", "es", "en"] as const;
@@ -11,11 +10,8 @@ export const postsPerPage = 6;
 
 export type BlogLocale = (typeof blogLocales)[number];
 
-/** A resolved Markdoc body, as returned by the Keystatic reader thunk. */
-export type MarkdocBody = () => Promise<{ node: unknown }>;
-
 export type BlogPost = {
-  /** Stable identity: the translation key (Keystatic) or document id (CMS). */
+  /** Stable identity: the CMS document id. */
   translationKey: string;
   slug: string;
   locale: BlogLocale;
@@ -27,16 +23,14 @@ export type BlogPost = {
   author: string;
   publishDate: string;
   tags: string[];
-  /** Same-origin URL (Keystatic) or absolute CMS URL (Payload). */
+  /** Absolute CMS media URL. */
   coverImage: string;
   coverImageMeta: { width: number; height: number } | null;
-  /** Exactly one of these is set, depending on the backend. */
-  body: MarkdocBody | null;
+  /** The article body as a Lexical editor state. Null on a list summary. */
   bodyLexical: LexicalState | null;
   /**
-   * Complete translations of this article. The CMS reader fills this from the
-   * detail response; the Keystatic reader leaves it null and callers fall back
-   * to `getPostVersions`.
+   * Complete translations of this article, from the detail response. Null on
+   * a list summary; callers then fall back to `getPostVersions`.
    */
   alternates: BlogPostVersion[] | null;
 };

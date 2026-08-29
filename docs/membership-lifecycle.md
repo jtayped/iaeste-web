@@ -27,8 +27,8 @@ the plan. If the committee later says no, IA-54 is deleted outright — nothing
 else depends on it.
 
 **4. Does the site need a blog, and will non-developers write posts?**
-Yes to both. IA-55 (Keystatic, git-backed CMS mounted in `apps/web`) proceeds
-as specified.
+Yes to both. The blog is served from `apps/cms`, a self-hosted Payload CMS
+with its own database and editor accounts.
 
 **5. Who operates this after the current committee rotates?**
 A volunteer organisation replaces its technical people annually. This is the

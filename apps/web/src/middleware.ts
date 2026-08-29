@@ -4,7 +4,7 @@ import { routing } from "@/i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  // Keystatic owns unlocalized UI and API routes. Everything else without a
+  // API routes and Next internals are unlocalized. Everything else without a
   // file extension goes through next-intl's locale routing.
-  matcher: ["/((?!api(?:/|$)|keystatic(?:/|$)|_next(?:/|$)|.*\\..*).*)"],
+  matcher: ["/((?!api(?:/|$)|_next(?:/|$)|.*\\..*).*)"],
 };

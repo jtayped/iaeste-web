@@ -11,8 +11,6 @@ on:
       - "apps/cms/**"
       - "apps/inscripcions/**"
       - "apps/web/**"
-      - "content/**"
-      - "keystatic.config.ts"
       - "packages/api-client/**"
       - "packages/constants/**"
       - "packages/db/**"
@@ -58,7 +56,6 @@ jobs:
       contents: read
     outputs:
       full: ${{ steps.filter.outputs.full }}
-      content: ${{ steps.filter.outputs.content }}
     steps:
       - uses: actions/checkout@v4
 
@@ -84,9 +81,6 @@ jobs:
               - 'package.json'
               - 'package-lock.json'
               - 'turbo.json'
-            content:
-              - 'content/**'
-              - 'keystatic.config.ts'
 
   build-admin:
     name: Build and push iaeste-admin
@@ -228,9 +222,7 @@ jobs:
 
   build-web:
     name: Build and push iaeste-web
-    if: >-
-      github.event_name == 'push' &&
-      (needs.detect-changes.outputs.full == 'true' || needs.detect-changes.outputs.content == 'true')
+    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
     needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
@@ -260,7 +252,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             NEXT_PUBLIC_INSCRIPCIONS_STATE=${{ vars.NEXT_PUBLIC_INSCRIPCIONS_STATE || 'on' }}
-            NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=${{ vars.NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG }}
             RESEND_API_KEY=build-placeholder
             CONTACT_FORM_FROM=noreply@iaestelleida.cat
             CONTACT_FORM_TO=ci@example.com
@@ -366,8 +357,7 @@ jobs:
     if: >-
       always() && !cancelled() &&
       ((github.event_name == 'push' && needs.build-web.result == 'success' &&
-      (needs.detect-changes.outputs.full != 'true' || needs.deploy-api.result == 'success') &&
-      (needs.detect-changes.outputs.full != 'true' || needs.deploy-cms.result == 'success')) ||
+      needs.deploy-api.result == 'success' && needs.deploy-cms.result == 'success') ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'web' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
     needs: [detect-changes, build-web, deploy-api, deploy-cms]

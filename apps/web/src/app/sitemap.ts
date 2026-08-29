@@ -1,9 +1,7 @@
 import type { MetadataRoute } from "next";
 
-import { env } from "@repo/env/web/server";
-
 import { fetchBlogSitemap } from "@/lib/cms-blog-client";
-import { blogLocales, getPostsInLocale } from "@/lib/blog";
+import { blogLocales } from "@/lib/blog";
 
 const host = "https://iaestelleida.cat";
 const paths = ["", "/student", "/incommings", "/blog"];
@@ -30,41 +28,8 @@ function staticEntries(): MetadataRoute.Sitemap {
   );
 }
 
-/** Keystatic path: match translations by translationKey across locale files. */
-async function keystaticPostEntries(): Promise<MetadataRoute.Sitemap> {
-  const postsByLocale = await Promise.all(
-    blogLocales.map(async (locale) => ({
-      locale,
-      posts: await getPostsInLocale(locale),
-    })),
-  );
-  const allPosts = postsByLocale.flatMap(({ locale, posts }) =>
-    posts.map((post) => ({ ...post, locale })),
-  );
-
-  return allPosts.map((post) => {
-    const translations = allPosts.filter(
-      (candidate) => candidate.translationKey === post.translationKey,
-    );
-    return {
-      url: `${host}/${post.locale}/blog/${post.slug}`,
-      lastModified: post.publishDate,
-      alternates: {
-        languages: Object.fromEntries(
-          translations.map((translation) => [
-            translation.locale,
-            `${host}/${translation.locale}/blog/${translation.slug}`,
-          ]),
-        ),
-      },
-      changeFrequency: "monthly",
-      priority: 0.7,
-    } satisfies MetadataRoute.Sitemap[0];
-  });
-}
-
-/** CMS path: the sitemap endpoint already excludes fallback and draft URLs. */
-async function payloadPostEntries(): Promise<MetadataRoute.Sitemap> {
+/** The CMS sitemap endpoint already excludes fallback and draft URLs. */
+async function postEntries(): Promise<MetadataRoute.Sitemap> {
   const { entries } = await fetchBlogSitemap();
   return entries.map((entry) => ({
     url: entry.url,
@@ -75,10 +40,5 @@ async function payloadPostEntries(): Promise<MetadataRoute.Sitemap> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const postEntries =
-    env.BLOG_SOURCE === "payload"
-      ? await payloadPostEntries()
-      : await keystaticPostEntries();
-
-  return [...staticEntries(), ...postEntries];
+  return [...staticEntries(), ...(await postEntries())];
 }
