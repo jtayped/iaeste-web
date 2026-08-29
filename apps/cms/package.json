@@ -15,6 +15,7 @@
     "migrate": "npm run with-env -- payload migrate",
     "migrate:create": "npm run with-env -- payload migrate:create",
     "migrate:status": "npm run with-env -- payload migrate:status",
+    "migrate:blog": "npm run with-env -- tsx src/scripts/migrate-keystatic-blog.ts",
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
@@ -36,6 +37,8 @@
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
     "@types/node": "^22.13.10",
+    "gray-matter": "^4.0.3",
+    "tsx": "^4.20.0",
     "@types/react": "19.2.16",
     "@types/react-dom": "19.2.4",
     "dotenv-cli": "^8.0.0",
