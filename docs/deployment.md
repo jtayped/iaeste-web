@@ -6,12 +6,13 @@ pushed to GHCR by `.github/workflows/deploy.yml` on every relevant push to
 one `localhost` server) behind Traefik, which terminates TLS with Let's Encrypt
 certificates. The public site moved here from Vercel on 2026-08-29.
 
-| Image                 | Dockerfile                     | Port | Health path | Host                        |
-| --------------------- | ------------------------------ | ---- | ----------- | --------------------------- |
-| `iaeste-web`          | `apps/web/Dockerfile`          | 3000 | `/ca`       | `iaestelleida.cat`, `www.`  |
-| `iaeste-inscripcions` | `apps/inscripcions/Dockerfile` | 3003 | `/`         | `inscripcions.iaestelleida.cat` |
-| `iaeste-api`          | `apps/api/Dockerfile`          | 3004 | `/health`   | `api.iaestelleida.cat`      |
-| `iaeste-admin`        | `apps/admin/Dockerfile`        | 3005 | `/sign-in`  | `admin.iaestelleida.cat`    |
+| Image                 | Dockerfile                     | Port | Health path   | Host                            |
+| --------------------- | ------------------------------ | ---- | ------------- | ------------------------------- |
+| `iaeste-web`          | `apps/web/Dockerfile`          | 3000 | `/ca`         | `iaestelleida.cat`, `www.`      |
+| `iaeste-inscripcions` | `apps/inscripcions/Dockerfile` | 3003 | `/`           | `inscripcions.iaestelleida.cat` |
+| `iaeste-api`          | `apps/api/Dockerfile`          | 3004 | `/health`     | `api.iaestelleida.cat`          |
+| `iaeste-admin`        | `apps/admin/Dockerfile`        | 3005 | `/sign-in`    | `admin.iaestelleida.cat`        |
+| `iaeste-cms`          | `apps/cms/Dockerfile`          | 3006 | `/api/health` | `cms.iaestelleida.cat`          |
 
 Each Coolify resource has its own container healthcheck **disabled** — the
 `node:22-slim` images carry no `curl`/`wget` for Coolify's generated check to
@@ -113,6 +114,43 @@ OpenAPI document. Set the real values on the Coolify resource:
 The image fixes `API_PORT=3004`. The dormant Google Sheets projection reads
 the `SHEETS_*` variables only when called; it is not part of registration or
 container startup.
+
+### CMS
+
+`iaeste-cms` is a Payload CMS with its **own** PostgreSQL database
+(`iaeste_cms`, role `iaeste_cms` privileged only on that database — never the
+API's `DATABASE_URL`) and its **own** media volume. The image bakes only
+non-secret placeholders while `next build` compiles `@repo/env/cms/server`.
+Set the real values on the Coolify resource:
+
+- `CMS_DATABASE_URL` — the isolated `iaeste_cms` database
+- `CMS_PAYLOAD_SECRET` — ≥ 32 random bytes (`openssl rand -base64 32`)
+- `CMS_PUBLIC_ORIGIN` — `https://cms.iaestelleida.cat`
+- `CMS_MEDIA_DIR` — `/data/media` (the persistent volume mount)
+- `CMS_EMAIL_FROM`, `RESEND_API_KEY` — account and password-reset email
+- `CMS_PREVIEW_SECRET` — shared with `apps/web` for signed draft preview
+- `WEB_PUBLIC_ORIGIN`, `WEB_REVALIDATE_URL`, `WEB_REVALIDATE_SECRET` — the
+  public site origin and its protected cache-invalidation endpoint + secret
+
+`apps/web` gains the matching `BLOG_SOURCE` (`keystatic` until cutover),
+`CMS_INTERNAL_URL`, `CMS_PUBLIC_ORIGIN`, `CMS_PREVIEW_SECRET` and
+`WEB_REVALIDATE_SECRET`.
+
+Mount the media volume at `/data/media` through Coolify persistent storage and
+verify uid 1001 can create, read and delete files before inviting editors. A
+database backup without its matching media backup is incomplete — configure
+daily backups of both `iaeste_cms` and `/data/media`, 30-day retention for the
+first production month, and run one restore drill (an imported article, its
+cover image and an older draft version must all survive).
+
+The container entrypoint runs `payload migrate` before Next starts; a
+migration failure stops the container before it can become healthy. This is
+independent of the API's Drizzle migrator — neither touches the other's
+schema.
+
+Deploy order: `deploy-cms` runs after `deploy-api` and before `deploy-web`, so
+a web change never ships ahead of the CMS it reads. New secrets/variables:
+`COOLIFY_CMS_DEPLOY_WEBHOOK`, `COOLIFY_CMS_HEALTH_URL`.
 
 ## GitHub Actions and GHCR
 

@@ -5,17 +5,18 @@ product and copy rules; this file covers structure and mechanics.
 
 ## Layout
 
-| Path                  | What it is                                                             |
-| --------------------- | ---------------------------------------------------------------------- |
-| `apps/web`            | Public marketing site. Next.js 15, `next-intl` (ca/es/en, ca default). |
-| `apps/inscripcions`   | Registration site. Next.js 15, Catalan only.                           |
-| `apps/api`            | Hono HTTP API. The only writer to Google Sheets.                       |
-| `packages/constants`  | Shared domain data and Zod schemas. No React, no I/O.                  |
-| `packages/env`        | The only place that reads `process.env` in front-end code.             |
-| `packages/api-client` | Typed client **generated** from `apps/api/openapi.json`.               |
-| `packages/ui`         | Shared shadcn/Radix components. See `packages/ui/AGENTS.md`.           |
-| `packages/email`      | React Email templates and a Resend sender.                             |
-| `tooling/*`           | Shared ESLint, Tailwind, and TypeScript configs.                       |
+| Path                  | What it is                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `apps/web`            | Public marketing site. Next.js 15, `next-intl` (ca/es/en, ca default).               |
+| `apps/inscripcions`   | Registration site. Next.js 15, Catalan only.                                         |
+| `apps/api`            | Hono HTTP API. The only writer to Google Sheets.                                     |
+| `apps/cms`            | Payload CMS for the blog. Next.js 16, own `iaeste_cms` DB. See `apps/cms/AGENTS.md`. |
+| `packages/constants`  | Shared domain data and Zod schemas. No React, no I/O.                                |
+| `packages/env`        | The only place that reads `process.env` in front-end code.                           |
+| `packages/api-client` | Typed client **generated** from `apps/api/openapi.json`.                             |
+| `packages/ui`         | Shared shadcn/Radix components. See `packages/ui/AGENTS.md`.                         |
+| `packages/email`      | React Email templates and a Resend sender.                                           |
+| `tooling/*`           | Shared ESLint, Tailwind, and TypeScript configs.                                     |
 
 ## Commands
 
@@ -30,6 +31,11 @@ npm run generate:api  # regenerate openapi.json + the typed client
 ```
 
 Scope to one workspace while iterating: `npm run --workspace @repo/constants test`.
+
+`apps/cms` also has Payload commands — `generate:types`, `generate:importmap`,
+`migrate:create`, `migrate`, `migrate:blog`. Its `payload-types.ts` and
+`src/app/(payload)/admin/importMap.js` are generated; CI fails when they are
+stale. See `apps/cms/AGENTS.md`.
 
 ## Where shared things live
 
