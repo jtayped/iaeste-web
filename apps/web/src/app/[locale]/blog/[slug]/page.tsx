@@ -1,13 +1,13 @@
-import Markdoc from "@markdoc/markdoc";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import React from "react";
 
+import { BlogArticleBody } from "@/components/blog/blog-article-body";
 import { Link } from "@/i18n/routing";
 import {
+  blogIsDynamic,
   getBlogPost,
   getPostVersions,
   getStaticPostParams,
@@ -21,7 +21,9 @@ const localeLabels: Record<BlogLocale, string> = {
   en: "english",
 };
 
-export const dynamicParams = false;
+// With the CMS backend a new article must be routable without rebuilding the
+// site, so dynamic params are allowed and nothing is pre-generated.
+export const dynamicParams = blogIsDynamic ? true : false;
 
 export function generateStaticParams() {
   return getStaticPostParams();
@@ -92,14 +94,8 @@ export default async function BlogPostPage({
 
   if (!post) notFound();
 
-  const [{ node }, versions] = await Promise.all([
-    post.body(),
-    getPostVersions(post.translationKey),
-  ]);
-  const errors = Markdoc.validate(node);
-  if (errors.length > 0) throw new Error(`invalid Markdoc in ${post.slug}`);
-
-  const content = Markdoc.transform(node);
+  const versions =
+    post.alternates ?? (await getPostVersions(post.translationKey));
 
   return (
     <article>
@@ -165,9 +161,7 @@ export default async function BlogPostPage({
             </nav>
           )}
 
-          <div className="blog-prose">
-            {Markdoc.renderers.react(content, React)}
-          </div>
+          <BlogArticleBody post={post} />
 
           <div className="mt-16 flex flex-wrap gap-2 border-t pt-7">
             {post.tags.map((tag) => (

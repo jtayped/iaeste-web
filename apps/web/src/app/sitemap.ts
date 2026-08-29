@@ -1,12 +1,15 @@
 import type { MetadataRoute } from "next";
 
+import { env } from "@repo/env/web/server";
+
+import { fetchBlogSitemap } from "@/lib/cms-blog-client";
 import { blogLocales, getPostsInLocale } from "@/lib/blog";
 
 const host = "https://iaestelleida.cat";
 const paths = ["", "/student", "/incommings", "/blog"];
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const sitemapEntries = paths.flatMap((path) =>
+function staticEntries(): MetadataRoute.Sitemap {
+  return paths.flatMap((path) =>
     blogLocales.map((locale) => {
       const url = `${host}/${locale}${path}`;
       const alternates = Object.fromEntries(
@@ -18,16 +21,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       return {
         url,
-        lastModified: new Date().toISOString().split("T")[0], // Use date without time
-        alternates: {
-          languages: alternates,
-        },
-        changeFrequency: path === "" ? "weekly" : "monthly", // More specific change frequency
-        priority: path === "" ? 1.0 : 0.8, // Prioritize homepage
+        lastModified: new Date().toISOString().split("T")[0],
+        alternates: { languages: alternates },
+        changeFrequency: path === "" ? "weekly" : "monthly",
+        priority: path === "" ? 1.0 : 0.8,
       } satisfies MetadataRoute.Sitemap[0];
     }),
   );
+}
 
+/** Keystatic path: match translations by translationKey across locale files. */
+async function keystaticPostEntries(): Promise<MetadataRoute.Sitemap> {
   const postsByLocale = await Promise.all(
     blogLocales.map(async (locale) => ({
       locale,
@@ -37,11 +41,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const allPosts = postsByLocale.flatMap(({ locale, posts }) =>
     posts.map((post) => ({ ...post, locale })),
   );
-  const postEntries = allPosts.map((post) => {
+
+  return allPosts.map((post) => {
     const translations = allPosts.filter(
       (candidate) => candidate.translationKey === post.translationKey,
     );
-
     return {
       url: `${host}/${post.locale}/blog/${post.slug}`,
       lastModified: post.publishDate,
@@ -57,6 +61,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     } satisfies MetadataRoute.Sitemap[0];
   });
+}
 
-  return [...sitemapEntries, ...postEntries];
+/** CMS path: the sitemap endpoint already excludes fallback and draft URLs. */
+async function payloadPostEntries(): Promise<MetadataRoute.Sitemap> {
+  const { entries } = await fetchBlogSitemap();
+  return entries.map((entry) => ({
+    url: entry.url,
+    lastModified: entry.lastModified.split("T")[0],
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const postEntries =
+    env.BLOG_SOURCE === "payload"
+      ? await payloadPostEntries()
+      : await keystaticPostEntries();
+
+  return [...staticEntries(), ...postEntries];
 }

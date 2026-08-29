@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
   // rather than stopping at `apps/web`, or the traced output silently omits
   // them.
   outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
+  images: {
+    // Cover images served by apps/cms once BLOG_SOURCE=payload. The Keystatic
+    // path uses same-origin /api/blog-assets/* and needs no entry here.
+    remotePatterns: [
+      { protocol: "https", hostname: "cms.iaestelleida.cat", pathname: "/**" },
+      { protocol: "http", hostname: "localhost", port: "3006", pathname: "/**" },
+    ],
+  },
 };
 
 export default withNextIntl(nextConfig);

@@ -17,6 +17,12 @@ const schema = z.object({
    * Coolify this is the internal service address; locally the dev port.
    */
   CMS_INTERNAL_URL: z.string().url().default("http://localhost:3006"),
+  /**
+   * Browser-facing origin of `apps/cms`, used only to build absolute media
+   * URLs for `next/image`. Must match the `remotePatterns` entry in
+   * next.config.ts.
+   */
+  CMS_PUBLIC_ORIGIN: z.string().url().default("http://localhost:3006"),
   /** Shared secret for the signed draft-preview flow (see apps/cms). */
   CMS_PREVIEW_SECRET: z.string().min(32).optional(),
   /** Shared secret the CMS signs its cache-invalidation POSTs with. */
@@ -49,6 +55,7 @@ export const env = parseEnv(
     CONTACT_FORM_TO: process.env.CONTACT_FORM_TO,
     BLOG_SOURCE: process.env.BLOG_SOURCE,
     CMS_INTERNAL_URL: process.env.CMS_INTERNAL_URL,
+    CMS_PUBLIC_ORIGIN: process.env.CMS_PUBLIC_ORIGIN,
     CMS_PREVIEW_SECRET: process.env.CMS_PREVIEW_SECRET,
     WEB_REVALIDATE_SECRET: process.env.WEB_REVALIDATE_SECRET,
     KEYSTATIC_GITHUB_CLIENT_ID: process.env.KEYSTATIC_GITHUB_CLIENT_ID,
