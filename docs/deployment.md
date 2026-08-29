@@ -1,16 +1,25 @@
 # Deployment
 
-Three applications have production images. All three images build and run
-locally. The GHCR push and Coolify deployment have not run against real
-infrastructure yet, so the Coolify sections below are setup instructions, not
-a record of a completed production deployment. `apps/admin` does not exist yet
-and has no image.
+Four applications have production images, built from the repository root and
+pushed to GHCR by `.github/workflows/deploy.yml` on every relevant push to
+`master`. They run on a self-hosted Coolify instance (project `iaeste-lleida`,
+one `localhost` server) behind Traefik, which terminates TLS with Let's Encrypt
+certificates. The public site moved here from Vercel on 2026-08-29.
 
-| Image                 | Dockerfile                     | Port | Health URL |
-| --------------------- | ------------------------------ | ---- | ---------- |
-| `iaeste-web`          | `apps/web/Dockerfile`          | 3000 | `/ca`      |
-| `iaeste-inscripcions` | `apps/inscripcions/Dockerfile` | 3003 | `/`        |
-| `iaeste-api`          | `apps/api/Dockerfile`          | 3004 | `/health`  |
+| Image                 | Dockerfile                     | Port | Health path | Host                        |
+| --------------------- | ------------------------------ | ---- | ----------- | --------------------------- |
+| `iaeste-web`          | `apps/web/Dockerfile`          | 3000 | `/ca`       | `iaestelleida.cat`, `www.`  |
+| `iaeste-inscripcions` | `apps/inscripcions/Dockerfile` | 3003 | `/`         | `inscripcions.iaestelleida.cat` |
+| `iaeste-api`          | `apps/api/Dockerfile`          | 3004 | `/health`   | `api.iaestelleida.cat`      |
+| `iaeste-admin`        | `apps/admin/Dockerfile`        | 3005 | `/sign-in`  | `admin.iaestelleida.cat`    |
+
+Each Coolify resource has its own container healthcheck **disabled** — the
+`node:22-slim` images carry no `curl`/`wget` for Coolify's generated check to
+run, and every Dockerfile already ships a Node-based `HEALTHCHECK`. The API
+resource carries a stable `iaeste-api` network alias on the `coolify` network;
+`apps/admin` reaches the API at `http://iaeste-api:3004` (baked as a build arg,
+since `next.config.ts` rewrites are serialised at build time), and the API
+reaches Postgres by the database resource's UUID on that same network.
 
 ## Image layout
 
@@ -109,10 +118,10 @@ container startup.
 
 `.github/workflows/deploy.yml` runs only for relevant pushes to `master` and
 manual rollbacks. Pull requests run `.github/workflows/ci.yml`, which compiles
-the workspaces and builds all three Dockerfiles without logging in to GHCR,
+the workspaces and builds all four Dockerfiles without logging in to GHCR,
 pushing images, or calling Coolify.
 
-On an ordinary push, the workflow builds all three images. A change limited to
+On an ordinary push, the workflow builds all four images. A change limited to
 `content/**` or `keystatic.config.ts` is the one exception: it selects only
 `iaeste-web`, preserving the blog publishing flow without rerunning the API
 migration entrypoint.
@@ -177,24 +186,31 @@ repository, Dockerfile, Nixpacks, or another source-build option. Configure:
 | web          | `ghcr.io/<owner>/iaeste-web:main`          | 3000 | `/ca`       |
 | inscripcions | `ghcr.io/<owner>/iaeste-inscripcions:main` | 3003 | `/`         |
 | api          | `ghcr.io/<owner>/iaeste-api:main`          | 3004 | `/health`   |
+| admin        | `ghcr.io/<owner>/iaeste-admin:main`        | 3005 | `/sign-in`  |
 
-Set each hostname, enable automatic TLS and HTTP-to-HTTPS redirects, and copy
-its authenticated deploy webhook into the matching GitHub secret. Put database
-and registration-email credentials only on the API resource. Keep the database
-on Coolify's managed network rather than exposing PostgreSQL publicly.
+Set each hostname, enable automatic TLS and HTTP-to-HTTPS redirects, disable
+Coolify's own healthcheck (see the intro), and copy the authenticated deploy
+webhook into the matching GitHub secret. Put database and registration-email
+credentials only on the API resource. Keep the database on Coolify's managed
+network rather than exposing PostgreSQL publicly.
 
 ## Rollback
 
 Open the **Deploy** workflow in GitHub Actions and choose **Run workflow**.
 Enter an existing `sha-<40 lowercase hex characters>` tag and select one
-resource. Select `all` only when that SHA tag exists for all three images, such
+resource. Select `all` only when that SHA tag exists for all four images, such
 as a commit that changed the workflow or root lockfile.
 
 The rollback uses Coolify's application rollback endpoint. An `all` rollback
 still runs the API first and waits for migration, deployment completion, and
-health before it starts either frontend rollback. The workflow rejects `main`
-and malformed tags so rollback cannot silently select a moving image. The
-admin image and resource must be added here when `apps/admin` is implemented.
+health before it starts any of the three frontend rollbacks (admin, web,
+inscripcions). The workflow rejects `main` and malformed tags so rollback
+cannot silently select a moving image.
+
+To fall back to Vercel entirely: restore the dinahosting A records to Vercel's
+`76.76.21.21` (apex and `www`), re-add the `inscripcions`/`admin` CNAMEs, and
+re-attach the domains in the Vercel projects. Coolify keeps running untouched
+and the database is separate, so there is no data migration either way.
 
 ## Local verification
 
