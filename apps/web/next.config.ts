@@ -22,7 +22,12 @@ const nextConfig: NextConfig = {
     // path uses same-origin /api/blog-assets/* and needs no entry here.
     remotePatterns: [
       { protocol: "https", hostname: "cms.iaestelleida.cat", pathname: "/**" },
-      { protocol: "http", hostname: "localhost", port: "3006", pathname: "/**" },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3006",
+        pathname: "/**",
+      },
     ],
   },
 };
