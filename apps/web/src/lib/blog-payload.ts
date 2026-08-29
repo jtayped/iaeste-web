@@ -63,16 +63,23 @@ function toBlogPost(dto: BlogPostSummary | BlogPostDetail): BlogPost {
 async function collectAll(locale: BlogLocale): Promise<BlogPost[]> {
   const out: BlogPost[] = [];
   let page = 1;
-  // Small dataset; page through the bounded list endpoint.
-  for (;;) {
-    const result = await fetchBlogList({
-      locale: locale as CmsLocale,
-      page,
-      limit: BLOG_LIST_MAX_LIMIT,
-    });
-    out.push(...result.items.map(toBlogPost));
-    if (page >= result.totalPages || result.items.length === 0) break;
-    page += 1;
+  try {
+    // Small dataset; page through the bounded list endpoint.
+    for (;;) {
+      const result = await fetchBlogList({
+        locale: locale as CmsLocale,
+        page,
+        limit: BLOG_LIST_MAX_LIMIT,
+      });
+      out.push(...result.items.map(toBlogPost));
+      if (page >= result.totalPages || result.items.length === 0) break;
+      page += 1;
+    }
+  } catch (error) {
+    // The CMS being unreachable (build time, or a transient blip) yields an
+    // empty list rather than a failed render; ISR refills on the next pass.
+    if (!(error instanceof CmsUnavailableError)) throw error;
+    return [];
   }
   return out;
 }
@@ -116,8 +123,13 @@ export async function getBlogPost(
   const preview = await readPreviewIfActive(requestedLocale, slug);
   if (preview) return preview;
 
-  const detail = await fetchBlogPost(slug, requestedLocale as CmsLocale);
-  return detail ? toBlogPost(detail) : null;
+  try {
+    const detail = await fetchBlogPost(slug, requestedLocale as CmsLocale);
+    return detail ? toBlogPost(detail) : null;
+  } catch (error) {
+    if (!(error instanceof CmsUnavailableError)) throw error;
+    return null;
+  }
 }
 
 export async function getPostVersions(

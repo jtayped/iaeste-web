@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { fetchBlogSitemap } from "@/lib/cms-blog-client";
+import { CmsUnavailableError, fetchBlogSitemap } from "@/lib/cms-blog-client";
 import { blogLocales } from "@/lib/blog";
 
 const host = "https://iaestelleida.cat";
@@ -30,13 +30,20 @@ function staticEntries(): MetadataRoute.Sitemap {
 
 /** The CMS sitemap endpoint already excludes fallback and draft URLs. */
 async function postEntries(): Promise<MetadataRoute.Sitemap> {
-  const { entries } = await fetchBlogSitemap();
-  return entries.map((entry) => ({
-    url: entry.url,
-    lastModified: entry.lastModified.split("T")[0],
-    changeFrequency: "monthly",
-    priority: 0.7,
-  }));
+  try {
+    const { entries } = await fetchBlogSitemap();
+    return entries.map((entry) => ({
+      url: entry.url,
+      lastModified: entry.lastModified.split("T")[0],
+      changeFrequency: "monthly",
+      priority: 0.7,
+    }));
+  } catch (error) {
+    // A CMS blip (or build time, before it is reachable) drops the article
+    // URLs from this pass rather than failing the whole sitemap.
+    if (!(error instanceof CmsUnavailableError)) throw error;
+    return [];
+  }
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
