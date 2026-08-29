@@ -1,4 +1,9 @@
-import type { MemberFilter, RegistrationStatus } from "@/lib/admin-types";
+import type {
+  CampaignState,
+  InvitationStatusFilter,
+  MemberFilter,
+  RegistrationStatus,
+} from "@/lib/admin-types";
 
 /**
  * One catalogue of TanStack Query keys.
@@ -13,8 +18,13 @@ export const queryKeys = {
 
   registrations: {
     all: ["registrations"] as const,
-    list: (campaignId: string, status: RegistrationStatus | "all") =>
-      ["registrations", "list", campaignId, status] as const,
+    list: (params: {
+      campaignId: string;
+      status: RegistrationStatus | "all";
+      q: string;
+      limit: number;
+      offset: number;
+    }) => ["registrations", "list", params] as const,
     detail: (id: string) => ["registrations", "detail", id] as const,
   },
 
@@ -31,11 +41,22 @@ export const queryKeys = {
 
   campaigns: {
     all: ["campaigns"] as const,
-    list: () => ["campaigns", "list"] as const,
+    list: (params: {
+      q: string;
+      state: CampaignState | "";
+      limit: number;
+      offset: number;
+    }) => ["campaigns", "list", params] as const,
   },
 
   invitations: {
     all: ["invitations"] as const,
-    list: (campaignId: string) => ["invitations", "list", campaignId] as const,
+    list: (params: {
+      campaignId: string;
+      status: InvitationStatusFilter;
+      q: string;
+      limit: number;
+      offset: number;
+    }) => ["invitations", "list", params] as const,
   },
 } as const;

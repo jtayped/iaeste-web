@@ -14,9 +14,9 @@ const DESCRIPTION = "quina és l'actual, quina té les inscripcions obertes.";
 export const metadata = adminMetadata(BREADCRUMB, TITLE, DESCRIPTION);
 
 /**
- * The campaign list has no query parameters, so the server fetches it for the
- * first paint and hands it to the table as `initialData` — the client only
- * refetches after a mutation invalidates it.
+ * The server fetches the first unfiltered page and hands its rows to the table
+ * for first paint. The table owns search, state and page URL parameters and
+ * sends them to the API through TanStack Query.
  */
 export default async function CampaignsPage() {
   const campaigns = await fetchCampaigns();

@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { MailPlus } from "lucide-react";
 
 import { Button } from "@repo/ui/button";
@@ -11,15 +12,40 @@ import {
 import { ConfirmAction } from "@/components/admin/confirm-action";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
-import { TableToolbar } from "@/components/data-table/toolbar";
+import {
+  TableFilter,
+  TableSearch,
+  TableToolbar,
+} from "@/components/data-table/toolbar";
 import type { DataTableColumn } from "@/components/data-table/types";
-import type { AdminInvitation } from "@/lib/admin-types";
+import type {
+  AdminInvitation,
+  InvitationStatusFilter,
+} from "@/lib/admin-types";
 import { formatDate, formatRelative } from "@/lib/format";
-import { invitationStatus, roleLabel } from "@/lib/labels";
-import { useInvitationAction, useInvitations } from "@/lib/invitations";
-import { useTableParams } from "@/lib/table-params";
+import {
+  invitationStatus,
+  INVITATION_FILTER_LABELS,
+  INVITATION_FILTER_STATUSES,
+  roleLabel,
+} from "@/lib/labels";
+import {
+  INVITATIONS_PAGE_SIZE,
+  useInvitationAction,
+  useInvitations,
+} from "@/lib/invitations";
+import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
 
-const DEFAULTS = { campaign: "" } as const;
+const DEFAULTS = { campaign: "", status: "all", q: "", page: "1" } as const;
+
+const FILTERS = INVITATION_FILTER_STATUSES.map((value) => ({
+  value,
+  label: INVITATION_FILTER_LABELS[value],
+}));
+
+function isStatus(value: string): value is InvitationStatusFilter {
+  return (INVITATION_FILTER_STATUSES as readonly string[]).includes(value);
+}
 
 function prefillName(row: AdminInvitation): string {
   const parts = [row.prefillName, row.prefillSurnames].filter(
@@ -67,11 +93,9 @@ const COLUMNS: DataTableColumn<AdminInvitation>[] = [
 /**
  * The invitations table.
  *
- * `GET /v1/admin/invitations` takes `campaignId` and nothing else — no status
- * parameter, no paging — so the campaign picker is the only control, and the
- * status is a column rather than a filter. Grouping the rows by status would
- * mean sorting a set the client already holds, which is the thing the table
- * contract forbids; it is a server-side filter or it is a column.
+ * Campaign, status, search and page all live in the URL and go straight to
+ * `GET /v1/admin/invitations`. The status remains visible in each row while
+ * the toolbar narrows the result set on the server.
  */
 export function InvitationsTable({
   campaigns,
@@ -82,15 +106,31 @@ export function InvitationsTable({
 }) {
   const { get, setParams } = useTableParams(DEFAULTS);
   const campaignId = get("campaign") || initialCampaignId;
+  const rawStatus = get("status");
+  const status: InvitationStatusFilter = isStatus(rawStatus)
+    ? rawStatus
+    : "all";
+  const q = get("q");
+  const offset = pageToOffset(get("page"), INVITATIONS_PAGE_SIZE);
 
-  const query = useInvitations(campaignId);
+  const query = useInvitations({
+    campaignId,
+    status,
+    q,
+    limit: INVITATIONS_PAGE_SIZE,
+    offset,
+  });
   const action = useInvitationAction();
+  const handleSearch = React.useCallback(
+    (next: string) => setParams({ q: next, page: "1" }),
+    [setParams],
+  );
 
   return (
     <DataTable
       label="convits enviats en aquesta campanya"
       columns={COLUMNS}
-      rows={query.data ?? []}
+      rows={query.data?.rows ?? []}
       rowKey={(row) => row.id}
       rowActions={(row) =>
         row.status === "pending" ? (
@@ -127,17 +167,42 @@ export function InvitationsTable({
       }}
       empty={{
         icon: MailPlus,
-        title: "cap convit",
-        description:
-          "encara no has convidat ningú en aquesta campanya. els convits salten el formulari públic i la revisió.",
+        title: q ? "cap coincidència" : "cap convit",
+        description: q
+          ? `cap convit coincideix amb «${q}» en aquest filtre.`
+          : "encara no has convidat ningú en aquesta campanya. els convits salten el formulari públic i la revisió.",
       }}
+      {...(query.data
+        ? {
+            pagination: {
+              total: query.data.total,
+              limit: query.data.limit,
+              offset: query.data.offset,
+              onOffsetChange: (next: number) =>
+                setParams({
+                  page: offsetToPage(next, query.data.limit),
+                }),
+            },
+          }
+        : {})}
       toolbar={
         <TableToolbar>
+          <TableSearch
+            id="invitations-search"
+            value={q}
+            placeholder="correu o nom"
+            onCommit={handleSearch}
+          />
+          <TableFilter
+            value={status}
+            options={FILTERS}
+            onChange={(next) => setParams({ status: next, page: "1" })}
+          />
           <CampaignPicker
             id="invitations-campaign"
             campaigns={campaigns}
             value={campaignId}
-            onChange={(next) => setParams({ campaign: next })}
+            onChange={(next) => setParams({ campaign: next, page: "1" })}
           />
         </TableToolbar>
       }

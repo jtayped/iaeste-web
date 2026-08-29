@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Inbox } from "lucide-react";
 
 import {
@@ -8,7 +9,11 @@ import {
 } from "@/components/admin/campaign-picker";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
-import { TableFilter, TableToolbar } from "@/components/data-table/toolbar";
+import {
+  TableFilter,
+  TableSearch,
+  TableToolbar,
+} from "@/components/data-table/toolbar";
 import type { DataTableColumn } from "@/components/data-table/types";
 import { QueueRowActions } from "@/components/registrations/queue-actions";
 import type { AdminRegistration, RegistrationStatus } from "@/lib/admin-types";
@@ -18,10 +23,15 @@ import {
   REGISTRATION_TAB_LABELS,
   registrationStatus,
 } from "@/lib/labels";
-import { useRegistrations } from "@/lib/registrations";
-import { useTableParams } from "@/lib/table-params";
+import { REGISTRATIONS_PAGE_SIZE, useRegistrations } from "@/lib/registrations";
+import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
 
-const DEFAULTS = { status: "pending_review", campaign: "" } as const;
+const DEFAULTS = {
+  status: "pending_review",
+  campaign: "",
+  q: "",
+  page: "1",
+} as const;
 
 const FILTERS = REGISTRATION_STATUSES.map((value) => ({
   value,
@@ -85,13 +95,9 @@ function isStatus(value: string): value is RegistrationStatus {
 /**
  * The review queue.
  *
- * `?status=` goes to `GET /v1/admin/registrations` as its `status` parameter —
- * the tabs are a server-side filter, not a `.filter()` over loaded rows. It
- * opens on `pending_review` because that is the tab with work in it.
- *
- * There is no pagination: the list route takes `campaignId` and `status` and
- * nothing else, so it returns the whole set and a pager would have to be a
- * client-side one. Noted in the report rather than faked here.
+ * `?q=`, `?status=`, `?campaign=` and `?page=` go straight to the API. Search,
+ * status, campaign selection and paging are all server-side. It opens on
+ * `pending_review` because that is the tab with work in it.
  */
 export function RegistrationsQueue({
   campaigns,
@@ -107,14 +113,27 @@ export function RegistrationsQueue({
     ? rawStatus
     : "pending_review";
   const campaignId = get("campaign") || initialCampaignId;
+  const q = get("q");
+  const offset = pageToOffset(get("page"), REGISTRATIONS_PAGE_SIZE);
 
-  const query = useRegistrations(campaignId, status);
+  const query = useRegistrations({
+    campaignId,
+    status,
+    q,
+    limit: REGISTRATIONS_PAGE_SIZE,
+    offset,
+  });
+
+  const handleSearch = React.useCallback(
+    (next: string) => setParams({ q: next, page: "1" }),
+    [setParams],
+  );
 
   return (
     <DataTable
       label="cua de revisió de sol·licituds"
       columns={COLUMNS}
-      rows={query.data ?? []}
+      rows={query.data?.rows ?? []}
       rowKey={(row) => row.id}
       rowHref={(row) => `/registrations/${row.id}`}
       rowActions={(row) => <QueueRowActions registration={row} />}
@@ -126,21 +145,42 @@ export function RegistrationsQueue({
       }}
       empty={{
         icon: Inbox,
-        title: "cap sol·licitud",
-        description: EMPTY_COPY[status],
+        title: q ? "cap coincidència" : "cap sol·licitud",
+        description: q
+          ? `cap sol·licitud coincideix amb «${q}» en aquest filtre.`
+          : EMPTY_COPY[status],
       }}
+      {...(query.data
+        ? {
+            pagination: {
+              total: query.data.total,
+              limit: query.data.limit,
+              offset: query.data.offset,
+              onOffsetChange: (next: number) =>
+                setParams({
+                  page: offsetToPage(next, query.data.limit),
+                }),
+            },
+          }
+        : {})}
       toolbar={
         <TableToolbar>
+          <TableSearch
+            id="registrations-search"
+            value={q}
+            placeholder="nom, cognoms o correu"
+            onCommit={handleSearch}
+          />
           <TableFilter
             value={status}
             options={FILTERS}
-            onChange={(next) => setParams({ status: next })}
+            onChange={(next) => setParams({ status: next, page: "1" })}
           />
           <CampaignPicker
             id="registrations-campaign"
             campaigns={campaigns}
             value={campaignId}
-            onChange={(next) => setParams({ campaign: next })}
+            onChange={(next) => setParams({ campaign: next, page: "1" })}
           />
         </TableToolbar>
       }

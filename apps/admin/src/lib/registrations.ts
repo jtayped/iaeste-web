@@ -10,13 +10,23 @@ import {
 import { toast } from "@repo/ui/sonner";
 
 import type {
-  AdminRegistration,
   AdminRegistrationDetail,
+  AdminRegistrationList,
   RegistrationStatus,
 } from "@/lib/admin-types";
 import { apiClient, NO_BODY_POST } from "@/lib/api";
 import { errorDetail, errorMessage, unwrap } from "@/lib/api-error";
 import { queryKeys } from "@/lib/query-keys";
+
+export const REGISTRATIONS_PAGE_SIZE = 50;
+
+export interface RegistrationsQuery {
+  campaignId: string;
+  status: RegistrationStatus | "all";
+  q: string;
+  limit: number;
+  offset: number;
+}
 
 /**
  * The review queue's data layer.
@@ -25,20 +35,21 @@ import { queryKeys } from "@/lib/query-keys";
  * — there is no "every campaign" listing — so every hook here takes one and
  * the calling page is responsible for having resolved it first.
  */
-export function useRegistrations(
-  campaignId: string,
-  status: RegistrationStatus | "all",
-) {
+export function useRegistrations(params: RegistrationsQuery) {
   return useQuery({
-    queryKey: queryKeys.registrations.list(campaignId, status),
-    enabled: campaignId.length > 0,
-    queryFn: async (): Promise<AdminRegistration[]> =>
+    queryKey: queryKeys.registrations.list(params),
+    enabled: params.campaignId.length > 0,
+    placeholderData: (previous) => previous,
+    queryFn: async (): Promise<AdminRegistrationList> =>
       unwrap(
         await apiClient.GET("/v1/admin/registrations", {
           params: {
             query: {
-              campaignId,
-              ...(status === "all" ? {} : { status }),
+              campaignId: params.campaignId,
+              ...(params.status === "all" ? {} : { status: params.status }),
+              ...(params.q ? { q: params.q } : {}),
+              limit: params.limit,
+              offset: params.offset,
             },
           },
         }),

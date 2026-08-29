@@ -81,11 +81,11 @@ export default async function AppLayout({
         pendingCount={pendingCount}
         externalHrefs={externalHrefs}
       />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <AppHeader overview={data} />
         {/* The content column belongs to `<PageShell>` — it is shared with
             `loading.tsx`, so the skeleton and the page it becomes line up. */}
-        <div className="flex-1">{children}</div>
+        <div className="min-w-0 flex-1">{children}</div>
       </SidebarInset>
       <ServiceWorker />
     </SidebarProvider>

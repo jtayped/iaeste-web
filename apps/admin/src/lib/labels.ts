@@ -1,5 +1,6 @@
 import type {
   CampaignState,
+  InvitationStatusFilter,
   InvitationRole,
   RegistrationStatus,
 } from "@/lib/admin-types";
@@ -86,6 +87,23 @@ const INVITATION_LABELS: Record<string, Labelled> = {
   cancelled: { label: "anul·lat", tone: "outline" },
   expired: { label: "caducat", tone: "destructive" },
 };
+
+export const INVITATION_FILTER_STATUSES = [
+  "all",
+  "pending",
+  "accepted",
+  "cancelled",
+  "expired",
+] as const satisfies readonly InvitationStatusFilter[];
+
+export const INVITATION_FILTER_LABELS: Record<InvitationStatusFilter, string> =
+  {
+    all: "tots",
+    pending: "pendents",
+    accepted: "acceptats",
+    cancelled: "anul·lats",
+    expired: "caducats",
+  };
 
 /**
  * `expired` is a separate boolean on the row rather than a status of its own,

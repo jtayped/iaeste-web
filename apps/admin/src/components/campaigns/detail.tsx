@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { CampaignActions } from "@/components/campaigns/campaign-actions";
 import { EditCampaign } from "@/components/campaigns/edit-campaign";
 import type { AdminCampaignWithCounts } from "@/lib/admin-types";
-import { useCampaigns } from "@/lib/campaigns";
+import { CAMPAIGNS_PAGE_SIZE, useCampaigns } from "@/lib/campaigns";
 import { formatDateLong } from "@/lib/format";
 import { campaignState } from "@/lib/labels";
 
@@ -28,9 +28,12 @@ export function CampaignDetail({
   id: string;
   initialData: AdminCampaignWithCounts[];
 }) {
-  const query = useCampaigns(initialData);
+  const query = useCampaigns(
+    { q: "", state: "", limit: CAMPAIGNS_PAGE_SIZE, offset: 0 },
+    initialData,
+  );
   const campaign =
-    query.data?.find((row) => row.id === id) ??
+    query.data?.rows.find((row) => row.id === id) ??
     initialData.find((row) => row.id === id);
 
   // Only reachable if the campaign was archived away by someone else mid-view;

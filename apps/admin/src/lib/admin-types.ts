@@ -9,6 +9,8 @@ import type { components } from "@repo/api-client";
  */
 export type RegistrationStatus = components["schemas"]["RegistrationStatus"];
 export type AdminRegistration = components["schemas"]["AdminRegistration"];
+export type AdminRegistrationList =
+  components["schemas"]["AdminRegistrationList"];
 export type AdminRegistrationDetail =
   components["schemas"]["AdminRegistrationDetail"];
 export type AdminRegistrationProfileSnapshot =
@@ -20,6 +22,7 @@ export type AdminDuplicateRegistration =
 
 export type CampaignState = components["schemas"]["CampaignState"];
 export type AdminCampaign = components["schemas"]["AdminCampaign"];
+export type AdminCampaignList = components["schemas"]["AdminCampaignList"];
 export type AdminCampaignWithCounts =
   components["schemas"]["AdminCampaignWithCounts"];
 
@@ -33,7 +36,16 @@ export type AdminMemberTimelineEvent =
   components["schemas"]["AdminMemberTimelineEvent"];
 
 export type AdminInvitation = components["schemas"]["AdminInvitation"];
+export type AdminInvitationList = components["schemas"]["AdminInvitationList"];
 export type InvitationRole = components["schemas"]["InvitationRole"];
+
+/** `GET /v1/admin/invitations`'s optional `status` query parameter. */
+export type InvitationStatusFilter =
+  | "all"
+  | "pending"
+  | "accepted"
+  | "cancelled"
+  | "expired";
 
 /** `GET /v1/admin/members`'s `filter` query parameter. */
 export type MemberFilter = "all" | "current" | "past";

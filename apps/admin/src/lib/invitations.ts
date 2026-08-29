@@ -9,7 +9,12 @@ import {
 
 import { toast } from "@repo/ui/sonner";
 
-import type { AdminInvitation, InvitationRole } from "@/lib/admin-types";
+import type {
+  AdminInvitation,
+  AdminInvitationList,
+  InvitationRole,
+  InvitationStatusFilter,
+} from "@/lib/admin-types";
 import { apiClient, NO_BODY_POST } from "@/lib/api";
 import {
   ApiRequestError,
@@ -19,14 +24,33 @@ import {
 } from "@/lib/api-error";
 import { queryKeys } from "@/lib/query-keys";
 
-export function useInvitations(campaignId: string) {
+export const INVITATIONS_PAGE_SIZE = 50;
+
+export interface InvitationsQuery {
+  campaignId: string;
+  status: InvitationStatusFilter;
+  q: string;
+  limit: number;
+  offset: number;
+}
+
+export function useInvitations(params: InvitationsQuery) {
   return useQuery({
-    queryKey: queryKeys.invitations.list(campaignId),
-    enabled: campaignId.length > 0,
-    queryFn: async (): Promise<AdminInvitation[]> =>
+    queryKey: queryKeys.invitations.list(params),
+    enabled: params.campaignId.length > 0,
+    placeholderData: (previous) => previous,
+    queryFn: async (): Promise<AdminInvitationList> =>
       unwrap(
         await apiClient.GET("/v1/admin/invitations", {
-          params: { query: { campaignId } },
+          params: {
+            query: {
+              campaignId: params.campaignId,
+              ...(params.status === "all" ? {} : { status: params.status }),
+              ...(params.q ? { q: params.q } : {}),
+              limit: params.limit,
+              offset: params.offset,
+            },
+          },
         }),
       ),
   });

@@ -9,10 +9,23 @@ import {
 
 import { toast } from "@repo/ui/sonner";
 
-import type { AdminCampaignWithCounts } from "@/lib/admin-types";
+import type {
+  AdminCampaignList,
+  AdminCampaignWithCounts,
+  CampaignState,
+} from "@/lib/admin-types";
 import { apiClient, NO_BODY_POST } from "@/lib/api";
 import { errorDetail, errorMessage, unwrap } from "@/lib/api-error";
 import { queryKeys } from "@/lib/query-keys";
+
+export const CAMPAIGNS_PAGE_SIZE = 100;
+
+export interface CampaignsQuery {
+  q: string;
+  state: CampaignState | "";
+  limit: number;
+  offset: number;
+}
 
 /** The four ISO instants every campaign carries. */
 export interface CampaignDates {
@@ -22,12 +35,36 @@ export interface CampaignDates {
   registrationClosesAt: string;
 }
 
-export function useCampaigns(initialData?: AdminCampaignWithCounts[]) {
+export function useCampaigns(
+  params: CampaignsQuery,
+  initialData?: AdminCampaignWithCounts[],
+) {
   return useQuery({
-    queryKey: queryKeys.campaigns.list(),
-    ...(initialData ? { initialData } : {}),
-    queryFn: async (): Promise<AdminCampaignWithCounts[]> =>
-      unwrap(await apiClient.GET("/v1/admin/campaigns")),
+    queryKey: queryKeys.campaigns.list(params),
+    ...(initialData
+      ? {
+          initialData: {
+            rows: initialData,
+            total: initialData.length,
+            limit: CAMPAIGNS_PAGE_SIZE,
+            offset: 0,
+          },
+        }
+      : {}),
+    placeholderData: (previous) => previous,
+    queryFn: async (): Promise<AdminCampaignList> =>
+      unwrap(
+        await apiClient.GET("/v1/admin/campaigns", {
+          params: {
+            query: {
+              ...(params.q ? { q: params.q } : {}),
+              ...(params.state ? { state: params.state } : {}),
+              limit: params.limit,
+              offset: params.offset,
+            },
+          },
+        }),
+      ),
   });
 }
 
