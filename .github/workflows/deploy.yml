@@ -8,6 +8,7 @@ on:
       - ".github/workflows/deploy.yml"
       - "apps/admin/**"
       - "apps/api/**"
+      - "apps/cms/**"
       - "apps/inscripcions/**"
       - "apps/web/**"
       - "content/**"
@@ -37,6 +38,7 @@ on:
           - all
           - api
           - admin
+          - cms
           - inscripcions
           - web
 
@@ -69,6 +71,7 @@ jobs:
               - '.github/workflows/deploy.yml'
               - 'apps/admin/**'
               - 'apps/api/**'
+              - 'apps/cms/**'
               - 'apps/inscripcions/**'
               - 'apps/web/**'
               - 'packages/api-client/**'
@@ -119,6 +122,39 @@ jobs:
             API_INTERNAL_URL=${{ vars.ADMIN_API_INTERNAL_URL || 'http://iaeste-api:3004' }}
           cache-from: type=gha,scope=admin
           cache-to: type=gha,mode=max,scope=admin
+
+  build-cms:
+    name: Build and push iaeste-cms
+    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-cms
+          tags: |
+            type=raw,value=main
+            type=sha,format=long
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/cms/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=cms
+          cache-to: type=gha,mode=max,scope=cms
 
   build-api:
     name: Build and push iaeste-api
@@ -236,10 +272,10 @@ jobs:
     if: >-
       always() && !cancelled() &&
       ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-api.result == 'success' &&
-      needs.build-admin.result == 'success' &&
+      needs.build-admin.result == 'success' && needs.build-cms.result == 'success' &&
       needs.build-inscripcions.result == 'success' && needs.build-web.result == 'success') ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'api')))
-    needs: [detect-changes, build-api, build-admin, build-inscripcions, build-web]
+    needs: [detect-changes, build-api, build-admin, build-cms, build-inscripcions, build-web]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -300,15 +336,41 @@ jobs:
           IMAGE_TAG: ${{ inputs.image_tag }}
           ROLLBACK: ${{ github.event_name == 'workflow_dispatch' }}
 
+  deploy-cms:
+    name: Deploy cms
+    if: >-
+      always() && !cancelled() &&
+      ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-cms.result == 'success' &&
+      needs.deploy-api.result == 'success') ||
+      (github.event_name == 'workflow_dispatch' && (inputs.target == 'cms' ||
+      (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
+    needs: [detect-changes, build-cms, deploy-api]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      # The CMS entrypoint runs `payload migrate` before it reports healthy, so
+      # this step also waits on the isolated iaeste_cms migration.
+      - name: Deploy and wait for health
+        run: node .github/scripts/deploy-coolify.mjs
+        env:
+          COOLIFY_DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_CMS_DEPLOY_WEBHOOK }}
+          COOLIFY_HEALTH_URL: ${{ vars.COOLIFY_CMS_HEALTH_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          ROLLBACK: ${{ github.event_name == 'workflow_dispatch' }}
+
   deploy-web:
     name: Deploy web
     if: >-
       always() && !cancelled() &&
       ((github.event_name == 'push' && needs.build-web.result == 'success' &&
-      (needs.detect-changes.outputs.full != 'true' || needs.deploy-api.result == 'success')) ||
+      (needs.detect-changes.outputs.full != 'true' || needs.deploy-api.result == 'success') &&
+      (needs.detect-changes.outputs.full != 'true' || needs.deploy-cms.result == 'success')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'web' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
-    needs: [detect-changes, build-web, deploy-api]
+    needs: [detect-changes, build-web, deploy-api, deploy-cms]
     runs-on: ubuntu-latest
     permissions:
       contents: read

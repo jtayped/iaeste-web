@@ -77,6 +77,46 @@ jobs:
           npm run generate:api
           git diff --exit-code -- apps/api/openapi.json packages/api-client/src/generated
 
+      # apps/cms owns an isolated database. Give CI a separate one so a future
+      # Payload migration test never touches iaeste_test.
+      - name: Create the CMS test database
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -c 'CREATE DATABASE iaeste_cms_test'
+
+      # payload-types.ts and the admin import map are generated from the
+      # Payload config. A stale committed copy means the types are lying.
+      - name: Generated Payload output is current
+        run: |
+          npm run --workspace cms generate:types
+          npm run --workspace cms generate:importmap
+          git diff --exit-code -- apps/cms/src/payload-types.ts 'apps/cms/src/app/(payload)/admin/importMap.js'
+        env:
+          CMS_DATABASE_URL: postgres://postgres:postgres@localhost:5432/iaeste_cms_test
+          CMS_PAYLOAD_SECRET: ci-placeholder-ci-placeholder-000001
+          CMS_PREVIEW_SECRET: ci-placeholder-ci-placeholder-000002
+          WEB_REVALIDATE_SECRET: ci-placeholder-ci-placeholder-000003
+          CMS_PUBLIC_ORIGIN: http://localhost:3006
+          WEB_PUBLIC_ORIGIN: http://localhost:3000
+          WEB_REVALIDATE_URL: http://localhost:3000/api/revalidate/blog
+          CMS_MEDIA_DIR: /tmp/cms-media
+          CMS_EMAIL_FROM: noreply@iaestelleida.cat
+          RESEND_API_KEY: ci-placeholder
+
+      # Config loads and the isolated database is reachable; when committed
+      # Payload migrations exist this also proves they apply cleanly.
+      - name: Payload migrations apply
+        run: npm run --workspace cms migrate:status
+        env:
+          CMS_DATABASE_URL: postgres://postgres:postgres@localhost:5432/iaeste_cms_test
+          CMS_PAYLOAD_SECRET: ci-placeholder-ci-placeholder-000001
+          CMS_PREVIEW_SECRET: ci-placeholder-ci-placeholder-000002
+          WEB_REVALIDATE_SECRET: ci-placeholder-ci-placeholder-000003
+          CMS_PUBLIC_ORIGIN: http://localhost:3006
+          WEB_PUBLIC_ORIGIN: http://localhost:3000
+          WEB_REVALIDATE_URL: http://localhost:3000/api/revalidate/blog
+          CMS_MEDIA_DIR: /tmp/cms-media
+          CMS_EMAIL_FROM: noreply@iaestelleida.cat
+          RESEND_API_KEY: ci-placeholder
+
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -103,6 +143,17 @@ jobs:
           KEYSTATIC_GITHUB_CLIENT_SECRET: ci-placeholder
           KEYSTATIC_SECRET: ci-placeholder
           NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG: ci-placeholder
+          # apps/cms compiles @repo/env/cms/server while building; non-secret
+          # placeholders only. Secrets over 32 chars satisfy the schema.
+          CMS_DATABASE_URL: postgres://build:build@localhost:5432/build
+          CMS_PAYLOAD_SECRET: ci-placeholder-ci-placeholder-000001
+          CMS_PREVIEW_SECRET: ci-placeholder-ci-placeholder-000002
+          WEB_REVALIDATE_SECRET: ci-placeholder-ci-placeholder-000003
+          CMS_PUBLIC_ORIGIN: http://localhost:3006
+          WEB_PUBLIC_ORIGIN: http://localhost:3000
+          WEB_REVALIDATE_URL: http://localhost:3000/api/revalidate/blog
+          CMS_MEDIA_DIR: /tmp/cms-media
+          CMS_EMAIL_FROM: noreply@iaestelleida.cat
 
   container-images:
     name: Build container images
@@ -162,3 +213,14 @@ jobs:
           push: false
           cache-from: type=gha,scope=admin-pr
           cache-to: type=gha,mode=max,scope=admin-pr
+
+      # No build args: apps/cms bakes only non-secret placeholders in its
+      # Dockerfile's builder stage; Coolify supplies the real runtime values.
+      - name: Build cms image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/cms/Dockerfile
+          push: false
+          cache-from: type=gha,scope=cms-pr
+          cache-to: type=gha,mode=max,scope=cms-pr
