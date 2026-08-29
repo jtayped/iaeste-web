@@ -33,25 +33,25 @@ const Footer = () => {
             src={"/logos/horizontal.png"}
             width={300}
             height={200}
-            alt="IAESTE Logo"
+            alt="iaeste logo"
             className="h-auto w-48"
           />
           <div>
             <p className="font-semibold">{legalName}</p>
             <div className="mt-3 space-y-2">
               <p className="mt-2 text-sm">{address}</p>
-              <p className="text-sm">Tel: {phone}</p>
-              <p className="text-sm">Email: {email}</p>
+              <p className="text-sm">tel: {phone}</p>
+              <p className="text-sm">email: {email}</p>
             </div>
           </div>
         </div>
         <div className="flex flex-col gap-8 md:flex-row">
           <div>
-            <h4 className="text-lg font-bold">Quick Links</h4>
+            <h4 className="text-lg font-bold">quick links</h4>
             <nav className="mt-4 flex flex-col space-y-2">
-              <LinkBtn href="/company">For companies</LinkBtn>
-              <LinkBtn href="/student">For students</LinkBtn>
-              <LinkBtn href="/incomming">For incomming students</LinkBtn>
+              <LinkBtn href="/company">for companies</LinkBtn>
+              <LinkBtn href="/student">for students</LinkBtn>
+              <LinkBtn href="/incomming">for incomming students</LinkBtn>
             </nav>
           </div>
         </div>
@@ -59,13 +59,13 @@ const Footer = () => {
       <Section>
         <div className="mt-8 border-t border-white/20 pt-4 text-center text-sm">
           <p>
-            © {new Date().getFullYear()} {legalName}. All rights reserved. |
-            Made by{" "}
+            © {new Date().getFullYear()} {legalName}. all rights reserved. |
+            made by{" "}
             <Link
               href="https://www.linkedin.com/in/jtayped/"
               className="underline underline-offset-2"
             >
-              Joel Taylor Pedrós
+              joel taylor pedrós
             </Link>
           </p>
         </div>

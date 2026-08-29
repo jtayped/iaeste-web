@@ -17,12 +17,12 @@ const Testimonial = () => {
           width={500}
           height={800}
           className="w-full max-w-[280px] object-contain opacity-90 brightness-0 drop-shadow-lg invert md:max-w-md"
-          alt="Factory Data"
+          alt="factory data"
         />
       </div>
       <article className="relative pr-4">
         <Quote className="absolute -left-6 -top-10 z-0 h-32 w-32 rotate-12 text-white/5" />
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground/60">
+        <p className="mb-4 text-xs font-bold tracking-[0.2em] text-primary-foreground/60">
           {t("tag")}
         </p>
         <H2 className="mb-8 text-3xl font-bold tracking-tight text-white sm:text-4xl">

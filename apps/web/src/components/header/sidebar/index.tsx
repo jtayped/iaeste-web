@@ -50,10 +50,10 @@ const SidebarComponent = () => {
           initial="hidden"
           animate="visible"
         >
-          <Item href="/">{t("home.name").toUpperCase()}</Item>
-          <Item href="/student">{t("student.name").toUpperCase()}</Item>
-          <Item href="/incomming">{t("incomming.name").toUpperCase()}</Item>
-          <Item href="/company">{t("company.name").toUpperCase()}</Item>
+          <Item href="/">{t("home.name")}</Item>
+          <Item href="/student">{t("student.name")}</Item>
+          <Item href="/incomming">{t("incomming.name")}</Item>
+          <Item href="/company">{t("company.name")}</Item>
           <Item href="/blog">{t("blog.name")}</Item>
         </motion.nav>
       </div>

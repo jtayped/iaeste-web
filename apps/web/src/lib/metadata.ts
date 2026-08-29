@@ -42,7 +42,7 @@ export async function generatePageMetadata({
       ],
       // Set locale-specific OpenGraph locale code
       locale: locale === "ca" ? "ca_ES" : locale === "es" ? "es_ES" : "en_US",
-      siteName: "IAESTE Lleida",
+      siteName: "iaeste lleida",
     },
     twitter: {
       card: "summary_large_image",

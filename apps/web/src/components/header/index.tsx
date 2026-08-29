@@ -78,7 +78,7 @@ const Header = () => {
       <Link href="/">
         <Image
           src={"/logos/horizontal.png"}
-          alt={"IAESTE Logo"}
+          alt={"iaeste logo"}
           width={isScrolled ? 160 : 255}
           height={isScrolled ? 40 : 75}
           className="transition-all duration-300"

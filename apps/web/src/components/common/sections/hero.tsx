@@ -21,7 +21,7 @@ const HeroSection = ({
         src={backgroundImage}
         width={768}
         height={1200}
-        alt="Hero background"
+        alt="hero background"
         className="fixed -z-10 h-full w-full object-cover object-center blur-sm"
         priority
       />

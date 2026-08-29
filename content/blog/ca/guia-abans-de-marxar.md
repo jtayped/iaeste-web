@@ -10,7 +10,7 @@ draft: true
 translationKey: guia-abans-de-marxar
 ---
 
-Aquest article és un esborrany. El contingut encara s'ha de revisar abans de publicar-lo.
+aquest article és un esborrany. el contingut encara s'ha de revisar abans de publicar-lo.
 
 ## passos pendents de revisió
 

@@ -17,14 +17,14 @@ const Hero = () => {
         src={"/hero.jpg"}
         width={768}
         height={1200}
-        alt="Hero background"
+        alt="hero background"
         className="fixed -z-10 h-full w-full object-cover"
         priority
       />
       <div className="section-padding flex h-screen items-center justify-center bg-primary/60 text-white">
         <div className="flex max-w-3xl flex-col items-center text-center">
           <div className="flex items-center gap-1">
-            <h1 className="text-6xl font-extrabold lg:text-8xl">IAESTE</h1>
+            <h1 className="text-6xl font-extrabold lg:text-8xl">iaeste</h1>
             <div className="flex flex-col items-start">
               <div className="flex items-end">
                 <motion.span
@@ -32,7 +32,7 @@ const Hero = () => {
                   animate={{ x: 0, opacity: 1 }}
                   className="text-3xl font-bold leading-none"
                 >
-                  LC
+                  lc
                 </motion.span>
                 <motion.div
                   initial={{ rotate: -120, opacity: 0 }}
@@ -42,7 +42,7 @@ const Hero = () => {
                     src={"/logos/icon-lleida-white.png"}
                     height={64}
                     width={64}
-                    alt="IAESTE Lleida's logo"
+                    alt="iaeste lleida's logo"
                     className="size-8 lg:size-12"
                   />
                 </motion.div>
@@ -53,7 +53,7 @@ const Hero = () => {
                 transition={{ delay: 0.1 }}
                 className="text-xl font-extrabold leading-none lg:text-3xl"
               >
-                LLEIDA
+                lleida
               </motion.span>
             </div>
           </div>

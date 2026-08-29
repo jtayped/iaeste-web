@@ -40,7 +40,7 @@ const Navigation = ({ className = "" }: { className?: string }) => {
                       src="/logos/icon-lleida-white.png"
                       width={56}
                       height={56}
-                      alt="IAESTE Square Logo"
+                      alt="iaeste square logo"
                       className="h-14 w-14 invert"
                     />
                     <div className="mb-2 mt-4 text-lg font-medium">

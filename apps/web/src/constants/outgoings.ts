@@ -3,25 +3,25 @@ import { type Outgoing } from "@/types/outgoing";
 const outgoings: Outgoing[] = [
   {
     image: "/hero.jpg",
-    name: "John Doe",
+    name: "john doe",
     year: 2023,
     key: "jaume",
   },
   {
     image: "/hero.jpg",
-    name: "John Doe",
+    name: "john doe",
     year: 2023,
     key: "jordi",
   },
   {
     image: "/hero.jpg",
-    name: "John Doe",
+    name: "john doe",
     year: 2023,
     key: "pepito",
   },
   {
     image: "/hero.jpg",
-    name: "John Doe",
+    name: "john doe",
     year: 2023,
     key: "pep",
   },

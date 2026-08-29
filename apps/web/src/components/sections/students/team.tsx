@@ -43,7 +43,7 @@ const Team = () => {
               src={images[0] as string}
               width={300}
               height={300}
-              alt="Image1"
+              alt="image1"
               className="h-full w-full rounded-lg object-cover"
             />
           </div>
@@ -52,14 +52,14 @@ const Team = () => {
               src={images[1] as string}
               width={300}
               height={300}
-              alt="Image1"
+              alt="image1"
               className="h-full w-full rounded-lg object-cover"
             />
             <Image
               src={images[2] as string}
               width={300}
               height={300}
-              alt="Image1"
+              alt="image1"
               className="h-full w-full rounded-lg object-cover"
             />
           </div>
