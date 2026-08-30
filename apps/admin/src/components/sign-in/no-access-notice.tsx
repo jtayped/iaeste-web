@@ -22,7 +22,7 @@ export function NoAccessNotice() {
   return (
     <div
       role="alert"
-      className="space-y-3 rounded-lg border border-border bg-muted/40 p-4"
+      className="space-y-3 rounded-lg border border-border bg-default/40 p-4"
     >
       <p className="text-sm font-medium">aquest compte no té accés</p>
       <p className="text-sm text-muted-foreground">

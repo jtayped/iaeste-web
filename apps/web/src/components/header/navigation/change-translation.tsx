@@ -39,7 +39,7 @@ const ChangeTranslation = ({ className = "" }: { className?: string }) => {
             return (
               <NavigationMenuLink key={l} asChild>
                 <Link href={pathname} locale={l}>
-                  <div className="bg-muted/70 p-4 hover:bg-muted">
+                  <div className="bg-default/70 p-4 hover:bg-default">
                     <Image
                       src={svg}
                       alt={label}

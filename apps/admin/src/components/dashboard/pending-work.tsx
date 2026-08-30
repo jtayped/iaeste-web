@@ -18,7 +18,7 @@ export function PendingWork({ pendingReview }: { pendingReview: number }) {
   const plural = pendingReview === 1 ? "sol·licitud" : "sol·licituds";
 
   return (
-    <section className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-muted/40 p-4">
+    <section className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-default/40 p-4">
       <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
         <Inbox className="size-4" aria-hidden />
       </span>

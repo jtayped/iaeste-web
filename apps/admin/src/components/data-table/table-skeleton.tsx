@@ -20,7 +20,7 @@ export function TableSkeleton({
       aria-busy
       aria-label="carregant"
     >
-      <div className="flex gap-4 border-b border-border bg-muted/40 px-4 py-3">
+      <div className="flex gap-4 border-b border-border bg-default/40 px-4 py-3">
         {Array.from({ length: columns }, (_, index) => (
           <Skeleton key={index} className="h-3 flex-1" />
         ))}

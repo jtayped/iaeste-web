@@ -109,7 +109,7 @@ export const EmailStepForm = ({
             )}
           </Section>
 
-          <div className="bg-muted/60 p-6 sm:p-8">
+          <div className="bg-default/60 p-6 sm:p-8">
             <motion.div whileTap={{ scale: 0.99 }}>
               <Button
                 className="h-11 w-full text-sm"

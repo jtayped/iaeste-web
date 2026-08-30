@@ -81,7 +81,7 @@ const DegreeField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
                 className={cn(
                   FIELD_CONTROL,
                   "flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-left text-base shadow-sm transition-colors md:text-sm",
-                  "hover:border-ring/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                  "hover:border-ring/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none",
                   "aria-[invalid=true]:border-destructive",
                   !field.value && "text-muted-foreground",
                 )}
@@ -133,7 +133,7 @@ const DegreeField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
                               exactly where they stop being distinguishable. */}
                           <span className="min-w-0 flex-1">{label}</span>
                           {campus && (
-                            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                            <span className="shrink-0 rounded-full bg-default px-2 py-0.5 text-xs font-medium text-muted-foreground">
                               {campus.toLowerCase()}
                             </span>
                           )}

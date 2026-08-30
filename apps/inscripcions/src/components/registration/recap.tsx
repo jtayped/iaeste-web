@@ -65,7 +65,7 @@ export const KnownPersonNotice = ({
       <div className="mt-5">
         <div className="flex items-center gap-2 text-muted-foreground">
           <History aria-hidden="true" className="size-3.5 shrink-0" />
-          <p className={cn(FIELD_HINT, "font-medium uppercase tracking-wide")}>
+          <p className={cn(FIELD_HINT, "font-medium tracking-wide uppercase")}>
             el teu pas per iaeste
           </p>
         </div>
@@ -73,7 +73,7 @@ export const KnownPersonNotice = ({
           {memberships.map((membership) => (
             <li
               key={`${membership.campaignLabel}-${membership.status}`}
-              className="flex items-center justify-between gap-3 rounded-md bg-muted/50 px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-3 rounded-md bg-default/50 px-3 py-2 text-sm"
             >
               <span className="font-medium tabular-nums">
                 {membership.campaignLabel}

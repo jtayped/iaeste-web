@@ -45,7 +45,7 @@ export const Progress = ({
               "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums transition-colors",
               done && "bg-primary text-primary-foreground",
               active && "bg-primary text-primary-foreground",
-              !done && !active && "bg-muted text-muted-foreground",
+              !done && !active && "bg-default text-muted-foreground",
             )}
           >
             {done ? (
