@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { RotateCw } from "lucide-react";
 
-import { Button } from "@repo/ui/button";
+import { Button, buttonVariants } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 
 import StatusScreen from "@/components/status";
@@ -34,9 +34,9 @@ export const InvalidInvitationScreen = () => (
     tone="warning"
     title="aquest enllaç no és vàlid"
     actions={
-      <Button variant="link" asChild>
-        <Link href="/">torna a l&apos;inici</Link>
-      </Button>
+      <Link href="/" className={buttonVariants({ variant: "link" })}>
+        torna a l&apos;inici
+      </Link>
     }
     footnote={
       <>
@@ -95,9 +95,9 @@ export const UnreachableScreen = ({ onRetry }: { onRetry: () => void }) => (
           <RotateCw />
           torna-ho a provar
         </Button>
-        <Button variant="link" asChild>
-          <Link href="/">torna a l&apos;inici</Link>
-        </Button>
+        <Link href="/" className={buttonVariants({ variant: "link" })}>
+          torna a l&apos;inici
+        </Link>
       </>
     }
   >
@@ -123,9 +123,9 @@ export const AcceptedScreen = ({
       tone="positive"
       title="ja eres membre de l'equip"
       actions={
-        <Button variant="link" asChild>
-          <Link href="/">torna a l&apos;inici</Link>
-        </Button>
+        <Link href="/" className={buttonVariants({ variant: "link" })}>
+          torna a l&apos;inici
+        </Link>
       }
     >
       <Paragraph>
@@ -140,9 +140,9 @@ export const AcceptedScreen = ({
       title="ja ets membre de l'equip"
       celebrate
       actions={
-        <Button variant="link" asChild>
-          <Link href="/">torna a l&apos;inici</Link>
-        </Button>
+        <Link href="/" className={buttonVariants({ variant: "link" })}>
+          torna a l&apos;inici
+        </Link>
       }
     >
       <Paragraph>

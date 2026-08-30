@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 
 import StatusScreen from "@/components/status";
@@ -20,9 +20,9 @@ const AlreadyRegistered = () => {
       tone="warning"
       title="ja tenim la teva inscripció"
       actions={
-        <Button variant="link" asChild>
-          <Link href="/">torna a l&apos;inici</Link>
-        </Button>
+        <Link href="/" className={buttonVariants({ variant: "link" })}>
+          torna a l&apos;inici
+        </Link>
       }
       footnote={
         <>

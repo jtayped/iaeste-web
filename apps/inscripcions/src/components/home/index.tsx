@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 import { Check, RotateCw, Send } from "lucide-react";
 import Link from "next/link";
@@ -59,29 +59,37 @@ const HomePage = ({
           </motion.div>
           <motion.div variants={childVariants} className="mx-auto mt-6">
             <ButtonGroup className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex [&>*]:min-h-11">
-              <Button asChild className="md:px-12">
-                {isOpen ? (
-                  <Link href="/formulari">
-                    <Check />
-                    inscriu-te
-                  </Link>
-                ) : isUnavailable ? (
-                  <Link href="/">
-                    <RotateCw />
-                    torna-ho a provar
-                  </Link>
-                ) : (
-                  <Link href="mailto:iaeste@udl.cat?subject=Inscripci%C3%B3%20a%20IAESTE%20Lleida">
-                    <Send />
-                    contacta&apos;ns
-                  </Link>
-                )}
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href={"https://iaestelleida.cat"}>
-                  <Globe /> més informació
+              {isOpen ? (
+                <Link
+                  href="/formulari"
+                  className={buttonVariants({ className: "md:px-12" })}
+                >
+                  <Check />
+                  inscriu-te
                 </Link>
-              </Button>
+              ) : isUnavailable ? (
+                <Link
+                  href="/"
+                  className={buttonVariants({ className: "md:px-12" })}
+                >
+                  <RotateCw />
+                  torna-ho a provar
+                </Link>
+              ) : (
+                <Link
+                  href="mailto:iaeste@udl.cat?subject=Inscripci%C3%B3%20a%20IAESTE%20Lleida"
+                  className={buttonVariants({ className: "md:px-12" })}
+                >
+                  <Send />
+                  contacta&apos;ns
+                </Link>
+              )}
+              <Link
+                href={"https://iaestelleida.cat"}
+                className={buttonVariants({ variant: "outline" })}
+              >
+                <Globe /> més informació
+              </Link>
             </ButtonGroup>
           </motion.div>
         </motion.div>

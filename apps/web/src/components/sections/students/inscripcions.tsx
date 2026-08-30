@@ -1,7 +1,7 @@
 import Section from "@/components/common/sections/section";
 import Countdown from "@/components/sections/students/countdown";
 import type { RegistrationWindow } from "@/lib/registration-status";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { H2 } from "@repo/ui/typography";
 import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -53,15 +53,16 @@ const Inscripcions = ({ status }: { status: RegistrationWindow | null }) => {
             />
           )}
           {status.open && (
-            <Button
-              asChild
-              className="h-12 w-full bg-white px-7 text-base text-primary shadow-sm hover:bg-white/90"
+            <Link
+              href={INSCRIPCIONS_URL}
+              className={buttonVariants({
+                className:
+                  "h-12 w-full bg-white px-7 text-base text-primary shadow-sm hover:bg-white/90",
+              })}
             >
-              <Link href={INSCRIPCIONS_URL}>
-                {t("button")}
-                <ArrowRight aria-hidden />
-              </Link>
-            </Button>
+              {t("button")}
+              <ArrowRight aria-hidden />
+            </Link>
           )}
         </div>
       </div>

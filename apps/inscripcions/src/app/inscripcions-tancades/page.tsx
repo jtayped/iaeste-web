@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Globe, Send } from "lucide-react";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import ButtonGroup from "@repo/ui/button-group";
 import { Paragraph } from "@repo/ui/typography";
 
@@ -28,18 +28,20 @@ const ClosedCampaignPage = () => (
     title="ara mateix no hi ha inscripcions obertes"
     actions={
       <ButtonGroup className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex">
-        <Button asChild>
-          <Link href="mailto:iaeste@udl.cat?subject=Inscripci%C3%B3%20a%20IAESTE%20Lleida">
-            <Send />
-            contacta&apos;ns
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="https://iaestelleida.cat">
-            <Globe />
-            més informació
-          </Link>
-        </Button>
+        <Link
+          href="mailto:iaeste@udl.cat?subject=Inscripci%C3%B3%20a%20IAESTE%20Lleida"
+          className={buttonVariants()}
+        >
+          <Send />
+          contacta&apos;ns
+        </Link>
+        <Link
+          href="https://iaestelleida.cat"
+          className={buttonVariants({ variant: "outline" })}
+        >
+          <Globe />
+          més informació
+        </Link>
       </ButtonGroup>
     }
   >

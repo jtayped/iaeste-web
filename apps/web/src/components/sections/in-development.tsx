@@ -1,7 +1,7 @@
 import { Link } from "@/i18n/routing";
 import React from "react";
 import { BiCode } from "react-icons/bi";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import BackButton from "@repo/ui/back-btn";
 import { useTranslations } from "next-intl";
 import { H1, Paragraph } from "@repo/ui/typography";
@@ -19,9 +19,9 @@ const InDevelopment = () => {
         <H1 className="mt-6">{t("title")}</H1>
         <Paragraph>{t("description")}</Paragraph>
         <ButtonGroup className="mt-4">
-          <Button asChild>
-            <Link href={"/"}>{t("buttons.home")}</Link>
-          </Button>
+          <Link href={"/"} className={buttonVariants()}>
+            {t("buttons.home")}
+          </Link>
           <BackButton variant="secondary">{t("buttons.back")}</BackButton>
         </ButtonGroup>
       </div>

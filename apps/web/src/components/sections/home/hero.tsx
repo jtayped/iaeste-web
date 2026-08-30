@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -89,22 +89,25 @@ const Hero = () => {
             <ButtonGroup className="mt-9">
               {/* `default` is the same navy as the overlay, so the primary
                   action gets a white plate instead. */}
-              <Button
-                asChild
-                className="h-11 bg-white px-6 text-base text-primary shadow-sm hover:bg-white/90 md:h-12 md:px-8"
+              <Link
+                href="/company"
+                className={buttonVariants({
+                  className:
+                    "h-11 bg-white px-6 text-base text-primary shadow-sm hover:bg-white/90 md:h-12 md:px-8",
+                })}
               >
-                <Link href="/company">
-                  <Building />
-                  {t("buttons.company")}
-                </Link>
-              </Button>
-              <Button
-                variant={"secondary"}
-                asChild
-                className="h-11 px-6 text-base md:h-12 md:px-8"
+                <Building />
+                {t("buttons.company")}
+              </Link>
+              <Link
+                href="/student"
+                className={buttonVariants({
+                  variant: "secondary",
+                  className: "h-11 px-6 text-base md:h-12 md:px-8",
+                })}
               >
-                <Link href="/student">{t("buttons.student")}</Link>
-              </Button>
+                {t("buttons.student")}
+              </Link>
             </ButtonGroup>
           </motion.div>
         </div>

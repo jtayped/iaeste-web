@@ -1,4 +1,4 @@
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { cn } from "@repo/ui/lib/utils";
 import { ArrowUpRight } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -17,17 +17,16 @@ const LearnMoreBtn = ({
   const t = useTranslations("buttons");
 
   return (
-    <Button asChild className={cn("mt-4", className)}>
-      <Link
-        href="https://iaeste.org"
-        target="_blank" // Opens the link in a new tab
-        rel="noopener noreferrer" // Security best practice
-      >
-        <>
-          {text ?? t("learn-more")} {icon && <ArrowUpRight />}
-        </>
-      </Link>
-    </Button>
+    <Link
+      href="https://iaeste.org"
+      target="_blank" // Opens the link in a new tab
+      rel="noopener noreferrer" // Security best practice
+      className={buttonVariants({ className: cn("mt-4", className) })}
+    >
+      <>
+        {text ?? t("learn-more")} {icon && <ArrowUpRight />}
+      </>
+    </Link>
   );
 };
 

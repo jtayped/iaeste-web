@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 import { env } from "@repo/env/inscripcions";
 
@@ -30,16 +30,20 @@ const AcceptedPage = () => (
     actions={
       <>
         {env.NEXT_PUBLIC_WHATSAPP_INVITE && (
-          <Button asChild>
-            <Link href={env.NEXT_PUBLIC_WHATSAPP_INVITE}>
-              uneix-te al grup de whatsapp
-              <Plus />
-            </Link>
-          </Button>
+          <Link
+            href={env.NEXT_PUBLIC_WHATSAPP_INVITE}
+            className={buttonVariants()}
+          >
+            uneix-te al grup de whatsapp
+            <Plus />
+          </Link>
         )}
-        <Button variant="link" asChild>
-          <Link href="https://iaestelleida.cat">coneix el que fem</Link>
-        </Button>
+        <Link
+          href="https://iaestelleida.cat"
+          className={buttonVariants({ variant: "link" })}
+        >
+          coneix el que fem
+        </Link>
       </>
     }
   >

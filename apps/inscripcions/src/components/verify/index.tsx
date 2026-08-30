@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RotateCw } from "lucide-react";
-import { Button } from "@repo/ui/button";
+import { Button, buttonVariants } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 
 import StatusScreen from "@/components/status";
@@ -113,9 +113,9 @@ const Verify = () => {
             <RotateCw />
             torna-ho a provar
           </Button>
-          <Button variant="link" asChild>
-            <Link href="/">torna a l&apos;inici</Link>
-          </Button>
+          <Link href="/" className={buttonVariants({ variant: "link" })}>
+            torna a l&apos;inici
+          </Link>
         </>
       }
     >

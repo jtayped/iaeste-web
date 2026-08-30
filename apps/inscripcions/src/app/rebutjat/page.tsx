@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Globe } from "lucide-react";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 
 import StatusScreen from "@/components/status";
@@ -27,17 +27,19 @@ const RejectedPage = () => (
     title="aquest cop no ha pogut ser"
     actions={
       <>
-        <Button asChild>
-          <Link href="mailto:iaeste@udl.cat?subject=Sobre%20la%20meva%20sol%C2%B7licitud">
-            escriu-nos
-          </Link>
-        </Button>
-        <Button variant="link" asChild>
-          <Link href="https://iaestelleida.cat">
-            <Globe />
-            més sobre iaeste lleida
-          </Link>
-        </Button>
+        <Link
+          href="mailto:iaeste@udl.cat?subject=Sobre%20la%20meva%20sol%C2%B7licitud"
+          className={buttonVariants()}
+        >
+          escriu-nos
+        </Link>
+        <Link
+          href="https://iaestelleida.cat"
+          className={buttonVariants({ variant: "link" })}
+        >
+          <Globe />
+          més sobre iaeste lleida
+        </Link>
       </>
     }
   >

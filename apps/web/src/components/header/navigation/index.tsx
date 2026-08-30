@@ -13,7 +13,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@repo/ui/navigation-menu";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { Logo } from "@repo/ui/logo";
 import { useTranslations } from "next-intl";
 import ChangeTranslation from "./change-translation";
@@ -32,7 +32,7 @@ const Navigation = ({ className = "" }: { className?: string }) => {
               <li className="row-span-3">
                 <NavigationMenuLink asChild>
                   <Link
-                    className="flex h-full w-full select-none flex-col justify-end rounded-md bg-muted p-6 no-underline outline-none focus:shadow-md"
+                    className="flex h-full w-full flex-col justify-end rounded-md bg-default p-6 no-underline outline-none select-none focus:shadow-md"
                     href="/"
                   >
                     {/* The white mark was being `invert`ed to black on this
@@ -43,7 +43,7 @@ const Navigation = ({ className = "" }: { className?: string }) => {
                       alt=""
                       className="size-14"
                     />
-                    <div className="mb-2 mt-4 text-lg font-medium">
+                    <div className="mt-4 mb-2 text-lg font-medium">
                       {t("pages.home.title")}
                     </div>
                     <p className="text-sm leading-tight text-muted-foreground">
@@ -79,12 +79,15 @@ const Navigation = ({ className = "" }: { className?: string }) => {
         </NavigationMenuItem>
         <ChangeTranslation className="hidden bg-transparent hover:bg-white/10 focus:bg-white/10 data-[state=open]:bg-white/10 md:flex" />
         <NavigationMenuItem asChild>
-          <Button
-            asChild
-            className="ml-2 bg-white text-primary shadow-sm hover:bg-white/90"
+          <Link
+            href="#contact-form"
+            className={buttonVariants({
+              className:
+                "ml-2 bg-white text-primary shadow-sm hover:bg-white/90",
+            })}
           >
-            <Link href="#contact-form">{t("contact-btn")}</Link>
-          </Button>
+            {t("contact-btn")}
+          </Link>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
@@ -109,12 +112,12 @@ const ListItem = ({
       <NavigationMenuLink asChild>
         <Link
           className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            "block space-y-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-default hover:text-default-foreground focus:bg-default focus:text-default-foreground",
             className,
           )}
           href={href}
         >
-          <div className="text-sm font-medium leading-none">{title}</div>
+          <div className="text-sm leading-none font-medium">{title}</div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>

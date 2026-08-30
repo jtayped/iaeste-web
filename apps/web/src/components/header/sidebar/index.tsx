@@ -1,6 +1,6 @@
 import React from "react";
 import { createPortal } from "react-dom";
-import { Button } from "@repo/ui/button";
+import { Button, buttonVariants } from "@repo/ui/button";
 import { cn } from "@repo/ui/lib/utils";
 import { ChevronRight, Menu, X } from "lucide-react";
 import { useNavigation } from "..";
@@ -85,14 +85,16 @@ const SidebarComponent = () => {
 
       <div className="section-padding shrink-0 space-y-3 border-t border-white/10 pb-8 pt-5">
         <ChangeTranslation />
-        <Button
-          asChild
-          className="h-12 w-full bg-white text-base text-primary hover:bg-white/90"
+        <Link
+          href="#contact-form"
+          onClick={toggleSidebar}
+          className={buttonVariants({
+            className:
+              "h-12 w-full bg-white text-base text-primary hover:bg-white/90",
+          })}
         >
-          <Link href="#contact-form" onClick={toggleSidebar}>
-            {t("contact-btn")}
-          </Link>
-        </Button>
+          {t("contact-btn")}
+        </Link>
       </div>
     </motion.div>
   );

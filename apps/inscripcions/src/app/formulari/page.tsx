@@ -1,7 +1,7 @@
 import RegistrationFlow from "@/components/registration";
 import StatusScreen from "@/components/status";
 import { getRegistrationAvailability } from "@/lib/registration-status";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -21,9 +21,9 @@ const FormPage = async () => {
         tone="warning"
         title="no podem comprovar les inscripcions"
         actions={
-          <Button asChild>
-            <Link href="/formulari">torna-ho a provar</Link>
-          </Button>
+          <Link href="/formulari" className={buttonVariants()}>
+            torna-ho a provar
+          </Link>
         }
       >
         <Paragraph>

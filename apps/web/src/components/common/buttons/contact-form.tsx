@@ -1,4 +1,4 @@
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { cn } from "@repo/ui/lib/utils";
 import { type LucideIcon, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -17,12 +17,16 @@ const ContactFormBtn = ({
   const t = useTranslations("buttons");
 
   return (
-    <Button asChild variant="default" className={cn("mt-4", className)}>
-      <Link href="#contact-form">
-        {Icon ? <Icon /> : <Send />}
-        {text ?? t("contact-form")}
-      </Link>
-    </Button>
+    <Link
+      href="#contact-form"
+      className={buttonVariants({
+        variant: "default",
+        className: cn("mt-4", className),
+      })}
+    >
+      {Icon ? <Icon /> : <Send />}
+      {text ?? t("contact-form")}
+    </Link>
   );
 };
 

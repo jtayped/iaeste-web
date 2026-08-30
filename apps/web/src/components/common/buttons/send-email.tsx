@@ -1,4 +1,4 @@
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { email } from "@/constants/contact";
 import { cn } from "@repo/ui/lib/utils";
 import { LetterText } from "lucide-react";
@@ -18,12 +18,16 @@ const SendEmailBtn = ({
   const t = useTranslations("buttons");
 
   return (
-    <Button asChild variant="secondary" className={cn("mt-4", className)}>
-      <Link href={`mailto:${email}`}>
-        {icon && <LetterText />}
-        {text ?? t("send-email")}
-      </Link>
-    </Button>
+    <Link
+      href={`mailto:${email}`}
+      className={buttonVariants({
+        variant: "secondary",
+        className: cn("mt-4", className),
+      })}
+    >
+      {icon && <LetterText />}
+      {text ?? t("send-email")}
+    </Link>
   );
 };
 

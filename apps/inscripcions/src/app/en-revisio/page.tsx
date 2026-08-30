@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 
 import StatusScreen from "@/components/status";
@@ -23,9 +23,9 @@ const PendingReviewPage = () => (
     tone="positive"
     title="sol·licitud enviada!"
     actions={
-      <Button variant="link" asChild>
-        <Link href="/">torna a l&apos;inici</Link>
-      </Button>
+      <Link href="/" className={buttonVariants({ variant: "link" })}>
+        torna a l&apos;inici
+      </Link>
     }
   >
     <Paragraph>
