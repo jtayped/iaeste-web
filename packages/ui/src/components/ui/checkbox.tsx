@@ -1,30 +1,63 @@
 "use client";
 
 import * as React from "react";
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
-import { Check } from "lucide-react";
+import {
+  CheckboxContent as HeroUICheckboxContent,
+  CheckboxControl as HeroUICheckboxControl,
+  CheckboxIndicator as HeroUICheckboxIndicator,
+  CheckboxRoot as HeroUICheckboxRoot,
+} from "@heroui/react/checkbox";
 
-import { cn } from "@repo/ui/lib/utils";
-
+/**
+ * Zero consumers exist for this component, so it exposes HeroUI's native
+ * `isSelected` / `onChange` / `isDisabled` / `isIndeterminate` API directly
+ * rather than a Radix-shaped `checked` / `onCheckedChange` compatibility
+ * layer.
+ *
+ * `Checkbox` only sets up context — it renders nothing on its own, so a
+ * labelled control has to compose the sub-parts itself, e.g.:
+ *
+ * ```tsx
+ * <Checkbox isSelected={checked} onChange={setChecked}>
+ *   <CheckboxContent>
+ *     <CheckboxControl>
+ *       <CheckboxIndicator />
+ *     </CheckboxControl>
+ *     Label text
+ *   </CheckboxContent>
+ * </Checkbox>
+ * ```
+ */
 const Checkbox = React.forwardRef<
-  React.ElementRef<typeof CheckboxPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<typeof HeroUICheckboxRoot>
 >(({ className, ...props }, ref) => (
-  <CheckboxPrimitive.Root
-    ref={ref}
-    className={cn(
-      "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      className,
-    )}
-    {...props}
-  >
-    <CheckboxPrimitive.Indicator
-      className={cn("flex items-center justify-center text-current")}
-    >
-      <Check className="h-4 w-4" />
-    </CheckboxPrimitive.Indicator>
-  </CheckboxPrimitive.Root>
+  <HeroUICheckboxRoot ref={ref} className={className} {...props} />
 ));
-Checkbox.displayName = CheckboxPrimitive.Root.displayName;
+Checkbox.displayName = "Checkbox";
 
-export { Checkbox };
+const CheckboxContent = React.forwardRef<
+  HTMLLabelElement,
+  React.ComponentPropsWithoutRef<typeof HeroUICheckboxContent>
+>(({ className, ...props }, ref) => (
+  <HeroUICheckboxContent ref={ref} className={className} {...props} />
+));
+CheckboxContent.displayName = "CheckboxContent";
+
+const CheckboxControl = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentPropsWithoutRef<typeof HeroUICheckboxControl>
+>(({ className, ...props }, ref) => (
+  <HeroUICheckboxControl ref={ref} className={className} {...props} />
+));
+CheckboxControl.displayName = "CheckboxControl";
+
+const CheckboxIndicator = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentPropsWithoutRef<typeof HeroUICheckboxIndicator>
+>(({ className, ...props }, ref) => (
+  <HeroUICheckboxIndicator ref={ref} className={className} {...props} />
+));
+CheckboxIndicator.displayName = "CheckboxIndicator";
+
+export { Checkbox, CheckboxContent, CheckboxControl, CheckboxIndicator };

@@ -1,31 +1,19 @@
 "use client";
 
 import * as React from "react";
-import * as SeparatorPrimitive from "@radix-ui/react-separator";
-
-import { cn } from "@repo/ui/lib/utils";
+import { Separator as HeroUISeparator } from "@heroui/react/separator";
 
 const Separator = React.forwardRef<
-  React.ElementRef<typeof SeparatorPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
->(
-  (
-    { className, orientation = "horizontal", decorative = true, ...props },
-    ref,
-  ) => (
-    <SeparatorPrimitive.Root
-      ref={ref}
-      decorative={decorative}
-      orientation={orientation}
-      className={cn(
-        "shrink-0 bg-border",
-        orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
-        className,
-      )}
-      {...props}
-    />
-  ),
-);
-Separator.displayName = SeparatorPrimitive.Root.displayName;
+  React.ElementRef<typeof HeroUISeparator>,
+  React.ComponentPropsWithoutRef<typeof HeroUISeparator>
+>(({ className, orientation = "horizontal", ...props }, ref) => (
+  <HeroUISeparator
+    ref={ref}
+    orientation={orientation}
+    className={className}
+    {...props}
+  />
+));
+Separator.displayName = "Separator";
 
 export { Separator };

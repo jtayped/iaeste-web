@@ -1,50 +1,42 @@
 "use client";
 
 import * as React from "react";
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
+import {
+  AvatarFallback as HeroUIAvatarFallback,
+  AvatarImage as HeroUIAvatarImage,
+  AvatarRoot as HeroUIAvatarRoot,
+} from "@heroui/react/avatar";
 
-import { cn } from "@repo/ui/lib/utils";
-
+/**
+ * HeroUI's `md` size is `size-10` (40px) — the same default this component
+ * has always used — so no explicit `size` prop is needed to match. Its base
+ * shape is `rounded-3xl` rather than `rounded-full`; the sole consumer
+ * (`nav-user.tsx`) already overrides the radius with its own `rounded-md`
+ * class, and utility classes win over HeroUI's component-layer styles, so
+ * that override still applies unchanged.
+ */
 const Avatar = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+  HTMLSpanElement,
+  React.ComponentPropsWithoutRef<typeof HeroUIAvatarRoot>
 >(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Root
-    ref={ref}
-    className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
-      className,
-    )}
-    {...props}
-  />
+  <HeroUIAvatarRoot ref={ref} className={className} {...props} />
 ));
-Avatar.displayName = AvatarPrimitive.Root.displayName;
+Avatar.displayName = "Avatar";
 
 const AvatarImage = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
+  HTMLImageElement,
+  React.ComponentPropsWithoutRef<typeof HeroUIAvatarImage>
 >(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image
-    ref={ref}
-    className={cn("aspect-square h-full w-full", className)}
-    {...props}
-  />
+  <HeroUIAvatarImage ref={ref} className={className} {...props} />
 ));
-AvatarImage.displayName = AvatarPrimitive.Image.displayName;
+AvatarImage.displayName = "AvatarImage";
 
 const AvatarFallback = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Fallback>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
+  HTMLSpanElement,
+  React.ComponentPropsWithoutRef<typeof HeroUIAvatarFallback>
 >(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Fallback
-    ref={ref}
-    className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
-      className,
-    )}
-    {...props}
-  />
+  <HeroUIAvatarFallback ref={ref} className={className} {...props} />
 ));
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
+AvatarFallback.displayName = "AvatarFallback";
 
 export { Avatar, AvatarImage, AvatarFallback };

@@ -1,52 +1,114 @@
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import {
+  Button as HeroUIButton,
+  buttonVariants as heroUIButtonVariants,
+} from "@heroui/react/button";
 
 import { cn } from "@repo/ui/lib/utils";
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-  {
-    variants: {
-      variant: {
-        default:
-          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-6 rounded-md px-2 text-xs md:h-8 md:px-3",
-        lg: "h-9 rounded-md px-4 md:h-10 md:px-8",
-        icon: "h-9 w-9",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  },
-);
+type ButtonVariant =
+  "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
+type ButtonSize = "default" | "sm" | "lg" | "icon";
+
+/**
+ * HeroUI ships `primary | secondary | tertiary | outline | ghost | danger |
+ * danger-soft`. Two of ours have no counterpart there:
+ *
+ * - our `secondary` is IAESTE blue, while HeroUI's `secondary` is a neutral
+ *   grey fill, so mapping the two by name would quietly drain the brand colour
+ *   out of every secondary button;
+ * - HeroUI has no link-shaped button variant at all.
+ *
+ * Both ride on `ghost` — the only variant that adds neither a fill nor a
+ * border — and are then repainted by `.button--brand` / `.button--link` in
+ * `globals.css`, which set the same `--button-*` custom properties HeroUI's own
+ * variants use.
+ */
+const HEROUI_VARIANT = {
+  default: "primary",
+  destructive: "danger",
+  outline: "outline",
+  secondary: "ghost",
+  ghost: "ghost",
+  link: "ghost",
+} as const satisfies Record<ButtonVariant, string>;
+
+const BRAND_VARIANT_CLASS = {
+  secondary: "button--brand",
+  link: "button--link",
+} as const satisfies Partial<Record<ButtonVariant, string>>;
+
+/** `icon` is a size here but an `isIconOnly` modifier in HeroUI. */
+const HEROUI_SIZE = {
+  default: "md",
+  sm: "sm",
+  lg: "lg",
+  icon: "md",
+} as const satisfies Record<ButtonSize, string>;
+
+interface ButtonVariantOptions {
+  variant?: ButtonVariant | null;
+  size?: ButtonSize | null;
+  className?: string;
+}
+
+/**
+ * Button classes without a button element, for the cases where the thing being
+ * styled has to stay something else — most often a `next/link` or a localised
+ * `Link` from an app's `i18n/routing`. HeroUI's button is a real `<button>`
+ * with no polymorphic escape hatch, so anchors get the classes instead of
+ * being wrapped.
+ */
+function buttonVariants({
+  variant,
+  size,
+  className,
+}: ButtonVariantOptions = {}) {
+  const resolvedVariant = variant ?? "default";
+  const resolvedSize = size ?? "default";
+
+  return cn(
+    heroUIButtonVariants({
+      variant: HEROUI_VARIANT[resolvedVariant],
+      size: HEROUI_SIZE[resolvedSize],
+      isIconOnly: resolvedSize === "icon",
+    }),
+    BRAND_VARIANT_CLASS[resolvedVariant as keyof typeof BRAND_VARIANT_CLASS],
+    className,
+  );
+}
+
+export interface ButtonProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof HeroUIButton>,
+  "variant" | "size" | "className" | "children"
+> {
+  children?: React.ReactNode;
+  className?: string;
+  variant?: ButtonVariant | null;
+  size?: ButtonSize | null;
+  /** Native alias for HeroUI's `isDisabled`. */
+  disabled?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
+  ({ className, variant, size, disabled, isDisabled, ...props }, ref) => {
+    const resolvedVariant = variant ?? "default";
+    const resolvedSize = size ?? "default";
+
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+      <HeroUIButton
         ref={ref}
+        variant={HEROUI_VARIANT[resolvedVariant]}
+        size={HEROUI_SIZE[resolvedSize]}
+        isIconOnly={resolvedSize === "icon"}
+        isDisabled={isDisabled ?? disabled}
+        className={cn(
+          BRAND_VARIANT_CLASS[
+            resolvedVariant as keyof typeof BRAND_VARIANT_CLASS
+          ],
+          className,
+        )}
         {...props}
       />
     );
@@ -55,3 +117,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button";
 
 export { Button, buttonVariants };
+export type { ButtonVariant, ButtonSize };

@@ -1,7 +1,34 @@
 # @repo/ui
 
-Shared component library for both Next.js apps. Mostly shadcn/ui output over
-Radix primitives.
+Shared component library for both Next.js apps.
+
+> **Mid-migration to HeroUI v3.** `button`, `card`, `alert`, `badge`, `avatar`,
+> `separator`, `skeleton`, `switch` and `checkbox` are HeroUI-backed. Everything
+> else is still shadcn output over Radix, and the shadcn instructions below
+> still apply to those files. `plans/checklist.md` tracks progress and records
+> the decisions; read its final notes before touching a component.
+>
+> When adding to or editing a migrated component:
+>
+> - Import from the subpath: `import { X } from "@heroui/react/x"`. Only this
+>   package may import HeroUI — apps go through `@repo/ui/*`.
+> - HeroUI styles through semantic classes (`button button--primary`), not
+>   utilities. Variants set `--button-*` / `--chip-*` custom properties, so
+>   **add a variant by defining another `.button--*` class** in
+>   `src/globals.css`, don't override with utility soup.
+> - Theme tokens live in `src/globals.css`. HeroUI derives `--accent-hover`,
+>   `--danger-hover` and friends from the base tokens, so overriding `--accent`
+>   is enough to retheme a variant.
+> - Legacy variant and size names are kept and mapped in each wrapper
+>   (`HEROUI_VARIANT`, `HEROUI_SIZE`, `HEROUI_CHIP`, `HEROUI_STATUS`) so
+>   consumers don't churn. `apps/admin/src/lib/labels.ts` mirrors the badge
+>   names by string literal — keep them in sync.
+> - **Do not put `"use client"` on `button.tsx`.** It taints every export,
+>   including the pure `buttonVariants()` helper that server components call
+>   directly, and breaks static prerendering.
+> - HeroUI's Button is a real `<button>` with no polymorphic escape hatch. For a
+>   link that looks like a button, put `buttonVariants({...})` on the app's own
+>   `Link` — never wrap a link in a button.
 
 ## Adding a component
 

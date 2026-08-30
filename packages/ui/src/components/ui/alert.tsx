@@ -1,59 +1,84 @@
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import {
+  AlertContent as HeroUIAlertContent,
+  AlertDescription as HeroUIAlertDescription,
+  AlertIndicator as HeroUIAlertIndicator,
+  AlertRoot as HeroUIAlertRoot,
+  AlertTitle as HeroUIAlertTitle,
+} from "@heroui/react/alert";
 
-import { cn } from "@repo/ui/lib/utils";
+type AlertVariant =
+  "default" | "destructive" | "accent" | "success" | "warning";
 
-const alertVariants = cva(
-  "relative w-full rounded-lg border p-4 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
-  {
-    variants: {
-      variant: {
-        default: "bg-background text-foreground",
-        destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
+/**
+ * HeroUI calls this `status` and offers more of them than the two we had.
+ * `destructive` is kept as the name for the danger state because
+ * `apps/web`'s contact form and the admin already speak it.
+ */
+const HEROUI_STATUS = {
+  default: "default",
+  destructive: "danger",
+  accent: "accent",
+  success: "success",
+  warning: "warning",
+} as const satisfies Record<AlertVariant, string>;
+
+export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: AlertVariant | null;
+}
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
+  ({ className, variant, children, ...props }, ref) => (
+    <HeroUIAlertRoot
+      ref={ref}
+      role="alert"
+      status={HEROUI_STATUS[variant ?? "default"]}
+      className={className}
+      {...props}
+    >
+      {children}
+    </HeroUIAlertRoot>
+  ),
 );
-
-const Alert = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
->(({ className, variant, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="alert"
-    className={cn(alertVariants({ variant }), className)}
-    {...props}
-  />
-));
 Alert.displayName = "Alert";
+
+/**
+ * Wraps the leading icon. HeroUI lays the alert out as a flex row of
+ * indicator + content, which replaces the absolutely-positioned `[&>svg]`
+ * rules the copied component used.
+ */
+const AlertIndicator = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <HeroUIAlertIndicator ref={ref} className={className} {...props} />
+));
+AlertIndicator.displayName = "AlertIndicator";
+
+/** Stacks a title above a description beside the indicator. */
+const AlertContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <HeroUIAlertContent ref={ref} className={className} {...props} />
+));
+AlertContent.displayName = "AlertContent";
 
 const AlertTitle = React.forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
+  React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <h5
-    ref={ref}
-    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
-    {...props}
-  />
+  <HeroUIAlertTitle ref={ref} className={className} {...props} />
 ));
 AlertTitle.displayName = "AlertTitle";
 
 const AlertDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
+  HTMLSpanElement,
+  React.HTMLAttributes<HTMLSpanElement>
 >(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("text-sm [&_p]:leading-relaxed", className)}
-    {...props}
-  />
+  <HeroUIAlertDescription ref={ref} className={className} {...props} />
 ));
 AlertDescription.displayName = "AlertDescription";
 
-export { Alert, AlertTitle, AlertDescription };
+export { Alert, AlertIndicator, AlertContent, AlertTitle, AlertDescription };
+export type { AlertVariant };

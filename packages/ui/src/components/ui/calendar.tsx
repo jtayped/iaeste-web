@@ -70,13 +70,13 @@ function Calendar({
         ),
         selected:
           "[&>button]:bg-primary [&>button]:text-primary-foreground hover:[&>button]:bg-primary hover:[&>button]:text-primary-foreground focus:[&>button]:bg-primary focus:[&>button]:text-primary-foreground",
-        today: "[&>button]:bg-accent [&>button]:text-accent-foreground",
+        today: "[&>button]:bg-default [&>button]:text-default-foreground",
         outside: "text-muted-foreground opacity-50",
         disabled: "text-muted-foreground opacity-50",
-        range_start: "rounded-l-md bg-accent",
-        range_end: "rounded-r-md bg-accent",
+        range_start: "rounded-l-md bg-default",
+        range_end: "rounded-r-md bg-default",
         range_middle:
-          "bg-accent [&>button]:bg-transparent [&>button]:text-accent-foreground hover:[&>button]:bg-transparent",
+          "bg-default [&>button]:bg-transparent [&>button]:text-default-foreground hover:[&>button]:bg-transparent",
         hidden: "invisible",
         ...classNames,
       }}

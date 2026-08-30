@@ -133,7 +133,7 @@ export const Td: React.FC<
 export const Tr: React.FC<
   Props & React.HTMLAttributes<HTMLTableRowElement>
 > = ({ children, className = "", ...props }) => (
-  <tr className={`m-0 border-t p-0 even:bg-muted ${className}`} {...props}>
+  <tr className={`m-0 border-t p-0 even:bg-default ${className}`} {...props}>
     {children}
   </tr>
 );
