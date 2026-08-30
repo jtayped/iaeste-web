@@ -8,22 +8,18 @@ import { AtSign, Loader2 } from "lucide-react";
 
 import { Button } from "@repo/ui/button";
 import {
+  fieldProps,
   Form,
-  FormControl,
   FormDescription,
   FormField,
-  FormItem,
   FormLabel,
   FormMessage,
 } from "@repo/ui/form";
 import { Input } from "@repo/ui/input";
+import { TextField } from "@repo/ui/text-field";
 import { cn } from "@repo/ui/lib/utils";
 
-import {
-  FIELD_CONTROL,
-  FIELD_HINT,
-  FIELD_LABEL,
-} from "@/components/form/field-styles";
+import { FIELD_CONTROL, FIELD_HINT } from "@/components/form/field-styles";
 import { childVariants } from "@/components/form/motion";
 import { ExternalMemberNotice, Section } from "@/components/form/notices";
 import { emailStepSchema, type EmailStep } from "@/lib/form-schema";
@@ -72,30 +68,26 @@ export const EmailStepForm = ({
             <FormField
               control={form.control}
               name="email"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className={FIELD_LABEL}>
-                    correu electrònic
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="johndoe@alumnes.udl.cat"
-                      data-field-name="email"
-                      className={FIELD_CONTROL}
-                      required
-                      autoFocus
-                      type="email"
-                      inputMode="email"
-                      autoComplete="email"
-                      {...field}
-                    />
-                  </FormControl>
+              render={({ field, fieldState }) => (
+                <TextField {...fieldProps(field, fieldState)}>
+                  <FormLabel>correu electrònic</FormLabel>
+                  <Input
+                    ref={field.ref}
+                    placeholder="johndoe@alumnes.udl.cat"
+                    data-field-name="email"
+                    className={FIELD_CONTROL}
+                    required
+                    autoFocus
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                  />
                   <FormDescription className={FIELD_HINT}>
                     t&apos;hi enviarem un codi de sis xifres. millor el de la
                     udl, si en tens.
                   </FormDescription>
                   <FormMessage className={cn(FIELD_HINT, "font-medium")} />
-                </FormItem>
+                </TextField>
               )}
             />
 

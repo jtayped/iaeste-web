@@ -15,16 +15,10 @@ import {
   CommandItem,
   CommandList,
 } from "@repo/ui/command";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@repo/ui/form";
+import { FormField, FormItem, FormLabel } from "@repo/ui/form";
 
 import type { ProfileForm } from "@/lib/form-schema";
-import { FIELD_CONTROL, FIELD_HINT, FIELD_LABEL } from "../field-styles";
+import { FIELD_CONTROL, FIELD_HINT } from "../field-styles";
 
 /**
  * Strips diacritics so "informatica" finds "informàtica" and "quimica" finds
@@ -58,40 +52,52 @@ function scoreDegree(value: string, search: string, keywords?: string[]) {
     : 0.5;
 }
 
+/**
+ * Still the `cmdk` build behind a Radix popover. HeroUI's `Autocomplete`
+ * filters with a boolean predicate and keeps the collection in its declared
+ * order, which cannot express the ranking `scoreDegree` does below; replacing
+ * it means driving the filter's input value and computing the sorted sections
+ * here, which is its own change. So this field only moves onto the new form
+ * API for now, and owns by hand the label and error wiring that a HeroUI field
+ * root would otherwise supply.
+ */
 const DegreeField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
   const [open, setOpen] = React.useState(false);
+  const labelId = React.useId();
+  const errorId = React.useId();
 
   return (
     <FormField
       control={form.control}
       name="degree"
-      render={({ field }) => (
+      render={({ field, fieldState }) => (
         <FormItem className="flex flex-col space-y-2">
-          <FormLabel className={FIELD_LABEL}>grau</FormLabel>
+          <FormLabel id={labelId}>grau</FormLabel>
 
           <Popover open={open} onOpenChange={setOpen}>
-            <FormControl>
-              <PopoverTrigger
-                type="button"
-                role="combobox"
-                aria-expanded={open}
-                aria-required="true"
-                data-field-name="degree"
-                onBlur={field.onBlur}
-                className={cn(
-                  FIELD_CONTROL,
-                  "flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-left text-base shadow-sm transition-colors md:text-sm",
-                  "hover:border-ring/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none",
-                  "aria-[invalid=true]:border-destructive",
-                  !field.value && "text-muted-foreground",
-                )}
-              >
-                <span className="truncate">
-                  {field.value ?? "cerca o tria el teu grau"}
-                </span>
-                <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-              </PopoverTrigger>
-            </FormControl>
+            <PopoverTrigger
+              type="button"
+              role="combobox"
+              aria-expanded={open}
+              aria-required="true"
+              aria-labelledby={labelId}
+              aria-invalid={fieldState.error ? true : undefined}
+              aria-describedby={fieldState.error ? errorId : undefined}
+              data-field-name="degree"
+              onBlur={field.onBlur}
+              className={cn(
+                FIELD_CONTROL,
+                "flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-left text-base shadow-sm transition-colors md:text-sm",
+                "hover:border-ring/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none",
+                "aria-[invalid=true]:border-destructive",
+                !field.value && "text-muted-foreground",
+              )}
+            >
+              <span className="truncate">
+                {field.value ?? "cerca o tria el teu grau"}
+              </span>
+              <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+            </PopoverTrigger>
 
             <PopoverContent
               align="start"
@@ -146,7 +152,14 @@ const DegreeField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
             </PopoverContent>
           </Popover>
 
-          <FormMessage className={cn(FIELD_HINT, "font-medium")} />
+          {fieldState.error && (
+            <p
+              id={errorId}
+              className={cn(FIELD_HINT, "font-medium text-destructive")}
+            >
+              {fieldState.error.message}
+            </p>
+          )}
         </FormItem>
       )}
     />

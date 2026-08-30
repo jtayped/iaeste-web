@@ -7,14 +7,7 @@ import { motion } from "framer-motion";
 import { KeyRound, Loader2, Pencil } from "lucide-react";
 
 import { Button } from "@repo/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@repo/ui/form";
+import { fieldProps, Form, FormField } from "@repo/ui/form";
 import {
   InputOTP,
   InputOTPGroup,
@@ -23,7 +16,7 @@ import {
 } from "@repo/ui/input-otp";
 import { cn } from "@repo/ui/lib/utils";
 
-import { FIELD_HINT, FIELD_LABEL } from "@/components/form/field-styles";
+import { FIELD_HINT } from "@/components/form/field-styles";
 import { childVariants } from "@/components/form/motion";
 import { Section } from "@/components/form/notices";
 import { codeStepSchema, type CodeStep } from "@/lib/form-schema";
@@ -107,39 +100,48 @@ export const CodeStepForm = ({
             <FormField
               control={form.control}
               name="code"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel className={cn(FIELD_LABEL, "sr-only")}>
-                    codi de verificació
-                  </FormLabel>
-                  <FormControl>
-                    <InputOTP
-                      maxLength={6}
-                      autoFocus
-                      disabled={submitting}
-                      data-field-name="code"
-                      containerClassName="justify-center"
-                      value={field.value}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
+              render={({ field, fieldState }) => (
+                <div className="space-y-2">
+                  {/* No visible label: the sentence above already says what
+                      the six boxes are for, so the name only has to exist for
+                      a screen reader. There is no field root here to hand the
+                      hidden input one. */}
+                  <InputOTP
+                    {...fieldProps(field, fieldState)}
+                    ref={field.ref}
+                    aria-label="codi de verificació"
+                    maxLength={6}
+                    autoFocus
+                    disabled={submitting}
+                    data-field-name="code"
+                    className="justify-center"
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                    </InputOTPGroup>
+                    <InputOTPSeparator />
+                    <InputOTPGroup>
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                  {/* Not `FormMessage`: that one lives inside its field root,
+                      and this root is a flex row of six boxes. Same shape as
+                      the rejected-code line below it. */}
+                  {fieldState.error && (
+                    <p
+                      className={cn(
+                        FIELD_HINT,
+                        "text-center font-medium text-destructive",
+                      )}
                     >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                      </InputOTPGroup>
-                      <InputOTPSeparator />
-                      <InputOTPGroup>
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </FormControl>
-                  <FormMessage
-                    className={cn(FIELD_HINT, "text-center font-medium")}
-                  />
-                </FormItem>
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </div>
               )}
             />
 

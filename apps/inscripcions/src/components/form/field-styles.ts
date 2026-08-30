@@ -1,12 +1,13 @@
 /**
  * The one type scale for the registration form.
  *
- * Every field imports these instead of styling its own label, hint and
- * control, so a new field cannot drift: there is exactly one place where a
- * label weight or a hint size is decided. The scale is deliberately short —
- * section heading, label, control, hint — because the form only has four
- * roles of text and inventing a fifth is what made the old version read as
- * typographically noisy.
+ * Every field imports these instead of styling its own hint and control, so a
+ * new field cannot drift: there is exactly one place where a hint size or a
+ * control height is decided. The scale is deliberately short — section
+ * heading, control, hint — because the form only has a few roles of text and
+ * inventing another is what made the old version read as typographically
+ * noisy. Labels are not here any more: the shared `Label` decides their
+ * weight for every app at once.
  */
 
 /**
@@ -15,12 +16,10 @@
  */
 export const SECTION_HEADING = "text-base font-semibold tracking-tight";
 
-/** Field label. Matches the shared `Label` primitive so nothing shifts. */
-export const FIELD_LABEL = "text-sm font-medium";
-
 /**
- * Control height. `Input` ships at `h-9`; 44px is the comfortable touch
- * target and keeps the combobox trigger flush with the text inputs.
+ * Control height. HeroUI's fields size themselves from their padding, which
+ * lands a little under 40px; 44px is the comfortable touch target and keeps
+ * the degree combobox flush with the text inputs.
  */
 export const FIELD_CONTROL = "h-11";
 
