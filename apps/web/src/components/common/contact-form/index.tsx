@@ -2,23 +2,28 @@
 import { sendContactFormEmail } from "@/lib/emails";
 import useContactFormSchema from "@/validators/contact-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { ContactForm as ContactFormValues } from "@repo/constants/validators/contact-form";
-import { Alert, AlertDescription } from "@repo/ui/alert";
+import {
+  CONTACT_FORM_LIMITS,
+  type ContactForm as ContactFormValues,
+} from "@repo/constants/validators/contact-form";
+import {
+  Alert,
+  AlertContent,
+  AlertDescription,
+  AlertIndicator,
+} from "@repo/ui/alert";
 import { Button } from "@repo/ui/button";
 import { Form } from "@repo/ui/form";
 import { AlertCircle, Check, Loader } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { useForm } from "react-hook-form";
-import EmailField from "./fields/email";
-import LastNameField from "./fields/lastname";
-import MessageField from "./fields/message";
-import NameField from "./fields/name";
-import SubjectField from "./fields/subject";
+import ContactField from "./field";
 
 const ContactForm = () => {
   const t = useTranslations("contact");
   const formSchema = useContactFormSchema();
+  const [sent, setSent] = React.useState(false);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(formSchema),
@@ -31,10 +36,11 @@ const ContactForm = () => {
     },
   });
 
-  const { isSubmitting, isSubmitSuccessful, errors } = form.formState;
+  const { isSubmitting, errors } = form.formState;
 
   async function onSubmit(values: ContactFormValues) {
     form.clearErrors("root");
+    setSent(false);
 
     const result = await sendContactFormEmail(values);
 
@@ -44,52 +50,77 @@ const ContactForm = () => {
       return;
     }
 
+    // `reset()` also clears `isSubmitSuccessful`, so the confirmation has to
+    // live outside form state or it would flash and disappear.
     form.reset();
+    setSent(true);
   }
-
-  // `isSubmitSuccessful` only means the handler resolved; a failed send sets a
-  // root error, so success is the absence of one.
-  const sent = isSubmitSuccessful && !errors.root;
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-2 md:gap-4"
+        className="space-y-5 rounded-xl border bg-card p-6 shadow-sm md:p-8"
         id="contact-form"
       >
-        <div className="grid grid-cols-2 gap-3 md:gap-5">
-          <NameField form={form} />
-          <LastNameField form={form} />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <ContactField form={form} name="name" autoComplete="given-name" />
+          <ContactField
+            form={form}
+            name="lastname"
+            autoComplete="family-name"
+          />
         </div>
-        <EmailField form={form} />
-        <SubjectField form={form} />
-        <MessageField form={form} />
+        <ContactField
+          form={form}
+          name="email"
+          type="email"
+          autoComplete="email"
+        />
+        <ContactField form={form} name="subject" />
+        <ContactField
+          form={form}
+          name="message"
+          multiline
+          max={CONTACT_FORM_LIMITS.message.max}
+        />
 
-        {errors.root && (
-          <Alert variant="destructive">
-            <AlertCircle />
-            <AlertDescription>{errors.root.message}</AlertDescription>
-          </Alert>
-        )}
+        {/* Always mounted so screen readers announce whichever result lands. */}
+        <div role="status" aria-live="polite" className="empty:hidden">
+          {errors.root && (
+            <Alert variant="destructive">
+              <AlertIndicator>
+                <AlertCircle />
+              </AlertIndicator>
+              <AlertContent>
+                <AlertDescription>{errors.root.message}</AlertDescription>
+              </AlertContent>
+            </Alert>
+          )}
+          {sent && (
+            <Alert variant="accent">
+              <AlertIndicator>
+                <Check />
+              </AlertIndicator>
+              <AlertContent>
+                <AlertDescription>{t("submitBtn.success")}</AlertDescription>
+              </AlertContent>
+            </Alert>
+          )}
+        </div>
 
         <Button
           type="submit"
-          disabled={isSubmitting || sent}
-          className="w-full"
+          disabled={isSubmitting}
+          className="h-11 w-full text-base"
         >
-          {sent ? (
-            <>
-              <Check />
-              {t("submitBtn.success")}
-            </>
-          ) : isSubmitting ? (
+          {isSubmitting ? (
             <>
               <Loader className="animate-spin" />
               {t("submitBtn.loading")}
             </>
           ) : (
-            <>{t("submitBtn.default")}</>
+            t("submitBtn.default")
           )}
         </Button>
       </form>
