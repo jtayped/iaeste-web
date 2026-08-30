@@ -1,6 +1,26 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@reference "@repo/ui/globals.css";
+
+/* This file is a fragment: `@reference` above pulls in the shared stylesheet's
+   context without re-emitting it, which is what lets `@apply` below resolve
+   shared tokens. The catch is that Tailwind reads a fragment's `@theme` to
+   *generate utilities* but does not emit its `:root` declarations — so
+   `px-screen-sm` compiled to `padding-inline: var(--spacing-screen-sm)` while
+   the variable itself was never defined, and every public section silently
+   lost its horizontal padding.
+
+   Keep both blocks: `@theme` so the `px-screen-*` utilities exist, and the
+   `:root` below so the values actually reach the browser. */
+@theme {
+  --spacing-screen-lg: 4rem;
+  --spacing-screen-md: 2.25rem;
+  --spacing-screen-sm: 1.5rem;
+}
+
+:root {
+  --spacing-screen-lg: 4rem;
+  --spacing-screen-md: 2.25rem;
+  --spacing-screen-sm: 1.5rem;
+}
 
 @layer base {
   .section-padding {
@@ -22,11 +42,11 @@
   }
 
   .blog-prose h2 {
-    @apply mt-14 text-balance text-3xl font-bold leading-tight tracking-[-0.03em];
+    @apply mt-14 text-3xl leading-tight font-bold tracking-[-0.03em] text-balance;
   }
 
   .blog-prose h3 {
-    @apply mt-10 text-balance text-2xl font-bold leading-tight tracking-[-0.025em];
+    @apply mt-10 text-2xl leading-tight font-bold tracking-[-0.025em] text-balance;
   }
 
   .blog-prose a {
