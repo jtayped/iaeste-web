@@ -26,9 +26,10 @@
     "dotenv-cli": "^8.0.0",
     "drizzle-orm": "^0.45.2",
     "eslint": "^9.22.0",
-    "prettier": "^3.5.0",
-    "prettier-plugin-tailwindcss": "^0.6.11",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "simple-git-hooks": "^2.13.1",
+    "tailwindcss": "^4.3.3",
     "turbo": "^2.6.1",
     "typescript": "^5.8.2"
   },
