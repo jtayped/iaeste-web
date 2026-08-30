@@ -32,6 +32,15 @@ export interface CreateRegistrationInput {
   profileSnapshot: RegistrationProfileSnapshot;
   source?: string;
   verificationExpiresAt?: Date;
+  /**
+   * Set to `pending_review` when the address was already proven — the form's
+   * code step now happens before submission, so there is nothing left to
+   * verify afterwards and a `pending_email` row would strand the applicant
+   * waiting for an email that should never be sent. Defaults to the column's
+   * own `pending_email` for the older link-in-the-email path.
+   */
+  status?: Extract<RegistrationStatus, "pending_email" | "pending_review">;
+  verifiedAt?: Date;
 }
 
 export interface AcceptRegistrationInput {
@@ -56,6 +65,8 @@ export function createRegistrationRepository(db: Database) {
             profileSnapshot: input.profileSnapshot,
             source: input.source ?? "public_form",
             verificationExpiresAt: input.verificationExpiresAt ?? null,
+            ...(input.status ? { status: input.status } : {}),
+            ...(input.verifiedAt ? { verifiedAt: input.verifiedAt } : {}),
           })
           .returning(),
       );

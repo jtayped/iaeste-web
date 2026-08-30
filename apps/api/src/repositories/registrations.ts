@@ -9,13 +9,12 @@ import { getDb } from "@repo/db/client";
 import {
   createCampaignRepository,
   createRegistrationRepository,
-  createRegistrationVerificationRepository,
   type RegistrationProfileSnapshot,
 } from "@repo/db/repositories";
+import RegistrationPending from "@repo/email/pending-review";
 import { createResendEmailer, type Emailer } from "@repo/email/resend";
-import VerifyUserEmail from "@repo/email/verify-email";
 
-import { getEmailConfig, getInscripcionsPublicOrigin } from "../config";
+import { getEmailConfig } from "../config";
 import { requireEnvironmentVariable } from "../lib/env";
 import "../lib/react-global";
 
@@ -59,15 +58,6 @@ function isUniqueViolation(error: unknown): boolean {
   const cause = (error as { cause?: { code?: string } } | undefined)?.cause;
   const code = (error as { code?: string } | undefined)?.code ?? cause?.code;
   return code === "23505";
-}
-
-// Email-verification tokens are valid for 24 hours: long enough that
-// someone who registers in the evening can still verify the next morning,
-// short enough that a stale, unclaimed link doesn't stay usable forever.
-const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-
-export function hashVerificationToken(rawToken: string): string {
-  return crypto.createHash("sha256").update(rawToken).digest("hex");
 }
 
 let cachedEmailer: Emailer | undefined;
@@ -152,6 +142,12 @@ export function createDrizzleRegistrationRepository(
           campaignId: openCampaign.id,
           email: registration.email,
           profileSnapshot,
+          // The address was proven by the code step before any of this was
+          // collected, so there is nothing left to verify. Landing in
+          // `pending_email` here would strand the applicant waiting for an
+          // email we are never going to send.
+          status: "pending_review",
+          verifiedAt: new Date(),
         });
       } catch (error) {
         if (isUniqueViolation(error))
@@ -159,38 +155,26 @@ export function createDrizzleRegistrationRepository(
         throw error;
       }
 
-      const rawToken = crypto.randomBytes(32).toString("hex");
-      const verifications = createRegistrationVerificationRepository(db);
-      await verifications.create({
-        registrationId: created.id,
-        tokenHash: hashVerificationToken(rawToken),
-        expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS),
-      });
-
-      const link = `${getInscripcionsPublicOrigin()}/verificar#token=${rawToken}`;
-
-      // Decision (IA-40): nothing past this point may roll back or fail the
-      // request — `getEmailer()` construction (e.g. a misconfigured
-      // RESEND_API_KEY) included. The registration row already exists in
-      // `pending_email` — that's the durable, valuable side effect — and is
-      // retryable via `POST /v1/registrations/:id/resend-verification`.
-      // Rolling back (or returning a 5xx) on a transient or config-level
-      // email failure would be strictly worse: retrying the whole
-      // submission risks a duplicate-email conflict against the row that
-      // actually did save, and the client has no way to tell "your data
-      // wasn't saved" apart from "it was saved but the email hiccupped". So
-      // this endpoint always returns 201 once the row is written; see
-      // `createRegistrationRoute`'s doc comment in routes.ts for the
-      // OpenAPI-facing side of this decision.
+      // Nothing past this point may roll back or fail the request —
+      // `getEmailer()` construction (e.g. a misconfigured RESEND_API_KEY)
+      // included. The registration row already exists in `pending_review`,
+      // which is the durable, valuable side effect; the applicant is in the
+      // committee's queue whether or not this receipt arrives. Returning a
+      // 5xx would be strictly worse, because resubmitting the form would
+      // then collide with the row that actually did save.
       try {
         const emailer = dependencies.emailer ?? getEmailer();
         await emailer.send({
           to: created.email,
-          subject: "Verifica el teu correu — IAESTE LC Lleida",
-          react: VerifyUserEmail({ email: created.email, link }),
+          subject: "sol·licitud rebuda · iaeste lc lleida",
+          react: RegistrationPending({
+            name: registration.name,
+            email: created.email,
+            campaign: openCampaign.label,
+          }),
         });
       } catch (error) {
-        console.error("Failed to send verification email", error);
+        console.error("Failed to send pending-review email", error);
       }
 
       return { id: created.id };

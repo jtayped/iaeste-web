@@ -5,29 +5,45 @@ import { isValidPhone } from "@repo/constants/validators/phone";
 
 import { API_VERSION } from "./version";
 
+/**
+ * The profile half of a registration, shared by the public form and the
+ * invitation onboarding form — they now ask for exactly the same things.
+ * The address is never in here: it comes from an email-challenge session on
+ * one path and from an invitation token on the other.
+ */
+const registrationProfileShape = {
+  name: z.string().trim().min(2).max(120).openapi({ example: "Joan" }),
+  surnames: z
+    .string()
+    .trim()
+    .min(2)
+    .max(120)
+    .openapi({ example: "Garcia Serra" }),
+  phone: z
+    .string()
+    .trim()
+    .min(1)
+    .refine(isValidPhone, "el número de telèfon no és vàlid")
+    .openapi({ example: "+34 623 32 42 34" }),
+  degree: z
+    .enum(DEGREE_OPTIONS)
+    .openapi({ example: "grau en informàtica (lleida)" }),
+  year: z.number().int().min(1).max(6).openapi({ example: 2 }),
+  note: z.string().trim().max(2_000).optional().openapi({
+    example: "M'interessen els intercanvis internacionals.",
+  }),
+};
+
 export const registrationRequestSchema = z
   .object({
-    name: z.string().trim().min(2).openapi({ example: "Joan" }),
-    surnames: z.string().trim().min(2).openapi({ example: "Garcia Serra" }),
-    email: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .email()
-      .openapi({ example: "joan@alumnes.udl.cat" }),
-    phone: z
-      .string()
-      .trim()
-      .min(1)
-      .refine(isValidPhone, "el número de telèfon no és vàlid")
-      .openapi({ example: "+34 623 32 42 34" }),
-    degree: z
-      .enum(DEGREE_OPTIONS)
-      .openapi({ example: "grau en informàtica (lleida)" }),
-    year: z.number().int().min(1).max(6).openapi({ example: 2 }),
-    note: z.string().trim().max(2_000).optional().openapi({
-      example: "M'interessen els intercanvis internacionals.",
-    }),
+    ...registrationProfileShape,
+    /**
+     * The session handed back by `POST /v1/registrations/verify-code`. This
+     * is where the address comes from — a body cannot claim one, so a
+     * registration can only ever be filed against an inbox the submitter
+     * actually opened.
+     */
+    emailToken: z.string().min(1).openapi({ example: "a1b2c3..." }),
   })
   .openapi("RegistrationRequest");
 
@@ -37,6 +53,102 @@ export const registrationCreatedSchema = z
     id: z.string().openapi({ example: "registration_123" }),
   })
   .openapi("RegistrationCreated");
+
+const REGISTRATION_STATUS_VALUES = [
+  "pending_email",
+  "pending_review",
+  "accepted",
+  "rejected",
+] as const;
+
+export const registrationStatusSchema = z
+  .enum(REGISTRATION_STATUS_VALUES)
+  .openapi("RegistrationStatus");
+
+// --- Registration: proving the address before anything is collected -------
+
+export const registrationStartBodySchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email()
+      .openapi({ example: "joan@alumnes.udl.cat" }),
+  })
+  .openapi("RegistrationStartRequest");
+
+/**
+ * Identical whether a code was sent, the address already has a live code, or
+ * registration happens to be closed to this person — the first step of a
+ * public form must not answer "does this address exist" to anyone who asks.
+ */
+export const registrationStartResponseSchema = z
+  .object({
+    status: z.literal("ok"),
+    /** Seconds the client should wait before offering "send it again". */
+    resendAfterSeconds: z.number().int(),
+  })
+  .openapi("RegistrationStartResponse");
+
+export const registrationVerifyCodeBodySchema = z
+  .object({
+    email: z.string().trim().toLowerCase().email(),
+    code: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/, "el codi té sis xifres")
+      .openapi({ example: "418502" }),
+  })
+  .openapi("RegistrationVerifyCodeRequest");
+
+/** What the form can prefill, in the shape the form's own fields use. */
+export const knownProfileSchema = z
+  .object({
+    name: z.string(),
+    surnames: z.string(),
+    phone: z.string(),
+    degree: z.string(),
+    year: z.number().int(),
+  })
+  .openapi("KnownProfile");
+
+/** One "you were with us in…" line: the campaign and how it ended. */
+export const knownMembershipSchema = z
+  .object({
+    campaignLabel: z.string().openapi({ example: "2025-2026" }),
+    status: z.enum(["active", "left", "kicked"]),
+  })
+  .openapi("KnownMembership");
+
+/**
+ * The reward for proving the address: a session token for the rest of the
+ * flow, plus everything already on file about this person. Only ever reached
+ * through a correct six-digit code.
+ */
+export const registrationSessionSchema = z
+  .object({
+    token: z.string(),
+    expiresAt: z.string(),
+    email: z.string(),
+    known: z.boolean(),
+    profile: knownProfileSchema.nullable(),
+    memberships: z.array(knownMembershipSchema),
+    /**
+     * Their registration status in the campaign now open, if they already
+     * have one — so the form can say "you have already applied" instead of
+     * letting them fill everything in and fail on submit.
+     *
+     * A fresh `z.enum` rather than `registrationStatusSchema.nullable()`:
+     * `.nullable()` on a registered component mutates the component itself,
+     * which would make `RegistrationStatus` nullable for every other reader
+     * of it (the admin table included).
+     */
+    openCampaignRegistrationStatus: z
+      .enum(REGISTRATION_STATUS_VALUES)
+      .nullable(),
+  })
+  .openapi("RegistrationSession");
 
 export const publicRegistrationStatusSchema = z
   .object({
@@ -130,17 +242,6 @@ export const verifiedSchema = z
   .openapi("Verified");
 
 // --- Admin --------------------------------------------------------------
-
-const REGISTRATION_STATUS_VALUES = [
-  "pending_email",
-  "pending_review",
-  "accepted",
-  "rejected",
-] as const;
-
-export const registrationStatusSchema = z
-  .enum(REGISTRATION_STATUS_VALUES)
-  .openapi("RegistrationStatus");
 
 export const adminRegistrationProfileSnapshotSchema = z
   .object({
@@ -573,21 +674,22 @@ export const invitationLookupResponseSchema = z
     prefillName: z.string().nullable(),
     prefillSurnames: z.string().nullable(),
     campaignLabel: z.string(),
+    /**
+     * The same "we already know you" payload the public form gets after its
+     * code step. Safe here for the same reason: holding the invitation token
+     * is proof of control over the address it was sent to. An invited person
+     * who was on the team two years ago should not have to retype anything.
+     */
+    known: z.boolean(),
+    profile: knownProfileSchema.nullable(),
+    memberships: z.array(knownMembershipSchema),
   })
   .openapi("InvitationLookupResponse");
 
 export const invitationAcceptBodySchema = z
   .object({
     token: z.string().min(1),
-    name: z.string().trim().min(2).max(120),
-    surnames: z.string().trim().min(2).max(120),
-    phone: z
-      .string()
-      .trim()
-      .min(1)
-      .refine(isValidPhone, "el número de telèfon no és vàlid"),
-    degree: z.enum(DEGREE_OPTIONS),
-    year: z.number().int().min(1).max(6),
+    ...registrationProfileShape,
   })
   .openapi("InvitationAcceptRequest");
 

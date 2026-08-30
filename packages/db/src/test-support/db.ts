@@ -54,6 +54,9 @@ const TABLES = [
   "membership",
   "registration_verification",
   "registration",
+  // No foreign key of its own, so `CASCADE` from `user` never reaches it —
+  // it has to be named here or challenge rows leak between tests.
+  "email_challenge",
   "membership_campaign",
   "member_profile",
   "verification",

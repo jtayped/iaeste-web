@@ -46,6 +46,10 @@ import {
   registrationCreatedSchema,
   registrationIdParamSchema,
   registrationRequestSchema,
+  registrationSessionSchema,
+  registrationStartBodySchema,
+  registrationStartResponseSchema,
+  registrationVerifyCodeBodySchema,
   publicRegistrationStatusSchema,
   resendVerificationResponseSchema,
   verifiedSchema,
@@ -84,6 +88,96 @@ export const registrationStatusRoute = createRoute({
   },
 });
 
+/**
+ * Step one of the public form: claim an address, get a six-digit code.
+ *
+ * Deliberately non-revealing, exactly like `resend-verification` below. The
+ * response is the same "ok" whether a code was sent, the address already had
+ * a live one, or the send was suppressed by a limiter — so this endpoint
+ * cannot answer "is this person a member" to anyone who types an address.
+ * Everything worth knowing arrives only after the code comes back.
+ */
+export const startRegistrationRoute = createRoute({
+  method: "post",
+  path: "/v1/registrations/start",
+  operationId: "startRegistration",
+  tags: ["Registrations"],
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: registrationStartBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description:
+        "Always returned when the address is well-formed and a campaign is " +
+        "open, whether or not an email was actually sent.",
+      content: {
+        "application/json": { schema: registrationStartResponseSchema },
+      },
+    },
+    409: {
+      description: "No campaign is currently open for registration.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    422: {
+      description: "The address is not a valid email.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    429: {
+      description: "Too many code requests from this address or client.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+  },
+});
+
+/**
+ * Step two: trade the code for a session, and with it everything already on
+ * file about this person.
+ *
+ * This is the only door to that data. A six-digit code is small enough to
+ * brute-force given unlimited tries, so the attempt cap on the challenge row
+ * (not the code's length) is what secures it — five wrong guesses retire the
+ * challenge and the person has to request a new code.
+ */
+export const verifyRegistrationCodeRoute = createRoute({
+  method: "post",
+  path: "/v1/registrations/verify-code",
+  operationId: "verifyRegistrationCode",
+  tags: ["Registrations"],
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: registrationVerifyCodeBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description:
+        "The code was right. Returns a short-lived session token plus the " +
+        "stored profile and membership history for this address.",
+      content: {
+        "application/json": { schema: registrationSessionSchema },
+      },
+    },
+    400: {
+      description:
+        "The code is wrong, expired, already used, or out of attempts. " +
+        "Deliberately one generic answer for all four.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    429: {
+      description: "Too many attempts from this client.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+  },
+});
+
 export const createRegistrationRoute = createRoute({
   method: "post",
   path: "/v1/registrations",
@@ -98,19 +192,22 @@ export const createRegistrationRoute = createRoute({
     },
   },
   responses: {
-    // Decision (IA-40): always 201 once the row is written, even if the
-    // verification email fails to send — see
-    // repositories/registrations.ts's doc comment on `.create()` for why.
-    // The client has no reliable way to tell "the email didn't send"
-    // apart from "it's just slow", and `resend-verification` exists
-    // exactly to recover from this without resubmitting the whole form.
     201: {
       description:
-        "The registration was saved and, on a best-effort basis, a " +
-        "verification email was sent. A 201 does not guarantee the email " +
-        "arrived — see POST /v1/registrations/:id/resend-verification.",
+        "The registration was saved. Because `emailToken` already proves " +
+        "the address, it lands in `pending_review` — there is no " +
+        "verification email and nothing further for the applicant to do " +
+        "but wait for the committee.",
       content: {
         "application/json": { schema: registrationCreatedSchema },
+      },
+    },
+    400: {
+      description:
+        "The `emailToken` is invalid, expired, or already spent. The " +
+        "applicant has to redo the code step.",
+      content: {
+        "application/json": { schema: apiErrorSchema },
       },
     },
     422: {

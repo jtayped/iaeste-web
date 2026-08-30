@@ -1,4 +1,4 @@
-import UserForm from "@/components/form";
+import RegistrationFlow from "@/components/registration";
 import StatusScreen from "@/components/status";
 import { getRegistrationAvailability } from "@/lib/registration-status";
 import { Button } from "@repo/ui/button";
@@ -34,7 +34,7 @@ const FormPage = async () => {
     );
   }
 
-  return <UserForm />;
+  return <RegistrationFlow mode={{ kind: "public" }} />;
 };
 
 export default FormPage;

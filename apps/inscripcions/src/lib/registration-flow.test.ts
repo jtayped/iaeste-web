@@ -4,11 +4,18 @@ import { describe, it } from "node:test";
 import type { components } from "@repo/api-client";
 
 import {
+  mapStartResult,
   mapSubmitResult,
+  mapVerifyCodeResult,
   mapVerifyResult,
   readRegistrationId,
   readToken,
 } from "./registration-flow";
+
+/** `openapi-fetch` hands back the raw Response; only its status is read. */
+function status(code: number) {
+  return { status: code } as Response;
+}
 
 type ApiError = components["schemas"]["ApiError"];
 
@@ -68,6 +75,12 @@ describe("mapSubmitResult", () => {
     });
   });
 
+  it("sends a lapsed email session back to the first step, not to a retry", () => {
+    assert.deepEqual(mapSubmitResult({ error: apiError("INVALID_TOKEN") }), {
+      kind: "expiredSession",
+    });
+  });
+
   it("falls back to the generic failure for any other error code", () => {
     for (const code of [
       "INTERNAL_ERROR",
@@ -83,6 +96,83 @@ describe("mapSubmitResult", () => {
 
   it("fails rather than inventing a success when the body is empty", () => {
     assert.deepEqual(mapSubmitResult({}), { kind: "failed" });
+  });
+});
+
+describe("mapStartResult", () => {
+  it("carries the cooldown through on success", () => {
+    assert.deepEqual(
+      mapStartResult({ data: { status: "ok", resendAfterSeconds: 60 } }),
+      { kind: "sent", resendAfterSeconds: 60 },
+    );
+  });
+
+  it("separates a rate limit from a closed campaign, which share a code", () => {
+    assert.deepEqual(
+      mapStartResult({
+        error: apiError("CONFLICT"),
+        response: status(429),
+      }),
+      { kind: "rateLimited" },
+    );
+    assert.deepEqual(
+      mapStartResult({ error: apiError("CONFLICT"), response: status(409) }),
+      { kind: "closed" },
+    );
+  });
+
+  it("surfaces a malformed address as a field issue", () => {
+    assert.deepEqual(
+      mapStartResult({
+        error: apiError("VALIDATION_ERROR", [
+          { path: ["email"], message: "no és vàlida" },
+        ]),
+        response: status(422),
+      }),
+      {
+        kind: "invalid",
+        issues: [{ field: "email", message: "no és vàlida" }],
+      },
+    );
+  });
+});
+
+describe("mapVerifyCodeResult", () => {
+  const session = {
+    token: "t",
+    expiresAt: "2026-09-01T00:00:00.000Z",
+    email: "joan@alumnes.udl.cat",
+    known: true,
+    profile: null,
+    memberships: [],
+    openCampaignRegistrationStatus: null,
+  };
+
+  it("hands the session through on success", () => {
+    assert.deepEqual(mapVerifyCodeResult({ data: session }), {
+      kind: "ok",
+      session,
+    });
+  });
+
+  it("collapses every rejected code into one outcome", () => {
+    assert.deepEqual(
+      mapVerifyCodeResult({
+        error: apiError("INVALID_TOKEN"),
+        response: status(400),
+      }),
+      { kind: "badCode" },
+    );
+  });
+
+  it("keeps a rate limit apart, because waiting actually helps there", () => {
+    assert.deepEqual(
+      mapVerifyCodeResult({
+        error: apiError("CONFLICT"),
+        response: status(429),
+      }),
+      { kind: "rateLimited" },
+    );
   });
 });
 

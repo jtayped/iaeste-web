@@ -2,7 +2,13 @@ import type { components } from "@repo/api-client";
 
 type ApiError = components["schemas"]["ApiError"];
 type RegistrationCreated = components["schemas"]["RegistrationCreated"];
+type RegistrationSession = components["schemas"]["RegistrationSession"];
+type StartResponse = components["schemas"]["RegistrationStartResponse"];
 type Verified = components["schemas"]["Verified"];
+
+export type Session = RegistrationSession;
+export type KnownProfile = components["schemas"]["KnownProfile"];
+export type KnownMembership = components["schemas"]["KnownMembership"];
 
 /** A single field-level complaint the API made about the submitted body. */
 export interface FieldIssue {
@@ -11,23 +17,11 @@ export interface FieldIssue {
   message: string;
 }
 
-/**
- * What the registration form should do next. Every branch here maps to a
- * distinct, deliberately different screen — a closed campaign is not an error
- * the user can fix by retrying, and an already-registered email is not a
- * validation problem.
- */
-export type SubmitOutcome =
-  | { kind: "created"; id: string }
-  | { kind: "closed" }
-  | { kind: "alreadyRegistered" }
-  | { kind: "invalid"; issues: FieldIssue[] }
-  | { kind: "failed" };
-
 /** Shape returned by `openapi-fetch` for any request. */
 interface ApiResult<TData> {
   data?: TData;
   error?: ApiError;
+  response?: Response;
 }
 
 function toFieldIssues(error: ApiError): FieldIssue[] {
@@ -41,11 +35,87 @@ function toFieldIssues(error: ApiError): FieldIssue[] {
 }
 
 /**
- * Maps `POST /v1/registrations` to a screen. The API distinguishes a closed
- * campaign (`CONFLICT`) from a duplicate registration (`ALREADY_REGISTERED`)
- * with the same 409 status, so the status code alone is never enough — the
- * error code is the signal.
+ * What step one should do next.
+ *
+ * `closed` is the only condition this endpoint is allowed to reveal, and it
+ * is about the committee's calendar rather than about the person asking. Every
+ * other outcome is deliberately indistinguishable — see the route's doc
+ * comment in the API.
  */
+export type StartOutcome =
+  | { kind: "sent"; resendAfterSeconds: number }
+  | { kind: "closed" }
+  | { kind: "rateLimited" }
+  | { kind: "invalid"; issues: FieldIssue[] }
+  | { kind: "failed" };
+
+export function mapStartResult(result: ApiResult<StartResponse>): StartOutcome {
+  const { data, error, response } = result;
+
+  if (error) {
+    // The 429 carries `CONFLICT` rather than a code of its own, so the HTTP
+    // status is the only thing that separates it from a closed campaign.
+    if (response?.status === 429) return { kind: "rateLimited" };
+    switch (error.error.code) {
+      case "CONFLICT":
+        return { kind: "closed" };
+      case "VALIDATION_ERROR":
+        return { kind: "invalid", issues: toFieldIssues(error) };
+      default:
+        return { kind: "failed" };
+    }
+  }
+
+  if (data?.status === "ok") {
+    return { kind: "sent", resendAfterSeconds: data.resendAfterSeconds };
+  }
+
+  return { kind: "failed" };
+}
+
+/**
+ * What step two should do next. `badCode` collapses wrong, expired, spent and
+ * out-of-attempts into one outcome, because the API answers all four the same
+ * way on purpose.
+ */
+export type VerifyCodeOutcome =
+  | { kind: "ok"; session: Session }
+  | { kind: "badCode" }
+  | { kind: "rateLimited" }
+  | { kind: "failed" };
+
+export function mapVerifyCodeResult(
+  result: ApiResult<RegistrationSession>,
+): VerifyCodeOutcome {
+  const { data, error, response } = result;
+
+  if (error) {
+    if (response?.status === 429) return { kind: "rateLimited" };
+    return error.error.code === "INVALID_TOKEN"
+      ? { kind: "badCode" }
+      : { kind: "failed" };
+  }
+
+  return data ? { kind: "ok", session: data } : { kind: "failed" };
+}
+
+/**
+ * What the details step should do next. Every branch maps to a distinct
+ * screen — a closed campaign is not an error the applicant can fix by
+ * retrying, and an already-registered address is not a validation problem.
+ *
+ * `expiredSession` is new: the address was proven, but the person left the
+ * form open long enough for that proof to lapse. They have to redo the code
+ * step, which is why it is a separate outcome from a generic failure.
+ */
+export type SubmitOutcome =
+  | { kind: "created"; id: string }
+  | { kind: "closed" }
+  | { kind: "alreadyRegistered" }
+  | { kind: "expiredSession" }
+  | { kind: "invalid"; issues: FieldIssue[] }
+  | { kind: "failed" };
+
 export function mapSubmitResult(
   result: ApiResult<RegistrationCreated>,
 ): SubmitOutcome {
@@ -57,6 +127,8 @@ export function mapSubmitResult(
         return { kind: "closed" };
       case "ALREADY_REGISTERED":
         return { kind: "alreadyRegistered" };
+      case "INVALID_TOKEN":
+        return { kind: "expiredSession" };
       case "VALIDATION_ERROR":
         return { kind: "invalid", issues: toFieldIssues(error) };
       default:
@@ -74,6 +146,10 @@ export function mapSubmitResult(
  * What `/verificar` should render. `INVALID_TOKEN` deliberately covers
  * invalid, expired, already-used and nonexistent tokens alike — the API never
  * tells them apart, so neither can this.
+ *
+ * Only reachable from a link in an email sent before the form moved its
+ * verification step to the front. Kept working because those links are in
+ * people's inboxes; nothing new sends one.
  */
 export type VerifyOutcome =
   | { kind: "verified" }
@@ -96,8 +172,8 @@ export function mapVerifyResult(result: ApiResult<Verified>): VerifyOutcome {
 
 /**
  * Normalises a token from the current fragment or a legacy query parameter.
- * Verification links contain a 32-byte random value encoded as 64 hex
- * characters, so malformed values never need a request to the API.
+ * Verification and invitation links carry a 32-byte random value encoded as
+ * 64 hex characters, so malformed values never need a request to the API.
  */
 export function readToken(raw: string | null | undefined): string | undefined {
   const token = raw?.trim();

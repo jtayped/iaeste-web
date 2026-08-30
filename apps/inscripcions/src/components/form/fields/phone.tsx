@@ -1,4 +1,4 @@
-import type { RegistrationForm } from "@/lib/form-schema";
+import type { ProfileForm } from "@/lib/form-schema";
 import React from "react";
 import type { UseFormReturn } from "react-hook-form";
 
@@ -19,7 +19,7 @@ import { FIELD_CONTROL, FIELD_HINT, FIELD_LABEL } from "../field-styles";
  * The hint survives the trim because a bare number is parsed as Spanish, and
  * an exchange programme has plenty of applicants whose number is not.
  */
-const PhoneField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
+const PhoneField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
   return (
     <FormField
       control={form.control}

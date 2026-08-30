@@ -9,13 +9,21 @@ const emailSchema = z
   .toLowerCase()
   .email("adreça de correu electrònic no vàlida");
 
-export const registrationSchema = z.object({
+/**
+ * Everything the registration form asks for except the address itself.
+ *
+ * Split out because the address is no longer just another field. The public
+ * form proves it in its own step before any of this is collected, and an
+ * invited person never types it at all — it is bound to their invitation
+ * token. Both paths still collect exactly these fields, under exactly these
+ * rules, from this one definition.
+ */
+export const registrationProfileSchema = z.object({
   name: z.string().trim().min(2, "el nom ha de tenir almenys 2 caràcters"),
   surnames: z
     .string()
     .trim()
     .min(2, "els cognoms han de tenir almenys 2 caràcters"),
-  email: emailSchema,
   phone: z
     .string()
     .trim()
@@ -38,4 +46,18 @@ export const registrationSchema = z.object({
     .optional(),
 });
 
+export type RegistrationProfile = z.infer<typeof registrationProfileSchema>;
+
+/**
+ * A profile plus the address it belongs to. Still the shape stored in a
+ * `registration` row and the one an admin export reads, so it stays defined
+ * here rather than being reassembled per caller.
+ */
+export const registrationSchema = registrationProfileSchema.extend({
+  email: emailSchema,
+});
+
 export type Registration = z.infer<typeof registrationSchema>;
+
+/** The address on its own — the public form's first step submits only this. */
+export const registrationEmailSchema = z.object({ email: emailSchema });

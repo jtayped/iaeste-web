@@ -11,12 +11,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** Where `/verificar` lands after the API confirms the token. */
+/**
+ * The end of the public path, reached straight from the form now that the
+ * address is proven before submission. Also where `/verificar` lands for the
+ * older link-in-the-email flow, which is why the copy leads with the
+ * application rather than with the verification.
+ */
 const PendingReviewPage = () => (
   <StatusScreen
     icon="shield-check"
     tone="positive"
-    title="correu verificat!"
+    title="sol·licitud enviada!"
     actions={
       <Button variant="link" asChild>
         <Link href="/">torna a l&apos;inici</Link>
@@ -24,13 +29,12 @@ const PendingReviewPage = () => (
     }
   >
     <Paragraph>
-      ja sabem que aquesta adreça és teva i la teva inscripció ha arribat al
-      comitè.
+      ja hem comprovat que l&apos;adreça és teva i la teva sol·licitud ha
+      arribat al comitè.
     </Paragraph>
     <Paragraph>
-      <b>verificar el correu no et fa membre.</b> ara el comitè ha de revisar la
-      teva sol·licitud, i fins que no l&apos;accepti no tindràs cap compte
-      actiu.
+      <b>això encara no et fa membre.</b> ara el comitè l&apos;ha de revisar, i
+      fins que no l&apos;accepti no tindràs cap compte actiu.
     </Paragraph>
     <Paragraph>
       t&apos;escriurem a aquest mateix correu amb la resposta, sigui quina

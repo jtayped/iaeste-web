@@ -1,4 +1,4 @@
-import type { RegistrationForm } from "@/lib/form-schema";
+import type { ProfileForm } from "@/lib/form-schema";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
@@ -23,7 +23,7 @@ const YEARS = [1, 2, 3, 4, 5, 6] as const;
  * produces. Real radio inputs do the work: arrow keys move between options
  * and each option is named without any extra ARIA.
  */
-const YearField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
+const YearField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
   return (
     <FormField
       control={form.control}

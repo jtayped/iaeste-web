@@ -1,14 +1,13 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { AlertCircleIcon, LucideIcon } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
+import { Logo } from "@repo/ui/logo";
 import type { FieldErrors } from "react-hook-form";
 
-import { FIELD_LABELS, type RegistrationForm } from "@/lib/form-schema";
+import { FIELD_LABELS, type ProfileForm } from "@/lib/form-schema";
 import { FIELD_HINT, SECTION_HEADING } from "./field-styles";
 import { childVariants } from "./motion";
 
@@ -45,44 +44,26 @@ export const Section = ({
 
 /**
  * The page header, above the form surface rather than inside a card of its
- * own. The logo carries continuity from the landing screen; the single line
- * under the title is the whole of what used to be an intro paragraph, because
- * the "we will email you to verify" detail now sits next to the submit button
- * where it actually applies.
+ * own. The logo carries continuity from the landing screen.
+ *
+ * Title and lead are props now: the flow is three steps and each one is
+ * asking for something different, so a fixed "inscriu-te" would go stale by
+ * the second screen while the logo and scale stay put.
  */
-export const FormHeader = () => (
+export const FormHeader = ({
+  title,
+  lead,
+}: {
+  title: string;
+  lead: string;
+}) => (
   <motion.header variants={childVariants} className="mb-6 sm:mb-8">
-    <Image
-      src="/logos/icon-lleida-blue.png"
-      width={44}
-      height={44}
-      priority
-      alt="logo d'iaeste lc lleida"
-      className="mb-5 h-11 w-11"
-    />
+    <Logo variant="icon" width={44} priority className="mb-5 size-11" />
     <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-      inscriu-te
+      {title}
     </h1>
-    <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-      omple les teves dades i uneix-te al comitè. són dos minuts.
-    </p>
+    <p className="mt-2 text-sm text-muted-foreground sm:text-base">{lead}</p>
   </motion.header>
-);
-
-/**
- * Shown when this browser has registered before. Deliberately an offer, not a
- * wall — only the API knows whether an address is already taken.
- */
-export const PreviousRegistrationNotice = ({ id }: { id: string }) => (
-  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
-    <span>ja has enviat una inscripció des d&apos;aquest dispositiu.</span>
-    <Link
-      className="font-medium text-primary underline underline-offset-4"
-      href={`/verificacio-pendent?id=${encodeURIComponent(id)}`}
-    >
-      consulta&apos;n l&apos;estat
-    </Link>
-  </div>
 );
 
 /** Every outstanding problem in one place, above the fold, focusable. */
@@ -93,7 +74,7 @@ export const ErrorSummary = ({
   onSelectField,
 }: {
   fields: readonly (keyof typeof FIELD_LABELS)[];
-  errors: FieldErrors<RegistrationForm>;
+  errors: FieldErrors<ProfileForm>;
   rootMessage?: string;
   onSelectField: (field: string) => void;
 }) => (
@@ -134,11 +115,12 @@ export const ErrorSummary = ({
 );
 
 /**
- * Invited external members never come through this form (see IA-32).
+ * Invited external members never come through the public first step (see
+ * IA-32), so this belongs to that step alone.
  *
- * A footnote under the form rather than an alert inside it: it applies to
- * almost nobody who reaches this page, so it does not deserve a box competing
- * with the fields.
+ * A footnote rather than an alert inside the form: it applies to almost
+ * nobody who reaches this page, so it does not deserve a box competing with
+ * the fields.
  */
 export const ExternalMemberNotice = () => (
   <motion.p

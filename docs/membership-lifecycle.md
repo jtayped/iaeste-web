@@ -45,8 +45,8 @@ campaign can accept registrations while a different campaign is current
 (see the plan's precedence rule: `is_current` and `is_registration_open` are
 explicit, authoritative flags, never derived from dates at read time).
 
-**7. Who may sign in.** Accepted members only. Email verification alone does
-not grant a session — verification only advances a registration to
+**7. Who may sign in.** Accepted members only. Proving control of an address
+does not grant a session — it only lets a registration be filed, in
 `pending_review`. Admin routes additionally require the `admin` role on top of
 a valid session.
 
@@ -80,6 +80,42 @@ not for a settled compliance position.
 **13. Production hostnames.** `www.iaestelleida.cat`, `inscripcions.iaestelleida.cat`,
 `admin.iaestelleida.cat`, `api.iaestelleida.cat`, per the plan's target shape.
 IAESTE Lleida is assumed to control all four; confirm DNS access before IA-62.
+
+## Registration flow (revised 2026-08-30)
+
+Email verification happens **before** the form, not after it. The public flow
+is three steps:
+
+1. **email** — `POST /v1/registrations/start`. Answers a constant "ok" and
+   mails a six-digit code. It reveals exactly one thing: whether a campaign is
+   open. Never whether the address is known.
+2. **code** — `POST /v1/registrations/verify-code`. A correct code returns a
+   short-lived session token _and_ everything already on file for that
+   address: the stored profile, past campaign memberships, and any existing
+   registration in the open campaign. Five wrong guesses retire the challenge.
+3. **details** — `POST /v1/registrations`, carrying the session token instead
+   of an email. The row is written straight to `pending_review`.
+
+Two consequences worth stating plainly:
+
+- **There is no enumeration oracle.** Showing someone their own membership
+  history on a public page is only safe because the code step stands in front
+  of it. Nothing that reveals whether an address is known may ever be moved in
+  front of that step.
+- **`pending_email` is a legacy state.** Nothing new enters it. `/verificar`,
+  `/enllac-caducat` and `resend-verification` stay only because links issued
+  under the old flow are sitting in inboxes; `/verificacio-pendent` is gone,
+  because nothing ever linked to it except the form.
+
+Invited people (question 8) run the same last step on the same screen. Their
+address is proven by the invitation token instead of a code, so `/convit`
+renders the identical component with the first two steps already done —
+`POST /v1/invitations/lookup` returns the same "what we know" payload for the
+same reason the code step does. They still become members with no review.
+
+Storage is `email_challenge` (one table, both phases): the code's hash and
+expiry, an attempt counter, then the session token's hash and expiry. Neither
+the code nor the session token is ever stored in the clear.
 
 ## IA-07 — email deliverability
 

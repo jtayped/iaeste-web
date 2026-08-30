@@ -36,6 +36,10 @@ import {
   createInvitationService,
   type InvitationService,
 } from "./services/invitation-service";
+import {
+  createRegistrationChallengeService,
+  type RegistrationChallengeService,
+} from "./services/registration-challenge-service";
 import { getAuth } from "./lib/auth";
 import { getOpenAPIDocument } from "./openapi";
 import {
@@ -73,6 +77,8 @@ import {
   createRegistrationRoute,
   healthRoute,
   registrationStatusRoute,
+  startRegistrationRoute,
+  verifyRegistrationCodeRoute,
   resendVerificationRoute,
   invitationAcceptRoute,
   invitationLookupRoute,
@@ -91,6 +97,7 @@ type AppDependencies = {
   logger?: Pick<Console, "error">;
   registrationRepository?: RegistrationRepository;
   registrationService?: RegistrationService;
+  registrationChallengeService?: RegistrationChallengeService;
   /** Overridable so tests can point Better Auth at the test database and a recording emailer — see `getAuth()`'s doc comment for why this isn't resolved here. */
   auth?: Auth;
   /** IA-31: overridable so unit tests skip the real `member_profile` lookup. */
@@ -129,6 +136,9 @@ export function createApp(dependencies: AppDependencies = {}) {
     createDrizzleRegistrationRepository();
   const registrationService =
     dependencies.registrationService ?? createDrizzleRegistrationService();
+  const challengeService =
+    dependencies.registrationChallengeService ??
+    createRegistrationChallengeService({ db: dependencies.db });
   const logger = dependencies.logger ?? console;
   const adminDb = () => dependencies.db ?? getDb();
   const invitationService =
@@ -217,6 +227,11 @@ export function createApp(dependencies: AppDependencies = {}) {
     }),
   );
 
+  /** First hop only — everything after it is client-supplied and unusable. */
+  function ipOf(header: string | undefined): string {
+    return header?.split(",")[0]?.trim() || "unknown";
+  }
+
   app.openapi(healthRoute, (c) =>
     c.json({ status: "ok" as const, version: API_VERSION }, 200),
   );
@@ -248,8 +263,111 @@ export function createApp(dependencies: AppDependencies = {}) {
     return auth.handler(c.req.raw);
   });
 
+  // Step one of the public form. See startRegistrationRoute's doc comment:
+  // the 200 says nothing about whether an email went out, and the only
+  // condition allowed to change the answer is the campaign calendar.
+  app.openapi(startRegistrationRoute, async (c) => {
+    const { email } = c.req.valid("json");
+    const ip = ipOf(c.req.header("x-forwarded-for"));
+    // A client-side limit on top of the per-address one inside the service,
+    // so a single machine cannot walk a list of addresses to farm codes.
+    if (!allowRequest(`reg-start:${ip}`, 20, 60_000)) {
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "CONFLICT",
+          "Too many requests. Try again soon.",
+        ),
+        429,
+      );
+    }
+
+    try {
+      const { resendAfterSeconds } = await challengeService.start(email);
+      return c.json({ status: "ok" as const, resendAfterSeconds }, 200);
+    } catch (error) {
+      if (error instanceof RegistrationsClosedError) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "CONFLICT",
+            "Registration is not currently open.",
+          ),
+          409,
+        );
+      }
+      throw error;
+    }
+  });
+
+  // Step two. One generic 400 covers a wrong code, an expired one, one
+  // already spent, and one whose challenge ran out of attempts — telling
+  // them apart would hand an attacker a progress bar.
+  app.openapi(verifyRegistrationCodeRoute, async (c) => {
+    const { email, code } = c.req.valid("json");
+    const ip = ipOf(c.req.header("x-forwarded-for"));
+    if (!allowRequest(`reg-code:${ip}`, 30, 60_000)) {
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "CONFLICT",
+          "Too many attempts. Try again soon.",
+        ),
+        429,
+      );
+    }
+
+    const session = await challengeService.verifyCode(email, code);
+    if (!session) {
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "INVALID_TOKEN",
+          "This code is invalid, expired, or already used.",
+        ),
+        400,
+      );
+    }
+
+    return c.json(
+      {
+        token: session.token,
+        expiresAt: session.expiresAt.toISOString(),
+        email: session.email,
+        known: session.known,
+        profile: session.profile,
+        memberships: session.memberships.map((row) => ({
+          campaignLabel: row.campaignLabel,
+          status: row.status as "active" | "left" | "kicked",
+        })),
+        openCampaignRegistrationStatus: session.openCampaignRegistrationStatus,
+      },
+      200,
+    );
+  });
+
   app.openapi(createRegistrationRoute, async (c) => {
-    const parsed = registrationSchema.safeParse(c.req.valid("json"));
+    const body = c.req.valid("json");
+
+    // The address comes from the session, never from the body. Only read
+    // here, not spent: a 500 from the write below must leave the session
+    // usable, or a transient database failure costs the applicant everything
+    // they typed. Two concurrent submissions are made safe by the unique
+    // index on (campaign, email) instead, which is where the guarantee
+    // actually belongs.
+    const email = await challengeService.resolveSession(body.emailToken);
+    if (!email) {
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "INVALID_TOKEN",
+          "This registration session is invalid, expired, or already used.",
+        ),
+        400,
+      );
+    }
+
+    const parsed = registrationSchema.safeParse({ ...body, email });
     if (!parsed.success) {
       return c.json(
         errorBody(
@@ -269,6 +387,18 @@ export function createApp(dependencies: AppDependencies = {}) {
 
     try {
       const created = await registrationRepository.create(parsed.data);
+      // Spent only now that the row exists, so the token cannot be replayed
+      // but also cannot be lost to a failure that was never the user's.
+      await challengeService.consumeSession(body.emailToken);
+      // Previously fired when the applicant clicked the verification link.
+      // The address is proven before submission now, so the moment a row
+      // appears is the moment the committee has something to review.
+      void pushNotifier.notifyAdmins({
+        title: "Nova sol·licitud",
+        body: `${parsed.data.name} ${parsed.data.surnames} espera revisió.`,
+        url: "/registrations",
+        tag: "registration-review",
+      });
       return c.json({ status: "created" as const, id: created.id }, 201);
     } catch (error) {
       if (error instanceof RegistrationsClosedError) {
@@ -1159,10 +1289,6 @@ export function createApp(dependencies: AppDependencies = {}) {
 
   // --- Public: invitation onboarding --------------------------------
 
-  function ipOf(header: string | undefined): string {
-    return header?.split(",")[0]?.trim() || "unknown";
-  }
-
   app.openapi(invitationLookupRoute, async (c) => {
     const ip = ipOf(c.req.header("x-forwarded-for"));
     if (!allowRequest(`inv-lookup:${ip}`, 30, 60_000)) {
@@ -1193,6 +1319,12 @@ export function createApp(dependencies: AppDependencies = {}) {
         prefillName: result.prefillName,
         prefillSurnames: result.prefillSurnames,
         campaignLabel: result.campaignLabel,
+        known: result.known,
+        profile: result.profile,
+        memberships: result.memberships.map((row) => ({
+          campaignLabel: row.campaignLabel,
+          status: row.status as "active" | "left" | "kicked",
+        })),
       },
       200,
     );
@@ -1223,6 +1355,7 @@ export function createApp(dependencies: AppDependencies = {}) {
         phoneDisplay: phone.display,
         degree: body.degree,
         studyYear: body.year,
+        ...(body.note ? { note: body.note } : {}),
       });
       if (!result.alreadyMember) {
         void pushNotifier.notifyAdmins({

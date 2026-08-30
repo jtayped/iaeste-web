@@ -35,9 +35,7 @@ function deriveDatesFromSlug(slug: string) {
     membershipStartsAt: new Date(`${startYear}-09-01`),
     membershipEndsAt: new Date(`${endYear}-06-30`),
     registrationOpensAt: new Date(),
-    registrationClosesAt: new Date(
-      Date.now() + 30 * 24 * 60 * 60 * 1000,
-    ),
+    registrationClosesAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   };
 }
 

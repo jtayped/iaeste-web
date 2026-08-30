@@ -232,7 +232,7 @@ export function createDrizzleRegistrationService(
       try {
         await emailer().send({
           to: row.email,
-          subject: "Verifica el teu correu — IAESTE LC Lleida",
+          subject: "verifica el teu correu · iaeste lc lleida",
           react: VerifyUserEmail({ email: row.email, link }),
         });
       } catch (error) {
@@ -281,7 +281,7 @@ export function createDrizzleRegistrationService(
       try {
         await emailer().send({
           to: updated.email,
-          subject: "Sol·licitud rebuda — IAESTE LC Lleida",
+          subject: "sol·licitud rebuda · iaeste lc lleida",
           react: RegistrationPending({
             name: snapshot.name,
             email: updated.email,
@@ -320,7 +320,7 @@ export function createDrizzleRegistrationService(
       try {
         await emailer().send({
           to: result.registration.email,
-          subject: "Ja ets membre — IAESTE LC Lleida",
+          subject: "ja ets membre · iaeste lc lleida",
           react: MembershipAccepted({
             name: snapshot.name,
             loginLink,
@@ -353,7 +353,7 @@ export function createDrizzleRegistrationService(
       try {
         await emailer().send({
           to: result.email,
-          subject: "Sobre la teva sol·licitud — IAESTE LC Lleida",
+          subject: "sobre la teva sol·licitud · iaeste lc lleida",
           react: MembershipRejected({
             name: snapshot.name,
             campaign: campaign?.label ?? result.campaignId,

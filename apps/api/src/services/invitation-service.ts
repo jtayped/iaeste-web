@@ -4,9 +4,11 @@ import { getDb } from "@repo/db/client";
 import {
   createCampaignRepository,
   createInvitationRepository,
+  createKnownPersonRepository,
   IllegalTransitionError,
   NotFoundError,
   type InvitationRole,
+  type KnownPerson,
   type RegistrationProfileSnapshot,
 } from "@repo/db/repositories";
 import MembershipAccepted from "@repo/email/acceptance";
@@ -51,7 +53,7 @@ export interface AdminInvitationView {
   createdAt: string;
 }
 
-export interface InvitationLookupResult {
+export interface InvitationLookupResult extends KnownPerson {
   email: string;
   prefillName: string | null;
   prefillSurnames: string | null;
@@ -172,7 +174,7 @@ export function createInvitationService(
       try {
         await emailer().send({
           to: created.email,
-          subject: "T'hem convidat a IAESTE LC Lleida",
+          subject: "t'hem convidat a iaeste lc lleida",
           react: UserInvitation({
             email: created.email,
             invitationLink: invitationLink(rawToken),
@@ -200,7 +202,7 @@ export function createInvitationService(
       try {
         await emailer().send({
           to: rotated.email,
-          subject: "La teva invitació a IAESTE LC Lleida",
+          subject: "la teva invitació a iaeste lc lleida",
           react: UserInvitation({
             email: rotated.email,
             invitationLink: invitationLink(rawToken),
@@ -217,7 +219,7 @@ export function createInvitationService(
       try {
         await emailer().send({
           to: cancelled.email,
-          subject: "La invitació a IAESTE LC Lleida ja no és vàlida",
+          subject: "la invitació a iaeste lc lleida ja no és vàlida",
           react: InvitationCancelled({
             email: cancelled.email,
             reason: "cancelled",
@@ -243,12 +245,20 @@ export function createInvitationService(
       const campaign = await createCampaignRepository(db).getById(
         invitation.campaignId,
       );
+      // Safe to include here for the same reason the public form only gets
+      // it after a correct code: holding this token is proof of control
+      // over the address it was mailed to. A returning member should not
+      // have to retype what we already hold on them.
+      const known = await createKnownPersonRepository(db).lookup(
+        invitation.email,
+      );
       return {
         email: invitation.email,
         prefillName: invitation.prefillName,
         prefillSurnames: invitation.prefillSurnames,
         campaignId: invitation.campaignId,
         campaignLabel: campaign?.label ?? invitation.campaignId,
+        ...known,
       };
     },
 
@@ -268,7 +278,7 @@ export function createInvitationService(
       try {
         await emailer().send({
           to: result.invitation.email,
-          subject: "Ja ets membre — IAESTE LC Lleida",
+          subject: "ja ets membre · iaeste lc lleida",
           react: MembershipAccepted({
             name: `${profile.name}`.trim() || result.invitation.email,
             // First login happens on the admin sign-in page (magic link).

@@ -36,6 +36,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/registrations/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/registrations/verify-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verifyRegistrationCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/registrations": {
         parameters: {
             query?: never;
@@ -530,11 +562,10 @@ export interface components {
             /** @example 2026-10-15T22:00:00.000Z */
             closesAt: string | null;
         };
-        RegistrationCreated: {
+        RegistrationStartResponse: {
             /** @enum {string} */
-            status: "created";
-            /** @example registration_123 */
-            id: string;
+            status: "ok";
+            resendAfterSeconds: number;
         };
         ApiError: {
             error: {
@@ -549,16 +580,53 @@ export interface components {
             path: (string | number)[];
             message: string;
         };
-        RegistrationRequest: {
-            /** @example Joan */
-            name: string;
-            /** @example Garcia Serra */
-            surnames: string;
+        RegistrationStartRequest: {
             /**
              * Format: email
              * @example joan@alumnes.udl.cat
              */
             email: string;
+        };
+        RegistrationSession: {
+            token: string;
+            expiresAt: string;
+            email: string;
+            known: boolean;
+            profile: components["schemas"]["KnownProfile"];
+            memberships: components["schemas"]["KnownMembership"][];
+            /** @enum {string|null} */
+            openCampaignRegistrationStatus: "pending_email" | "pending_review" | "accepted" | "rejected" | null;
+        };
+        KnownProfile: {
+            name: string;
+            surnames: string;
+            phone: string;
+            degree: string;
+            year: number;
+        } | null;
+        KnownMembership: {
+            /** @example 2025-2026 */
+            campaignLabel: string;
+            /** @enum {string} */
+            status: "active" | "left" | "kicked";
+        };
+        RegistrationVerifyCodeRequest: {
+            /** Format: email */
+            email: string;
+            /** @example 418502 */
+            code: string;
+        };
+        RegistrationCreated: {
+            /** @enum {string} */
+            status: "created";
+            /** @example registration_123 */
+            id: string;
+        };
+        RegistrationRequest: {
+            /** @example Joan */
+            name: string;
+            /** @example Garcia Serra */
+            surnames: string;
             /** @example +34 623 32 42 34 */
             phone: string;
             /**
@@ -570,6 +638,8 @@ export interface components {
             year: number;
             /** @example M'interessen els intercanvis internacionals. */
             note?: string;
+            /** @example a1b2c3... */
+            emailToken: string;
         };
         ResendVerificationResponse: {
             /** @enum {string} */
@@ -882,6 +952,9 @@ export interface components {
             prefillName: string | null;
             prefillSurnames: string | null;
             campaignLabel: string;
+            known: boolean;
+            profile: components["schemas"]["KnownProfile"];
+            memberships: components["schemas"]["KnownMembership"][];
         };
         InvitationLookupRequest: {
             token: string;
@@ -893,12 +966,21 @@ export interface components {
         };
         InvitationAcceptRequest: {
             token: string;
+            /** @example Joan */
             name: string;
+            /** @example Garcia Serra */
             surnames: string;
+            /** @example +34 623 32 42 34 */
             phone: string;
-            /** @enum {string} */
+            /**
+             * @example grau en informàtica (lleida)
+             * @enum {string}
+             */
             degree: "grau en informàtica (lleida)" | "grau en informàtica (igualada)" | "grau en tècniques d'interacció digital" | "grau en disseny digital" | "doble grau en informàtica i ADE" | "grau en enginyeria mecànica" | "grau en enginyeria química" | "grau en enginyeria de l'energia" | "grau en eng. electrònica industrial" | "grau en organització industrial" | "doble grau en organització industrial i ADE" | "doble grau en mecànica i energia" | "grau en arquitectura tècnica" | "altre";
+            /** @example 2 */
             year: number;
+            /** @example M'interessen els intercanvis internacionals. */
+            note?: string;
         };
     };
     responses: never;
@@ -949,6 +1031,99 @@ export interface operations {
             };
         };
     };
+    startRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Always returned when the address is well-formed and a campaign is open, whether or not an email was actually sent. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationStartResponse"];
+                };
+            };
+            /** @description No campaign is currently open for registration. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The address is not a valid email. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Too many code requests from this address or client. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    verifyRegistrationCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationVerifyCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description The code was right. Returns a short-lived session token plus the stored profile and membership history for this address. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationSession"];
+                };
+            };
+            /** @description The code is wrong, expired, already used, or out of attempts. Deliberately one generic answer for all four. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Too many attempts from this client. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     createRegistration: {
         parameters: {
             query?: never;
@@ -962,13 +1137,22 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The registration was saved and, on a best-effort basis, a verification email was sent. A 201 does not guarantee the email arrived — see POST /v1/registrations/:id/resend-verification. */
+            /** @description The registration was saved. Because `emailToken` already proves the address, it lands in `pending_review` — there is no verification email and nothing further for the applicant to do but wait for the committee. */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["RegistrationCreated"];
+                };
+            };
+            /** @description The `emailToken` is invalid, expired, or already spent. The applicant has to redo the code step. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
             /** @description Either no campaign is currently open for registration (error code CONFLICT), or this email already has a registration for the open campaign (error code ALREADY_REGISTERED) — check the response body's error.code to tell them apart. */

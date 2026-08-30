@@ -18,10 +18,15 @@ import {
 /**
  * The landing page for the link in the verification email.
  *
- * New email links carry the token in the URL fragment, which browsers do not
- * send to Next, proxies, or analytics. Query parameters remain supported for
- * links issued before IA-41, but the component strips either form from the
- * address bar before making the API request.
+ * Nothing sends one of these any more — the form proves the address with a
+ * six-digit code before it collects anything, so a registration is already
+ * `pending_review` when it is written. This page stays because links issued
+ * under the old flow are sitting in people's inboxes and must keep working.
+ *
+ * The token rides in the URL fragment, which browsers do not send to Next, to
+ * proxies, or to analytics. Query parameters remain supported for links
+ * issued before IA-41; either form is stripped from the address bar before
+ * the API request goes out.
  */
 const Verify = () => {
   const router = useRouter();

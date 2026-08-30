@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "@repo/ui/form";
 
-import type { RegistrationForm } from "@/lib/form-schema";
+import type { ProfileForm } from "@/lib/form-schema";
 import { FIELD_CONTROL, FIELD_HINT, FIELD_LABEL } from "../field-styles";
 
 /**
@@ -58,7 +58,7 @@ function scoreDegree(value: string, search: string, keywords?: string[]) {
     : 0.5;
 }
 
-const DegreeField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
+const DegreeField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
   const [open, setOpen] = React.useState(false);
 
   return (

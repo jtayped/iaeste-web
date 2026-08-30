@@ -1,58 +1,53 @@
 import {
-  type Registration,
-  registrationSchema,
+  type RegistrationProfile,
+  registrationProfileSchema,
 } from "@repo/constants/validators/registration";
 import { z } from "zod";
 
 /**
- * The shared registration contract plus the client-only email confirmation.
+ * The details step, for both ways in.
  *
- * A mistyped email is the one unrecoverable error in this flow — the
- * verification link goes to an address the applicant will never read, and the
- * API will not hand out a second registration for the same campaign — so it is
- * worth a second input. `toRegistration` strips the extra field before the
- * request goes out; the shared schema in `@repo/constants` stays the single
- * definition of what the API accepts.
+ * There is no email field and no confirmation field any more. A public
+ * applicant proved their address two steps earlier by typing a code we mailed
+ * them; an invited person never types it at all, because it is bound to their
+ * invitation token. Mistyping the address is no longer possible, which is
+ * what the confirmation field existed to catch.
  */
-export const registrationFormSchema = registrationSchema
-  .extend({
-    confirmEmail: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .min(1, "repeteix el correu per confirmar-lo"),
-  })
-  .refine((values) => values.email === values.confirmEmail, {
-    message: "els dos correus no coincideixen",
-    path: ["confirmEmail"],
-  });
+export const profileFormSchema = registrationProfileSchema;
 
-export type RegistrationForm = z.infer<typeof registrationFormSchema>;
+export type ProfileForm = RegistrationProfile;
 
-/** Drops the client-only fields so the body matches `RegistrationRequest`. */
-export function toRegistration(values: RegistrationForm): Registration {
-  return {
-    name: values.name,
-    surnames: values.surnames,
-    email: values.email,
-    phone: values.phone,
-    degree: values.degree,
-    year: values.year,
-    ...(values.note ? { note: values.note } : {}),
-  };
-}
+/** Step one of the public flow, on its own. */
+export const emailStepSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, "escriu el teu correu")
+    .email("adreça de correu electrònic no vàlida"),
+});
+
+export type EmailStep = z.infer<typeof emailStepSchema>;
+
+/** Step two. Six digits, nothing else — the OTP control cannot produce more. */
+export const codeStepSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "el codi té sis xifres"),
+});
+
+export type CodeStep = z.infer<typeof codeStepSchema>;
 
 /** Field order used for the error summary and for focusing the first mistake. */
 export const FIELD_ORDER = [
   "name",
   "surnames",
-  "email",
-  "confirmEmail",
   "phone",
   "degree",
   "year",
   "note",
-] as const satisfies readonly (keyof RegistrationForm)[];
+] as const satisfies readonly (keyof ProfileForm)[];
 
 /**
  * Kept word for word in sync with each field's visible label: the error
@@ -62,8 +57,6 @@ export const FIELD_ORDER = [
 export const FIELD_LABELS: Record<(typeof FIELD_ORDER)[number], string> = {
   name: "nom",
   surnames: "cognoms",
-  email: "correu electrònic",
-  confirmEmail: "repeteix el correu",
   phone: "telèfon",
   degree: "grau",
   year: "curs",

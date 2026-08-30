@@ -1,6 +1,6 @@
 "use client";
 
-import type { RegistrationForm } from "@/lib/form-schema";
+import type { ProfileForm } from "@/lib/form-schema";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -24,7 +24,7 @@ import { EASE_OUT } from "../motion";
  * rather than the Radix collapsible because the shared tailwind config ships
  * no collapsible keyframes, so the height animation would not exist.
  */
-const NoteField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
+const NoteField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
   const [open, setOpen] = React.useState(false);
   const reduceMotion = useReducedMotion();
   const contentId = React.useId();

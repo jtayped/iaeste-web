@@ -9,9 +9,9 @@ import StatusScreen from "@/components/status";
  * Reached when the API answers `ALREADY_REGISTERED`: this email already has a
  * registration for the campaign that is open.
  *
- * The API never returns the existing registration's id. This page therefore
- * never offers a resend for an id remembered by the browser, because a shared
- * device might remember a different applicant's registration.
+ * Rare now that the form checks for an existing registration at the code
+ * step and says so before anyone fills anything in — this is the backstop for
+ * the race where a second submission lands between the two.
  */
 const AlreadyRegistered = () => {
   return (
@@ -42,9 +42,8 @@ const AlreadyRegistered = () => {
         cal que ho tornis a fer.
       </Paragraph>
       <Paragraph>
-        si encara no has verificat l&apos;adreça, busca el correu de verificació
-        a la teva safata d&apos;entrada o a la carpeta de correu brossa:
-        l&apos;enllaç que hi ha continua sent el bo.
+        el comitè la revisarà i t&apos;escriurà a aquesta mateixa adreça amb la
+        resposta, sigui quina sigui. no cal que facis res més.
       </Paragraph>
     </StatusScreen>
   );

@@ -5,6 +5,7 @@ import type { Database } from "@repo/db/client";
 import { createApp } from "../app";
 import type { PublicRegistrationStatus } from "../contracts";
 import type { RegistrationRepository } from "../repositories/registrations";
+import type { RegistrationChallengeService } from "../services/registration-challenge-service";
 import type { RegistrationService } from "../services/registration-service";
 
 /** Shared fixtures/helpers for app.test.ts and app.admin.test.ts. */
@@ -18,6 +19,39 @@ export const validRegistration: Registration = {
   year: 2,
   note: "Hola",
 };
+
+/** The session token the stub challenge service below accepts. */
+export const VALID_EMAIL_TOKEN = "email-session-token";
+
+/**
+ * What a client actually posts: the profile plus a session token. The address
+ * is never in the body — the API reads it off the session — so this is
+ * `validRegistration` with `email` traded for `emailToken`.
+ */
+export const validRegistrationBody = {
+  name: validRegistration.name,
+  surnames: validRegistration.surnames,
+  phone: validRegistration.phone,
+  degree: validRegistration.degree,
+  year: validRegistration.year,
+  note: validRegistration.note,
+  emailToken: VALID_EMAIL_TOKEN,
+};
+
+export function createChallengeServiceStub(
+  overrides: Partial<RegistrationChallengeService> = {},
+): RegistrationChallengeService {
+  const emailFor = (token: string) =>
+    token === VALID_EMAIL_TOKEN ? validRegistration.email : undefined;
+
+  return {
+    start: async () => ({ resendAfterSeconds: 60 }),
+    verifyCode: async () => undefined,
+    resolveSession: async (token) => emailFor(token),
+    consumeSession: async (token) => emailFor(token),
+    ...overrides,
+  };
+}
 
 export function createRepository(
   create: RegistrationRepository["create"] = async () => ({
@@ -92,11 +126,13 @@ export function createTestApp(
   auth: Auth = createStubAuth(),
   hasMemberProfile: (userId: string) => Promise<boolean> = async () => true,
   db?: Database,
+  registrationChallengeService = createChallengeServiceStub(),
 ) {
   return createApp({
     getRegistrationStatus,
     registrationRepository,
     registrationService,
+    registrationChallengeService,
     logger: quietLogger,
     auth,
     hasMemberProfile,

@@ -33,7 +33,10 @@ export const DEGREE_SECTIONS: DegreeSection[] = [
       { label: "grau en enginyeria de l'energia", campus: "Lleida" },
       { label: "grau en eng. electrònica industrial", campus: "Lleida" },
       { label: "grau en organització industrial", campus: "Igualada" },
-      { label: "doble grau en organització industrial i ADE", campus: "Igualada" },
+      {
+        label: "doble grau en organització industrial i ADE",
+        campus: "Igualada",
+      },
       { label: "doble grau en mecànica i energia", campus: "Lleida" },
     ],
   },

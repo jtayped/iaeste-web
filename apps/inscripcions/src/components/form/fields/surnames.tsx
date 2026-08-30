@@ -1,4 +1,4 @@
-import type { RegistrationForm } from "@/lib/form-schema";
+import type { ProfileForm } from "@/lib/form-schema";
 import {
   FormControl,
   FormField,
@@ -13,7 +13,7 @@ import { UseFormReturn } from "react-hook-form";
 
 import { FIELD_CONTROL, FIELD_HINT, FIELD_LABEL } from "../field-styles";
 
-const SurnameField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
+const SurnameField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
   return (
     <FormField
       control={form.control}

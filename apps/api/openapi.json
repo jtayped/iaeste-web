@@ -65,23 +65,22 @@
           "closesAt"
         ]
       },
-      "RegistrationCreated": {
+      "RegistrationStartResponse": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
             "enum": [
-              "created"
+              "ok"
             ]
           },
-          "id": {
-            "type": "string",
-            "example": "registration_123"
+          "resendAfterSeconds": {
+            "type": "integer"
           }
         },
         "required": [
           "status",
-          "id"
+          "resendAfterSeconds"
         ]
       },
       "ApiError": {
@@ -154,23 +153,169 @@
           "message"
         ]
       },
+      "RegistrationStartRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joan@alumnes.udl.cat"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "RegistrationSession": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "known": {
+            "type": "boolean"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/KnownProfile"
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnownMembership"
+            }
+          },
+          "openCampaignRegistrationStatus": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "pending_email",
+              "pending_review",
+              "accepted",
+              "rejected",
+              null
+            ]
+          }
+        },
+        "required": [
+          "token",
+          "expiresAt",
+          "email",
+          "known",
+          "profile",
+          "memberships",
+          "openCampaignRegistrationStatus"
+        ]
+      },
+      "KnownProfile": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "surnames": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "degree": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "surnames",
+          "phone",
+          "degree",
+          "year"
+        ]
+      },
+      "KnownMembership": {
+        "type": "object",
+        "properties": {
+          "campaignLabel": {
+            "type": "string",
+            "example": "2025-2026"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "left",
+              "kicked"
+            ]
+          }
+        },
+        "required": [
+          "campaignLabel",
+          "status"
+        ]
+      },
+      "RegistrationVerifyCodeRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "example": "418502"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "RegistrationCreated": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "created"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "example": "registration_123"
+          }
+        },
+        "required": [
+          "status",
+          "id"
+        ]
+      },
       "RegistrationRequest": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
             "minLength": 2,
+            "maxLength": 120,
             "example": "Joan"
           },
           "surnames": {
             "type": "string",
             "minLength": 2,
+            "maxLength": 120,
             "example": "Garcia Serra"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "joan@alumnes.udl.cat"
           },
           "phone": {
             "type": "string",
@@ -207,15 +352,20 @@
             "type": "string",
             "maxLength": 2000,
             "example": "M'interessen els intercanvis internacionals."
+          },
+          "emailToken": {
+            "type": "string",
+            "minLength": 1,
+            "example": "a1b2c3..."
           }
         },
         "required": [
           "name",
           "surnames",
-          "email",
           "phone",
           "degree",
-          "year"
+          "year",
+          "emailToken"
         ]
       },
       "ResendVerificationResponse": {
@@ -1461,13 +1611,28 @@
           },
           "campaignLabel": {
             "type": "string"
+          },
+          "known": {
+            "type": "boolean"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/KnownProfile"
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnownMembership"
+            }
           }
         },
         "required": [
           "email",
           "prefillName",
           "prefillSurnames",
-          "campaignLabel"
+          "campaignLabel",
+          "known",
+          "profile",
+          "memberships"
         ]
       },
       "InvitationLookupRequest": {
@@ -1510,16 +1675,19 @@
           "name": {
             "type": "string",
             "minLength": 2,
-            "maxLength": 120
+            "maxLength": 120,
+            "example": "Joan"
           },
           "surnames": {
             "type": "string",
             "minLength": 2,
-            "maxLength": 120
+            "maxLength": 120,
+            "example": "Garcia Serra"
           },
           "phone": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "+34 623 32 42 34"
           },
           "degree": {
             "type": "string",
@@ -1538,12 +1706,19 @@
               "doble grau en mecànica i energia",
               "grau en arquitectura tècnica",
               "altre"
-            ]
+            ],
+            "example": "grau en informàtica (lleida)"
           },
           "year": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 6
+            "maximum": 6,
+            "example": 2
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000,
+            "example": "M'interessen els intercanvis internacionals."
           }
         },
         "required": [
@@ -1599,6 +1774,116 @@
         }
       }
     },
+    "/v1/registrations/start": {
+      "post": {
+        "operationId": "startRegistration",
+        "tags": [
+          "Registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationStartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Always returned when the address is well-formed and a campaign is open, whether or not an email was actually sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationStartResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No campaign is currently open for registration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The address is not a valid email.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many code requests from this address or client.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/registrations/verify-code": {
+      "post": {
+        "operationId": "verifyRegistrationCode",
+        "tags": [
+          "Registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationVerifyCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The code was right. Returns a short-lived session token plus the stored profile and membership history for this address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The code is wrong, expired, already used, or out of attempts. Deliberately one generic answer for all four.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many attempts from this client.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/registrations": {
       "post": {
         "operationId": "createRegistration",
@@ -1617,11 +1902,21 @@
         },
         "responses": {
           "201": {
-            "description": "The registration was saved and, on a best-effort basis, a verification email was sent. A 201 does not guarantee the email arrived — see POST /v1/registrations/:id/resend-verification.",
+            "description": "The registration was saved. Because `emailToken` already proves the address, it lands in `pending_review` — there is no verification email and nothing further for the applicant to do but wait for the committee.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RegistrationCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `emailToken` is invalid, expired, or already spent. The applicant has to redo the code step.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
                 }
               }
             }

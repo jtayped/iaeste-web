@@ -1,48 +1,38 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { registrationFormSchema, toRegistration } from "./form-schema";
+import {
+  codeStepSchema,
+  emailStepSchema,
+  profileFormSchema,
+} from "./form-schema";
 
-const validForm = {
+const validProfile = {
   name: "Joan",
   surnames: "Garcia Serra",
-  email: "joan@alumnes.udl.cat",
-  confirmEmail: "joan@alumnes.udl.cat",
   phone: "+34 623 32 42 34",
   degree: "grau en informàtica (lleida)",
   year: 2,
   note: "",
 };
 
-describe("registrationFormSchema", () => {
-  it("accepts and normalises a complete form", () => {
-    const result = registrationFormSchema.safeParse({
-      ...validForm,
-      email: " JOAN@ALUMNES.UDL.CAT ",
-      confirmEmail: "joan@alumnes.udl.cat",
-    });
-
-    assert.equal(result.success, true);
-    assert.equal(result.data?.email, "joan@alumnes.udl.cat");
+describe("profileFormSchema", () => {
+  it("accepts a complete profile", () => {
+    assert.equal(profileFormSchema.safeParse(validProfile).success, true);
   });
 
-  it("reports mismatched email confirmation on the confirmation field", () => {
-    const result = registrationFormSchema.safeParse({
-      ...validForm,
-      confirmEmail: "altra@alumnes.udl.cat",
+  it("has no email field at all — the address is proven, never typed here", () => {
+    const parsed = profileFormSchema.parse({
+      ...validProfile,
+      email: "joan@alumnes.udl.cat",
     });
 
-    assert.equal(result.success, false);
-    assert.deepEqual(result.error?.issues[0]?.path, ["confirmEmail"]);
-    assert.equal(
-      result.error?.issues[0]?.message,
-      "els dos correus no coincideixen",
-    );
+    assert.equal("email" in parsed, false);
   });
 
   it("uses the shared phone validation rule", () => {
-    const result = registrationFormSchema.safeParse({
-      ...validForm,
+    const result = profileFormSchema.safeParse({
+      ...validProfile,
       phone: "+34 000 00 00 00",
     });
 
@@ -54,17 +44,30 @@ describe("registrationFormSchema", () => {
   });
 });
 
-describe("toRegistration", () => {
-  it("drops client-only confirmation and an empty optional note", () => {
-    const parsed = registrationFormSchema.parse(validForm);
-
-    assert.deepEqual(toRegistration(parsed), {
-      name: "Joan",
-      surnames: "Garcia Serra",
-      email: "joan@alumnes.udl.cat",
-      phone: "+34 623 32 42 34",
-      degree: "grau en informàtica (lleida)",
-      year: 2,
+describe("emailStepSchema", () => {
+  it("normalises the address before it is sent", () => {
+    const result = emailStepSchema.safeParse({
+      email: " JOAN@ALUMNES.UDL.CAT ",
     });
+
+    assert.equal(result.success, true);
+    assert.equal(result.data?.email, "joan@alumnes.udl.cat");
+  });
+
+  it("rejects anything that is not an address", () => {
+    assert.equal(emailStepSchema.safeParse({ email: "nope" }).success, false);
+    assert.equal(emailStepSchema.safeParse({ email: "" }).success, false);
+  });
+});
+
+describe("codeStepSchema", () => {
+  it("accepts exactly six digits", () => {
+    assert.equal(codeStepSchema.safeParse({ code: "418502" }).success, true);
+  });
+
+  it("rejects a partial or non-numeric code", () => {
+    for (const code of ["41850", "4185021", "41850a", ""]) {
+      assert.equal(codeStepSchema.safeParse({ code }).success, false);
+    }
   });
 });

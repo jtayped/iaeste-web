@@ -1,15 +1,12 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, describe, it } from "node:test";
 
-import { eq } from "drizzle-orm";
-
 import type { Registration } from "@repo/constants/validators/registration";
 import type { Database } from "@repo/db/client";
 import {
   createCampaignRepository,
   createRegistrationRepository,
 } from "@repo/db/repositories";
-import { registrationVerification } from "@repo/db/schema";
 import { closeTestDb, getTestDb, truncateAll } from "@repo/db/test-support";
 import type { Emailer, SendEmailOptions } from "@repo/email/resend";
 
@@ -110,7 +107,11 @@ describe("createDrizzleRegistrationRepository", () => {
     );
 
     assert.ok(saved);
-    assert.equal(saved?.status, "pending_email");
+    // Not `pending_email`: the address was proven by the code step before
+    // any of this was collected, so the row goes straight into the
+    // committee's queue.
+    assert.equal(saved?.status, "pending_review");
+    assert.ok(saved?.verifiedAt);
     assert.deepEqual(saved?.profileSnapshot, {
       name: "Joan",
       surnames: "Garcia Serra",
@@ -149,8 +150,8 @@ describe("createDrizzleRegistrationRepository", () => {
     );
   });
 
-  it("stores a hashed verification token and emails the applicant", async () => {
-    const campaign = await openCampaignForRegistration(db);
+  it("emails a receipt naming the campaign, and no verification link", async () => {
+    await openCampaignForRegistration(db);
     const emailer = createRecordingEmailer();
     const repository = createDrizzleRegistrationRepository({ emailer });
 
@@ -158,33 +159,17 @@ describe("createDrizzleRegistrationRepository", () => {
 
     assert.equal(emailer.sent.length, 1);
     assert.equal(emailer.sent[0]?.to, validRegistration.email);
-    const emailPayload = JSON.stringify(emailer.sent[0]?.react);
-    assert.match(emailPayload, /\/verificar#token=[0-9a-f]{64}/);
-    assert.doesNotMatch(emailPayload, /\/verificar\?token=/);
-
-    const registrations = createRegistrationRepository(db);
-    const saved = await registrations.getByCampaignAndEmail(
-      campaign.id,
-      validRegistration.email,
+    assert.equal(
+      emailer.sent[0]?.subject,
+      "sol·licitud rebuda · iaeste lc lleida",
     );
-    assert.ok(saved);
-
-    const [verificationRow] = await db
-      .select()
-      .from(registrationVerification)
-      .where(eq(registrationVerification.registrationId, saved!.id));
-    assert.ok(verificationRow);
-    assert.ok(verificationRow.tokenHash);
-    // The raw token is never stored — only its hash, which is not
-    // trivially the raw hex string itself.
-    assert.equal(verificationRow.tokenHash.length, 64); // sha256 hex digest
-    assert.equal(verificationRow.consumedAt, null);
-    const hoursUntilExpiry =
-      (verificationRow.expiresAt.getTime() - Date.now()) / (60 * 60 * 1000);
-    assert.ok(hoursUntilExpiry > 23 && hoursUntilExpiry <= 24);
+    const emailPayload = JSON.stringify(emailer.sent[0]?.react);
+    assert.match(emailPayload, /Test campaign/);
+    // There is nothing left to verify, so nothing may invite them to.
+    assert.doesNotMatch(emailPayload, /\/verificar/);
   });
 
-  it("still creates the registration when the verification email fails to send", async () => {
+  it("still creates the registration when the receipt email fails to send", async () => {
     await openCampaignForRegistration(db);
     const failingEmailer = {
       async send() {
@@ -203,6 +188,6 @@ describe("createDrizzleRegistrationRepository", () => {
       validRegistration.email,
     );
     assert.ok(saved);
-    assert.equal(saved?.status, "pending_email");
+    assert.equal(saved?.status, "pending_review");
   });
 });

@@ -9,8 +9,8 @@ import { Paragraph } from "@repo/ui/typography";
 
 import StatusScreen from "@/components/status";
 
-/** While the token is being looked up. */
-export const LoadingScreen = () => (
+/** While an invitation token is being looked up. */
+export const LoadingInvitationScreen = () => (
   <StatusScreen
     icon="loading"
     iconClassName="animate-spin"
@@ -21,14 +21,14 @@ export const LoadingScreen = () => (
 );
 
 /**
- * The single dead end.
+ * The single dead end of the invited path.
  *
  * Expired, cancelled, already used, never existed — the API answers all four
  * the same way so that this page cannot be used to find out which invitations
  * exist. The copy therefore does not guess, and points at the one action that
  * can actually help: ask whoever invited you.
  */
-export const InvalidScreen = () => (
+export const InvalidInvitationScreen = () => (
   <StatusScreen
     icon="link-off"
     tone="warning"
@@ -84,7 +84,7 @@ export const RateLimitedScreen = ({ onRetry }: { onRetry: () => void }) => (
 );
 
 /** A network or server failure, as opposed to a rejected token. */
-export const FailedScreen = ({ onRetry }: { onRetry: () => void }) => (
+export const UnreachableScreen = ({ onRetry }: { onRetry: () => void }) => (
   <StatusScreen
     icon="warning"
     tone="warning"
