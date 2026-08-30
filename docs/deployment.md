@@ -1,10 +1,46 @@
 # Deployment
 
 Three applications have production images. All three images build and run
-locally. The GHCR push and Coolify deployment have not run against real
-infrastructure yet, so the Coolify sections below are setup instructions, not
-a record of a completed production deployment. `apps/admin` does not exist yet
-and has no image.
+locally. `apps/admin` does not exist yet and has no image.
+
+## Status (2026-08-28)
+
+The Coolify side of this doc is now partly real, not just instructions:
+
+- **Project `iaeste-lleida`** exists (environment `production`), with three
+  **Docker Image** resources already created and configured per the tables
+  below (image, port, health path, domain, TLS): `iaeste-api`,
+  `iaeste-inscripcions`, `iaeste-web`. Non-secret runtime env vars are set
+  (`NODE_ENV`, `CORS_ALLOWED_ORIGINS`, `BETTER_AUTH_TRUSTED_ORIGINS`,
+  `REGISTRATION_EMAIL_FROM`, `*_PUBLIC_ORIGIN`, `CONTACT_FORM_*`). A fresh
+  `BETTER_AUTH_SECRET` was generated and set on the API resource.
+- **Still open, in order:**
+  1. `.github/workflows/deploy.yml`, `.github/scripts/deploy-coolify.mjs`, and
+     the three `Dockerfile`s only exist on `local/dev-preview` — none of this
+     is on `master` yet, so GHCR has no images and the workflow can't run
+     until this work merges.
+  2. **Database**: this project shares the `postgres` Coolify resource in the
+     `general` project (one Postgres instance, multiple databases) rather than
+     getting a dedicated server. A dedicated `iaeste` database + a
+     least-privilege `iaeste` role (not the shared superuser) still need
+     creating on it; `DATABASE_URL` on the API resource should then use that
+     resource's **internal** Coolify network hostname
+     (`<postgres-resource-uuid>:5432`), never the public port — see
+     "Coolify resources" below.
+  3. **DNS**: `www`, `inscripcions`, and `api` on `iaestelleida.cat` all need
+     an A record pointing at `23.88.32.157` (the Hetzner VPS Coolify runs on).
+     Not done yet — Coolify can't issue TLS certs until this resolves.
+  4. **Secrets not yet set** on the Coolify resources: `RESEND_API_KEY` (api +
+     web), `DATABASE_URL` (api, blocked on the DB step above),
+     `KEYSTATIC_GITHUB_CLIENT_ID`/`_SECRET`/`KEYSTATIC_SECRET` (web — needs
+     the one-time GitHub App setup in `docs/content.md`).
+  5. **GitHub Actions secrets/vars** in the "GitHub repository setup" section
+     below — none are set yet. The three deploy-webhook URLs already exist
+     (each Coolify resource has one at `/api/v1/deploy?uuid=<resource-uuid>`)
+     but haven't been copied into GitHub secrets.
+  6. GHCR registry credential on the Coolify server, if the `iaeste-*`
+     packages end up private — not yet checked, since no image has been
+     pushed yet to have a visibility setting.
 
 | Image                 | Dockerfile                     | Port | Health URL |
 | --------------------- | ------------------------------ | ---- | ---------- |
