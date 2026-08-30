@@ -179,7 +179,7 @@ describe("admin + public invitations routes", () => {
       name: "Convidada",
       surnames: "Cognom",
       phone: "+34 623 32 42 34",
-      degree: "Grau en Informàtica (Lleida)",
+      degree: "grau en informàtica (lleida)",
       year: 3,
     });
     assert.equal(accept.status, 200);

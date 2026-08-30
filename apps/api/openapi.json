@@ -180,22 +180,22 @@
           "degree": {
             "type": "string",
             "enum": [
-              "Doble Grau en Organització Industrial i ADE",
-              "Doble Grau en Informàtica i ADE",
-              "Doble Grau en Mecànica i Energia",
-              "Grau en Arquitectura Tècnica",
-              "Grau en Disseny Digital",
-              "Grau en Enginyeria de l'Energia",
-              "Grau en Eng. Electrònica Industrial",
-              "Grau en Organització Industrial",
-              "Grau en Informàtica (Igualada)",
-              "Grau en Informàtica (Lleida)",
-              "Grau en Enginyeria Mecànica",
-              "Grau en Enginyeria Química",
-              "Grau en Tècniques d'Interacció Digital",
-              "Altre"
+              "grau en informàtica (lleida)",
+              "grau en informàtica (igualada)",
+              "grau en tècniques d'interacció digital",
+              "grau en disseny digital",
+              "doble grau en informàtica i ADE",
+              "grau en enginyeria mecànica",
+              "grau en enginyeria química",
+              "grau en enginyeria de l'energia",
+              "grau en eng. electrònica industrial",
+              "grau en organització industrial",
+              "doble grau en organització industrial i ADE",
+              "doble grau en mecànica i energia",
+              "grau en arquitectura tècnica",
+              "altre"
             ],
-            "example": "Grau en Informàtica (Lleida)"
+            "example": "grau en informàtica (lleida)"
           },
           "year": {
             "type": "integer",
@@ -1524,20 +1524,20 @@
           "degree": {
             "type": "string",
             "enum": [
-              "Doble Grau en Organització Industrial i ADE",
-              "Doble Grau en Informàtica i ADE",
-              "Doble Grau en Mecànica i Energia",
-              "Grau en Arquitectura Tècnica",
-              "Grau en Disseny Digital",
-              "Grau en Enginyeria de l'Energia",
-              "Grau en Eng. Electrònica Industrial",
-              "Grau en Organització Industrial",
-              "Grau en Informàtica (Igualada)",
-              "Grau en Informàtica (Lleida)",
-              "Grau en Enginyeria Mecànica",
-              "Grau en Enginyeria Química",
-              "Grau en Tècniques d'Interacció Digital",
-              "Altre"
+              "grau en informàtica (lleida)",
+              "grau en informàtica (igualada)",
+              "grau en tècniques d'interacció digital",
+              "grau en disseny digital",
+              "doble grau en informàtica i ADE",
+              "grau en enginyeria mecànica",
+              "grau en enginyeria química",
+              "grau en enginyeria de l'energia",
+              "grau en eng. electrònica industrial",
+              "grau en organització industrial",
+              "doble grau en organització industrial i ADE",
+              "doble grau en mecànica i energia",
+              "grau en arquitectura tècnica",
+              "altre"
             ]
           },
           "year": {

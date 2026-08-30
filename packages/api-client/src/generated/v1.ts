@@ -562,10 +562,10 @@ export interface components {
             /** @example +34 623 32 42 34 */
             phone: string;
             /**
-             * @example Grau en Informàtica (Lleida)
+             * @example grau en informàtica (lleida)
              * @enum {string}
              */
-            degree: "doble grau en organització industrial i ADE" | "doble grau en informàtica i ADE" | "doble grau en mecànica i energia" | "grau en arquitectura tècnica" | "grau en disseny digital" | "grau en enginyeria de l'energia" | "grau en eng. electrònica industrial" | "grau en organització industrial" | "grau en informàtica (igualada)" | "grau en informàtica (lleida)" | "grau en enginyeria mecànica" | "grau en enginyeria química" | "grau en tècniques d'interacció digital" | "altre";
+            degree: "grau en informàtica (lleida)" | "grau en informàtica (igualada)" | "grau en tècniques d'interacció digital" | "grau en disseny digital" | "doble grau en informàtica i ADE" | "grau en enginyeria mecànica" | "grau en enginyeria química" | "grau en enginyeria de l'energia" | "grau en eng. electrònica industrial" | "grau en organització industrial" | "doble grau en organització industrial i ADE" | "doble grau en mecànica i energia" | "grau en arquitectura tècnica" | "altre";
             /** @example 2 */
             year: number;
             /** @example M'interessen els intercanvis internacionals. */
@@ -897,7 +897,7 @@ export interface components {
             surnames: string;
             phone: string;
             /** @enum {string} */
-            degree: "Doble Grau en Organització Industrial i ADE" | "Doble Grau en Informàtica i ADE" | "Doble Grau en Mecànica i Energia" | "Grau en Arquitectura Tècnica" | "Grau en Disseny Digital" | "Grau en Enginyeria de l'Energia" | "Grau en Eng. Electrònica Industrial" | "Grau en Organització Industrial" | "Grau en Informàtica (Igualada)" | "Grau en Informàtica (Lleida)" | "Grau en Enginyeria Mecànica" | "Grau en Enginyeria Química" | "Grau en Tècniques d'Interacció Digital" | "Altre";
+            degree: "grau en informàtica (lleida)" | "grau en informàtica (igualada)" | "grau en tècniques d'interacció digital" | "grau en disseny digital" | "doble grau en informàtica i ADE" | "grau en enginyeria mecànica" | "grau en enginyeria química" | "grau en enginyeria de l'energia" | "grau en eng. electrònica industrial" | "grau en organització industrial" | "doble grau en organització industrial i ADE" | "doble grau en mecànica i energia" | "grau en arquitectura tècnica" | "altre";
             year: number;
         };
     };

@@ -64,7 +64,7 @@ await db
     surnames: "Admin",
     phoneE164: "+34600000000",
     phoneDisplay: "600 000 000",
-    degree: "Grau en Informàtica (Lleida)",
+    degree: "grau en informàtica (lleida)",
     studyYear: 3,
   })
   .onConflictDoNothing();

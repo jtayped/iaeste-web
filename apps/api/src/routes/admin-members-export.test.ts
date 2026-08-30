@@ -38,7 +38,7 @@ async function seedMember(db: Database, campaignId: string, surnames: string) {
     surnames,
     phoneE164: "+34600111222",
     phoneDisplay: "600 111 222",
-    degree: "Grau en Informàtica (Lleida)",
+    degree: "grau en informàtica (lleida)",
     studyYear: 3,
   });
   await createMembershipRepository(db).join({

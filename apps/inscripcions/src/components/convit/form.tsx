@@ -19,11 +19,8 @@ import {
   SurnamesField,
   YearField,
 } from "@/components/convit/fields";
-import {
-  childVariants,
-  containerVariants,
-  Group,
-} from "@/components/form/notices";
+import { Section } from "@/components/form/notices";
+import { childVariants, containerVariants } from "@/components/form/motion";
 import type { Invitation } from "@/lib/invitation-flow";
 import {
   invitationFormSchema,
@@ -92,17 +89,17 @@ export function ConvitForm({
               </motion.div>
             ) : null}
 
-            <Group title="qui ets?" icon={CircleUserRound}>
+            <Section title="qui ets?" icon={CircleUserRound}>
               <NameField form={form} />
               <SurnamesField form={form} />
               <BoundEmail email={invitation.email} />
               <PhoneField form={form} />
-            </Group>
+            </Section>
 
-            <Group title="què estudies?" icon={School}>
+            <Section title="què estudies?" icon={School}>
               <DegreeField form={form} />
               <YearField form={form} />
-            </Group>
+            </Section>
 
             <motion.div variants={childVariants}>
               <Button
