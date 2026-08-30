@@ -1,56 +1,52 @@
 import React from "react";
 import Image from "next/image";
-import { Link, routing } from "@/i18n/routing"; // Ensure this import is correct
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@repo/ui/dropdown-menu";
-import { Button } from "@repo/ui/button";
+import { Link, routing, usePathname } from "@/i18n/routing";
 import { useLocale } from "next-intl";
-import { usePathname } from "@/i18n/routing";
 import { locales } from "@/constants/locales";
-import { ChevronDown } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
 
+/**
+ * Locale switcher for the mobile panel. A dropdown inside a full-screen sheet
+ * meant two taps and a popover layered over an overlay; the three locales fit
+ * on one row, so they are all just there.
+ */
 const ChangeTranslation = ({ className = "" }: { className?: string }) => {
   const locale = useLocale();
   const pathname = usePathname();
 
-  if (!locales[locale]) return;
-
-  const { svg, label } = locales[locale];
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          className={cn("justify-between bg-transparent", className)}
-          variant={"ghost"}
-        >
-          <Image src={svg} alt={label} width={24} height={24} />
-          {label}
-          <ChevronDown />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent side="top" align="center">
-        {routing.locales.map((l) => {
-          if (!locales[l]) return;
-          const { svg, label } = locales[l];
-          return (
-            <DropdownMenuItem key={l} asChild>
-              <Link href={pathname} locale={l}>
-                <div className="flex items-center gap-2">
-                  <Image src={svg} alt={label} width={24} height={24} />
-                  {label}
-                </div>
-              </Link>
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className={cn("grid grid-cols-3 gap-2", className)}>
+      {routing.locales.map((l) => {
+        const meta = locales[l];
+        if (!meta) return null;
+
+        const isActive = l === locale;
+
+        return (
+          <Link
+            key={l}
+            href={pathname}
+            locale={l}
+            aria-current={isActive ? "true" : undefined}
+            className={cn(
+              "flex h-11 items-center justify-center gap-2 rounded-lg border text-[13px] transition-colors",
+              isActive
+                ? "border-white/60 bg-white/15 font-medium"
+                : "border-white/15 text-primary-foreground/70 hover:bg-white/10",
+            )}
+          >
+            <Image
+              src={meta.svg}
+              alt=""
+              width={20}
+              height={20}
+              className="shrink-0 rounded-[3px]"
+            />
+            {meta.label}
+          </Link>
+        );
+      })}
+    </div>
   );
 };
 

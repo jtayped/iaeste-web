@@ -1,5 +1,6 @@
 "use client";
 import { Link } from "@/i18n/routing";
+import { cn } from "@repo/ui/lib/utils";
 import Image from "next/image";
 import React, { createContext, useEffect, useState } from "react";
 import Sidebar from "./sidebar";
@@ -73,19 +74,24 @@ const Header = () => {
 
   return (
     <header
-      className={`section-padding fixed top-0 z-50 flex w-full items-center justify-between text-primary-foreground transition-all duration-300 ${isScrolled ? "bg-primary py-2 shadow-lg" : "py-10"} `}
+      className={cn(
+        "section-padding fixed top-0 z-50 flex w-full items-center justify-between border-b text-primary-foreground transition-[background-color,padding,border-color] duration-300",
+        isScrolled
+          ? "border-white/10 bg-primary/85 py-3 backdrop-blur-md"
+          : "border-transparent py-6",
+      )}
     >
-      <Link href="/">
+      <Link href="/" aria-label="iaeste lc lleida">
+        {/* Fixed intrinsic size so the srcset never changes; only the CSS
+            width animates, which keeps the swap from flashing. */}
         <Image
           src={"/logos/horizontal.png"}
           alt={"iaeste logo"}
-          width={isScrolled ? 160 : 255}
-          height={isScrolled ? 40 : 75}
-          className="transition-all duration-300"
-          style={{
-            width: isScrolled ? "160px" : "255px",
-            height: "auto",
-          }}
+          width={255}
+          height={75}
+          priority
+          className="h-auto transition-[width] duration-300"
+          style={{ width: isScrolled ? "132px" : "170px" }}
         />
       </Link>
 

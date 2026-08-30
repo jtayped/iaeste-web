@@ -16,18 +16,17 @@ import {
 import { Button } from "@repo/ui/button";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useNavigation } from "..";
 import ChangeTranslation from "./change-translation";
 
 const Navigation = ({ className = "" }: { className?: string }) => {
   const t = useTranslations("header");
-  const { isScrolled } = useNavigation();
-
   return (
     <NavigationMenu className={cn("", className)}>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>{t("groups.students")}</NavigationMenuTrigger>
+          <NavigationMenuTrigger className="bg-transparent hover:bg-white/10 focus:bg-white/10 data-[state=open]:bg-white/10">
+            {t("groups.students")}
+          </NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid gap-3 p-6 md:w-[400px]">
               <li className="row-span-3">
@@ -36,12 +35,14 @@ const Navigation = ({ className = "" }: { className?: string }) => {
                     className="flex h-full w-full select-none flex-col justify-end rounded-md bg-muted p-6 no-underline outline-none focus:shadow-md"
                     href="/"
                   >
+                    {/* The white mark was being `invert`ed to black on this
+                        light card; there is a real blue one for this ground. */}
                     <Image
-                      src="/logos/icon-lleida-white.png"
+                      src="/logos/icon-lleida-blue.png"
                       width={56}
                       height={56}
-                      alt="iaeste square logo"
-                      className="h-14 w-14 invert"
+                      alt=""
+                      className="h-14 w-14"
                     />
                     <div className="mb-2 mt-4 text-lg font-medium">
                       {t("pages.home.title")}
@@ -55,28 +56,33 @@ const Navigation = ({ className = "" }: { className?: string }) => {
               <ListItem href="/student" title={t("pages.student.title")}>
                 {t("pages.student.description")}
               </ListItem>
-              <ListItem href="/incomming" title={t("pages.incomming.title")}>
+              <ListItem href="/incommings" title={t("pages.incomming.title")}>
                 {t("pages.incomming.description")}
               </ListItem>
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <NavigationMenuLink className={navigationMenuTriggerStyle()} asChild>
+          <NavigationMenuLink
+            className={cn(navigationMenuTriggerStyle(), "hover:bg-white/10")}
+            asChild
+          >
             <Link href={"/company"}>{t("groups.companies")}</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <NavigationMenuLink className={navigationMenuTriggerStyle()} asChild>
+          <NavigationMenuLink
+            className={cn(navigationMenuTriggerStyle(), "hover:bg-white/10")}
+            asChild
+          >
             <Link href={"/blog"}>{t("pages.blog.name")}</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
-        <ChangeTranslation className="hidden md:flex" />
+        <ChangeTranslation className="hidden bg-transparent hover:bg-white/10 focus:bg-white/10 data-[state=open]:bg-white/10 md:flex" />
         <NavigationMenuItem asChild>
           <Button
-            size="lg"
             asChild
-            variant={isScrolled ? "secondary" : "default"}
+            className="ml-2 bg-white text-primary shadow-sm hover:bg-white/90"
           >
             <Link href="#contact-form">{t("contact-btn")}</Link>
           </Button>
