@@ -190,7 +190,7 @@ jobs:
           file: apps/web/Dockerfile
           push: false
           build-args: |
-            NEXT_PUBLIC_INSCRIPCIONS_STATE=on
+            NEXT_PUBLIC_API_URL=http://localhost:3004
             RESEND_API_KEY=build-placeholder
             CONTACT_FORM_FROM=noreply@iaestelleida.cat
             CONTACT_FORM_TO=ci@example.com

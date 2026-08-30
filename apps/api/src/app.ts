@@ -79,6 +79,7 @@ import {
   verifyRegistrationGetRoute,
   verifyRegistrationPostRoute,
 } from "./routes";
+import type { PublicRegistrationStatus } from "./contracts";
 import {
   createDrizzleRegistrationService,
   type RegistrationService,
@@ -86,7 +87,7 @@ import {
 import { API_VERSION } from "./version";
 
 type AppDependencies = {
-  isRegistrationOpen?: () => Promise<boolean>;
+  getRegistrationStatus?: () => Promise<PublicRegistrationStatus>;
   logger?: Pick<Console, "error">;
   registrationRepository?: RegistrationRepository;
   registrationService?: RegistrationService;
@@ -106,12 +107,22 @@ type AppDependencies = {
 };
 
 export function createApp(dependencies: AppDependencies = {}) {
-  const isRegistrationOpen =
-    dependencies.isRegistrationOpen ??
-    (async () => {
+  const getRegistrationStatus =
+    dependencies.getRegistrationStatus ??
+    (async (): Promise<PublicRegistrationStatus> => {
+      const campaigns = createCampaignRepository(getDb());
+      // `isRegistrationOpen` stays the only thing that decides *open*; the
+      // timestamps are read alongside it purely so the public site can count
+      // down. When nothing is open, the soonest upcoming campaign is what
+      // that countdown targets.
       const campaign =
-        await createCampaignRepository(getDb()).getOpenForRegistration();
-      return campaign !== undefined;
+        (await campaigns.getOpenForRegistration()) ??
+        (await campaigns.getNextForRegistration());
+      return {
+        open: campaign?.isRegistrationOpen ?? false,
+        opensAt: campaign?.registrationOpensAt.toISOString() ?? null,
+        closesAt: campaign?.registrationClosesAt.toISOString() ?? null,
+      };
     });
   const registrationRepository =
     dependencies.registrationRepository ??
@@ -211,7 +222,7 @@ export function createApp(dependencies: AppDependencies = {}) {
   );
 
   app.openapi(registrationStatusRoute, async (c) =>
-    c.json({ open: await isRegistrationOpen() }, 200),
+    c.json(await getRegistrationStatus(), 200),
   );
   // IA-30: Better Auth's own routes (sign-in/magic-link, magic-link/verify,
   // get-session, the admin-plugin endpoints, etc.), mounted as a raw

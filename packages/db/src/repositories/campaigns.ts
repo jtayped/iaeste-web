@@ -1,4 +1,4 @@
-import { and, eq, ilike, ne, or, sql } from "drizzle-orm";
+import { and, asc, eq, gt, ilike, ne, or, sql } from "drizzle-orm";
 
 import type { Database } from "../client";
 import { membership } from "../schema/membership";
@@ -71,6 +71,29 @@ export function createCampaignRepository(db: Database) {
         .select()
         .from(membershipCampaign)
         .where(eq(membershipCampaign.isRegistrationOpen, true));
+      return row;
+    },
+
+    /**
+     * The soonest published campaign whose registration window has not opened
+     * yet. Unlike `getOpenForRegistration`, this one *does* read the
+     * timestamps: no flag can identify a campaign that has not started, and
+     * the public site needs a target to count down to. Draft campaigns are
+     * excluded because they are still being configured, and archived ones
+     * are done.
+     */
+    async getNextForRegistration() {
+      const [row] = await db
+        .select()
+        .from(membershipCampaign)
+        .where(
+          and(
+            eq(membershipCampaign.state, "published"),
+            gt(membershipCampaign.registrationOpensAt, sql`now()`),
+          ),
+        )
+        .orderBy(asc(membershipCampaign.registrationOpensAt))
+        .limit(1);
       return row;
     },
 

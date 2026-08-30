@@ -6,11 +6,13 @@ import ContactSection from "@/components/sections/students/contact";
 import Team from "@/components/sections/students/team";
 import WhyIaeste from "@/components/sections/students/why";
 import ButtonGroup from "@repo/ui/button-group";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import { getRegistrationWindow } from "@/lib/registration-status";
 import Inscripcions from "@/components/sections/students/inscripcions";
 
-const StudentsPage = () => {
-  const t = useTranslations("StudentsPage.hero");
+const StudentsPage = async () => {
+  const t = await getTranslations("StudentsPage.hero");
+  const registrationWindow = await getRegistrationWindow();
 
   return (
     <main>
@@ -25,8 +27,10 @@ const StudentsPage = () => {
           </ButtonGroup>
         }
       />
-      <Content className="pt-0">
-        <Inscripcions />
+      {/* Outside `Content` so it butts straight up against the hero; `Content`
+          keeps its own top padding for whatever follows the band. */}
+      <Inscripcions status={registrationWindow} />
+      <Content>
         <WhyIaeste />
         <Team />
         <ContactSection />

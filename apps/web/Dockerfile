@@ -67,12 +67,12 @@ COPY --from=pruner /app/out/full/ .
 # .github/workflows/ci.yml -- never pass real secrets as build args; they end up
 # readable in the image's build history. Only the NEXT_PUBLIC_* value needs a
 # real value at build time; override it with --build-arg for an actual deploy.
-ARG NEXT_PUBLIC_INSCRIPCIONS_STATE=on
+ARG NEXT_PUBLIC_API_URL=http://localhost:3004
 ARG RESEND_API_KEY=build-placeholder
 ARG CONTACT_FORM_FROM=noreply@iaestelleida.cat
 ARG CONTACT_FORM_TO=ci@example.com
 
-ENV NEXT_PUBLIC_INSCRIPCIONS_STATE=$NEXT_PUBLIC_INSCRIPCIONS_STATE \
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     RESEND_API_KEY=$RESEND_API_KEY \
     CONTACT_FORM_FROM=$CONTACT_FORM_FROM \
     CONTACT_FORM_TO=$CONTACT_FORM_TO \

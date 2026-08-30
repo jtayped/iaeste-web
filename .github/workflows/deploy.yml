@@ -251,7 +251,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            NEXT_PUBLIC_INSCRIPCIONS_STATE=${{ vars.NEXT_PUBLIC_INSCRIPCIONS_STATE || 'on' }}
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
             RESEND_API_KEY=build-placeholder
             CONTACT_FORM_FROM=noreply@iaestelleida.cat
             CONTACT_FORM_TO=ci@example.com

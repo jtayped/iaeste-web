@@ -45,8 +45,26 @@ export const registrationCreatedSchema = z
 export const publicRegistrationStatusSchema = z
   .object({
     open: z.boolean(),
+    /**
+     * The registration window of whichever campaign this status is about: the
+     * open one when `open` is true, otherwise the soonest upcoming one. Both
+     * are null when there is neither, which is the only case the public site
+     * has nothing to say. ISO-8601, UTC.
+     */
+    opensAt: z
+      .string()
+      .nullable()
+      .openapi({ example: "2026-09-15T08:00:00.000Z" }),
+    closesAt: z
+      .string()
+      .nullable()
+      .openapi({ example: "2026-10-15T22:00:00.000Z" }),
   })
   .openapi("PublicRegistrationStatus");
+
+export type PublicRegistrationStatus = z.infer<
+  typeof publicRegistrationStatusSchema
+>;
 
 export const validationIssueSchema = z
   .object({

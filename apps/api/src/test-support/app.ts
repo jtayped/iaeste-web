@@ -3,6 +3,7 @@ import type { Auth } from "@repo/auth";
 import type { Database } from "@repo/db/client";
 
 import { createApp } from "../app";
+import type { PublicRegistrationStatus } from "../contracts";
 import type { RegistrationRepository } from "../repositories/registrations";
 import type { RegistrationService } from "../services/registration-service";
 
@@ -40,6 +41,13 @@ export function createRegistrationServiceStub(
     ...overrides,
   };
 }
+
+/** The window every test that does not care about dates gets handed. */
+export const OPEN_REGISTRATION_STATUS: PublicRegistrationStatus = {
+  open: true,
+  opensAt: "2026-09-15T08:00:00.000Z",
+  closesAt: "2026-10-15T22:00:00.000Z",
+};
 
 export const quietLogger = { error() {} };
 
@@ -79,13 +87,14 @@ export function createStubAuth(
 export function createTestApp(
   registrationRepository = createRepository(),
   registrationService = createRegistrationServiceStub(),
-  isRegistrationOpen: () => Promise<boolean> = async () => true,
+  getRegistrationStatus: () => Promise<PublicRegistrationStatus> = async () =>
+    OPEN_REGISTRATION_STATUS,
   auth: Auth = createStubAuth(),
   hasMemberProfile: (userId: string) => Promise<boolean> = async () => true,
   db?: Database,
 ) {
   return createApp({
-    isRegistrationOpen,
+    getRegistrationStatus,
     registrationRepository,
     registrationService,
     logger: quietLogger,

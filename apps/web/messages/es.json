@@ -76,7 +76,19 @@
     "registrations": {
       "title": "¡las inscripciones están abiertas!",
       "description": "¡rellena el formulario para formar parte de nuestro equipo!",
-      "button": "inscríbete"
+      "button": "inscríbete",
+      "upcoming": {
+        "title": "las inscripciones abren pronto",
+        "description": "todavía no puedes inscribirte, pero ya puedes ir preparándote. esta es la cuenta atrás hasta que abramos el formulario."
+      },
+      "countdown": {
+        "opensIn": "abren en",
+        "closesIn": "se cierran en",
+        "days": "{count, plural, one {día} other {días}}",
+        "hours": "{count, plural, one {hora} other {horas}}",
+        "minutes": "{count, plural, one {minuto} other {minutos}}",
+        "seconds": "{count, plural, one {segundo} other {segundos}}"
+      }
     },
     "why-iaeste": {
       "title": "¿por qué iaeste?",

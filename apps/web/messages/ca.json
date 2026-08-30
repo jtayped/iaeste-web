@@ -76,7 +76,19 @@
     "registrations": {
       "title": "les inscripcions estan obertes!",
       "description": "omple el formulari per formar part del nostre equip!",
-      "button": "inscriu-te"
+      "button": "inscriu-te",
+      "upcoming": {
+        "title": "les inscripcions obren aviat",
+        "description": "encara no pots inscriure't, però ja pots anar-t'hi preparant. aquest és el compte enrere fins que obrim el formulari."
+      },
+      "countdown": {
+        "opensIn": "obren en",
+        "closesIn": "es tanquen en",
+        "days": "{count, plural, one {dia} other {dies}}",
+        "hours": "{count, plural, one {hora} other {hores}}",
+        "minutes": "{count, plural, one {minut} other {minuts}}",
+        "seconds": "{count, plural, one {segon} other {segons}}"
+      }
     },
     "why-iaeste": {
       "title": "per què iaeste?",

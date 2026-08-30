@@ -81,6 +81,62 @@ describe("campaigns repository", () => {
     assert.equal(openForRegistration?.id, newer.id);
   });
 
+  it("getNextForRegistration picks the soonest published campaign still to open", async () => {
+    const repo = createCampaignRepository(db);
+    const hour = 60 * 60 * 1000;
+    const past = await repo.create(
+      campaignInput({
+        slug: "past",
+        state: "published",
+        registrationOpensAt: new Date(Date.now() - 2 * hour),
+        registrationClosesAt: new Date(Date.now() - hour),
+      }),
+    );
+    const soon = await repo.create(
+      campaignInput({
+        slug: "soon",
+        state: "published",
+        registrationOpensAt: new Date(Date.now() + hour),
+        registrationClosesAt: new Date(Date.now() + 2 * hour),
+      }),
+    );
+    await repo.create(
+      campaignInput({
+        slug: "later",
+        state: "published",
+        registrationOpensAt: new Date(Date.now() + 3 * hour),
+        registrationClosesAt: new Date(Date.now() + 4 * hour),
+      }),
+    );
+    // Still being configured, so the public site must not count down to it
+    // even though it opens before `soon`.
+    await repo.create(
+      campaignInput({
+        slug: "draft",
+        state: "draft",
+        registrationOpensAt: new Date(Date.now() + hour / 2),
+        registrationClosesAt: new Date(Date.now() + 2 * hour),
+      }),
+    );
+
+    assert.equal((await repo.getNextForRegistration())?.id, soon.id);
+    assert.notEqual((await repo.getNextForRegistration())?.id, past.id);
+  });
+
+  it("getNextForRegistration returns nothing when every window has passed", async () => {
+    const repo = createCampaignRepository(db);
+    await repo.create(
+      campaignInput({
+        slug: "over",
+        state: "published",
+        registrationOpensAt: new Date("2020-01-01T00:00:00Z"),
+        registrationClosesAt: new Date("2020-02-01T00:00:00Z"),
+      }),
+    );
+
+    assert.equal(await repo.getNextForRegistration(), undefined);
+  });
+
   it("switchCurrent moves isCurrent atomically from one campaign to another", async () => {
     const repo = createCampaignRepository(db);
     const a = await repo.create(campaignInput({ slug: "a" }));

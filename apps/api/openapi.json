@@ -43,10 +43,26 @@
         "properties": {
           "open": {
             "type": "boolean"
+          },
+          "opensAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-09-15T08:00:00.000Z"
+          },
+          "closesAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-10-15T22:00:00.000Z"
           }
         },
         "required": [
-          "open"
+          "open",
+          "opensAt",
+          "closesAt"
         ]
       },
       "RegistrationCreated": {

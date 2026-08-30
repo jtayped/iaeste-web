@@ -76,7 +76,19 @@
     "registrations": {
       "title": "registrations are open!",
       "description": "fill out the form to become part of our team!",
-      "button": "register"
+      "button": "register",
+      "upcoming": {
+        "title": "registrations open soon",
+        "description": "you can't sign up yet, but you can get ready. this is the countdown until the form opens."
+      },
+      "countdown": {
+        "opensIn": "opens in",
+        "closesIn": "closes in",
+        "days": "{count, plural, one {day} other {days}}",
+        "hours": "{count, plural, one {hour} other {hours}}",
+        "minutes": "{count, plural, one {minute} other {minutes}}",
+        "seconds": "{count, plural, one {second} other {seconds}}"
+      }
     },
     "why-iaeste": {
       "title": "why iaeste?",

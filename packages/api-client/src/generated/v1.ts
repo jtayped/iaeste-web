@@ -525,6 +525,10 @@ export interface components {
         };
         PublicRegistrationStatus: {
             open: boolean;
+            /** @example 2026-09-15T08:00:00.000Z */
+            opensAt: string | null;
+            /** @example 2026-10-15T22:00:00.000Z */
+            closesAt: string | null;
         };
         RegistrationCreated: {
             /** @enum {string} */

@@ -10,6 +10,7 @@ import {
 import {
   createRepository,
   createTestApp,
+  OPEN_REGISTRATION_STATUS,
   validRegistration,
 } from "./test-support/app";
 
@@ -42,16 +43,33 @@ describe("API", () => {
     const openResponse = await createTestApp().request(
       "/v1/registrations/status",
     );
-    const closedResponse = await createTestApp(
-      undefined,
-      undefined,
-      async () => false,
-    ).request("/v1/registrations/status");
+    // Closed but upcoming: the window is still published so the public site
+    // has something to count down to.
+    const closedResponse = await createTestApp(undefined, undefined, async () => ({
+      open: false,
+      opensAt: "2027-01-10T08:00:00.000Z",
+      closesAt: "2027-02-10T22:00:00.000Z",
+    })).request("/v1/registrations/status");
+    const noneResponse = await createTestApp(undefined, undefined, async () => ({
+      open: false,
+      opensAt: null,
+      closesAt: null,
+    })).request("/v1/registrations/status");
 
     assert.equal(openResponse.status, 200);
-    assert.deepEqual(await openResponse.json(), { open: true });
+    assert.deepEqual(await openResponse.json(), OPEN_REGISTRATION_STATUS);
     assert.equal(closedResponse.status, 200);
-    assert.deepEqual(await closedResponse.json(), { open: false });
+    assert.deepEqual(await closedResponse.json(), {
+      open: false,
+      opensAt: "2027-01-10T08:00:00.000Z",
+      closesAt: "2027-02-10T22:00:00.000Z",
+    });
+    assert.equal(noneResponse.status, 200);
+    assert.deepEqual(await noneResponse.json(), {
+      open: false,
+      opensAt: null,
+      closesAt: null,
+    });
   });
 
   it("creates a validated registration", async () => {
