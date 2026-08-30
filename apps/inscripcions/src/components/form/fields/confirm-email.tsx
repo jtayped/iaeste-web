@@ -3,14 +3,20 @@ import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@repo/ui/form";
 import { Input } from "@repo/ui/input";
+import { cn } from "@repo/ui/lib/utils";
 
+import { FIELD_CONTROL, FIELD_HINT, FIELD_LABEL } from "../field-styles";
+
+/**
+ * No hint: "repeteix el correu" says everything the old paragraph said, and
+ * the mismatch error explains itself the moment it matters.
+ */
 const ConfirmEmailField = ({
   form,
 }: {
@@ -21,13 +27,13 @@ const ConfirmEmailField = ({
       control={form.control}
       name="confirmEmail"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>confirma el correu</FormLabel>
+        <FormItem className="space-y-2">
+          <FormLabel className={FIELD_LABEL}>repeteix el correu</FormLabel>
           <FormControl>
             <Input
               placeholder="johndoe@alumnes.udl.cat"
               data-field-name="confirmEmail"
-              className="h-11"
+              className={FIELD_CONTROL}
               required
               type="email"
               inputMode="email"
@@ -35,11 +41,7 @@ const ConfirmEmailField = ({
               {...field}
             />
           </FormControl>
-          <FormDescription>
-            escriu-lo un altre cop. si hi ha una errata no rebràs l&apos;enllaç
-            de verificació i no ens en podrem adonar.
-          </FormDescription>
-          <FormMessage />
+          <FormMessage className={cn(FIELD_HINT, "font-medium")} />
         </FormItem>
       )}
     />

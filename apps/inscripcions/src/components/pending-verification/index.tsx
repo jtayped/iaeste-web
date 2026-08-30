@@ -131,14 +131,14 @@ const PendingVerification = () => {
         </>
       }
     >
+      {/* No longer "el correu de la udl": any address is accepted now. */}
       <Paragraph>
-        hem enviat un enllaç de verificació al correu de la udl que ens has
-        indicat. fes-hi clic per confirmar que l&apos;adreça és teva i que la
-        inscripció arribi al comitè.
+        t&apos;hem enviat un enllaç al correu que ens has indicat. fes-hi clic i
+        la inscripció arribarà al comitè.
       </Paragraph>
       <Paragraph>
-        si no el veus, mira la carpeta de correu brossa. l&apos;enllaç caduca,
-        així que fes-hi clic com abans millor.
+        si no el veus, mira el correu brossa. l&apos;enllaç caduca, així que
+        millor com abans.
       </Paragraph>
     </StatusScreen>
   );

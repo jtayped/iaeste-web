@@ -14,7 +14,7 @@ export const validRegistration: Registration = {
   surnames: "Garcia Serra",
   email: "joan@alumnes.udl.cat",
   phone: "+34 623 32 42 34",
-  degree: "Grau en Informàtica (Lleida)",
+  degree: "grau en informàtica (lleida)",
   year: 2,
   note: "Hola",
 };

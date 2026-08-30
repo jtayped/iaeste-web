@@ -1,68 +1,72 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { AlertCircleIcon, Info, LucideIcon, MailCheck } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
-import { Card } from "@repo/ui/card";
-import { H1, Link as TextLink, Paragraph } from "@repo/ui/typography";
+import { AlertCircleIcon, LucideIcon } from "lucide-react";
+import { cn } from "@repo/ui/lib/utils";
 import type { FieldErrors } from "react-hook-form";
 
 import { FIELD_LABELS, type RegistrationForm } from "@/lib/form-schema";
+import { FIELD_HINT, SECTION_HEADING } from "./field-styles";
+import { childVariants } from "./motion";
 
-export const containerVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      when: "beforeChildren",
-      staggerChildren: 0.15,
-      duration: 0.4,
-    },
-  },
-};
-
-export const childVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-
-const inlineLink = "font-medium text-primary underline underline-offset-4";
-
-/** A titled card holding a couple of related fields. */
-export const Group = ({
+/**
+ * One group of related fields.
+ *
+ * Deliberately not a card. The previous version wrapped every group, the
+ * intro and both notices in their own bordered card, so the page was a stack
+ * of six boxes on a tinted background and nothing looked more important than
+ * anything else. Sections now share one surface and are separated by a
+ * hairline, which is enough to group them and costs no visual noise.
+ */
+export const Section = ({
   title,
   icon: Icon,
   children,
+  className,
 }: {
   title: string;
   icon: LucideIcon;
   children: React.ReactNode;
+  className?: string;
 }) => (
-  <motion.div variants={childVariants}>
-    <Card>
-      <div className="flex items-center gap-2">
-        <Icon size={19} />
-        <h2 className="text-lg font-medium">{title}</h2>
-      </div>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">{children}</div>
-    </Card>
-  </motion.div>
+  <section className="p-6 sm:p-8">
+    <div className="flex items-center gap-2.5">
+      <Icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
+      <h2 className={SECTION_HEADING}>{title}</h2>
+    </div>
+    <div className={cn("mt-5 grid gap-5 sm:grid-cols-2", className)}>
+      {children}
+    </div>
+  </section>
 );
 
-export const FormIntro = () => (
-  <motion.div variants={childVariants}>
-    <Card>
-      <H1>benvingut/da!</H1>
-      <Paragraph>
-        omple el formulari amb la teva informació per inscriure&apos;t. després
-        t&apos;enviarem un correu per verificar l&apos;adreça: la inscripció no
-        arriba al comitè fins que hi facis clic.
-      </Paragraph>
-    </Card>
-  </motion.div>
+/**
+ * The page header, above the form surface rather than inside a card of its
+ * own. The logo carries continuity from the landing screen; the single line
+ * under the title is the whole of what used to be an intro paragraph, because
+ * the "we will email you to verify" detail now sits next to the submit button
+ * where it actually applies.
+ */
+export const FormHeader = () => (
+  <motion.header variants={childVariants} className="mb-6 sm:mb-8">
+    <Image
+      src="/logos/icon-lleida-blue.png"
+      width={44}
+      height={44}
+      priority
+      alt="logo d'iaeste lc lleida"
+      className="mb-5 h-11 w-11"
+    />
+    <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+      inscriu-te
+    </h1>
+    <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+      omple les teves dades i uneix-te al comitè. són dos minuts.
+    </p>
+  </motion.header>
 );
 
 /**
@@ -70,22 +74,15 @@ export const FormIntro = () => (
  * wall — only the API knows whether an address is already taken.
  */
 export const PreviousRegistrationNotice = ({ id }: { id: string }) => (
-  <motion.div variants={childVariants}>
-    <Alert>
-      <Info />
-      <AlertTitle>ja t&apos;havies inscrit?</AlertTitle>
-      <AlertDescription>
-        des d&apos;aquest dispositiu ja s&apos;ha enviat una inscripció.{" "}
-        <Link
-          className={inlineLink}
-          href={`/verificacio-pendent?id=${encodeURIComponent(id)}`}
-        >
-          consulta&apos;n l&apos;estat
-        </Link>{" "}
-        o continua omplint el formulari si vols inscriure una altra persona.
-      </AlertDescription>
-    </Alert>
-  </motion.div>
+  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
+    <span>ja has enviat una inscripció des d&apos;aquest dispositiu.</span>
+    <Link
+      className="font-medium text-primary underline underline-offset-4"
+      href={`/verificacio-pendent?id=${encodeURIComponent(id)}`}
+    >
+      consulta&apos;n l&apos;estat
+    </Link>
+  </div>
 );
 
 /** Every outstanding problem in one place, above the fold, focusable. */
@@ -100,56 +97,61 @@ export const ErrorSummary = ({
   rootMessage?: string;
   onSelectField: (field: string) => void;
 }) => (
-  <motion.div variants={childVariants}>
-    <Alert
-      variant="destructive"
-      id="form-error-summary"
-      tabIndex={-1}
-      aria-live="polite"
-    >
-      <AlertCircleIcon />
-      <AlertTitle>
+  <div
+    role="alert"
+    id="form-error-summary"
+    tabIndex={-1}
+    aria-live="polite"
+    className="rounded-md border border-destructive/40 bg-destructive/5 p-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
+  >
+    <div className="flex items-center gap-2 text-destructive">
+      <AlertCircleIcon aria-hidden="true" className="size-4 shrink-0" />
+      <p className={SECTION_HEADING}>
         {fields.length > 0
           ? "revisa les dades marcades"
           : "no ho hem pogut enviar"}
-      </AlertTitle>
-      <AlertDescription>
-        {rootMessage && <p>{rootMessage}</p>}
-        {fields.length > 0 && (
-          <ul className="ml-4 list-disc">
-            {fields.map((field) => (
-              <li key={field}>
-                <button
-                  type="button"
-                  className="text-left underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  onClick={() => onSelectField(field)}
-                >
-                  {FIELD_LABELS[field]}: {errors[field]?.message}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </AlertDescription>
-    </Alert>
-  </motion.div>
+      </p>
+    </div>
+    <div className={cn(FIELD_HINT, "mt-2 space-y-1 text-muted-foreground")}>
+      {rootMessage && <p>{rootMessage}</p>}
+      {fields.length > 0 && (
+        <ul className="space-y-1">
+          {fields.map((field) => (
+            <li key={field}>
+              <button
+                type="button"
+                className="text-left underline decoration-muted-foreground/30 underline-offset-4 transition-colors hover:text-destructive hover:decoration-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
+                onClick={() => onSelectField(field)}
+              >
+                {FIELD_LABELS[field]}: {errors[field]?.message}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </div>
 );
 
-/** Invited external members never come through this form (see IA-32). */
+/**
+ * Invited external members never come through this form (see IA-32).
+ *
+ * A footnote under the form rather than an alert inside it: it applies to
+ * almost nobody who reaches this page, so it does not deserve a box competing
+ * with the fields.
+ */
 export const ExternalMemberNotice = () => (
-  <motion.div variants={childVariants}>
-    <Alert>
-      <MailCheck />
-      <AlertTitle>no estudies a la udl?</AlertTitle>
-      <AlertDescription>
-        aquest formulari és per a estudiants de la udl. si el comitè t&apos;ha
-        convidat a formar-ne part des de fora, rebràs la invitació al teu correu
-        i no cal que passis per aquí. si tens dubtes,{" "}
-        <TextLink href="mailto:iaeste@udl.cat">
-          escriu-nos a iaeste@udl.cat
-        </TextLink>
-        .
-      </AlertDescription>
-    </Alert>
-  </motion.div>
+  <motion.p
+    variants={childVariants}
+    className="mt-6 text-center text-xs leading-relaxed text-muted-foreground"
+  >
+    si el comitè t&apos;ha convidat des de fora de la udl, rebràs la invitació
+    per correu i no cal que passis per aquí. dubtes?{" "}
+    <a
+      className="font-medium text-primary underline underline-offset-4"
+      href="mailto:iaeste@udl.cat"
+    >
+      iaeste@udl.cat
+    </a>
+  </motion.p>
 );

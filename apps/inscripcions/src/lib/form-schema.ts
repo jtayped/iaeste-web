@@ -54,12 +54,17 @@ export const FIELD_ORDER = [
   "note",
 ] as const satisfies readonly (keyof RegistrationForm)[];
 
+/**
+ * Kept word for word in sync with each field's visible label: the error
+ * summary reads "<label>: <message>", so a name the applicant cannot find on
+ * screen is worse than no summary at all.
+ */
 export const FIELD_LABELS: Record<(typeof FIELD_ORDER)[number], string> = {
   name: "nom",
   surnames: "cognoms",
-  email: "correu de la udl",
-  confirmEmail: "confirma el correu",
-  phone: "número de telèfon",
+  email: "correu electrònic",
+  confirmEmail: "repeteix el correu",
+  phone: "telèfon",
   degree: "grau",
   year: "curs",
   note: "nota",

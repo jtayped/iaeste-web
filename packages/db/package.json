@@ -13,6 +13,7 @@
     "db:studio": "dotenv -e ../../.env -- drizzle-kit studio",
     "db:reset": "dotenv -e ../../.env -- tsx scripts/reset.ts",
     "db:seed": "dotenv -e ../../.env -- tsx scripts/seed.ts",
+    "db:campaign": "dotenv -e ../../.env -- tsx scripts/manage-campaign.ts",
     "auth:generate-schema": "tsx scripts/generate-auth-schema.ts"
   },
   "exports": {
