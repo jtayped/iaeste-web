@@ -1,75 +1,78 @@
-"use client";
-
 import * as React from "react";
-import { OTPInput, OTPInputContext } from "input-otp";
-import { Minus } from "lucide-react";
+import {
+  InputOTPGroup as HeroUIInputOTPGroup,
+  InputOTPRoot as HeroUIInputOTPRoot,
+  InputOTPSeparator as HeroUIInputOTPSeparator,
+  InputOTPSlot as HeroUIInputOTPSlot,
+  type InputOTPProps as HeroUIInputOTPProps,
+  type InputOTPGroupProps,
+  type InputOTPSeparatorProps,
+  type InputOTPSlotProps,
+} from "@heroui/react/input-otp";
 
 import { cn } from "@repo/ui/lib/utils";
+
+export interface InputOTPProps extends HeroUIInputOTPProps {
+  /** Native alias for HeroUI's `isDisabled`. */
+  disabled?: boolean;
+}
 
 /**
  * One hidden input behind a row of slots, so paste, autofill and the
  * platform's SMS/email code suggestion all keep working — the thing that
  * breaks when a code field is built as six separate inputs.
+ *
+ * HeroUI's version is a skin over the same `input-otp` package this was
+ * already built on, so none of that changes. What it adds is a
+ * `FieldErrorContext`: pass `isInvalid` and a nested `FormMessage` shows the
+ * validation message the same way a `TextField` would.
  */
-const InputOTP = React.forwardRef<
-  React.ElementRef<typeof OTPInput>,
-  React.ComponentPropsWithoutRef<typeof OTPInput>
->(({ className, containerClassName, ...props }, ref) => (
-  <OTPInput
-    ref={ref}
-    containerClassName={cn(
-      "flex items-center gap-2 has-[:disabled]:opacity-50",
-      containerClassName,
-    )}
-    className={cn("disabled:cursor-not-allowed", className)}
-    {...props}
-  />
-));
+const InputOTP = React.forwardRef<HTMLInputElement, InputOTPProps>(
+  ({ className, disabled, isDisabled, ...props }, ref) => (
+    <HeroUIInputOTPRoot
+      ref={ref}
+      isDisabled={isDisabled ?? disabled}
+      className={className}
+      {...props}
+    />
+  ),
+);
 InputOTP.displayName = "InputOTP";
 
-const InputOTPGroup = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center", className)} {...props} />
-));
+const InputOTPGroup = React.forwardRef<HTMLDivElement, InputOTPGroupProps>(
+  ({ className, ...props }, ref) => (
+    <HeroUIInputOTPGroup ref={ref} className={className} {...props} />
+  ),
+);
 InputOTPGroup.displayName = "InputOTPGroup";
 
-const InputOTPSlot = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div"> & { index: number }
->(({ index, className, ...props }, ref) => {
-  const inputOTPContext = React.useContext(OTPInputContext);
-  const slot = inputOTPContext.slots[index];
-
-  return (
-    <div
+/**
+ * Kept at the 48px of the version this replaces — the code field is the only
+ * control on its screen, and a six-box row is the one place worth the extra
+ * height. Width stays HeroUI's `flex-1`, so the row narrows on a small phone
+ * instead of overflowing.
+ */
+const InputOTPSlot = React.forwardRef<HTMLDivElement, InputOTPSlotProps>(
+  ({ className, ...props }, ref) => (
+    <HeroUIInputOTPSlot
       ref={ref}
-      className={cn(
-        "relative flex h-12 w-10 items-center justify-center border-y border-r border-input text-lg font-medium shadow-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
-        slot?.isActive && "z-10 ring-1 ring-ring",
-        className,
-      )}
+      className={cn("h-12", className)}
       {...props}
-    >
-      {slot?.char}
-      {slot?.hasFakeCaret && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-4 w-px animate-caret-blink bg-foreground duration-1000" />
-        </div>
-      )}
-    </div>
-  );
-});
+    />
+  ),
+);
 InputOTPSlot.displayName = "InputOTPSlot";
 
 const InputOTPSeparator = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ ...props }, ref) => (
-  <div ref={ref} role="separator" {...props}>
-    <Minus className="size-4 text-muted-foreground" />
-  </div>
+  HTMLDivElement,
+  InputOTPSeparatorProps
+>(({ className, ...props }, ref) => (
+  <HeroUIInputOTPSeparator
+    ref={ref}
+    role="separator"
+    className={className}
+    {...props}
+  />
 ));
 InputOTPSeparator.displayName = "InputOTPSeparator";
 

@@ -1,26 +1,24 @@
-"use client";
-
 import * as React from "react";
-import * as LabelPrimitive from "@radix-ui/react-label";
-import { cva, type VariantProps } from "class-variance-authority";
+import {
+  Label as HeroUILabel,
+  type LabelProps as HeroUILabelProps,
+} from "@heroui/react/label";
 
-import { cn } from "@repo/ui/lib/utils";
+export interface LabelProps extends Omit<HeroUILabelProps, "className"> {
+  className?: string;
+}
 
-const labelVariants = cva(
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+/**
+ * Inside a field root the label needs no `htmlFor`: React Aria hands it the
+ * control's id through context, and turns it red on its own when the field is
+ * invalid. Outside one — the admin, which labels its controls by hand — it is
+ * a plain `<label>` and still takes `htmlFor`.
+ */
+const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
+  ({ className, ...props }, ref) => (
+    <HeroUILabel ref={ref} className={className} {...props} />
+  ),
 );
-
-const Label = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
-    VariantProps<typeof labelVariants>
->(({ className, ...props }, ref) => (
-  <LabelPrimitive.Root
-    ref={ref}
-    className={cn(labelVariants(), className)}
-    {...props}
-  />
-));
-Label.displayName = LabelPrimitive.Root.displayName;
+Label.displayName = "Label";
 
 export { Label };

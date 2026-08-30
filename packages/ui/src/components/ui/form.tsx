@@ -1,20 +1,29 @@
 "use client";
 
 import * as React from "react";
-import * as LabelPrimitive from "@radix-ui/react-label";
-import { Slot } from "@radix-ui/react-slot";
+import {
+  Description as HeroUIDescription,
+  type DescriptionProps,
+} from "@heroui/react/description";
+import { FieldError, type FieldErrorProps } from "@heroui/react/field-error";
 import {
   Controller,
   FormProvider,
   useFormContext,
+  type ControllerFieldState,
   type ControllerProps,
+  type ControllerRenderProps,
   type FieldPath,
   type FieldValues,
 } from "react-hook-form";
 
 import { cn } from "@repo/ui/lib/utils";
-import { Label } from "@repo/ui/label";
+import { Label, type LabelProps } from "@repo/ui/label";
 
+/**
+ * React Hook Form's provider — deliberately *not* HeroUI's `Form`, which
+ * renders an HTML `<form>`. The two would nest a form inside a form.
+ */
 const Form = FormProvider;
 
 type FormFieldContextValue<
@@ -41,138 +50,115 @@ const FormField = <
   );
 };
 
+/** The surrounding field's name and React Hook Form validation state. */
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext);
-  const itemContext = React.useContext(FormItemContext);
   const { getFieldState, formState } = useFormContext();
 
-  const fieldState = getFieldState(fieldContext.name, formState);
-
-  if (!fieldContext) {
+  if (!fieldContext.name) {
     throw new Error("useFormField should be used within <FormField>");
   }
 
-  const { id } = itemContext;
-
   return {
-    id,
     name: fieldContext.name,
-    formItemId: `${id}-form-item`,
-    formDescriptionId: `${id}-form-item-description`,
-    formMessageId: `${id}-form-item-message`,
-    ...fieldState,
+    ...getFieldState(fieldContext.name, formState),
   };
 };
 
-type FormItemContextValue = {
-  id: string;
-};
+/**
+ * The one place a React Hook Form field is translated into HeroUI's field
+ * contract. Spread it onto the field root — `TextField`, `ComboBox`,
+ * `InputOTP` — not onto the control:
+ *
+ * ```tsx
+ * <TextField {...fieldProps(field, fieldState)}>
+ *   <FormLabel>nom</FormLabel>
+ *   <Input ref={field.ref} />
+ *   <FormMessage />
+ * </TextField>
+ * ```
+ *
+ * `field.ref` is left out on purpose. It has to land on the control itself,
+ * because it is what React Hook Form focuses when a submit fails. And `value`
+ * is coerced, because React Hook Form leaves an untouched field `undefined`
+ * while React Aria reads that as "uncontrolled" and stops tracking it.
+ */
+function fieldProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+>(
+  field: ControllerRenderProps<TFieldValues, TName>,
+  fieldState: ControllerFieldState,
+) {
+  return {
+    name: field.name,
+    value: (field.value ?? "") as string,
+    onChange: field.onChange,
+    onBlur: field.onBlur,
+    isInvalid: Boolean(fieldState.error),
+  };
+}
 
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue,
-);
-
+/**
+ * A field that has no HeroUI root of its own — the year picker's radio group,
+ * for instance — still needs the label/control/message stack. Purely layout:
+ * anything inside it labels and describes itself.
+ */
 const FormItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
-  const id = React.useId();
-
-  return (
-    <FormItemContext.Provider value={{ id }}>
-      <div ref={ref} className={cn("space-y-2", className)} {...props} />
-    </FormItemContext.Provider>
-  );
-});
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("space-y-2", className)} {...props} />
+));
 FormItem.displayName = "FormItem";
 
-const FormLabel = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
->(({ className, ...props }, ref) => {
-  const { error, formItemId } = useFormField();
-
-  return (
-    <Label
-      ref={ref}
-      className={cn(error && "text-destructive", className)}
-      htmlFor={formItemId}
-      {...props}
-    />
-  );
-});
+/**
+ * The field's label. Inside a field root it needs no `htmlFor` — it is handed
+ * the control's id, and turns red on its own when the field is invalid.
+ */
+const FormLabel = React.forwardRef<HTMLLabelElement, LabelProps>(
+  (props, ref) => <Label ref={ref} {...props} />,
+);
 FormLabel.displayName = "FormLabel";
 
-const FormControl = React.forwardRef<
-  React.ElementRef<typeof Slot>,
-  React.ComponentPropsWithoutRef<typeof Slot>
->(({ ...props }, ref) => {
-  const { error, formItemId, formDescriptionId, formMessageId } =
-    useFormField();
-
-  return (
-    <Slot
-      ref={ref}
-      id={formItemId}
-      aria-describedby={
-        !error
-          ? `${formDescriptionId}`
-          : `${formDescriptionId} ${formMessageId}`
-      }
-      aria-invalid={!!error}
-      {...props}
-    />
-  );
-});
-FormControl.displayName = "FormControl";
-
-const FormDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => {
-  const { formDescriptionId } = useFormField();
-
-  return (
-    <p
-      ref={ref}
-      id={formDescriptionId}
-      className={cn("text-sm text-muted-foreground", className)}
-      {...props}
-    />
-  );
-});
+/**
+ * Help text. HeroUI hides it while the field is invalid, so help and error
+ * never stack up on top of each other, and renders nothing at all outside a
+ * field root — where there would be no control to describe.
+ */
+const FormDescription = React.forwardRef<HTMLElement, DescriptionProps>(
+  (props, ref) => <HeroUIDescription ref={ref} {...props} />,
+);
 FormDescription.displayName = "FormDescription";
 
-const FormMessage = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, children, ...props }, ref) => {
-  const { error, formMessageId } = useFormField();
-  const body = error ? String(error?.message ?? "") : children;
+/**
+ * The validation message. Renders the field's own error unless given other
+ * children, and only while the surrounding field root is invalid — which is
+ * the same `isInvalid` that `fieldProps` derives from React Hook Form, so the
+ * message appears exactly once and exactly when the field is in error.
+ */
+const FormMessage = React.forwardRef<HTMLElement, FieldErrorProps>(
+  ({ children, ...props }, ref) => {
+    const { error } = useFormField();
+    const body = children ?? error?.message;
 
-  if (!body) {
-    return null;
-  }
+    if (!body) return null;
 
-  return (
-    <p
-      ref={ref}
-      id={formMessageId}
-      className={cn("text-sm font-medium text-destructive", className)}
-      {...props}
-    >
-      {body}
-    </p>
-  );
-});
+    return (
+      <FieldError ref={ref} {...props}>
+        {body}
+      </FieldError>
+    );
+  },
+);
 FormMessage.displayName = "FormMessage";
 
 export {
+  fieldProps,
   useFormField,
   Form,
   FormItem,
   FormLabel,
-  FormControl,
   FormDescription,
   FormMessage,
   FormField,
