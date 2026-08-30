@@ -79,10 +79,8 @@ const Countdown = ({ target, label }: { target: string; label: string }) => {
               key={unit}
               className="min-w-[4.75rem] rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-center"
             >
-              <span className="block text-2xl font-semibold leading-none tabular-nums">
-                {value === undefined
-                  ? "--"
-                  : String(value).padStart(2, "0")}
+              <span className="block text-2xl font-semibold tabular-nums leading-none">
+                {value === undefined ? "--" : String(value).padStart(2, "0")}
               </span>
               <span className="mt-1.5 block text-[11px] text-primary-foreground/60">
                 {t(unit, { count: value ?? 0 })}
