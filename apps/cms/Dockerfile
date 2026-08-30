@@ -3,9 +3,11 @@
 # Build from the repository root:
 #   docker build -f apps/cms/Dockerfile -t iaeste-cms .
 FROM node:22-slim AS base
-# sharp needs libvips at runtime; the slim image does not ship it.
+# sharp needs libvips at runtime; the slim image does not ship it. gosu lets the
+# runner entrypoint start as root, fix the media-volume ownership, then drop to
+# the unprivileged `nextjs` user for the actual processes.
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends libvips42 \
+  && apt-get install -y --no-install-recommends libvips42 gosu \
   && rm -rf /var/lib/apt/lists/*
 
 FROM base AS pruner
@@ -73,7 +75,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/public ./apps/cms/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/src ./apps/cms/src
 COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/docker-entrypoint.sh ./apps/cms/docker-entrypoint.sh
 
-USER nextjs
+# The entrypoint runs as root only to chown the mounted media volume, then hands
+# every long-lived process to `nextjs` via gosu.
 
 EXPOSE 3006
 
