@@ -1,197 +1,197 @@
 {
   "HomePage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Prácticas Internacionales",
-      "description": "Organización sin ánimo de lucro de la Escuela Politécnica Superior de la Universidad de Lleida.",
-      "keywords": "prácticas internacionales, prácticas globales, prácticas técnicas, intercambio cultural, IAESTE Lleida",
-      "ogTitle": "IAESTE Lleida - Prácticas Internacionales para Estudiantes",
-      "ogDescription": "Intercambiando estudiantes para experiencia laboral técnica en más de 100 países alrededor del mundo.",
-      "twitterTitle": "IAESTE Lleida - Prácticas Internacionales para Estudiantes",
-      "twitterDescription": "Intercambiando estudiantes para experiencia laboral técnica en más de 100 países alrededor del mundo."
+      "title": "iaeste lleida | prácticas internacionales",
+      "description": "organización sin ánimo de lucro de la escuela politécnica superior de la universidad de lleida.",
+      "keywords": "prácticas internacionales, prácticas globales, prácticas técnicas, intercambio cultural, iaeste lleida",
+      "ogTitle": "iaeste lleida - prácticas internacionales para estudiantes",
+      "ogDescription": "intercambiando estudiantes para experiencia laboral técnica en más de 100 países alrededor del mundo.",
+      "twitterTitle": "iaeste lleida - prácticas internacionales para estudiantes",
+      "twitterDescription": "intercambiando estudiantes para experiencia laboral técnica en más de 100 países alrededor del mundo."
     },
     "hero": {
-      "description": "Únete a una red global que conecta estudiantes talentosos con prácticas técnicas internacionales. Desarrolla tu carrera profesional mientras descubres nuevas culturas a través del programa de intercambio mundial de IAESTE.",
+      "description": "únete a una red global que conecta estudiantes talentosos con prácticas técnicas internacionales. desarrolla tu carrera profesional mientras descubres nuevas culturas a través del programa de intercambio mundial de iaeste.",
       "buttons": {
-        "student": "Soy estudiante",
-        "company": "Soy empresa"
+        "student": "soy estudiante",
+        "company": "soy empresa"
       }
     },
     "about": {
-      "title": "¿Qué es IAESTE?",
-      "subtitle": "Conectando el talento español con oportunidades globales",
-      "description": "Como IAESTE LC Lleida, parte de la red nacional de IAESTE España, facilitamos prácticas técnicas remuneradas a través de nuestra plataforma sin ánimo de lucro en la Escola Politècnica Superior. Desde 1948, hemos conectado estudiantes de la UdL con más de 100 países mediante nuestro sistema estructurado de intercambio."
+      "title": "¿qué es iaeste?",
+      "subtitle": "conectando el talento español con oportunidades globales",
+      "description": "como iaeste lc lleida, parte de la red nacional de iaeste españa, facilitamos prácticas técnicas remuneradas a través de nuestra plataforma sin ánimo de lucro en la escola politècnica superior. desde 1948, hemos conectado estudiantes de la udl con más de 100 países mediante nuestro sistema estructurado de intercambio."
     },
     "stats": {
       "countries": {
-        "title": "Países",
-        "subtitle": "Con prácticas IAESTE."
+        "title": "países",
+        "subtitle": "con prácticas iaeste."
       },
       "students": {
-        "title": "Estudiantes",
-        "subtitle": "Enviados a prácticas."
+        "title": "estudiantes",
+        "subtitle": "enviados a prácticas."
       },
       "organisations": {
-        "title": "Organizaciones",
-        "subtitle": "Que acogen estudiantes."
+        "title": "organizaciones",
+        "subtitle": "que acogen estudiantes."
       },
       "volunteers": {
-        "title": "Voluntarios",
-        "subtitle": "Que hacen IAESTE posible."
+        "title": "voluntarios",
+        "subtitle": "que hacen iaeste posible."
       }
     },
     "steps": {
-      "title": "¿Cómo funciona?",
+      "title": "¿cómo funciona?",
       "internship": {
-        "title": "Prácticas",
-        "subtitle": "De local a global",
-        "description": "Los estudiantes de la UdL envían sus perfiles y IAESTE LC Lleida colabora con IAESTE España para conectar habilidades con oportunidades."
+        "title": "prácticas",
+        "subtitle": "de local a global",
+        "description": "los estudiantes de la udl envían sus perfiles y iaeste lc lleida colabora con iaeste españa para conectar habilidades con oportunidades."
       },
       "auction": {
-        "title": "Subasta",
-        "subtitle": "Sistema de doble plaza",
-        "description": "Por cada estudiante que se va, acogemos a un interno internacional, manteniendo el equilibrio con la coordinación nacional."
+        "title": "subasta",
+        "subtitle": "sistema de doble plaza",
+        "description": "por cada estudiante que se va, acogemos a un interno internacional, manteniendo el equilibrio con la coordinación nacional."
       },
       "exchange": {
-        "title": "Intercambio",
-        "subtitle": "Asistencia completa",
-        "description": "IAESTE LC Lleida gestiona visados y alojamiento, asegurando transiciones fluidas para estudiantes que entran y salen."
+        "title": "intercambio",
+        "subtitle": "asistencia completa",
+        "description": "iaeste lc lleida gestiona visados y alojamiento, asegurando transiciones fluidas para estudiantes que entran y salen."
       }
     }
   },
   "StudentsPage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Prácticas UDL para Estudiantes Internacionales",
-      "description": "Descubre prácticas internacionales remuneradas en la UdL con IAESTE Lleida. Impulsa tu carrera con experiencias globales y un enriquecedor intercambio cultural.",
+      "title": "iaeste lleida | prácticas udl para estudiantes internacionales",
+      "description": "descubre prácticas internacionales remuneradas en la udl con iaeste lleida. impulsa tu carrera con experiencias globales y un enriquecedor intercambio cultural.",
       "keywords": "prácticas udl, prácticas internacionales, estudiantes udl, intercambio cultural, crecimiento profesional",
-      "ogTitle": "IAESTE Lleida - Prácticas UDL para Estudiantes Internacionales",
-      "ogDescription": "Únete a IAESTE Lleida y accede a prácticas remuneradas en la UdL que potencian tu carrera a nivel internacional.",
-      "twitterTitle": "IAESTE Lleida - Prácticas UDL para Estudiantes",
-      "twitterDescription": "Impulsa tu carrera con prácticas internacionales remuneradas y un intercambio cultural único en IAESTE Lleida."
+      "ogTitle": "iaeste lleida - prácticas udl para estudiantes internacionales",
+      "ogDescription": "únete a iaeste lleida y accede a prácticas remuneradas en la udl que potencian tu carrera a nivel internacional.",
+      "twitterTitle": "iaeste lleida - prácticas udl para estudiantes",
+      "twitterDescription": "impulsa tu carrera con prácticas internacionales remuneradas y un intercambio cultural único en iaeste lleida."
     },
     "hero": {
-      "title": "Únete a IAESTE Lleida",
-      "subtitle": "Forma tu carrera internacional",
-      "description": "Da el primer paso hacia una experiencia internacional enriquecedora. Únete a IAESTE Lleida para acceder a oportunidades globales y desarrollarte profesional y personalmente."
+      "title": "únete a iaeste lleida",
+      "subtitle": "forma tu carrera internacional",
+      "description": "da el primer paso hacia una experiencia internacional enriquecedora. únete a iaeste lleida para acceder a oportunidades globales y desarrollarte profesional y personalmente."
     },
     "registrations": {
-      "title": "¡Las inscripciones están abiertas!",
-      "description": "¡Rellena el formulario para formar parte de nuestro equipo!",
-      "button": "Inscríbete"
+      "title": "¡las inscripciones están abiertas!",
+      "description": "¡rellena el formulario para formar parte de nuestro equipo!",
+      "button": "inscríbete"
     },
     "why-iaeste": {
-      "title": "¿Por qué IAESTE?",
-      "subtitle": "Movilidad global estructurada",
-      "description": "Únete a IAESTE LC Lleida y accede a prácticas internacionales exclusivas y verificadas que potenciarán tu carrera. Gana experiencia profesional, amplía tu red global y disfruta del intercambio cultural mientras obtienes reconocimiento académico en empresas e instituciones de prestigio en todo el mundo.",
+      "title": "¿por qué iaeste?",
+      "subtitle": "movilidad global estructurada",
+      "description": "únete a iaeste lc lleida y accede a prácticas internacionales exclusivas y verificadas que potenciarán tu carrera. gana experiencia profesional, amplía tu red global y disfruta del intercambio cultural mientras obtienes reconocimiento académico en empresas e instituciones de prestigio en todo el mundo.",
       "reasons": {
         "oportunities": {
-          "title": "Oportunidades globales",
-          "description": "Accede a prácticas en 80+ países y construye una red internacional."
+          "title": "oportunidades globales",
+          "description": "accede a prácticas en 80+ países y construye una red internacional."
         },
         "growth": {
-          "title": "Crecimiento profesional",
-          "description": "Desarrolla habilidades reales, mejora tu CV y adquiere conocimientos profesionales."
+          "title": "crecimiento profesional",
+          "description": "desarrolla habilidades reales, mejora tu cv y adquiere conocimientos profesionales."
         },
         "exchange": {
-          "title": "Intercambio cultural",
-          "description": "Sumérgete en nuevas culturas, aprende competencias interculturales y forja amistades internacionales."
+          "title": "intercambio cultural",
+          "description": "sumérgete en nuevas culturas, aprende competencias interculturales y forja amistades internacionales."
         },
         "internship": {
-          "title": "Prácticas remuneradas",
-          "description": "Obtén prácticas remuneradas que cubren gastos mientras adquieres experiencia valiosa."
+          "title": "prácticas remuneradas",
+          "description": "obtén prácticas remuneradas que cubren gastos mientras adquieres experiencia valiosa."
         }
       }
     },
     "teams": {
-      "title": "Elige un equipo",
-      "subtitle": "Sé parte de algo más grande",
-      "description": "Únete a uno de nuestros equipos dinámicos en IAESTE Lleida. Desarrolla habilidades de liderazgo, gana experiencia organizativa y marca la diferencia mientras ayudas a otros estudiantes a acceder a oportunidades internacionales.",
+      "title": "elige un equipo",
+      "subtitle": "sé parte de algo más grande",
+      "description": "únete a uno de nuestros equipos dinámicos en iaeste lleida. desarrolla habilidades de liderazgo, gana experiencia organizativa y marca la diferencia mientras ayudas a otros estudiantes a acceder a oportunidades internacionales.",
       "teams": {
         "junta": {
-          "name": "Junta directiva",
-          "description": "Lidera iniciativas estratégicas y guía la dirección de nuestra organización."
+          "name": "junta directiva",
+          "description": "lidera iniciativas estratégicas y guía la dirección de nuestra organización."
         },
         "empreses": {
-          "name": "Empresas",
-          "description": "Construye relaciones con empleadores locales e internacionales."
+          "name": "empresas",
+          "description": "construye relaciones con empleadores locales e internacionales."
         },
         "marketing": {
-          "name": "Marketing",
-          "description": "Crea contenido atractivo y promociona la misión de IAESTE."
+          "name": "marketing",
+          "description": "crea contenido atractivo y promociona la misión de iaeste."
         },
         "it": {
-          "name": "IT",
-          "description": "Mantén y mejora nuestra infraestructura digital."
+          "name": "it",
+          "description": "mantén y mejora nuestra infraestructura digital."
         },
         "eventos": {
-          "name": "Eventos",
-          "description": "Organiza actividades y eventos profesionales atractivos."
+          "name": "eventos",
+          "description": "organiza actividades y eventos profesionales atractivos."
         }
       }
     },
     "contact": {
-      "title": "Inicia tu viaje IAESTE",
-      "description": "Únete a los estudiantes de ingeniería de la UdL que han lanzado carreras globales a través de nuestro programa LC Lleida."
+      "title": "inicia tu viaje iaeste",
+      "description": "únete a los estudiantes de ingeniería de la udl que han lanzado carreras globales a través de nuestro programa lc lleida."
     }
   },
   "IncommingPage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Información para Estudiantes Internacionales Entrantes",
-      "description": "Toda la información esencial que necesitas para preparar tu llegada a Lleida. Soporte, requisitos y consejos para estudiantes internacionales entrantes con IAESTE.",
+      "title": "iaeste lleida | información para estudiantes internacionales entrantes",
+      "description": "toda la información esencial que necesitas para preparar tu llegada a lleida. soporte, requisitos y consejos para estudiantes internacionales entrantes con iaeste.",
       "keywords": "estudiantes internacionales entrantes, incoming lleida, información para estudiantes, intercambio cultural, soporte para estudiantes internacionales",
-      "ogTitle": "IAESTE Lleida - Bienvenidos Estudiantes Internacionales Entrantes",
-      "ogDescription": "Prepara tu experiencia de intercambio en Lleida con toda la información y el soporte que ofrece IAESTE para estudiantes internacionales entrantes.",
-      "twitterTitle": "IAESTE Lleida - Estudiantes Internacionales Entrantes",
-      "twitterDescription": "Descubre los detalles y el apoyo necesario para tu llegada a Lleida con IAESTE."
+      "ogTitle": "iaeste lleida - bienvenidos estudiantes internacionales entrantes",
+      "ogDescription": "prepara tu experiencia de intercambio en lleida con toda la información y el soporte que ofrece iaeste para estudiantes internacionales entrantes.",
+      "twitterTitle": "iaeste lleida - estudiantes internacionales entrantes",
+      "twitterDescription": "descubre los detalles y el apoyo necesario para tu llegada a lleida con iaeste."
     }
   },
   "CompanyPage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Empresas y Talento Internacional",
-      "description": "Colabora con IAESTE Lleida para acoger estudiantes internacionales cualificados. Accede a prácticas remuneradas que aportan nuevas ideas y perspectivas globales a tu empresa.",
+      "title": "iaeste lleida | empresas y talento internacional",
+      "description": "colabora con iaeste lleida para acoger estudiantes internacionales cualificados. accede a prácticas remuneradas que aportan nuevas ideas y perspectivas globales a tu empresa.",
       "keywords": "iaeste empresa, talento internacional, prácticas remuneradas, prácticas técnicas, colaboración global",
-      "ogTitle": "IAESTE Lleida - Empresas y Talento Internacional",
-      "ogDescription": "Colabora con IAESTE Lleida y conecta con estudiantes técnicos motivados de todo el mundo, impulsando la innovación y la diversidad en tu organización.",
-      "twitterTitle": "IAESTE Lleida - Empresas y Talento Internacional",
-      "twitterDescription": "Descubre cómo colaborar con IAESTE te da acceso a estudiantes técnicos internacionales a través de prácticas remuneradas."
+      "ogTitle": "iaeste lleida - empresas y talento internacional",
+      "ogDescription": "colabora con iaeste lleida y conecta con estudiantes técnicos motivados de todo el mundo, impulsando la innovación y la diversidad en tu organización.",
+      "twitterTitle": "iaeste lleida - empresas y talento internacional",
+      "twitterDescription": "descubre cómo colaborar con iaeste te da acceso a estudiantes técnicos internacionales a través de prácticas remuneradas."
     },
     "hero": {
-      "title": "Colabora con IAESTE Lleida",
-      "subtitle": "Aporta experiencia internacional a tu equipo",
-      "description": "Únete al programa global de intercambio de IAESTE y accede a estudiantes de más de 100 países. Acoge prácticas remuneradas que enriquecerán tu empresa con innovación, diversidad cultural y excelencia profesional."
+      "title": "colabora con iaeste lleida",
+      "subtitle": "aporta experiencia internacional a tu equipo",
+      "description": "únete al programa global de intercambio de iaeste y accede a estudiantes de más de 100 países. acoge prácticas remuneradas que enriquecerán tu empresa con innovación, diversidad cultural y excelencia profesional."
     },
     "why": {
-      "title": "¿Por qué colaborar con IAESTE?",
-      "subtitle": "Talento internacional de forma sencilla",
-      "description": "Al acoger estudiantes de IAESTE, tu empresa accede a jóvenes motivados formados en áreas técnicas. Nuestro sistema de intercambio estructurado garantiza calidad, fiabilidad y apoyo en cada etapa.",
+      "title": "¿por qué colaborar con iaeste?",
+      "subtitle": "talento internacional de forma sencilla",
+      "description": "al acoger estudiantes de iaeste, tu empresa accede a jóvenes motivados formados en áreas técnicas. nuestro sistema de intercambio estructurado garantiza calidad, fiabilidad y apoyo en cada etapa.",
       "reasons": {
         "talent": {
-          "title": "Talento global",
-          "description": "Accede a estudiantes cualificados de las mejores universidades de todo el mundo."
+          "title": "talento global",
+          "description": "accede a estudiantes cualificados de las mejores universidades de todo el mundo."
         },
         "innovation": {
-          "title": "Innovación y diversidad",
-          "description": "Aporta nuevas perspectivas y soluciones creativas gracias al intercambio cultural."
+          "title": "innovación y diversidad",
+          "description": "aporta nuevas perspectivas y soluciones creativas gracias al intercambio cultural."
         },
         "growth": {
-          "title": "Crecimiento empresarial",
-          "description": "Expande el alcance de tu empresa mientras contribuyes a la movilidad internacional."
+          "title": "crecimiento empresarial",
+          "description": "expande el alcance de tu empresa mientras contribuyes a la movilidad internacional."
         },
         "support": {
-          "title": "Apoyo completo",
-          "description": "IAESTE se encarga de la logística como visados y alojamiento para facilitar el proceso."
+          "title": "apoyo completo",
+          "description": "iaeste se encarga de la logística como visados y alojamiento para facilitar el proceso."
         }
       }
     },
     "testimonial": {
-      "tag": "Destacado",
-      "title": "La experiencia de Factory Data con Jonathan.",
-      "text": "Excelente experiencia con Jonathan Gruss durante sus prácticas IAESTE en el verano de 2021. Contribuyó a un proyecto de análisis de demanda utilizando Apache Spark, trabajó de forma independiente, resolvió problemas con creatividad y se integró perfectamente en el equipo. Le recomendamos encarecidamente.",
-      "author": "Joan Cabós",
-      "role": "CEO @ Factory Data"
+      "tag": "destacado",
+      "title": "la experiencia de factory data con jonathan.",
+      "text": "excelente experiencia con jonathan gruss durante sus prácticas iaeste en el verano de 2021. contribuyó a un proyecto de análisis de demanda utilizando apache spark, trabajó de forma independiente, resolvió problemas con creatividad y se integró perfectamente en el equipo. le recomendamos encarecidamente.",
+      "author": "joan cabós",
+      "role": "ceo @ factory data"
     },
     "contact": {
-      "title": "Empieza a colaborar con nosotros",
-      "description": "Contacta con IAESTE Lleida y descubre cómo acoger a un estudiante internacional puede aportar valor a tu empresa."
+      "title": "empieza a colaborar con nosotros",
+      "description": "contacta con iaeste lleida y descubre cómo acoger a un estudiante internacional puede aportar valor a tu empresa."
     }
   },
   "BlogPage": {
@@ -211,34 +211,34 @@
     "paginationLabel": "páginas del blog"
   },
   "UnderConstructionPage": {
-    "title": "¡Esta página está en construcción!",
-    "description": "¡Nuestro equipo de IT está trabajando en ello! Estará lista pronto.",
+    "title": "¡esta página está en construcción!",
+    "description": "¡nuestro equipo de it está trabajando en ello! estará lista pronto.",
     "buttons": {
-      "home": "Inicio",
-      "back": "Volver"
+      "home": "inicio",
+      "back": "volver"
     }
   },
   "header": {
     "pages": {
       "home": {
-        "name": "Inicio",
-        "title": "IAESTE Lleida",
-        "description": "Tu puerta de entrada a prácticas técnicas internacionales y oportunidades de intercambio cultural a través de la Universitat de Lleida."
+        "name": "inicio",
+        "title": "iaeste lleida",
+        "description": "tu puerta de entrada a prácticas técnicas internacionales y oportunidades de intercambio cultural a través de la universitat de lleida."
       },
       "student": {
-        "name": "Estudiantes",
-        "title": "¿Quieres unirte?",
-        "description": "Descubre cómo acceder a prácticas internacionales remuneradas y formar parte de nuestra red global de estudiantes técnicos."
+        "name": "estudiantes",
+        "title": "¿quieres unirte?",
+        "description": "descubre cómo acceder a prácticas internacionales remuneradas y formar parte de nuestra red global de estudiantes técnicos."
       },
       "incomming": {
-        "name": "Incoming",
-        "title": "¿Eres estudiante entrante?",
-        "description": "Información esencial para estudiantes internacionales que vienen a Lleida para su experiencia de prácticas IAESTE."
+        "name": "incoming",
+        "title": "¿eres estudiante entrante?",
+        "description": "información esencial para estudiantes internacionales que vienen a lleida para su experiencia de prácticas iaeste."
       },
       "company": {
-        "name": "Empresas",
-        "title": "¿Eres una empresa?",
-        "description": "Colabora con IAESTE para acceder a talento técnico internacional para tu organización."
+        "name": "empresas",
+        "title": "¿eres una empresa?",
+        "description": "colabora con iaeste para acceder a talento técnico internacional para tu organización."
       },
       "blog": {
         "name": "blog",
@@ -247,90 +247,90 @@
       }
     },
     "groups": {
-      "students": "Estudiantes",
-      "companies": "Compañias"
+      "students": "estudiantes",
+      "companies": "compañias"
     },
-    "contact-btn": "Contáctanos"
+    "contact-btn": "contáctanos"
   },
   "contact": {
-    "title": "Contáctanos",
-    "description": "Obtén detalles sobre intercambios de estudiantes de la UdL o acogida de talento internacional.",
-    "btn": "Enviar email",
+    "title": "contáctanos",
+    "description": "obtén detalles sobre intercambios de estudiantes de la udl o acogida de talento internacional.",
+    "btn": "enviar email",
     "email": {
-      "label": "Email",
+      "label": "email",
       "placeholder": "johndoe@gmail.com",
-      "description": "Te responderemos a este correo",
-      "invalid": "Por favor, introduce una dirección de email válida",
-      "required": "El email es obligatorio"
+      "description": "te responderemos a este correo",
+      "invalid": "por favor, introduce una dirección de email válida",
+      "required": "el email es obligatorio"
     },
     "name": {
-      "label": "Nombre",
-      "placeholder": "John",
+      "label": "nombre",
+      "placeholder": "john",
       "description": "",
-      "required": "El nombre es obligatorio",
-      "min": "El nombre debe tener al menos {min} caracteres",
-      "max": "El nombre no puede exceder los {max} caracteres"
+      "required": "el nombre es obligatorio",
+      "min": "el nombre debe tener al menos {min} caracteres",
+      "max": "el nombre no puede exceder los {max} caracteres"
     },
     "lastname": {
-      "label": "Apellidos",
-      "placeholder": "Doe",
+      "label": "apellidos",
+      "placeholder": "doe",
       "description": "",
-      "required": "Los apellidos son obligatorios",
-      "min": "Los apellidos deben tener al menos {min} caracteres",
-      "max": "Los apellidos no pueden exceder los {max} caracteres"
+      "required": "los apellidos son obligatorios",
+      "min": "los apellidos deben tener al menos {min} caracteres",
+      "max": "los apellidos no pueden exceder los {max} caracteres"
     },
     "subject": {
-      "label": "Asunto",
-      "placeholder": "Tu asunto",
-      "description": "Describe tu consulta brevemente",
-      "required": "El asunto es obligatorio",
-      "min": "El asunto debe tener al menos {min} caracteres",
-      "max": "El asunto no puede exceder los {max} caracteres"
+      "label": "asunto",
+      "placeholder": "tu asunto",
+      "description": "describe tu consulta brevemente",
+      "required": "el asunto es obligatorio",
+      "min": "el asunto debe tener al menos {min} caracteres",
+      "max": "el asunto no puede exceder los {max} caracteres"
     },
     "message": {
-      "label": "Mensaje",
-      "placeholder": "Tu mensaje",
+      "label": "mensaje",
+      "placeholder": "tu mensaje",
       "description": "",
-      "required": "El mensaje es obligatorio",
-      "min": "El mensaje debe tener al menos {min} caracteres",
-      "max": "El mensaje no puede exceder los {max} caracteres"
+      "required": "el mensaje es obligatorio",
+      "min": "el mensaje debe tener al menos {min} caracteres",
+      "max": "el mensaje no puede exceder los {max} caracteres"
     },
     "submitBtn": {
-      "default": "Enviar",
-      "loading": "Enviando...",
-      "success": "Mensaje enviado!",
-      "error": "Algo ha ido mal. Inténtalo de nuevo."
+      "default": "enviar",
+      "loading": "enviando...",
+      "success": "mensaje enviado!",
+      "error": "algo ha ido mal. inténtalo de nuevo."
     }
   },
   "outgoings": {
     "jaume": {
-      "quote": "IAESTE me abrió puertas que ni sabía que existían.",
-      "title": "Innovación en ingeniería en Alemania",
-      "description": "Durante mis prácticas en una empresa líder del sector automotriz en Múnich, obtuve experiencia práctica con tecnologías de vanguardia mientras desarrollaba mi red profesional. La experiencia mejoró tanto mis habilidades técnicas como mi comprensión cultural.",
-      "location": "Alemania"
+      "quote": "iaeste me abrió puertas que ni sabía que existían.",
+      "title": "innovación en ingeniería en alemania",
+      "description": "durante mis prácticas en una empresa líder del sector automotriz en múnich, obtuve experiencia práctica con tecnologías de vanguardia mientras desarrollaba mi red profesional. la experiencia mejoró tanto mis habilidades técnicas como mi comprensión cultural.",
+      "location": "alemania"
     },
     "jordi": {
-      "quote": "La combinación perfecta de crecimiento profesional y personal.",
-      "title": "Excelencia en investigación",
-      "description": "Trabajar en la Universidad Técnica de Berlín me permitió contribuir a investigaciones pioneras mientras experimentaba la vida en una de las ciudades más dinámicas de Europa. IAESTE hizo que todo el proceso fuera fluido y me apoyó en todo momento.",
-      "location": "Alemania"
+      "quote": "la combinación perfecta de crecimiento profesional y personal.",
+      "title": "excelencia en investigación",
+      "description": "trabajar en la universidad técnica de berlín me permitió contribuir a investigaciones pioneras mientras experimentaba la vida en una de las ciudades más dinámicas de europa. iaeste hizo que todo el proceso fuera fluido y me apoyó en todo momento.",
+      "location": "alemania"
     },
     "pepito": {
-      "quote": "Una experiencia que definió mi trayectoria profesional.",
-      "title": "Innovación industrial",
-      "description": "Mis prácticas en una planta manufacturera alemana me dieron conocimientos prácticos sobre tecnologías de la Industria 4.0. El entorno internacional y los desafíos profesionales me ayudaron a crecer tanto técnica como personalmente.",
-      "location": "Alemania"
+      "quote": "una experiencia que definió mi trayectoria profesional.",
+      "title": "innovación industrial",
+      "description": "mis prácticas en una planta manufacturera alemana me dieron conocimientos prácticos sobre tecnologías de la industria 4.0. el entorno internacional y los desafíos profesionales me ayudaron a crecer tanto técnica como personalmente.",
+      "location": "alemania"
     },
     "pep": {
-      "quote": "Más que unas prácticas - una experiencia que cambió mi vida.",
-      "title": "Liderazgo tecnológico",
-      "description": "Participar en un proyecto de desarrollo de software en una empresa tecnológica líder en Hamburgo me enseñó valiosas lecciones sobre colaboración internacional y comunicación profesional mientras avanzaba en mi experiencia técnica.",
-      "location": "Alemania"
+      "quote": "más que unas prácticas - una experiencia que cambió mi vida.",
+      "title": "liderazgo tecnológico",
+      "description": "participar en un proyecto de desarrollo de software en una empresa tecnológica líder en hamburgo me enseñó valiosas lecciones sobre colaboración internacional y comunicación profesional mientras avanzaba en mi experiencia técnica.",
+      "location": "alemania"
     }
   },
   "buttons": {
-    "send-email": "Enviar email",
-    "contact-form": "Contacta con nosotros",
-    "learn-more": "Saber más"
+    "send-email": "enviar email",
+    "contact-form": "contacta con nosotros",
+    "learn-more": "saber más"
   }
 }

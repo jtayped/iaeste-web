@@ -47,11 +47,11 @@ const Footer = () => {
         </div>
         <div className="flex flex-col gap-8 md:flex-row">
           <div>
-            <h4 className="text-lg font-bold">Quick Links</h4>
+            <h4 className="text-lg font-bold">quick links</h4>
             <nav className="mt-4 flex flex-col space-y-2">
-              <LinkBtn href="/company">For companies</LinkBtn>
-              <LinkBtn href="/student">For students</LinkBtn>
-              <LinkBtn href="/incomming">For incomming students</LinkBtn>
+              <LinkBtn href="/company">for companies</LinkBtn>
+              <LinkBtn href="/student">for students</LinkBtn>
+              <LinkBtn href="/incomming">for incomming students</LinkBtn>
             </nav>
           </div>
         </div>
@@ -59,8 +59,8 @@ const Footer = () => {
       <Section>
         <div className="mt-8 border-t border-white/20 pt-4 text-center text-sm">
           <p>
-            © {new Date().getFullYear()} {legalName}. All rights reserved. |
-            Made by{" "}
+            © {new Date().getFullYear()} {legalName}. all rights reserved. |
+            made by{" "}
             <Link
               href="https://www.linkedin.com/in/jtayped/"
               className="underline underline-offset-2"

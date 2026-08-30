@@ -24,7 +24,7 @@ const Hero = () => {
       <div className="section-padding flex h-screen items-center justify-center bg-primary/60 text-white">
         <div className="flex max-w-3xl flex-col items-center text-center">
           <div className="flex items-center gap-1">
-            <h1 className="text-6xl font-extrabold lg:text-8xl">IAESTE</h1>
+            <h1 className="text-6xl font-extrabold lg:text-8xl">iaeste</h1>
             <div className="flex flex-col items-start">
               <div className="flex items-end">
                 <motion.span
@@ -32,7 +32,7 @@ const Hero = () => {
                   animate={{ x: 0, opacity: 1 }}
                   className="text-3xl font-bold leading-none"
                 >
-                  LC
+                  lc
                 </motion.span>
                 <motion.div
                   initial={{ rotate: -120, opacity: 0 }}
@@ -53,7 +53,7 @@ const Hero = () => {
                 transition={{ delay: 0.1 }}
                 className="text-xl font-extrabold leading-none lg:text-3xl"
               >
-                LLEIDA
+                lleida
               </motion.span>
             </div>
           </div>

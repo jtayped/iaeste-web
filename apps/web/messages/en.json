@@ -1,193 +1,193 @@
 {
   "HomePage": {
     "Metadata": {
-      "title": "IAESTE Lleida | International Internships",
-      "description": "Non-profit organization of the Polytechnic School of the University of Lleida.",
-      "keywords": "international internships, global internships, technical internships, cultural exchange, IAESTE Lleida",
-      "ogTitle": "IAESTE Lleida - International Student Internships",
-      "ogDescription": "Exchanging students for technical work experience in 100+ countries around the world.",
-      "twitterTitle": "IAESTE Lleida - International Student Internships",
-      "twitterDescription": "Exchanging students for technical work experience in 100+ countries around the world."
+      "title": "iaeste lleida | international internships",
+      "description": "non-profit organization of the polytechnic school of the university of lleida.",
+      "keywords": "international internships, global internships, technical internships, cultural exchange, iaeste lleida",
+      "ogTitle": "iaeste lleida - international student internships",
+      "ogDescription": "exchanging students for technical work experience in 100+ countries around the world.",
+      "twitterTitle": "iaeste lleida - international student internships",
+      "twitterDescription": "exchanging students for technical work experience in 100+ countries around the world."
     },
     "hero": {
-      "description": "Join a global network connecting talented students with international technical internships. Experience professional growth while discovering new cultures through IAESTE's worldwide exchange program.",
+      "description": "join a global network connecting talented students with international technical internships. experience professional growth while discovering new cultures through iaeste's worldwide exchange program.",
       "buttons": {
-        "student": "I'm a student",
-        "company": "I'm a company"
+        "student": "i'm a student",
+        "company": "i'm a company"
       }
     },
     "about": {
-      "title": "What is IAESTE?",
-      "subtitle": "Bridging Spanish talent with global opportunities",
-      "description": "As IAESTE LC Lleida, part of IAESTE Spain's national network, we facilitate paid technical internships through our non-profit platform at Escola Politècnica Superior. Since 1948, we've connected UdL students with 100+ countries through our structured exchange system."
+      "title": "what is iaeste?",
+      "subtitle": "bridging spanish talent with global opportunities",
+      "description": "as iaeste lc lleida, part of iaeste spain's national network, we facilitate paid technical internships through our non-profit platform at escola politècnica superior. since 1948, we've connected udl students with 100+ countries through our structured exchange system."
     },
     "stats": {
       "countries": {
-        "title": "Countries",
-        "subtitle": "Served with IAESTE internships."
+        "title": "countries",
+        "subtitle": "served with iaeste internships."
       },
       "students": {
-        "title": "Students",
-        "subtitle": "Sent on internships."
+        "title": "students",
+        "subtitle": "sent on internships."
       },
       "organisations": {
-        "title": "Organisations",
-        "subtitle": "That host interns."
+        "title": "organisations",
+        "subtitle": "that host interns."
       },
       "volunteers": {
-        "title": "Volunteers",
-        "subtitle": "That help make IAESTE great."
+        "title": "volunteers",
+        "subtitle": "that help make iaeste great."
       }
     },
     "steps": {
-      "title": "How does it work?",
+      "title": "how does it work?",
       "internship": {
-        "title": "An internship",
-        "subtitle": "Local to global",
-        "description": "UdL students submit profiles, and IAESTE LC Lleida works with IAESTE Spain to match skills with global opportunities."
+        "title": "an internship",
+        "subtitle": "local to global",
+        "description": "udl students submit profiles, and iaeste lc lleida works with iaeste spain to match skills with global opportunities."
       },
       "auction": {
-        "title": "Auction",
-        "subtitle": "Dual placement system",
-        "description": "For every student from Lleida, we welcome an international intern, ensuring balance through national coordination."
+        "title": "auction",
+        "subtitle": "dual placement system",
+        "description": "for every student from lleida, we welcome an international intern, ensuring balance through national coordination."
       },
       "exchange": {
-        "title": "Exchange",
-        "subtitle": "End-to-end assistance",
-        "description": "IAESTE LC Lleida handles visas and housing, ensuring smooth transitions for students going abroad and coming to Catalonia."
+        "title": "exchange",
+        "subtitle": "end-to-end assistance",
+        "description": "iaeste lc lleida handles visas and housing, ensuring smooth transitions for students going abroad and coming to catalonia."
       }
     }
   },
   "StudentsPage": {
     "Metadata": {
-      "title": "IAESTE Lleida | UDL Internships for International Students",
-      "description": "Discover remunerated international internships at UdL with IAESTE Lleida. Boost your career with global experiences and cultural exchange.",
+      "title": "iaeste lleida | udl internships for international students",
+      "description": "discover remunerated international internships at udl with iaeste lleida. boost your career with global experiences and cultural exchange.",
       "keywords": "udl internships, international internships, udl students, cultural exchange, professional growth",
-      "ogTitle": "IAESTE Lleida - UDL Internships for International Students",
-      "ogDescription": "Join IAESTE Lleida and access remunerated internships at UdL that enhance your career on an international level.",
-      "twitterTitle": "IAESTE Lleida - UDL Internships for Students",
-      "twitterDescription": "Boost your career with remunerated international internships and a unique cultural exchange at IAESTE Lleida."
+      "ogTitle": "iaeste lleida - udl internships for international students",
+      "ogDescription": "join iaeste lleida and access remunerated internships at udl that enhance your career on an international level.",
+      "twitterTitle": "iaeste lleida - udl internships for students",
+      "twitterDescription": "boost your career with remunerated international internships and a unique cultural exchange at iaeste lleida."
     },
     "hero": {
-      "title": "Join IAESTE Lleida",
-      "subtitle": "Shape your international career",
-      "description": "Take the first step towards an enriching international experience. Join IAESTE Lleida to access global opportunities and develop both professionally and personally."
+      "title": "join iaeste lleida",
+      "subtitle": "shape your international career",
+      "description": "take the first step towards an enriching international experience. join iaeste lleida to access global opportunities and develop both professionally and personally."
     },
     "registrations": {
-      "title": "Registrations are open!",
-      "description": "Fill out the form to become part of our team!",
-      "button": "Register"
+      "title": "registrations are open!",
+      "description": "fill out the form to become part of our team!",
+      "button": "register"
     },
     "why-iaeste": {
-      "title": "Why IAESTE?",
-      "subtitle": "Structured global mobility",
-      "description": "Join IAESTE LC Lleida to access exclusive, verified international internships that enhance your career prospects. Gain valuable professional experience, expand your global network, and enjoy cultural exchange opportunities while securing academic recognition for your work in leading companies and institutions worldwide.",
+      "title": "why iaeste?",
+      "subtitle": "structured global mobility",
+      "description": "join iaeste lc lleida to access exclusive, verified international internships that enhance your career prospects. gain valuable professional experience, expand your global network, and enjoy cultural exchange opportunities while securing academic recognition for your work in leading companies and institutions worldwide.",
       "reasons": {
         "oportunities": {
-          "title": "Global opportunities",
-          "description": "Access internships in 80+ countries, build an international network, boost global career."
+          "title": "global opportunities",
+          "description": "access internships in 80+ countries, build an international network, boost global career."
         },
         "growth": {
-          "title": "Professional growth",
-          "description": "Develop real-world technical skills, enhance your CV, and gain professional insights."
+          "title": "professional growth",
+          "description": "develop real-world technical skills, enhance your cv, and gain professional insights."
         },
         "exchange": {
-          "title": "Cultural exchange",
-          "description": "Immerse in new cultures, build intercultural competence, and form lasting international friendships."
+          "title": "cultural exchange",
+          "description": "immerse in new cultures, build intercultural competence, and form lasting international friendships."
         },
         "internship": {
-          "title": "Paid internships",
-          "description": "Earn paid internships, gaining valuable experience while covering living expenses abroad."
+          "title": "paid internships",
+          "description": "earn paid internships, gaining valuable experience while covering living expenses abroad."
         }
       }
     },
     "teams": {
-      "title": "Choose a team",
-      "subtitle": "Be part of something bigger",
-      "description": "Join one of our dynamic teams at IAESTE Lleida. Develop leadership skills, gain organizational experience, and make a difference while helping other students access international opportunities.",
+      "title": "choose a team",
+      "subtitle": "be part of something bigger",
+      "description": "join one of our dynamic teams at iaeste lleida. develop leadership skills, gain organizational experience, and make a difference while helping other students access international opportunities.",
       "teams": {
         "junta": {
-          "name": "Board",
-          "description": "Lead strategic initiatives and guide our organization's direction."
+          "name": "board",
+          "description": "lead strategic initiatives and guide our organization's direction."
         },
         "empreses": {
-          "name": "Companies",
-          "description": "Build relationships with local and international employers."
+          "name": "companies",
+          "description": "build relationships with local and international employers."
         },
         "marketing": {
-          "name": "Marketing",
-          "description": "Create compelling content and promote IAESTE's mission."
+          "name": "marketing",
+          "description": "create compelling content and promote iaeste's mission."
         },
         "it": {
-          "name": "IT",
-          "description": "Maintain and improve our digital infrastructure."
+          "name": "it",
+          "description": "maintain and improve our digital infrastructure."
         },
         "eventos": {
-          "name": "Events",
-          "description": "Organize engaging activities and professional events."
+          "name": "events",
+          "description": "organize engaging activities and professional events."
         }
       }
     },
     "contact": {
-      "title": "Start your IAESTE journey",
-      "description": "Join UdL's engineering students who've launched global careers through our LC Lleida program."
+      "title": "start your iaeste journey",
+      "description": "join udl's engineering students who've launched global careers through our lc lleida program."
     }
   },
   "IncommingPage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Information for Incoming International Students",
-      "description": "All the essential information you need to prepare your arrival in Lleida. Support, requirements, and advice for incoming international students with IAESTE.",
+      "title": "iaeste lleida | information for incoming international students",
+      "description": "all the essential information you need to prepare your arrival in lleida. support, requirements, and advice for incoming international students with iaeste.",
       "keywords": "incoming international students, incoming lleida, student information, cultural exchange, international student support",
-      "ogTitle": "IAESTE Lleida - Welcome Incoming International Students",
-      "ogDescription": "Prepare your exchange experience in Lleida with all the information and support provided by IAESTE for incoming international students.",
-      "twitterTitle": "IAESTE Lleida - Incoming International Students",
-      "twitterDescription": "Discover the details and support you need for your arrival in Lleida with IAESTE."
+      "ogTitle": "iaeste lleida - welcome incoming international students",
+      "ogDescription": "prepare your exchange experience in lleida with all the information and support provided by iaeste for incoming international students.",
+      "twitterTitle": "iaeste lleida - incoming international students",
+      "twitterDescription": "discover the details and support you need for your arrival in lleida with iaeste."
     }
   },
   "CompanyPage": {
     "Metadata": {
-      "title": "IAESTE Lleida | Companies & International Talent",
-      "description": "Collaborate with IAESTE Lleida to host skilled international students. Access remunerated internships that bring fresh ideas and global perspectives to your company.",
+      "title": "iaeste lleida | companies & international talent",
+      "description": "collaborate with iaeste lleida to host skilled international students. access remunerated internships that bring fresh ideas and global perspectives to your company.",
       "keywords": "iaeste company, international talent, paid internships, technical internships, global collaboration",
-      "ogTitle": "IAESTE Lleida - Companies & International Talent",
-      "ogDescription": "Partner with IAESTE Lleida to connect with motivated technical students from across the globe, driving innovation and diversity in your workplace.",
-      "twitterTitle": "IAESTE Lleida - Companies & International Talent",
-      "twitterDescription": "Discover how partnering with IAESTE gives your company access to international technical students through remunerated internships."
+      "ogTitle": "iaeste lleida - companies & international talent",
+      "ogDescription": "partner with iaeste lleida to connect with motivated technical students from across the globe, driving innovation and diversity in your workplace.",
+      "twitterTitle": "iaeste lleida - companies & international talent",
+      "twitterDescription": "discover how partnering with iaeste gives your company access to international technical students through remunerated internships."
     },
     "hero": {
-      "title": "Partner with IAESTE Lleida",
-      "subtitle": "Bring international expertise to your team",
-      "description": "Join IAESTE’s global exchange program and access talented students from 100+ countries. Host remunerated internships that enrich your company with innovation, cultural diversity, and professional excellence."
+      "title": "partner with iaeste lleida",
+      "subtitle": "bring international expertise to your team",
+      "description": "join iaeste’s global exchange program and access talented students from 100+ countries. host remunerated internships that enrich your company with innovation, cultural diversity, and professional excellence."
     },
     "why": {
-      "title": "Why collaborate with IAESTE?",
-      "subtitle": "International talent made simple",
-      "description": "By hosting IAESTE interns, your company gains access to motivated students trained in technical fields. The structured exchange system ensures quality, reliability, and support at every stage.",
+      "title": "why collaborate with iaeste?",
+      "subtitle": "international talent made simple",
+      "description": "by hosting iaeste interns, your company gains access to motivated students trained in technical fields. the structured exchange system ensures quality, reliability, and support at every stage.",
       "reasons": {
         "talent": {
-          "title": "Global talent",
-          "description": "Access a pool of skilled students from leading universities worldwide."
+          "title": "global talent",
+          "description": "access a pool of skilled students from leading universities worldwide."
         },
         "innovation": {
-          "title": "Innovation & diversity",
-          "description": "Gain fresh perspectives and creative solutions through cultural exchange."
+          "title": "innovation & diversity",
+          "description": "gain fresh perspectives and creative solutions through cultural exchange."
         },
         "growth": {
-          "title": "Business growth",
-          "description": "Expand your company’s reach while contributing to international mobility."
+          "title": "business growth",
+          "description": "expand your company’s reach while contributing to international mobility."
         }
       }
     },
     "testimonial": {
-      "tag": "Featured",
-      "title": "Factory Data's experience with Jonathan.",
-      "text": "Excellent experience with Jonathan Gruss during his IAESTE internship in Summer 2021. He contributed to a demand-analysis project using Apache Spark, worked independently, solved problems creatively, and integrated perfectly with the team. We highly recommend him.",
-      "author": "Joan Cabós",
-      "role": "CEO @ Factory Data"
+      "tag": "featured",
+      "title": "factory data's experience with jonathan.",
+      "text": "excellent experience with jonathan gruss during his iaeste internship in summer 2021. he contributed to a demand-analysis project using apache spark, worked independently, solved problems creatively, and integrated perfectly with the team. we highly recommend him.",
+      "author": "joan cabós",
+      "role": "ceo @ factory data"
     },
     "contact": {
-      "title": "Start collaborating with us",
-      "description": "Get in touch with IAESTE Lleida and discover how hosting an international intern can add value to your company."
+      "title": "start collaborating with us",
+      "description": "get in touch with iaeste lleida and discover how hosting an international intern can add value to your company."
     }
   },
   "BlogPage": {
@@ -207,34 +207,34 @@
     "paginationLabel": "blog pages"
   },
   "UnderConstructionPage": {
-    "title": "This page is under construction!",
-    "description": "Our IT people are on it! It will be finished shortly.",
+    "title": "this page is under construction!",
+    "description": "our it people are on it! it will be finished shortly.",
     "buttons": {
-      "home": "Home",
-      "back": "Go back"
+      "home": "home",
+      "back": "go back"
     }
   },
   "header": {
     "pages": {
       "home": {
-        "name": "Home",
-        "title": "IAESTE Lleida",
-        "description": "Your gateway to international technical internships and cultural exchange opportunities through the Universitat de Lleida."
+        "name": "home",
+        "title": "iaeste lleida",
+        "description": "your gateway to international technical internships and cultural exchange opportunities through the universitat de lleida."
       },
       "student": {
-        "name": "Students",
-        "title": "Want to join?",
-        "description": "Discover how to access paid international internships and become part of our global network of technical students."
+        "name": "students",
+        "title": "want to join?",
+        "description": "discover how to access paid international internships and become part of our global network of technical students."
       },
       "incomming": {
-        "name": "Incommings",
-        "title": "Are you an incomming?",
-        "description": "Essential information for international students coming to Lleida for their IAESTE internship experience."
+        "name": "incommings",
+        "title": "are you an incomming?",
+        "description": "essential information for international students coming to lleida for their iaeste internship experience."
       },
       "company": {
-        "name": "Companies",
-        "title": "Are a company?",
-        "description": "Partner with IAESTE to access talented international technical students for your organization."
+        "name": "companies",
+        "title": "are a company?",
+        "description": "partner with iaeste to access talented international technical students for your organization."
       },
       "blog": {
         "name": "blog",
@@ -243,90 +243,90 @@
       }
     },
     "groups": {
-      "students": "Students",
-      "companies": "Companies"
+      "students": "students",
+      "companies": "companies"
     },
-    "contact-btn": "Contact us"
+    "contact-btn": "contact us"
   },
   "contact": {
-    "title": "Contact us",
-    "description": "Get details about UdL student exchanges or hosting international talent.",
-    "btn": "Send us an email",
+    "title": "contact us",
+    "description": "get details about udl student exchanges or hosting international talent.",
+    "btn": "send us an email",
     "email": {
-      "label": "Email",
+      "label": "email",
       "placeholder": "johndoe@gmail.com",
-      "description": "We will answer you at this email.",
-      "invalid": "Please enter a valid email address",
-      "required": "Email is required"
+      "description": "we will answer you at this email.",
+      "invalid": "please enter a valid email address",
+      "required": "email is required"
     },
     "name": {
-      "label": "Name",
-      "placeholder": "John",
+      "label": "name",
+      "placeholder": "john",
       "description": "",
-      "required": "Name is required",
-      "min": "Name must be at least {min} characters long",
-      "max": "Name cannot exceed {max} characters"
+      "required": "name is required",
+      "min": "name must be at least {min} characters long",
+      "max": "name cannot exceed {max} characters"
     },
     "lastname": {
-      "label": "Last Name",
-      "placeholder": "Doe",
+      "label": "last name",
+      "placeholder": "doe",
       "description": "",
-      "required": "Last name is required",
-      "min": "Last name must be at least {min} characters long",
-      "max": "Last name cannot exceed {max} characters"
+      "required": "last name is required",
+      "min": "last name must be at least {min} characters long",
+      "max": "last name cannot exceed {max} characters"
     },
     "subject": {
-      "label": "Subject",
-      "placeholder": "Your subject",
-      "description": "Describe your inquiry briefly",
-      "required": "Subject is required",
-      "min": "Subject must be at least {min} characters long",
-      "max": "Subject cannot exceed {max} characters"
+      "label": "subject",
+      "placeholder": "your subject",
+      "description": "describe your inquiry briefly",
+      "required": "subject is required",
+      "min": "subject must be at least {min} characters long",
+      "max": "subject cannot exceed {max} characters"
     },
     "message": {
-      "label": "Message",
-      "placeholder": "Your message",
+      "label": "message",
+      "placeholder": "your message",
       "description": "",
-      "required": "Message is required",
-      "min": "Message must be at least {min} characters long",
-      "max": "Message cannot exceed {max} characters"
+      "required": "message is required",
+      "min": "message must be at least {min} characters long",
+      "max": "message cannot exceed {max} characters"
     },
     "submitBtn": {
-      "default": "Send",
-      "loading": "Sending...",
-      "success": "Message sent!",
-      "error": "Something went wrong. Please try again."
+      "default": "send",
+      "loading": "sending...",
+      "success": "message sent!",
+      "error": "something went wrong. please try again."
     }
   },
   "outgoings": {
     "jaume": {
-      "quote": "IAESTE opened doors I never knew existed.",
-      "title": "Engineering innovation in Germany",
-      "description": "During my internship at a leading automotive company in Munich, I gained hands-on experience with cutting-edge technologies while developing my professional network. The experience enhanced both my technical skills and cultural understanding.",
-      "location": "Germany"
+      "quote": "iaeste opened doors i never knew existed.",
+      "title": "engineering innovation in germany",
+      "description": "during my internship at a leading automotive company in munich, i gained hands-on experience with cutting-edge technologies while developing my professional network. the experience enhanced both my technical skills and cultural understanding.",
+      "location": "germany"
     },
     "jordi": {
-      "quote": "The perfect blend of professional and personal growth.",
-      "title": "Research excellence",
-      "description": "Working at the Technical University of Berlin allowed me to contribute to groundbreaking research while experiencing life in one of Europe's most dynamic cities. IAESTE made the entire process smooth and supported me throughout.",
-      "location": "Germany"
+      "quote": "the perfect blend of professional and personal growth.",
+      "title": "research excellence",
+      "description": "working at the technical university of berlin allowed me to contribute to groundbreaking research while experiencing life in one of europe's most dynamic cities. iaeste made the entire process smooth and supported me throughout.",
+      "location": "germany"
     },
     "pepito": {
-      "quote": "An experience that shaped my career path.",
-      "title": "Industrial innovation",
-      "description": "My internship at a German manufacturing plant gave me practical insights into Industry 4.0 technologies. The international environment and professional challenges helped me grow both technically and personally.",
-      "location": "Germany"
+      "quote": "an experience that shaped my career path.",
+      "title": "industrial innovation",
+      "description": "my internship at a german manufacturing plant gave me practical insights into industry 4.0 technologies. the international environment and professional challenges helped me grow both technically and personally.",
+      "location": "germany"
     },
     "pep": {
-      "quote": "More than just an internship - a life-changing experience.",
-      "title": "Technology leadership",
-      "description": "Participating in a software development project at a leading tech company in Hamburg taught me valuable lessons in international collaboration and professional communication while advancing my technical expertise.",
-      "location": "Germany"
+      "quote": "more than just an internship - a life-changing experience.",
+      "title": "technology leadership",
+      "description": "participating in a software development project at a leading tech company in hamburg taught me valuable lessons in international collaboration and professional communication while advancing my technical expertise.",
+      "location": "germany"
     }
   },
   "buttons": {
-    "send-email": "Send an email",
-    "contact-form": "Contact us now",
-    "learn-more": "Learn more"
+    "send-email": "send an email",
+    "contact-form": "contact us now",
+    "learn-more": "learn more"
   }
 }
