@@ -38,6 +38,10 @@ function DateField({
         value={value}
         onChange={onChange}
         aria-invalid={error !== undefined}
+        // The create form lives inside a Sheet; the calendar portals out of it
+        // and is only clickable as its own modal layer. Harmless in the edit
+        // panel, so it is unconditional rather than threaded through.
+        modal
       />
       {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       <FieldError {...(error ? { message: error } : {})} />

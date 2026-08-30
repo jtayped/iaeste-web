@@ -38,6 +38,13 @@ export interface DatePickerProps
   placeholder?: string;
   /** BCP-47 tag used to format the selected day, e.g. `"ca-ES"`. */
   locale?: string;
+  /**
+   * Render the calendar as its own modal layer. Needed whenever the picker
+   * lives inside another modal layer (a `Sheet`/`Dialog`): the calendar is
+   * portalled to `document.body`, and without this the outer dialog's
+   * `pointer-events: none` and focus trap make the days unclickable.
+   */
+  modal?: boolean;
   /** Passed through to the underlying `<Calendar />`. */
   calendarProps?: Omit<
     CalendarProps,
@@ -61,6 +68,7 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       onChange,
       placeholder = "DD/MM/YYYY",
       locale,
+      modal = false,
       calendarProps,
       className,
       disabled,
@@ -71,7 +79,7 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
     const [open, setOpen] = React.useState(false);
 
     return (
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={setOpen} modal={modal}>
         <PopoverTrigger asChild>
           <Button
             ref={ref}
