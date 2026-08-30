@@ -7,7 +7,7 @@ import { useNavigation } from "..";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
+import { Logo } from "@repo/ui/logo";
 import ChangeTranslation from "./change-translation";
 
 const containerVariants = {
@@ -59,13 +59,7 @@ const SidebarComponent = () => {
           control lands exactly where the menu button was. */}
       <div className="section-padding flex shrink-0 items-center justify-between border-b border-white/10 py-3">
         <Link href="/" onClick={toggleSidebar} aria-label="iaeste lc lleida">
-          <Image
-            src={"/logos/horizontal.png"}
-            alt={"iaeste logo"}
-            width={255}
-            height={75}
-            className="h-auto w-[132px]"
-          />
+          <Logo variant="horizontal" color="white" width={132} alt="" />
         </Link>
         <button
           onClick={toggleSidebar}

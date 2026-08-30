@@ -1,6 +1,13 @@
 {
   "extends": "@repo/typescript-config/react-library.json",
   "compilerOptions": {
+    // This package is only ever consumed as source by a Next app, so it is
+    // typechecked the way it is compiled — as ESM through a bundler — rather
+    // than as the CommonJS the base config assumes. `src/lib/og-image.tsx`
+    // resolves its bundled fonts through `import.meta.url`, which the base
+    // config rejects outright.
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

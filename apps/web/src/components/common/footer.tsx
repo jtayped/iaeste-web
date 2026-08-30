@@ -1,6 +1,6 @@
 import React from "react";
 import DivideSection from "./sections/divide";
-import Image from "next/image";
+import { Logo } from "@repo/ui/logo";
 import { legalName, email, address, phone } from "@/constants/contact";
 import { Link } from "@/i18n/routing";
 import Section from "./sections/section";
@@ -29,13 +29,7 @@ const Footer = () => {
     <footer className="bg-primary py-8 text-primary-foreground">
       <DivideSection>
         <div className="max-w-sm space-y-4">
-          <Image
-            src={"/logos/horizontal.png"}
-            width={300}
-            height={200}
-            alt="iaeste logo"
-            className="h-auto w-48"
-          />
+          <Logo variant="horizontal" color="white" width={192} />
           <div>
             <p className="font-semibold">{legalName}</p>
             <div className="mt-3 space-y-2">
@@ -51,7 +45,7 @@ const Footer = () => {
             <nav className="mt-4 flex flex-col space-y-2">
               <LinkBtn href="/company">for companies</LinkBtn>
               <LinkBtn href="/student">for students</LinkBtn>
-              <LinkBtn href="/incomming">for incomming students</LinkBtn>
+              <LinkBtn href="/incommings">for incomming students</LinkBtn>
             </nav>
           </div>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 import { Link } from "@/i18n/routing";
 import { cn } from "@repo/ui/lib/utils";
-import Image from "next/image";
+import { Logo } from "@repo/ui/logo";
 import React, { createContext, useEffect, useState } from "react";
 import Sidebar from "./sidebar";
 import Navigation from "./navigation";
@@ -83,14 +83,15 @@ const Header = () => {
     >
       <Link href="/" aria-label="iaeste lc lleida">
         {/* Fixed intrinsic size so the srcset never changes; only the CSS
-            width animates, which keeps the swap from flashing. */}
-        <Image
-          src={"/logos/horizontal.png"}
-          alt={"iaeste logo"}
-          width={255}
-          height={75}
+            width animates, which keeps the swap from flashing. The link
+            already carries the name, so the mark itself is decorative. */}
+        <Logo
+          variant="horizontal"
+          color="white"
+          width={170}
+          alt=""
           priority
-          className="h-auto transition-[width] duration-300"
+          className="transition-[width] duration-300"
           style={{ width: isScrolled ? "132px" : "170px" }}
         />
       </Link>

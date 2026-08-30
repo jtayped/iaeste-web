@@ -27,7 +27,7 @@ export const EmailWrapper = ({ children, previewText }: WrapperProps) => {
           <Preview>{previewText}</Preview>
           <Container className="mx-auto my-[30px] max-w-[465px] rounded-xl border border-solid border-[#eaeaea] p-[20px]">
             <Section>
-              <Img src={`${baseUrl}/logos/icon-lleida-blue.png`} height={80} />
+              <Img src={`${baseUrl}/brand/icon-navy.png`} height={80} />
             </Section>
             {children}
           </Container>

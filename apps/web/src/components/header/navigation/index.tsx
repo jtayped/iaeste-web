@@ -14,7 +14,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@repo/ui/navigation-menu";
 import { Button } from "@repo/ui/button";
-import Image from "next/image";
+import { Logo } from "@repo/ui/logo";
 import { useTranslations } from "next-intl";
 import ChangeTranslation from "./change-translation";
 
@@ -36,13 +36,12 @@ const Navigation = ({ className = "" }: { className?: string }) => {
                     href="/"
                   >
                     {/* The white mark was being `invert`ed to black on this
-                        light card; there is a real blue one for this ground. */}
-                    <Image
-                      src="/logos/icon-lleida-blue.png"
+                        light card; there is a real navy one for this ground. */}
+                    <Logo
+                      variant="icon"
                       width={56}
-                      height={56}
                       alt=""
-                      className="h-14 w-14"
+                      className="size-14"
                     />
                     <div className="mb-2 mt-4 text-lg font-medium">
                       {t("pages.home.title")}

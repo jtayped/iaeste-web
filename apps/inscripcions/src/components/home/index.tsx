@@ -2,11 +2,11 @@
 import { Button } from "@repo/ui/button";
 import { Paragraph } from "@repo/ui/typography";
 import { Check, RotateCw, Send } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { motion, MotionConfig } from "framer-motion";
 import ButtonGroup from "@repo/ui/button-group";
+import { Logo } from "@repo/ui/logo";
 import { Globe } from "lucide-react";
 import type { RegistrationAvailability } from "@/lib/registration-status";
 
@@ -32,12 +32,11 @@ const HomePage = ({
       >
         <motion.div className="grid text-center">
           <motion.div variants={childVariants}>
-            <Image
-              src={"/logos/icon-lleida-blue.png"}
+            <Logo
+              variant="icon"
               width={100}
-              height={100}
-              alt="logo d'iaeste lc lleida"
-              className="mx-auto mb-5 h-[100px] w-[100px]"
+              priority
+              className="mx-auto mb-5 size-[100px]"
             />
           </motion.div>
           <motion.div variants={childVariants}>

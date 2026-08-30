@@ -25,8 +25,20 @@ export default buildConfig({
     user: Users.slug,
     meta: {
       titleSuffix: " · continguts iaeste",
+      // `meta` is Next's `Metadata`, so the panel takes the same icon set as
+      // every other app in the repo. Files come from
+      // `assets/brand/generate-brand.mjs`; nothing else here is custom.
+      icons: [
+        { rel: "icon", url: "/favicon.ico", sizes: "any" },
+        { rel: "icon", type: "image/svg+xml", url: "/icon.svg" },
+        {
+          rel: "apple-touch-icon",
+          url: "/apple-touch-icon.png",
+          sizes: "180x180",
+        },
+      ],
     },
-    // Native panel. IAESTE branding (logo, navy) and the per-locale
+    // Native panel otherwise. The in-panel logo and the per-locale
     // completeness panel on the article edit view are added under
     // src/components/ once Payload packages are installed and
     // `generate:importmap` can run — see apps/cms/AGENTS.md.

@@ -40,7 +40,7 @@ IAESTE LC Lleida is the local, student-run connection between the UdL community 
 
 - The product name is IAESTE LC Lleida and the institutional context includes IAESTE Spain, Universitat de Lleida, and Escola Politècnica Superior.
 - All human-readable interface copy uses lowercase. This includes headings, labels, calls to action, acronyms, and displayed product names. Lettering baked into supplied logo assets can retain its original form.
-- Preserve the existing official IAESTE LC Lleida logo assets in `apps/web/public/logos/` and `apps/inscripcions/public/logos/`.
+- Preserve the official IAESTE LC Lleida logo. The masters live in `assets/brand/source/`; every derived favicon, app icon and lockup is generated from them by `assets/brand/generate-brand.mjs` into each app's `public/brand/` and rendered through `@repo/ui/logo`. Do not hand-edit a derived file or reintroduce per-app copies.
 - Catalan, Spanish, and English versions must communicate the same facts and actions rather than drifting into separate claims.
 
 ## Evidence on Hand

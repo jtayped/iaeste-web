@@ -3,31 +3,44 @@ import "@repo/ui/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
+const title = "inscriu-te | iaeste lc lleida";
+const description = "uneix-te al comitè local d'iaeste lleida";
+
 export const metadata: Metadata = {
-  title: "inscriu-te | iaeste lc lleida",
-  description: "uneix-te al comitè local d'iaeste lleida",
-  openGraph: {
-    title: "inscriu-te | iaeste lc lleida",
-    description: "uneix-te al comitè local d'iaeste lleida",
-    url: "https://iaestelleida.cat/",
-    type: "website",
-    images: [
-      {
-        url: "https://iaestelleida.cat/twitter.png",
-        width: 700,
-        height: 350,
-        alt: "inscriu-te | iaeste lc lleida",
-      },
+  // This app has its own origin. It used to point its share card at
+  // `iaestelleida.cat/twitter.png` — a file in a different app's `public/`,
+  // which meant no preview deploy of this app ever previewed its own card.
+  // `opengraph-image.tsx` now renders one here, and this is what Next resolves
+  // its URL against.
+  metadataBase: new URL("https://inscripcions.iaestelleida.cat"),
+  title,
+  description,
+  applicationName: "Inscripcions · IAESTE LC Lleida",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    siteName: "inscriu-te | iaeste lc lleida",
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  openGraph: {
+    title,
+    description,
+    url: "/",
+    type: "website",
+    siteName: title,
   },
   twitter: {
+    // The `opengraph-image` file convention fills in the image but not the
+    // card type, so this stays explicit.
     card: "summary_large_image",
-    title: "inscriu-te | iaeste lc lleida",
-    description: "uneix-te al comitè local d'iaeste lleida",
+    title,
+    description,
     creator: "@IAESTELCLleida",
     site: "@IAESTELCLleida",
-    images: ["https://iaestelleida.cat/twitter.png"],
   },
   robots: {
     index: true,
