@@ -16,18 +16,17 @@ export const ContactFormEmail = ({
   subject,
   message,
 }: ContactFormProps) => {
-  const previewText = `Algú ha fet servir el formulari de contacte de la web!`;
+  const previewText = `algú ha fet servir el formulari de contacte de la web.`;
 
   return (
     <EmailWrapper previewText={previewText}>
-      <Heading className="mt-4">Nou missatge</Heading>
-      <Text>Holaaaa,</Text>
+      <Heading className="mt-4">nou missatge</Heading>
+      <Text>hola,</Text>
       <Text>
-        El/la{" "}
         <b>
           {name} {lastname}
         </b>{" "}
-        ha fet servir el formulari de la web. Ha enviat el següent missatge:
+        ha fet servir el formulari de la web i ha enviat aquest missatge:
       </Text>
       <blockquote>
         <p className="mb-0 text-lg">
@@ -42,11 +41,11 @@ export const ContactFormEmail = ({
           href={`mailto:${email}`}
           className="w-full rounded-lg bg-blue-900 py-3 text-center text-white"
         >
-          Contestar el/la {name}
+          contestar {name}
         </Button>
       </Section>
       <Text>
-        Correu: <u>{email}</u>
+        correu: <u>{email}</u>
       </Text>
     </EmailWrapper>
   );

@@ -7,22 +7,22 @@ interface VerifyUserEmailProps {
 }
 
 export const VerifyUserEmail = ({ email, link }: VerifyUserEmailProps) => {
-  const previewText = `Confirma que aquest correu (${email}) és teu per continuar amb la inscripció.`;
+  const previewText = `confirma que aquest correu (${email}) és teu per continuar amb la inscripció.`;
 
   return (
     <EmailWrapper previewText={previewText}>
-      <Heading className="mt-4">Verifica el teu correu!</Heading>
+      <Heading className="mt-4">verifica el teu correu</Heading>
       <Section>
         <Button
           href={link}
           className="w-full rounded-lg bg-blue-900 py-3 text-center text-white"
         >
-          Verificar
+          verificar el correu
         </Button>
       </Section>
       <Text className="mb-0 text-xs">
-        Fent clic amb aquest botó, sereu redireccionats a la pagina web per
-        verificar el vostre correu <u>({email})</u>.
+        fent clic al botó aniràs a la pàgina web per verificar el teu correu{" "}
+        <u>({email})</u>.
       </Text>
     </EmailWrapper>
   );

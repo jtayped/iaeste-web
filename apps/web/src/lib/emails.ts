@@ -34,7 +34,7 @@ export async function sendContactFormEmail(
   try {
     await emailer.send({
       to: env.CONTACT_FORM_TO,
-      subject: `Formulari WEB | ${values.subject}`,
+      subject: `formulari web · ${values.subject}`,
       react: ContactFormEmail(values),
     });
   } catch (error) {

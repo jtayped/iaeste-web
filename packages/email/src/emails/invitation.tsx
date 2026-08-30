@@ -7,27 +7,27 @@ interface InviteUserProps {
 }
 
 export const UserInvitation = ({ email, invitationLink }: InviteUserProps) => {
-  const previewText = `T'hem convidat a unir-te a IAESTE LC Lleida amb aquest correu (${email}).`;
+  const previewText = `t'hem convidat a unir-te a iaeste lc lleida amb aquest correu (${email}).`;
 
   return (
     <EmailWrapper previewText={previewText}>
-      <Heading className="mt-4">Benvingut a IAESTE!</Heading>
-      <Text>Bonessss,</Text>
+      <Heading className="mt-4">t&apos;hem convidat a l&apos;equip</Heading>
+      <Text>hola,</Text>
       <Text>
-        Des de IAESTE LC Lleida, t&apos;invitem a que t&apos;uneixis al nostre
-        equip! Fent clic al següent botó, sereu redireccionats a la nostra
-        pàgina web per acabar de registrar-te.
+        des de iaeste lc lleida t&apos;convidem a unir-te a l&apos;equip. fes
+        clic al botó i acaba d&apos;omplir les teves dades: com que ja
+        t&apos;hem convidat, no hauràs d&apos;esperar cap revisió.
       </Text>
       <Section>
         <Button
           href={invitationLink}
           className="w-full rounded-lg bg-blue-900 py-3 text-center text-white"
         >
-          Registra&apos;t
+          completa la inscripció
         </Button>
       </Section>
-      <Text>Tenim moltes ganes de tenir-te al nostre equip!</Text>
-      <Text>Ja ens veurem ;)</Text>
+      <Text>tenim moltes ganes de tenir-te a l&apos;equip!</Text>
+      <Text>ja ens veurem!</Text>
     </EmailWrapper>
   );
 };
