@@ -107,6 +107,10 @@
        the lighter border token below. */
     --field-border: hsl(215 16% 58%);
     --field-border-width: 1px;
+    /* HeroUI's fields are `--radius * 1.5`; IAESTE's are the same `rounded-md`
+       as its buttons. One token covers every field, so no component has to
+       pin its own corner. */
+    --field-radius: calc(var(--radius) * 0.75);
     /* 5.6:1 at rest and 4.5:1 after HeroUI's light-theme hover mix. */
     --danger: hsl(0 84.2% 43%);
     --danger-foreground: hsl(210 40% 98%);
@@ -312,6 +316,66 @@
 
   .alert--danger .alert__description {
     color: var(--danger-soft-foreground);
+  }
+
+  /* React Aria sets `data-invalid` from the field root it owns. The admin has
+     no React Hook Form and marks its controls with `aria-invalid` by hand, so
+     that spelling has to paint the same ring — otherwise a rejected admin
+     field is red text under an untouched-looking input. */
+  .input[aria-invalid="true"],
+  .textarea[aria-invalid="true"] {
+    @apply status-invalid-field;
+    background-color: var(--field-focus);
+  }
+
+  /* HeroUI indents the validation message by 4px. It reads as a misalignment
+     under a flush label and a flush field. */
+  .field-error {
+    @apply px-0;
+  }
+
+  /* HeroUI swaps the help text out for the error message. Here the help text
+     is usually the fix — "amb prefix (+33…) si no és espanyol" is exactly what
+     someone whose phone number was just rejected needs to read — so both
+     stay. */
+  .textfield[data-invalid="true"] [data-slot="description"],
+  .textfield[aria-invalid="true"] [data-slot="description"] {
+    @apply block;
+  }
+
+  /* Same "pin the radius back" treatment as `.card` / `.chip` above, for
+     every floating surface and the things inside it. HeroUI puts overlays at
+     `min(32px, var(--radius-3xl))` and list rows at `rounded-2xl`; against a
+     `rounded-md` trigger that reads as two different products.
+
+     The border comes back too: HeroUI carries an overlay on its shadow alone,
+     which leaves a white popover with no edge against a white page. */
+  .popover,
+  .select__popover {
+    @apply rounded-md border;
+  }
+
+  .calendar__cell,
+  .calendar__nav-button,
+  .list-box-item {
+    @apply rounded-md;
+  }
+
+  /* React Aria portals every popover straight onto `document.body`, as a
+     plain sibling of whatever else is there — see
+     `node_modules/react-aria/dist/private/overlays/Overlay.js`. It never
+     registers with Radix's `DismissableLayer` stack, which is what the admin's
+     create-campaign `Sheet` (a modal Radix `Dialog`) uses to make its backdrop
+     inert: that layer sets `document.body.style.pointerEvents = "none"` while
+     open and only re-enables it on its own managed layers (see
+     `@radix-ui/react-dismissable-layer/dist/index.js`). Without this, the date
+     picker's calendar would inherit `pointer-events: none` from `<body>` and
+     its days would be unclickable — the same bug the old Radix-`Popover`
+     `modal` prop existed to work around. Scoped to this one popover instance
+     (`date-picker.tsx` tags it explicitly) rather than every RAC portal, so it
+     can't make something inert on purpose clickable again. */
+  [data-slot="date-picker-popover"] {
+    pointer-events: auto;
   }
 }
 
