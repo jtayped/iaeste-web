@@ -73,7 +73,7 @@ work unchecked and explain it under final notes.
   several contain user-owned work. Every file changed in this setup phase
   passes Prettier.
 - Regression found and fixed on 2026-08-30: `apps/web/src/globals.css` is a
-  Tailwind 4 *fragment* (it opens with `@reference`, because the app imports the
+  Tailwind 4 _fragment_ (it opens with `@reference`, because the app imports the
   shared stylesheet separately). Tailwind reads a fragment's `@theme` when
   generating utilities but does not emit its `:root` declarations, so
   `px-screen-sm` compiled to `padding-inline: var(--spacing-screen-sm)` while
@@ -120,8 +120,9 @@ work unchecked and explain it under final notes.
 
 - [x] Keep all app imports behind `@repo/ui/*`.
 - [x] Define shared mappings for legacy variants, sizes, and state props.
-- [ ] Handle `disabled`, `required`, native events, and React Aria events correctly.
+- [x] Handle `disabled`, `required`, native events, and React Aria events correctly.
 - [ ] Handle controlled and uncontrolled open state correctly.
+      Done for `Select` and `DatePicker`; the rest waits on the overlay phase.
 - [x] Replace `asChild` without nested interactive elements or broken links.
 - [x] Rewrite consumers where a compatibility wrapper would hide a semantic mismatch.
 
@@ -141,33 +142,104 @@ work unchecked and explain it under final notes.
 
 ## Forms and controls
 
-- [ ] Keep React Hook Form's FormProvider separate from HeroUI's HTML Form.
-- [ ] Define one shared React Hook Form and HeroUI field pattern.
-- [ ] Preserve field IDs, labels, descriptions, invalid state, and error links.
-- [ ] Migrate Input.
-- [ ] Migrate Textarea.
-- [ ] Migrate Label.
-- [ ] Migrate InputOTP.
-- [ ] Migrate Select.
+- [x] Keep React Hook Form's FormProvider separate from HeroUI's HTML Form.
+- [x] Define one shared React Hook Form and HeroUI field pattern.
+- [x] Preserve field IDs, labels, descriptions, invalid state, and error links.
+- [x] Migrate Input.
+- [x] Migrate Textarea.
+- [x] Migrate Label.
+- [x] Migrate InputOTP.
+- [x] Migrate Select.
 - [ ] Migrate Popover.
-- [ ] Migrate Calendar and DatePicker.
-- [ ] Centralize JavaScript Date and React Aria date-value conversion.
-- [ ] Retain and document `cmdk` if it remains necessary.
+      Left on Radix: its only remaining consumer is the degree picker's `cmdk`
+      build, and moving the wrapper before that field would strand it. The date
+      picker no longer uses it.
+- [x] Migrate Calendar and DatePicker.
+- [x] Centralize JavaScript Date and React Aria date-value conversion.
+- [x] Retain and document `cmdk` if it remains necessary.
+      Retained: it is what still drives the degree picker's ranked filtering.
+
+### Forms and controls notes
+
+- **The field pattern.** `FormItem` / `FormControl` / `useFormField`'s id
+  machinery is gone. HeroUI's `TextField` mints the ids from one
+  `useTextField()` call and threads them through React Aria context to the
+  nested `Label`, `Input`/`Textarea`, `Description` and `FieldError`. Verified
+  in the rendered HTML of `/en/student`: `label[for]` matches `input[id]`, and
+  `aria-describedby` lists the description and error ids.
+
+  ```tsx
+  <FormField
+    control={form.control}
+    name="name"
+    render={({ field, fieldState }) => (
+      <TextField {...fieldProps(field, fieldState)}>
+        <FormLabel>nom</FormLabel>
+        <Input
+          ref={field.ref}
+          data-field-name="name"
+          className={FIELD_CONTROL}
+        />
+        <FormMessage className={cn(FIELD_HINT, "font-medium")} />
+      </TextField>
+    )}
+  />
+  ```
+
+- `@repo/ui/text-field` is new and is the field root. It sets
+  `validationBehavior="aria"`, because the Zod schemas own validity and React
+  Aria must never raise a browser validation bubble of its own.
+- `fieldProps(field, fieldState)` is the single React Hook Form → HeroUI
+  mapping. `field.ref` is deliberately excluded: it belongs on the control,
+  since that is what React Hook Form focuses on a failed submit.
+- `isRequired` is **not** passed. It would add an asterisk to every label, and
+  in both forms here every field but one is required — the optional one says so
+  in its own label. The native `required` attribute stays exactly where it was.
+- `FormMessage` is HeroUI's `FieldError`, gated on the field root's `isInvalid`
+  — which is what makes it render once and only when invalid. Three controls
+  have no such root and render their message by hand, each saying so in a
+  comment: the year radio group, the OTP (whose root is a flex row of six
+  boxes), and the degree picker.
+- `Select` came out a drop-in: `value` / `onValueChange` / `SelectTrigger` /
+  `SelectValue` / `SelectContent` / `SelectItem` all kept their Radix spelling,
+  with the `Key` conversion and the trigger's chevron centralised in
+  `select.tsx`. Not one of its four consumers changed.
+- `DatePicker` still takes and emits plain `Date`; `packages/ui/src/lib/
+date-value.ts` is the one typed boundary to React Aria's `CalendarDate`, and
+  `packages/ui` now declares `@internationalized/date`. Both directions go
+  through the local time zone, so a day picked in Europe/Madrid comes back as
+  the same day.
+- The date picker's old `modal` prop is gone. It existed because Radix's
+  `Dialog` sets `pointer-events: none` on `<body>`, which the calendar
+  inherited through its portal. React Aria portals the same way, so the fix is
+  now a standing rule in `globals.css` scoped to that one popover's
+  `data-slot`.
 
 ## Public contact form
 
-- [ ] Move the contact form to the shared HeroUI field pattern.
-- [ ] Preserve translated labels, descriptions, and errors in all locales.
-- [ ] Preserve client validation and typed server failures.
-- [ ] Preserve pending, success, failure, and resubmission states.
+- [x] Move the contact form to the shared HeroUI field pattern.
+- [x] Preserve translated labels, descriptions, and errors in all locales.
+- [x] Preserve client validation and typed server failures.
+- [x] Preserve pending, success, failure, and resubmission states.
 - [ ] Verify keyboard submission, error focus, and mobile layout.
+      Blocked: no browser session is available. Verified from the server-
+      rendered markup only.
 
 ## Registration flow
 
 - [ ] Move every registration field to the shared HeroUI field pattern.
-- [ ] Preserve registration state transitions and API payloads.
-- [ ] Preserve server error mapping and recovery behavior.
-- [ ] Preserve degree filtering, keyboard navigation, selection, and escape.
+      Name, surnames, phone, note and email are on it. Year and degree are not:
+      neither is a text field, so both own their label and error wiring
+      directly — see the degree entry below.
+- [x] Preserve registration state transitions and API payloads.
+- [x] Preserve server error mapping and recovery behavior.
+- [x] Preserve degree filtering, keyboard navigation, selection, and escape.
+      Preserved by not migrating the control: it is still `cmdk` behind a Radix
+      popover. HeroUI's `Autocomplete` filters with a boolean predicate and
+      keeps the collection in its declared order, which cannot express the
+      ranking `scoreDegree` does (word-prefix matches above mid-word ones).
+      Replacing it means driving the filter's input value and computing the
+      sorted sections in the field — a change worth doing on its own.
 - [ ] Verify OTP typing, paste, autofill, disabled state, invalid state, and focus.
 - [ ] Verify phone, optional note, recap, pending, and failure states.
 - [ ] Verify the complete registration flow at mobile width.
@@ -234,20 +306,26 @@ Record the completed migration state here:
 
 - HeroUI-backed components: `button`, `card`, `alert`, `badge` (on HeroUI's
   `Chip`, not its `Badge`), `avatar`, `separator`, `skeleton`, `switch`,
-  `checkbox`.
+  `checkbox`, `input`, `textarea`, `label`, `text-field` (new), `form`,
+  `input-otp`, `select`, `calendar`, `date-picker`.
 - Retained custom components and why:
   - `button-group` — HeroUI's `ButtonGroup` is a segmented control (`gap-0`,
     stripped inner radii). Ours is a spacing helper for separate buttons.
     Swapping it would fuse buttons that are meant to stay distinct.
-  - Everything not yet reached by the migration (forms, overlays, navigation,
+  - `command` (`cmdk`) and `popover` (Radix) — still the degree picker's
+    ranked filter. See the registration section.
+  - Everything not yet reached by the migration (overlays, navigation,
     sidebar, table, toast) is still the copied shadcn implementation.
 - Remaining UI dependencies: not audited yet; no dependency has been removed.
-  Radix is still required by the unmigrated components, and HeroUI's own
-  `Avatar` is itself built on `@radix-ui/react-avatar`.
+  `@internationalized/date` was added to `packages/ui`, which now owns the
+  `Date` ↔ `CalendarDate` boundary. Radix is still required by the unmigrated
+  components, and HeroUI's own `Avatar` is itself built on
+  `@radix-ui/react-avatar`. `react-day-picker` no longer has a consumer.
 - Known regressions or blockers:
-  - Visual verification is now possible — the Chrome extension is connected.
-    The public app was checked at desktop width. Mobile widths, the
-    registration flow, admin dark mode and all keyboard checks are still
+  - **No browser session is available in the current session**, so nothing
+    since the stable-component phase has been looked at. The public app was
+    checked at desktop width when the Chrome extension was connected. Mobile
+    widths, the registration flow, admin dark mode and every keyboard check are
     outstanding.
   - The repository-wide Tailwind 4 class-ordering delta (61 files) is still
     unformatted, because several of those files contain user-owned work.
@@ -292,31 +370,21 @@ Record the completed migration state here:
 
 ### Resume point
 
-Phases 1-5 are done. Resume at phase 6 (forms and controls). The design is
-already worked out and recorded in the session scratchpad
-`mapping-decisions.md`; the short version:
+Phases 1-7 are done, minus the two controls called out above (the degree
+picker and the `Popover` wrapper it holds up). Resume at phase 9, overlays and
+navigation.
 
-- Every RHF form here already goes through `FormField` → `Controller`, so every
-  field is value-based — which is exactly what HeroUI wants
-  (`onChange(value: string)`, not a DOM event). No event adapter needed.
-- HeroUI's `TextField` already threads `id` / `aria-labelledby` /
-  `aria-describedby` to nested `Label`, `Input`, `Description` and `FieldError`
-  from one `useTextField()` call. Our `FormItem` / `FormControl` /
-  `useFormField` id machinery duplicates that and should be dropped; keep
-  `Form` (RHF's `FormProvider`, *not* HeroUI's `Form`) and `FormField`.
-- `FieldError` is context-gated on `isInvalid` and its `children` override the
-  auto message, so `<FieldError>{fieldState.error?.message}</FieldError>`
-  renders once, only when invalid — suits Zod messages and server errors pushed
-  in via `form.setError`.
-- Centralise the one mapping (`{...field}` cannot be spread wholesale:
-  `field.ref` belongs on the input and `undefined` must become `""`).
-- HeroUI's `input-otp` is a skin over the same `input-otp` package already in
-  use, so paste/autofill/the hidden real input survive — keep the dependency.
-- Use `ComboBox`, not `Autocomplete`, for the degree picker; it takes a `filter`
-  override so the existing diacritic-folded `scoreDegree` scorer carries over.
-- `@internationalized/date` is present transitively but declared by no
-  workspace; whichever package owns the `Date` ↔ `DateValue` conversion must
-  declare it.
+Two things the overlay phase inherits:
+
+- `packages/ui/src/globals.css` already carries the standing rule that undoes
+  Radix's `pointer-events: none` for React Aria's portalled popover. Once
+  `Sheet` and `Dialog` are HeroUI, that rule and its long comment should go —
+  React Aria manages its own layer stack, so the conflict disappears with the
+  last Radix overlay.
+- HeroUI's `PopoverTrigger` is a `<div role="button">`. Do not use it. React
+  Aria's `DialogTrigger` gives its trigger props to whatever focusable child it
+  is handed through `ButtonContext`, so the shared `Button` is the trigger and
+  the element stays a real `<button>`.
 
 Full API and consumer inventories for phases 6 and 9 are in the scratchpad:
 `heroui-forms-api.md`, `heroui-overlays-api.md`, `form-consumer-inventory.md`,
@@ -324,23 +392,29 @@ Full API and consumer inventories for phases 6 and 9 are in the scratchpad:
 
 ### Verification results
 
-Run on 2026-08-30 after the stable-component phase:
+Run on 2026-08-31 after the forms phase:
 
 - `npm run lint` — exit 0 (the five pre-existing `apps/api` `max-lines`
   warnings, unchanged).
 - `npm run check-types` — exit 0, all 12 packages.
-- `npm run test` — exit 0.
-- `npm run build` — exit 0 for all five build tasks, after removing the stray
-  `"use client"` from `button.tsx`. The `ECONNREFUSED` static-generation
-  warnings are the known pre-existing condition.
-- Compiled CSS for `web` and `admin` contains `.button--brand`, `.button--link`,
-  `.chip--brand`, `.chip--outline`, the `.alert--danger` / `.alert--accent`
-  border rules, and the `.card` override. The radius pin wins: `.button`
-  resolves to `calc(var(--radius) * .75)` = 0.375rem, not HeroUI's
-  `calc(var(--radius) * 3)` = 1.5rem, because both sit in `@layer components`
-  and ours is later in source order.
+- `npm run test` — exit 0, 14 tasks.
+- `npm run build` — exit 0 for all five build tasks.
+- Compiled CSS for `web` and `admin` contains the `--field-radius` override,
+  the `aria-invalid` invalid ring on `.input` and `.textarea`, the
+  `.popover, .select__popover` radius-and-border pin, the
+  `.calendar__cell, .calendar__nav-button, .list-box-item` radius pin, the
+  `.textfield[data-invalid] [data-slot=description] { display: block }`
+  override, and `[data-slot=date-picker-popover] { pointer-events: auto }`.
+- The server-rendered contact form on `/en/student` shows the field wiring
+  working: `label[for]` matches `input[id]`, `aria-labelledby` points at the
+  label, and `aria-describedby` carries the description and error-message ids.
 - `rg -n "@heroui" apps/` — no matches. No app imports HeroUI directly.
-- No `<Button asChild>` remains; the surviving `asChild` uses are Radix
-  triggers on components not yet migrated.
+
+Recorded earlier, after the stable-component phase (2026-08-30):
+
+- All four gates green. Compiled CSS contained `.button--brand`,
+  `.button--link`, `.chip--brand`, `.chip--outline`, the `.alert--danger` /
+  `.alert--accent` border rules and the `.card` override; `.button` resolved to
+  `calc(var(--radius) * .75)`, not HeroUI's `calc(var(--radius) * 3)`.
 - Browser check at 1440px on `/en` and `/en/student`: brand colours, card
   `accent` bar clipping, button radius and section padding all correct.
