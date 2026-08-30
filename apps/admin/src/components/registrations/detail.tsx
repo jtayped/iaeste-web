@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 
-import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
+import {
+  Alert,
+  AlertContent,
+  AlertDescription,
+  AlertIndicator,
+  AlertTitle,
+} from "@repo/ui/alert";
 import { Badge } from "@repo/ui/badge";
 
 import { Field, FieldList, Section } from "@/components/admin/detail-panel";
@@ -30,24 +36,28 @@ function DuplicateWarning({
 
   return (
     <Alert>
-      <TriangleAlert className="size-4" aria-hidden />
-      <AlertTitle>hi ha altres sol·licituds amb aquest correu</AlertTitle>
-      <AlertDescription>
-        <ul className="mt-2 space-y-1">
-          {duplicates.map((row) => (
-            <li key={row.id}>
-              <Link
-                href={`/registrations/${row.id}`}
-                className="underline underline-offset-4"
-              >
-                {row.campaignLabel}
-              </Link>{" "}
-              · {registrationStatus(row.status).label} ·{" "}
-              {formatDateTime(row.createdAt)}
-            </li>
-          ))}
-        </ul>
-      </AlertDescription>
+      <AlertIndicator>
+        <TriangleAlert className="size-4" aria-hidden />
+      </AlertIndicator>
+      <AlertContent>
+        <AlertTitle>hi ha altres sol·licituds amb aquest correu</AlertTitle>
+        <AlertDescription>
+          <ul className="mt-2 space-y-1">
+            {duplicates.map((row) => (
+              <li key={row.id}>
+                <Link
+                  href={`/registrations/${row.id}`}
+                  className="underline underline-offset-4"
+                >
+                  {row.campaignLabel}
+                </Link>{" "}
+                · {registrationStatus(row.status).label} ·{" "}
+                {formatDateTime(row.createdAt)}
+              </li>
+            ))}
+          </ul>
+        </AlertDescription>
+      </AlertContent>
     </Alert>
   );
 }
