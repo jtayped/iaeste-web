@@ -10,7 +10,7 @@
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
     "test": "tsx --test \"src/**/*.test.ts\"",
-    "with-env": "dotenv -e ../../.env"
+    "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
