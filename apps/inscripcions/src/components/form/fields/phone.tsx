@@ -11,20 +11,27 @@ import {
   FormMessage,
 } from "@repo/ui/form";
 import { Input } from "@repo/ui/input";
+import { cn } from "@repo/ui/lib/utils";
 
+import { FIELD_CONTROL, FIELD_HINT, FIELD_LABEL } from "../field-styles";
+
+/**
+ * The hint survives the trim because a bare number is parsed as Spanish, and
+ * an exchange programme has plenty of applicants whose number is not.
+ */
 const PhoneField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
   return (
     <FormField
       control={form.control}
       name="phone"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>número de telèfon</FormLabel>
+        <FormItem className="space-y-2">
+          <FormLabel className={FIELD_LABEL}>telèfon</FormLabel>
           <FormControl>
             <Input
-              placeholder="+34 623 32 42 34"
+              placeholder="623 32 42 34"
               data-field-name="phone"
-              className="h-11"
+              className={FIELD_CONTROL}
               required
               type="tel"
               inputMode="tel"
@@ -32,12 +39,10 @@ const PhoneField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
               {...field}
             />
           </FormControl>
-          <FormDescription>
-            si no hi poses prefix, l&apos;entendrem com un número espanyol.
-            escriu-lo amb prefix (per exemple <b>+34 623 32 42 34</b>) si és
-            d&apos;un altre país.
+          <FormDescription className={FIELD_HINT}>
+            amb prefix (+33…) si no és espanyol.
           </FormDescription>
-          <FormMessage />
+          <FormMessage className={cn(FIELD_HINT, "font-medium")} />
         </FormItem>
       )}
     />

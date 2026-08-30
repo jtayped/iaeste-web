@@ -121,7 +121,7 @@ describe("API", () => {
     const response = await app.request("/v1/registrations", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...validRegistration, email: "joan@notudl.cat" }),
+      body: JSON.stringify({ ...validRegistration, email: "not-an-email" }),
     });
     const body = (await response.json()) as {
       error: { code: string };

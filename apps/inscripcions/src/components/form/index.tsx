@@ -12,9 +12,8 @@ import PhoneField from "./fields/phone";
 import EmailField from "./fields/email";
 import ConfirmEmailField from "./fields/confirm-email";
 import { Button } from "@repo/ui/button";
-import { Card } from "@repo/ui/card";
-import { CircleUserRound, Loader2, School, Send } from "lucide-react";
-import { motion } from "framer-motion";
+import { AtSign, CircleUserRound, GraduationCap, Loader2 } from "lucide-react";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import {
@@ -25,14 +24,13 @@ import {
   type RegistrationForm,
 } from "@/lib/form-schema";
 import {
-  childVariants,
-  containerVariants,
   ErrorSummary,
   ExternalMemberNotice,
-  FormIntro,
-  Group,
+  FormHeader,
   PreviousRegistrationNotice,
+  Section,
 } from "./notices";
+import { childVariants, containerVariants, noticeVariants } from "./motion";
 import { mapSubmitResult, type SubmitOutcome } from "@/lib/registration-flow";
 import {
   recallRegistrationId,
@@ -49,10 +47,12 @@ function firstInvalidField(errors: FieldErrors<RegistrationForm>) {
 }
 
 /**
- * Moves focus to the field the user has to fix first. Radix-backed controls
- * (the degree select) expose no input to focus, and a collapsed note field is
- * not in the DOM at all, so the error summary is the fallback rather than
- * leaving focus stranded at the submit button.
+ * Moves focus to the field the user has to fix first.
+ *
+ * Every control now exposes something focusable under `data-field-name` — the
+ * degree combobox is a real button and the year segmented control is a real
+ * radio — so the error summary is only the fallback for a collapsed note
+ * field, which is not in the DOM at all when closed.
  */
 function focusField(field: string | undefined) {
   const target =
@@ -96,6 +96,8 @@ const UserForm = () => {
   const invalidFields = FIELD_ORDER.filter(
     (field) => form.formState.errors[field],
   );
+  const showErrorSummary =
+    invalidFields.length > 0 || Boolean(form.formState.errors.root);
 
   async function onSubmit(values: RegistrationForm) {
     form.clearErrors("root");
@@ -162,78 +164,123 @@ const UserForm = () => {
   }
 
   return (
-    <motion.div
-      className="py-10"
-      initial={false}
-      animate="visible"
-      variants={containerVariants}
-    >
-      <Form {...form}>
-        <form
-          noValidate
-          aria-busy={form.formState.isSubmitting}
-          onSubmit={form.handleSubmit(onSubmit, (errors) =>
-            focusError(firstInvalidField(errors)),
-          )}
-        >
-          <div className="space-y-6">
-            <FormIntro />
-
-            {previousId && <PreviousRegistrationNotice id={previousId} />}
-
-            {(invalidFields.length > 0 || form.formState.errors.root) && (
-              <ErrorSummary
-                fields={invalidFields}
-                errors={form.formState.errors}
-                rootMessage={form.formState.errors.root?.message}
-                onSelectField={focusField}
-              />
+    <MotionConfig reducedMotion="user">
+      <motion.div
+        className="py-10 sm:py-16"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <Form {...form}>
+          <form
+            noValidate
+            aria-busy={form.formState.isSubmitting}
+            onSubmit={form.handleSubmit(onSubmit, (errors) =>
+              focusError(firstInvalidField(errors)),
             )}
+          >
+            <FormHeader />
 
-            <Group title="qui ets?" icon={CircleUserRound}>
-              <NameField form={form} />
-              <SurnameField form={form} />
-            </Group>
+            {/* Notices live above the form surface: they are about the whole
+                submission, not about any one field. */}
+            <AnimatePresence initial={false}>
+              {previousId && (
+                <motion.div
+                  key="previous"
+                  variants={noticeVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="overflow-hidden"
+                >
+                  <div className="pb-4">
+                    <PreviousRegistrationNotice id={previousId} />
+                  </div>
+                </motion.div>
+              )}
 
-            <Group title="com et podem contactar?" icon={Send}>
-              <EmailField form={form} />
-              <ConfirmEmailField form={form} />
-              <PhoneField form={form} />
-            </Group>
+              {showErrorSummary && (
+                <motion.div
+                  key="errors"
+                  variants={noticeVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="overflow-hidden"
+                >
+                  <div className="pb-4">
+                    <ErrorSummary
+                      fields={invalidFields}
+                      errors={form.formState.errors}
+                      rootMessage={form.formState.errors.root?.message}
+                      onSelectField={focusField}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <motion.div
+              variants={childVariants}
+              className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm"
+            >
+              <Section title="qui ets?" icon={CircleUserRound}>
+                <NameField form={form} />
+                <SurnameField form={form} />
+              </Section>
+
+              <Section title="com et podem contactar?" icon={AtSign}>
+                {/* Email leads the row on its own so its hint has room, and
+                    the confirmation lands directly underneath it. */}
+                <div className="sm:col-span-2">
+                  <EmailField form={form} />
+                </div>
+                <ConfirmEmailField form={form} />
+                <PhoneField form={form} />
+              </Section>
+
+              <Section
+                title="què estudies?"
+                icon={GraduationCap}
+                className="sm:grid-cols-1"
+              >
+                <DegreeField form={form} />
+                <YearField form={form} />
+              </Section>
+
+              <div className="p-6 sm:p-8">
+                <NoteField form={form} />
+              </div>
+
+              <div className="bg-muted/60 p-6 sm:p-8">
+                <motion.div whileTap={{ scale: 0.99 }}>
+                  <Button
+                    className="h-11 w-full text-sm"
+                    type="submit"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        enviant…
+                      </>
+                    ) : (
+                      "inscriu-me"
+                    )}
+                  </Button>
+                </motion.div>
+                <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
+                  t&apos;enviarem un enllaç per verificar el correu. la
+                  inscripció arriba al comitè quan hi facis clic.
+                </p>
+              </div>
+            </motion.div>
 
             <ExternalMemberNotice />
-
-            <Group title="què estudies?" icon={School}>
-              <DegreeField form={form} />
-              <YearField form={form} />
-            </Group>
-
-            <motion.div variants={childVariants}>
-              <Card>
-                <NoteField form={form} />
-              </Card>
-            </motion.div>
-
-            <motion.div variants={childVariants}>
-              <Button
-                className="min-h-11 w-full"
-                type="submit"
-                disabled={form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    enviant…
-                  </>
-                ) : (
-                  "inscriu-me"
-                )}
-              </Button>
-            </motion.div>
-          </div>
-        </form>
-      </Form>
-    </motion.div>
+          </form>
+        </Form>
+      </motion.div>
+    </MotionConfig>
   );
 };
 

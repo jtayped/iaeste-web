@@ -53,7 +53,7 @@ export function profileSnapshot(overrides: Record<string, unknown> = {}) {
     surnames: "Serra Puig",
     phoneE164: "+34623324234",
     phoneDisplay: "+34 623 32 42 34",
-    degree: "Grau en Informàtica (Lleida)",
+    degree: "grau en informàtica (lleida)",
     studyYear: 3,
     note: "",
     ...overrides,

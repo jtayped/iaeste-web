@@ -36,7 +36,7 @@ async function createSeedMember(
     surnames: input.surnames,
     phoneE164: "+34600000000",
     phoneDisplay: "600 00 00 00",
-    degree: "Grau en Informàtica (Lleida)",
+    degree: "grau en informàtica (lleida)",
     studyYear: 3,
   });
 

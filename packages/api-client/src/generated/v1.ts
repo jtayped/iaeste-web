@@ -185,7 +185,7 @@ export interface components {
              * @example Grau en Informàtica (Lleida)
              * @enum {string}
              */
-            degree: "Doble Grau en Organització Industrial i ADE" | "Doble Grau en Informàtica i ADE" | "Doble Grau en Mecànica i Energia" | "Grau en Arquitectura Tècnica" | "Grau en Disseny Digital" | "Grau en Enginyeria de l'Energia" | "Grau en Eng. Electrònica Industrial" | "Grau en Organització Industrial" | "Grau en Informàtica (Igualada)" | "Grau en Informàtica (Lleida)" | "Grau en Enginyeria Mecànica" | "Grau en Enginyeria Química" | "Grau en Tècniques d'Interacció Digital" | "Altre";
+            degree: "doble grau en organització industrial i ADE" | "doble grau en informàtica i ADE" | "doble grau en mecànica i energia" | "grau en arquitectura tècnica" | "grau en disseny digital" | "grau en enginyeria de l'energia" | "grau en eng. electrònica industrial" | "grau en organització industrial" | "grau en informàtica (igualada)" | "grau en informàtica (lleida)" | "grau en enginyeria mecànica" | "grau en enginyeria química" | "grau en tècniques d'interacció digital" | "altre";
             /** @example 2 */
             year: number;
             /** @example M'interessen els intercanvis internacionals. */

@@ -14,10 +14,6 @@ export const registrationRequestSchema = z
       .trim()
       .toLowerCase()
       .email()
-      .refine((email) => {
-        const domain = email.split("@").at(-1);
-        return domain === "udl.cat" || domain?.endsWith(".udl.cat") === true;
-      })
       .openapi({ example: "joan@alumnes.udl.cat" }),
     phone: z
       .string()
@@ -27,7 +23,7 @@ export const registrationRequestSchema = z
       .openapi({ example: "+34 623 32 42 34" }),
     degree: z
       .enum(DEGREE_OPTIONS)
-      .openapi({ example: "Grau en Informàtica (Lleida)" }),
+      .openapi({ example: "grau en informàtica (lleida)" }),
     year: z.number().int().min(1).max(6).openapi({ example: 2 }),
     note: z.string().trim().max(2_000).optional().openapi({
       example: "M'interessen els intercanvis internacionals.",

@@ -3,15 +3,11 @@ import { z } from "zod";
 import { DEGREE_OPTIONS } from "../constants/studies";
 import { isValidPhone } from "./phone";
 
-const universityEmailSchema = z
+const emailSchema = z
   .string()
   .trim()
   .toLowerCase()
-  .email("adreça de correu electrònic no vàlida")
-  .refine((email) => {
-    const domain = email.split("@").at(-1);
-    return domain === "udl.cat" || domain?.endsWith(".udl.cat") === true;
-  }, "el correu ha de ser de la udl");
+  .email("adreça de correu electrònic no vàlida");
 
 export const registrationSchema = z.object({
   name: z.string().trim().min(2, "el nom ha de tenir almenys 2 caràcters"),
@@ -19,7 +15,7 @@ export const registrationSchema = z.object({
     .string()
     .trim()
     .min(2, "els cognoms han de tenir almenys 2 caràcters"),
-  email: universityEmailSchema,
+  email: emailSchema,
   phone: z
     .string()
     .trim()

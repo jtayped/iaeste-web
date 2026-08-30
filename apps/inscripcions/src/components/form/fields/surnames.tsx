@@ -7,8 +7,11 @@ import {
   FormMessage,
 } from "@repo/ui/form";
 import { Input } from "@repo/ui/input";
+import { cn } from "@repo/ui/lib/utils";
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
+
+import { FIELD_CONTROL, FIELD_HINT, FIELD_LABEL } from "../field-styles";
 
 const SurnameField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
   return (
@@ -16,19 +19,19 @@ const SurnameField = ({ form }: { form: UseFormReturn<RegistrationForm> }) => {
       control={form.control}
       name="surnames"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>cognoms</FormLabel>
+        <FormItem className="space-y-2">
+          <FormLabel className={FIELD_LABEL}>cognoms</FormLabel>
           <FormControl>
             <Input
               data-field-name="surnames"
-              className="h-11"
+              className={FIELD_CONTROL}
               placeholder="garcia serra"
               required
               autoComplete="family-name"
               {...field}
             />
           </FormControl>
-          <FormMessage />
+          <FormMessage className={cn(FIELD_HINT, "font-medium")} />
         </FormItem>
       )}
     />
