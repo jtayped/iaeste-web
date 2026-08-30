@@ -1,89 +1,215 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "@heroui/styles";
+
+@source "../../../apps/web/src";
+@source "../../../apps/inscripcions/src";
+@source "../../../apps/admin/src";
+@source ".";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Keep the existing utility contract while HeroUI components are introduced.
+   HeroUI owns the core semantic names; these aliases cover the legacy names
+   still used by the apps and copied shadcn components. */
+@theme inline {
+  --color-input: var(--field-border);
+  --color-ring: var(--focus);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--danger-foreground);
+  --color-muted-foreground: var(--muted);
+  --color-popover: var(--overlay);
+  --color-popover-foreground: var(--overlay-foreground);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--surface-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-caret-blink: caret-blink 1.25s ease-out infinite;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  70%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  50% {
+    opacity: 0;
+  }
+}
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 202 78% 20%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 206 78% 47%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    /* 6.1:1 on --background, 5.6:1 on --muted. The previous 46.9% sat at
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(222.2 84% 4.9%);
+    --surface: hsl(0 0% 100%);
+    --surface-foreground: var(--foreground);
+    --surface-secondary: hsl(210 40% 96.1%);
+    --surface-secondary-foreground: var(--foreground);
+    --surface-tertiary: hsl(210 40% 94%);
+    --surface-tertiary-foreground: var(--foreground);
+    --overlay: hsl(0 0% 100%);
+    --overlay-foreground: var(--foreground);
+    /* 6.1:1 on --background, 5.6:1 on --default. The previous 46.9% sat at
        4.75:1 on white and dropped below 4.5:1 over any tinted surface. */
-    --muted-foreground: 215.4 16.3% 40%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --muted: hsl(215.4 16.3% 40%);
+    --default: hsl(210 40% 96.1%);
+    --default-foreground: hsl(222.2 47.4% 11.2%);
+    --accent: hsl(202 78% 20%);
+    --accent-foreground: hsl(210 40% 98%);
+    --secondary: hsl(206 78% 47%);
+    --secondary-foreground: hsl(222.2 47.4% 11.2%);
+    --secondary-hover: color-mix(
+      in oklab,
+      var(--secondary) 88%,
+      var(--white) 12%
+    );
+    --field-background: var(--background);
+    --field-foreground: var(--foreground);
+    --field-placeholder: var(--muted);
+    /* 3.2:1 on the field background, while non-interactive separators keep
+       the lighter border token below. */
+    --field-border: hsl(215 16% 58%);
+    --field-border-width: 1px;
+    /* 5.6:1 at rest and 4.5:1 after HeroUI's light-theme hover mix. */
+    --danger: hsl(0 84.2% 43%);
+    --danger-foreground: hsl(210 40% 98%);
+    --border: hsl(214.3 31.8% 91.4%);
+    --separator: var(--border);
+    --focus: hsl(221.2 83.2% 53.3%);
+    --link: var(--secondary);
+    --primary: var(--accent);
+    --primary-foreground: var(--accent-foreground);
+    --destructive: var(--danger);
+    --destructive-foreground: var(--danger-foreground);
+    --muted-foreground: var(--muted);
+    --input: var(--field-border);
+    --ring: var(--focus);
+    --card: var(--surface);
+    --card-foreground: var(--surface-foreground);
+    --popover: var(--overlay);
+    --popover-foreground: var(--overlay-foreground);
     --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --sidebar-background: 210 40% 98%;
+    --chart-1: hsl(12 76% 61%);
+    --chart-2: hsl(173 58% 39%);
+    --chart-3: hsl(197 37% 24%);
+    --chart-4: hsl(43 74% 66%);
+    --chart-5: hsl(27 87% 67%);
+    --sidebar-background: hsl(210 40% 98%);
     /* 11.6:1 solid; the group labels render it at 70% and still clear 4.5:1. */
-    --sidebar-foreground: 215.4 16.3% 22%;
-    --sidebar-primary: 202 78% 20%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 210 40% 94%;
-    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 206 78% 47%;
+    --sidebar-foreground: hsl(215.4 16.3% 22%);
+    --sidebar-primary: var(--accent);
+    --sidebar-primary-foreground: var(--accent-foreground);
+    --sidebar-accent: hsl(210 40% 94%);
+    --sidebar-accent-foreground: hsl(222.2 47.4% 11.2%);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--secondary);
   }
 
   /* Activated by a `.dark` class on an ancestor (`darkMode: "class"`).
      Neither apps/web nor apps/inscripcions sets it, so both keep the light
      palette above; the admin app opts in. */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --background: hsl(222.2 84% 4.9%);
+    --foreground: hsl(210 40% 98%);
+    --surface: var(--background);
+    --surface-foreground: var(--foreground);
+    --surface-secondary: hsl(217.2 32.6% 17.5%);
+    --surface-secondary-foreground: var(--foreground);
+    --surface-tertiary: hsl(217.2 32.6% 20%);
+    --surface-tertiary-foreground: var(--foreground);
+    --overlay: var(--background);
+    --overlay-foreground: var(--foreground);
     /* The brand navy is unreadable on a dark surface, so it is lifted to the
        same hue at 60% lightness (8.1:1 on --background) and paired with a
        navy foreground (6.4:1 on the lifted primary). */
-    --primary: 202 78% 60%;
-    --primary-foreground: 202 80% 12%;
+    --accent: hsl(202 78% 60%);
+    --accent-foreground: hsl(202 80% 12%);
     /* Kept vivid: it carries links and focus in both themes. */
-    --secondary: 206 78% 47%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 217.2 32.6% 17.5%;
-    /* 7.9:1 on --background, 5.7:1 on --muted. */
-    --muted-foreground: 215 16% 65%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 206 78% 60%;
+    --secondary: hsl(206 78% 47%);
+    --secondary-foreground: hsl(222.2 47.4% 11.2%);
+    /* 7.9:1 on --background, 5.7:1 on --default. */
+    --muted: hsl(215 16% 65%);
+    --default: hsl(217.2 32.6% 17.5%);
+    --default-foreground: var(--foreground);
+    --field-background: var(--background);
+    --field-foreground: var(--foreground);
+    --field-placeholder: var(--muted);
+    /* 3.1:1 on the dark field background. */
+    --field-border: hsl(215 16% 38%);
+    --danger: hsl(0 62.8% 30.6%);
+    --danger-foreground: hsl(210 40% 98%);
+    --border: hsl(217.2 32.6% 17.5%);
+    --separator: var(--border);
+    --focus: hsl(206 78% 60%);
+    --link: var(--focus);
     --radius: 0.5rem;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 222.2 47% 8%;
-    --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 202 78% 60%;
-    --sidebar-primary-foreground: 202 80% 12%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 206 78% 60%;
+    --chart-1: hsl(220 70% 50%);
+    --chart-2: hsl(160 60% 45%);
+    --chart-3: hsl(30 80% 55%);
+    --chart-4: hsl(280 65% 60%);
+    --chart-5: hsl(340 75% 55%);
+    --sidebar-background: hsl(222.2 47% 8%);
+    --sidebar-foreground: hsl(210 40% 96%);
+    --sidebar-primary: var(--accent);
+    --sidebar-primary-foreground: var(--accent-foreground);
+    --sidebar-accent: hsl(217.2 32.6% 17.5%);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--focus);
+  }
+
+  html {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  body {
+    caret-color: var(--accent);
+  }
+
+  ::selection {
+    color: var(--foreground);
+    background-color: color-mix(in oklab, var(--accent) 28%, transparent);
+  }
+
+  a {
+    text-underline-offset: 0.2em;
   }
 }
 
@@ -93,6 +219,99 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* HeroUI component customisations.
+
+   HeroUI's own component CSS is imported into `@layer components` above, so
+   these rules extend it rather than fight it. Colour variants only set the
+   `--button-*` custom properties, which is exactly how HeroUI's own variants
+   work — see `@heroui/styles/dist/components/button.css`. */
+@layer components {
+  /* HeroUI v3 buttons are pills. IAESTE's are not, and this is a component
+     swap rather than a redesign, so keep the existing radius scale. */
+  .button {
+    @apply rounded-md;
+  }
+
+  /* IAESTE blue. HeroUI's `secondary` is a neutral grey fill, so the brand
+     colour needs a variant of its own. The doubled class outranks the
+     `.button--ghost` that carries it. */
+  .button.button--brand {
+    --button-bg: var(--secondary);
+    --button-bg-hover: var(--secondary-hover);
+    --button-bg-pressed: var(--secondary-hover);
+    --button-fg: var(--secondary-foreground);
+  }
+
+  /* A button that reads as a link; HeroUI has no such variant. The press
+     transform is dropped — text that shrinks when clicked looks broken. */
+  .button.button--link {
+    --button-bg: transparent;
+    --button-bg-hover: transparent;
+    --button-bg-pressed: transparent;
+    --button-fg: var(--primary);
+    @apply underline-offset-4;
+  }
+
+  .button.button--link:hover {
+    @apply underline;
+  }
+
+  .button.button--link:active,
+  .button.button--link[data-pressed="true"] {
+    transform: none;
+  }
+
+  /* HeroUI v3 leans on large radii — `rounded-3xl` on buttons, `min(32px,
+     var(--radius-3xl))` on cards and alerts, `rounded-2xl` on chips. IAESTE's
+     scale is much tighter. Pin each one back rather than redefining
+     `--radius-2xl`/`--radius-3xl` globally, which would also move the two
+     blog surfaces that use those utilities directly. */
+  .chip {
+    @apply rounded-md;
+  }
+
+  /* IAESTE blue, and the outlined status label. Neither exists in HeroUI's
+     chip palette. The doubled class outranks the neutral pairing carrying it. */
+  .chip.chip--brand {
+    --chip-bg: var(--secondary);
+    --chip-fg: var(--secondary-foreground);
+  }
+
+  .chip.chip--outline {
+    --chip-bg: transparent;
+    --chip-fg: var(--foreground);
+    @apply border;
+  }
+
+  /* Keep the IAESTE card: a bordered block box with its own padding. HeroUI's
+     `flex flex-col gap-3` would re-space every card in the public sections,
+     and `overflow-hidden` is what clips the `accent` bar to the corner. */
+  .card {
+    @apply block overflow-hidden rounded-lg border p-6;
+  }
+
+  .alert {
+    @apply rounded-lg border;
+  }
+
+  /* HeroUI tints only the indicator and title for `danger` and leaves the
+     description muted. The public contact form shows its error as a bare
+     description, so the red has to reach it too. */
+  .alert--danger {
+    border-color: color-mix(in oklab, var(--danger) 50%, transparent);
+  }
+
+  /* The public contact form's success notice was a hand-rolled navy box. It is
+     `status="accent"` now, so give accent the same bordered treatment. */
+  .alert--accent {
+    border-color: color-mix(in oklab, var(--accent) 30%, transparent);
+  }
+
+  .alert--danger .alert__description {
+    color: var(--danger-soft-foreground);
   }
 }
 
