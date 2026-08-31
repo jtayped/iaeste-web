@@ -8,7 +8,10 @@ import {
 } from "@heroui/react/popover";
 
 import { cn } from "@repo/ui/lib/utils";
-import { calendarDateToDate, dateToCalendarDate } from "@repo/ui/lib/date-value";
+import {
+  calendarDateToDate,
+  dateToCalendarDate,
+} from "@repo/ui/lib/date-value";
 import { Button } from "@repo/ui/button";
 import { Calendar, type CalendarProps } from "@repo/ui/calendar";
 
@@ -30,11 +33,10 @@ function formatDate(date: Date, locale?: string) {
   return `${day}/${month}/${date.getFullYear()}`;
 }
 
-export interface DatePickerProps
-  extends Omit<
-    React.ComponentPropsWithoutRef<typeof Button>,
-    "value" | "defaultValue" | "onChange" | "children"
-  > {
+export interface DatePickerProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof Button>,
+  "value" | "defaultValue" | "onChange" | "children"
+> {
   /** The selected day. `undefined` renders the placeholder. */
   value?: Date;
   /** Called with the new day, or `undefined` when the day is cleared. */
@@ -55,17 +57,6 @@ export interface DatePickerProps
  *   <DatePicker value={field.value} onChange={field.onChange} />
  * </FormControl>
  * ```
- *
- * React Aria portals its popover straight onto `document.body`, as a plain
- * sibling of whatever else is there — it never registers with Radix's
- * `DismissableLayer` stack. When this picker sits inside the admin's
- * create-campaign `Sheet` (a Radix modal `Dialog`), that layer sets
- * `document.body.style.pointerEvents = "none"` while the sheet is open and
- * only re-enables it on its own managed layers, so the calendar's days would
- * otherwise inherit `pointer-events: none` and become unclickable — the same
- * bug the old Radix-`Popover` `modal` prop used to paper over. The fix now
- * lives in `globals.css` as a standing rule scoped to this popover's
- * `data-slot`, so there is nothing left for a `modal` prop to toggle.
  */
 const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
   (
@@ -100,11 +91,7 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
           <CalendarIcon />
           {value ? formatDate(value, locale) : placeholder}
         </Button>
-        <HeroUIPopoverContent
-          data-slot="date-picker-popover"
-          placement="bottom start"
-          className="w-auto p-3"
-        >
+        <HeroUIPopoverContent placement="bottom start" className="w-auto p-3">
           <Calendar
             {...calendarProps}
             value={dateToCalendarDate(value) ?? null}

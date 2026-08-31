@@ -8,12 +8,13 @@ import { Button } from "@repo/ui/button";
 import { Input } from "@repo/ui/input";
 import { Separator } from "@repo/ui/separator";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@repo/ui/sheet";
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@repo/ui/drawer";
 import { SIDEBAR_WIDTH_MOBILE, useSidebar } from "@repo/ui/sidebar-context";
 
 type SidebarProps = React.ComponentPropsWithoutRef<"div"> & {
@@ -59,23 +60,27 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-          <SheetContent
+        <Drawer isOpen={openMobile} onOpenChange={setOpenMobile} {...props}>
+          <DrawerContent
             data-sidebar="sidebar"
             data-mobile="true"
-            side={side}
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            placement={side}
+            className="w-(--sidebar-width) max-w-[85vw] bg-sidebar p-0 text-sidebar-foreground"
             style={
               { "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as React.CSSProperties
             }
           >
-            <SheetHeader className="sr-only">
-              <SheetTitle>{mobileTitle}</SheetTitle>
-              <SheetDescription>{mobileDescription}</SheetDescription>
-            </SheetHeader>
-            <div className="flex h-full w-full flex-col">{children}</div>
-          </SheetContent>
-        </Sheet>
+            <DrawerHeader className="sr-only">
+              <DrawerTitle>{mobileTitle}</DrawerTitle>
+              <DrawerDescription>{mobileDescription}</DrawerDescription>
+            </DrawerHeader>
+            {/* The nav scrolls, so it is the body: that is the part React Aria
+                leaves scrollable and excludes from the drag-to-dismiss. */}
+            <DrawerBody className="flex h-full w-full flex-col">
+              {children}
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
       );
     }
 
@@ -166,7 +171,7 @@ const SidebarRail = React.forwardRef<
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
+        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border sm:flex",
         "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",
@@ -188,7 +193,7 @@ const SidebarInset = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex min-h-svh flex-1 flex-col bg-background",
-      "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
+      "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2",
       className,
     )}
     {...props}

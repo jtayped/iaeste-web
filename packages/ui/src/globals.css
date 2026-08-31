@@ -379,6 +379,25 @@
     @apply flex-col-reverse items-stretch sm:flex-row sm:items-center;
   }
 
+  /* An edge-anchored panel gets an edge. HeroUI carries the drawer on its
+     shadow alone, which against a white page leaves the seam between panel
+     and page invisible. */
+  .drawer__dialog[data-placement="right"] {
+    @apply border-l;
+  }
+
+  .drawer__dialog[data-placement="left"] {
+    @apply border-r;
+  }
+
+  .drawer__dialog[data-placement="top"] {
+    @apply border-b;
+  }
+
+  .drawer__dialog[data-placement="bottom"] {
+    @apply border-t;
+  }
+
   /* HeroUI caps a menu at 48% of the viewport. At 360px that is 172px, which
      clips both of the admin's menus — one asks for `w-56`, the other matches a
      sidebar trigger. A menu should be as wide as its longest campaign name,
@@ -439,23 +458,6 @@
     .breadcrumbs__link {
       @apply truncate;
     }
-  }
-
-  /* React Aria portals every popover straight onto `document.body`, as a
-     plain sibling of whatever else is there — see
-     `node_modules/react-aria/dist/private/overlays/Overlay.js`. It never
-     registers with Radix's `DismissableLayer` stack, which is what the admin's
-     create-campaign `Sheet` (a modal Radix `Dialog`) uses to make its backdrop
-     inert: that layer sets `document.body.style.pointerEvents = "none"` while
-     open and only re-enables it on its own managed layers (see
-     `@radix-ui/react-dismissable-layer/dist/index.js`). Without this, the date
-     picker's calendar would inherit `pointer-events: none` from `<body>` and
-     its days would be unclickable — the same bug the old Radix-`Popover`
-     `modal` prop existed to work around. Scoped to this one popover instance
-     (`date-picker.tsx` tags it explicitly) rather than every RAC portal, so it
-     can't make something inert on purpose clickable again. */
-  [data-slot="date-picker-popover"] {
-    pointer-events: auto;
   }
 }
 

@@ -5,13 +5,14 @@ import { Plus } from "lucide-react";
 
 import { Button } from "@repo/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@repo/ui/sheet";
+  Drawer,
+  DrawerBody,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@repo/ui/drawer";
 
 import { CampaignFields } from "@/components/campaigns/campaign-fields";
 import { useCampaignAction } from "@/lib/campaigns";
@@ -73,46 +74,51 @@ export function CreateCampaign() {
   }
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>
-        <Button size="sm" className="w-full sm:w-auto">
-          <Plus className="size-4" aria-hidden />
-          nova campanya
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>nova campanya</SheetTitle>
-          <SheetDescription>
+    <Drawer isOpen={open} onOpenChange={handleOpenChange}>
+      {/* The button is the trigger: React Aria hands it the trigger props
+          through context, so it needs no wrapper of its own. */}
+      <Button size="sm" className="w-full sm:w-auto">
+        <Plus className="size-4" aria-hidden />
+        nova campanya
+      </Button>
+      <DrawerContent className="w-full sm:max-w-lg">
+        <DrawerHeader>
+          <DrawerTitle>nova campanya</DrawerTitle>
+          <DrawerDescription>
             es crea com a esborrany. marcar-la com a actual i obrir les
             inscripcions són accions a part.
-          </SheetDescription>
-        </SheetHeader>
+          </DrawerDescription>
+        </DrawerHeader>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-6" noValidate>
-          <CampaignFields
-            state={state}
-            errors={errors}
-            slugEditable
-            onChange={(patch) =>
-              setState((current) => ({ ...current, ...patch }))
-            }
-          />
+        {/* The form lives in the body: that is the part React Aria leaves
+            scrollable and keeps out of the drag-to-dismiss. */}
+        <DrawerBody className="mt-6">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+            <CampaignFields
+              state={state}
+              errors={errors}
+              slugEditable
+              onChange={(patch) =>
+                setState((current) => ({ ...current, ...patch }))
+              }
+            />
 
-          <div className="flex flex-col gap-2 sm:flex-row-reverse [&>*]:min-h-11 sm:[&>*]:min-h-9">
-            <Button type="submit" disabled={action.isPending}>
-              {action.isPending ? "creant…" : "crea la campanya"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              cancel·la
-            </Button>
-          </div>
-        </form>
-      </SheetContent>
-    </Sheet>
+            <div className="flex flex-col gap-2 sm:flex-row-reverse [&>*]:min-h-11 sm:[&>*]:min-h-9">
+              <Button type="submit" disabled={action.isPending}>
+                {action.isPending ? "creant…" : "crea la campanya"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                cancel·la
+              </Button>
+            </div>
+          </form>
+        </DrawerBody>
+        <DrawerClose />
+      </DrawerContent>
+    </Drawer>
   );
 }
