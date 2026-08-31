@@ -1296,6 +1296,9 @@
           "profile": {
             "$ref": "#/components/schemas/AdminMemberProfile"
           },
+          "emails": {
+            "$ref": "#/components/schemas/AdminMemberEmails"
+          },
           "memberships": {
             "type": "array",
             "items": {
@@ -1311,6 +1314,7 @@
         },
         "required": [
           "profile",
+          "emails",
           "memberships",
           "events"
         ]
@@ -1363,6 +1367,42 @@
           "studyYear",
           "role",
           "createdAt"
+        ]
+      },
+      "AdminMemberEmails": {
+        "type": "object",
+        "properties": {
+          "university": {
+            "$ref": "#/components/schemas/AdminMemberEmail"
+          },
+          "personal": {
+            "$ref": "#/components/schemas/AdminMemberEmail"
+          }
+        },
+        "required": [
+          "university",
+          "personal"
+        ]
+      },
+      "AdminMemberEmail": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "verifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "verifiedAt"
         ]
       },
       "AdminMemberTimelineMembership": {
@@ -1447,6 +1487,36 @@
           "campaignId",
           "createdAt"
         ]
+      },
+      "AdminMemberEmailsResponse": {
+        "type": "object",
+        "properties": {
+          "emails": {
+            "$ref": "#/components/schemas/AdminMemberEmails"
+          }
+        },
+        "required": [
+          "emails"
+        ]
+      },
+      "AdminSetMemberEmailsRequest": {
+        "type": "object",
+        "properties": {
+          "university": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email"
+          },
+          "personal": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email"
+          }
+        }
       },
       "AdminMemberStatusResponse": {
         "type": "object",
@@ -2317,7 +2387,7 @@
         "tags": [
           "Admin"
         ],
-        "description": "The VAPID public key the admin PWA needs to create a push subscription. Fetched at runtime so no key is compiled into the browser bundle. Empty string when push is not configured on the server. Requires the `admin.access` capability.",
+        "description": "The VAPID public key the admin PWA needs to create a push subscription. Fetched at runtime so no key is compiled into the browser bundle. Empty string when push is not configured on the server. Requires the `notifications.manage` capability.",
         "responses": {
           "200": {
             "description": "The VAPID public key, or an empty string.",
@@ -2358,7 +2428,7 @@
         "tags": [
           "Admin"
         ],
-        "description": "Register (or refresh) this browser's push subscription for the signed-in admin. Idempotent on the endpoint. Requires `admin.access`.",
+        "description": "Register (or refresh) this browser's push subscription for the signed-in admin. Idempotent on the endpoint. Requires `notifications.manage`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -2409,7 +2479,7 @@
         "tags": [
           "Admin"
         ],
-        "description": "Drop this browser's push subscription. Idempotent. Requires `admin.access`.",
+        "description": "Drop this browser's push subscription. Idempotent. Requires `notifications.manage`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -2460,7 +2530,7 @@
         "tags": [
           "Admin"
         ],
-        "description": "Dashboard counts for the current campaign plus the current / registration-open campaign refs for the header. Requires the `admin.access` capability.",
+        "description": "Dashboard counts for the current campaign plus the current / registration-open campaign refs for the header. Requires the `dashboard.read` capability.",
         "responses": {
           "200": {
             "description": "Counts and campaign context.",
@@ -3526,6 +3596,99 @@
           },
           "404": {
             "description": "No user with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/members/{userId}/emails": {
+      "patch": {
+        "operationId": "adminSetMemberEmails",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Set, replace or clear a member's university / personal email addresses. A field with a string sets that slot (stored already verified — an admin edit is trusted, so the member can sign in with it at once); a field set to `null` clears it; an omitted field is left as-is. The edit may not leave the member with no address, and the canonical account email is re-pointed at the personal address (or the university one if there is no personal). Any well-formed address is allowed in either slot, but the two slots must differ. Requires `members.email.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "user_123"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetMemberEmailsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The member's addresses after the edit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMemberEmailsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No member (member_profile row) with that user id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "One of the addresses is already linked to another account, or the edit would leave the member with no email address at all.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Neither email field was supplied, an address is malformed, or both slots contain the same address.",
             "content": {
               "application/json": {
                 "schema": {

@@ -157,7 +157,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description The VAPID public key the admin PWA needs to create a push subscription. Fetched at runtime so no key is compiled into the browser bundle. Empty string when push is not configured on the server. Requires the `admin.access` capability. */
+        /** @description The VAPID public key the admin PWA needs to create a push subscription. Fetched at runtime so no key is compiled into the browser bundle. Empty string when push is not configured on the server. Requires the `notifications.manage` capability. */
         get: operations["adminPushPublicKey"];
         put?: never;
         post?: never;
@@ -176,7 +176,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Register (or refresh) this browser's push subscription for the signed-in admin. Idempotent on the endpoint. Requires `admin.access`. */
+        /** @description Register (or refresh) this browser's push subscription for the signed-in admin. Idempotent on the endpoint. Requires `notifications.manage`. */
         post: operations["adminPushSubscribe"];
         delete?: never;
         options?: never;
@@ -193,7 +193,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Drop this browser's push subscription. Idempotent. Requires `admin.access`. */
+        /** @description Drop this browser's push subscription. Idempotent. Requires `notifications.manage`. */
         post: operations["adminPushUnsubscribe"];
         delete?: never;
         options?: never;
@@ -208,7 +208,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Dashboard counts for the current campaign plus the current / registration-open campaign refs for the header. Requires the `admin.access` capability. */
+        /** @description Dashboard counts for the current campaign plus the current / registration-open campaign refs for the header. Requires the `dashboard.read` capability. */
         get: operations["adminOverview"];
         put?: never;
         post?: never;
@@ -422,6 +422,23 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/members/{userId}/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Set, replace or clear a member's university / personal email addresses. A field with a string sets that slot (stored already verified — an admin edit is trusted, so the member can sign in with it at once); a field set to `null` clears it; an omitted field is left as-is. The edit may not leave the member with no address, and the canonical account email is re-pointed at the personal address (or the university one if there is no personal). Any well-formed address is allowed in either slot, but the two slots must differ. Requires `members.email.write`. */
+        patch: operations["adminSetMemberEmails"];
         trace?: never;
     };
     "/v1/admin/members/{userId}/leave": {
@@ -913,6 +930,7 @@ export interface components {
         };
         AdminMemberDetail: {
             profile: components["schemas"]["AdminMemberProfile"];
+            emails: components["schemas"]["AdminMemberEmails"];
             memberships: components["schemas"]["AdminMemberTimelineMembership"][];
             events: components["schemas"]["AdminMemberTimelineEvent"][];
         };
@@ -928,6 +946,14 @@ export interface components {
             role: string | null;
             createdAt: string;
         };
+        AdminMemberEmails: {
+            university: components["schemas"]["AdminMemberEmail"];
+            personal: components["schemas"]["AdminMemberEmail"];
+        };
+        AdminMemberEmail: {
+            email: string;
+            verifiedAt: string | null;
+        } | null;
         AdminMemberTimelineMembership: {
             id: string;
             campaignId: string;
@@ -946,6 +972,15 @@ export interface components {
             campaignId: string | null;
             details?: unknown;
             createdAt: string;
+        };
+        AdminMemberEmailsResponse: {
+            emails: components["schemas"]["AdminMemberEmails"];
+        };
+        AdminSetMemberEmailsRequest: {
+            /** Format: email */
+            university?: string | null;
+            /** Format: email */
+            personal?: string | null;
         };
         AdminMemberStatusResponse: {
             /** @enum {string} */
@@ -2315,6 +2350,77 @@ export interface operations {
             };
             /** @description No user with that id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminSetMemberEmails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetMemberEmailsRequest"];
+            };
+        };
+        responses: {
+            /** @description The member's addresses after the edit. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMemberEmailsResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No member (member_profile row) with that user id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description One of the addresses is already linked to another account, or the edit would leave the member with no email address at all. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Neither email field was supplied, an address is malformed, or both slots contain the same address. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

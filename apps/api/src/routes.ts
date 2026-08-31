@@ -22,9 +22,11 @@ import {
   adminKickBodySchema,
   adminLeaveBodySchema,
   adminMemberDetailSchema,
+  adminMemberEmailsResponseSchema,
   adminMemberListQuerySchema,
   adminMemberListSchema,
   adminMemberStatusResponseSchema,
+  adminSetMemberEmailsBodySchema,
   adminRegistrationDetailSchema,
   adminRestoreResponseSchema,
   adminSetRoleBodySchema,
@@ -528,7 +530,7 @@ export const adminOverviewRoute = createRoute({
   description:
     "Dashboard counts for the current campaign plus the current / " +
     "registration-open campaign refs for the header. Requires the " +
-    "`admin.access` capability.",
+    "`dashboard.read` capability.",
   responses: {
     200: {
       description: "Counts and campaign context.",
@@ -549,7 +551,7 @@ export const adminPushPublicKeyRoute = createRoute({
     "The VAPID public key the admin PWA needs to create a push " +
     "subscription. Fetched at runtime so no key is compiled into the " +
     "browser bundle. Empty string when push is not configured on the " +
-    "server. Requires the `admin.access` capability.",
+    "server. Requires the `notifications.manage` capability.",
   responses: {
     200: {
       description: "The VAPID public key, or an empty string.",
@@ -566,7 +568,7 @@ export const adminPushSubscribeRoute = createRoute({
   tags: ["Admin"],
   description:
     "Register (or refresh) this browser's push subscription for the " +
-    "signed-in admin. Idempotent on the endpoint. Requires `admin.access`.",
+    "signed-in admin. Idempotent on the endpoint. Requires `notifications.manage`.",
   request: {
     body: {
       required: true,
@@ -593,7 +595,7 @@ export const adminPushUnsubscribeRoute = createRoute({
   tags: ["Admin"],
   description:
     "Drop this browser's push subscription. Idempotent. Requires " +
-    "`admin.access`.",
+    "`notifications.manage`.",
   request: {
     body: {
       required: true,
@@ -1001,6 +1003,57 @@ export const adminMemberSetRoleRoute = createRoute({
     },
     404: {
       description: "No member (member_profile row) with that user id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminSetMemberEmailsRoute = createRoute({
+  method: "patch",
+  path: "/v1/admin/members/{userId}/emails",
+  operationId: "adminSetMemberEmails",
+  tags: ["Admin"],
+  description:
+    "Set, replace or clear a member's university / personal email " +
+    "addresses. A field with a string sets that slot (stored already " +
+    "verified — an admin edit is trusted, so the member can sign in with " +
+    "it at once); a field set to `null` clears it; an omitted field is " +
+    "left as-is. The edit may not leave the member with no address, and " +
+    "the canonical account email is re-pointed at the personal address " +
+    "(or the university one if there is no personal). Any well-formed " +
+    "address is allowed in either slot, but the two slots must differ. " +
+    "Requires `members.email.write`.",
+  request: {
+    params: userIdParamSchema,
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: adminSetMemberEmailsBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "The member's addresses after the edit.",
+      content: {
+        "application/json": { schema: adminMemberEmailsResponseSchema },
+      },
+    },
+    404: {
+      description: "No member (member_profile row) with that user id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    422: {
+      description:
+        "Neither email field was supplied, an address is malformed, or both " +
+        "slots contain the same address.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description:
+        "One of the addresses is already linked to another account, or " +
+        "the edit would leave the member with no email address at all.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
     ...adminAuthResponses,

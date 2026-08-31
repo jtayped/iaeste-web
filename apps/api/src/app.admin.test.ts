@@ -260,6 +260,20 @@ describe("admin registrations", () => {
 describe("admin authorization (IA-31)", () => {
   const listUrl = "/v1/admin/registrations?campaignId=campaign_1";
 
+  it("keeps admin dashboard data hidden from a member", async () => {
+    const app = createTestApp(
+      undefined,
+      createRegistrationServiceStub(),
+      undefined,
+      createStubAuth({ role: "member" }),
+    );
+    const response = await app.request("/v1/admin/overview");
+    const body = (await response.json()) as { error: { code: string } };
+
+    assert.equal(response.status, 403);
+    assert.equal(body.error.code, "FORBIDDEN");
+  });
+
   it("401s when there is no session", async () => {
     const app = createTestApp(
       undefined,

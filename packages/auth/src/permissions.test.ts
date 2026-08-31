@@ -13,8 +13,11 @@ describe("can", () => {
     }
   });
 
-  it("grants a member nothing", () => {
+  it("only grants a member access to the app shell", () => {
+    assert.equal(can(member, "admin.access"), true);
+
     for (const capability of capabilities) {
+      if (capability === "admin.access") continue;
       assert.equal(can(member, capability), false, capability);
     }
   });

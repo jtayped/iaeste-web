@@ -18,8 +18,11 @@ import {
   createOverviewRepository,
   createPushSubscriptionRepository,
   createUserEmailRepository,
+  DuplicateEmailSlotsError,
   IllegalTransitionError,
+  EmailAddressInUseError,
   EmailIdentityConflictError,
+  LastEmailRemovalError,
   NotFoundError,
 } from "@repo/db/repositories";
 
@@ -67,6 +70,7 @@ import {
   adminMemberLeaveRoute,
   adminMemberRestoreRoute,
   adminMemberSetRoleRoute,
+  adminSetMemberEmailsRoute,
   adminListRegistrationsRoute,
   adminOverviewRoute,
   adminPushPublicKeyRoute,
@@ -598,10 +602,19 @@ export function createApp(dependencies: AppDependencies = {}) {
     hasMemberProfile: dependencies.hasMemberProfile,
   });
 
-  app.use("/v1/admin/overview", requireCapability("admin.access"));
-  app.use("/v1/admin/push/public-key", requireCapability("admin.access"));
-  app.use("/v1/admin/push/subscribe", requireCapability("admin.access"));
-  app.use("/v1/admin/push/unsubscribe", requireCapability("admin.access"));
+  app.use("/v1/admin/overview", requireCapability("dashboard.read"));
+  app.use(
+    "/v1/admin/push/public-key",
+    requireCapability("notifications.manage"),
+  );
+  app.use(
+    "/v1/admin/push/subscribe",
+    requireCapability("notifications.manage"),
+  );
+  app.use(
+    "/v1/admin/push/unsubscribe",
+    requireCapability("notifications.manage"),
+  );
   app.use("/v1/admin/campaigns", requireCapability("campaigns.write"));
   app.use("/v1/admin/campaigns/:id", requireCapability("campaigns.write"));
   app.use(
@@ -643,6 +656,10 @@ export function createApp(dependencies: AppDependencies = {}) {
   app.use(
     "/v1/admin/members/:userId/role",
     requireCapability("members.role.write"),
+  );
+  app.use(
+    "/v1/admin/members/:userId/emails",
+    requireCapability("members.email.write"),
   );
   app.use("/v1/admin/invitations", requireCapability("invitations.write"));
   app.use(
@@ -1087,11 +1104,77 @@ export function createApp(dependencies: AppDependencies = {}) {
         404,
       );
     }
-    const [memberships, events] = await Promise.all([
+    const [emails, memberships, events] = await Promise.all([
+      createUserEmailRepository(db).listForUser(userId),
       createMembershipRepository(db).listForUser(userId),
       createMembershipEventRepository(db).listForUser(userId),
     ]);
-    return c.json(toMemberDetail(profile, memberships, events), 200);
+    return c.json(toMemberDetail(profile, emails, memberships, events), 200);
+  });
+
+  app.openapi(adminSetMemberEmailsRoute, async (c) => {
+    const { userId } = c.req.valid("param");
+    const body = c.req.valid("json");
+    const db = adminDb();
+    // Same "is this actually a member" gate the rest of the fitxa uses.
+    const profile = await createMemberRepository(db).getProfile(userId);
+    if (!profile) {
+      return c.json(
+        errorBody(c.get("requestId"), "NOT_FOUND", "No member with that id."),
+        404,
+      );
+    }
+    try {
+      const emails = await createUserEmailRepository(db).setForUser(
+        userId,
+        body,
+      );
+      // Changing a sign-in identity invalidates every existing login for that
+      // member. The email edit has already committed, so match the kick flow:
+      // report a revocation failure without pretending the address update
+      // rolled back.
+      try {
+        await revokeAllUserSessions(authInstance(), userId);
+      } catch (error) {
+        logger.error(
+          `[${c.get("requestId")}] failed to revoke sessions after email change`,
+          error,
+        );
+      }
+      return c.json({ emails }, 200);
+    } catch (error) {
+      if (error instanceof EmailAddressInUseError) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "CONFLICT",
+            "That address is already linked to another account.",
+          ),
+          409,
+        );
+      }
+      if (error instanceof LastEmailRemovalError) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "CONFLICT",
+            "A member must keep at least one email address.",
+          ),
+          409,
+        );
+      }
+      if (error instanceof DuplicateEmailSlotsError) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "VALIDATION_ERROR",
+            "The university and personal addresses must differ.",
+          ),
+          422,
+        );
+      }
+      throw error;
+    }
   });
 
   type ResolvedMembership =

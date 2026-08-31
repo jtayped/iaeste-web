@@ -11,12 +11,15 @@ import { isAuthRole, type AuthRole } from "./index";
  */
 export const capabilities = [
   "admin.access", // may load the admin app at all
+  "dashboard.read", // may read the organisation overview and its counts
+  "notifications.manage", // may subscribe this device to admin work alerts
   "registrations.review", // accept / reject / restore
   "campaigns.write", // create and edit drafts
   "campaigns.rollover", // open, close, make-current, archive
   "members.read",
   "members.status.write", // leave, kick, restore ("donar de baixa" — keeps history)
   "members.role.write", // promote / demote
+  "members.email.write", // edit a member's university / personal email addresses
   "members.delete", // irreversibly erase a user and every row about them
   "invitations.write", // invite a member
   "invitations.grant_admin", // invite someone as admin
@@ -26,7 +29,8 @@ export const capabilities = [
 export type Capability = (typeof capabilities)[number];
 
 /**
- * v1: `admin` holds every capability, `member` holds none. The distinct
+ * v1: `admin` holds every capability. `member` may enter the admin product,
+ * but does not receive any organisation data or actions yet. The distinct
  * `members.role.write` / `invitations.grant_admin` / `members.delete`
  * entries already exist so a later refinement (e.g. a "board" tier that may
  * invite members and end memberships but never erase a user) is a one-line
@@ -35,7 +39,7 @@ export type Capability = (typeof capabilities)[number];
  * narrower role added later must not receive it by default.
  */
 const byRole: Record<AuthRole, readonly Capability[]> = {
-  member: [],
+  member: ["admin.access"],
   admin: capabilities,
 };
 
