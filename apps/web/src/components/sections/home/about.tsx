@@ -12,10 +12,12 @@ const About = () => {
       <article>
         <H2>{t("title")}</H2>
         <Subheader>{t("subtitle")}</Subheader>
-        <Paragraph>{t("description")}</Paragraph>
+        <Paragraph className="max-w-[65ch] leading-relaxed">
+          {t("description")}
+        </Paragraph>
         <LearnMoreBtn />
       </article>
-      <div className="grid grid-cols-2 gap-3">
+      <ul className="grid grid-cols-2 gap-3 md:gap-4">
         {allStatistics.map((s, i) => (
           <li key={i} className="list-none">
             <Statistic
@@ -25,7 +27,7 @@ const About = () => {
             />
           </li>
         ))}
-      </div>
+      </ul>
     </DivideSection>
   );
 };

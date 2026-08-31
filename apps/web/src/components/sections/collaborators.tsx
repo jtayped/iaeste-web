@@ -13,13 +13,15 @@ const Collaborators = () => {
               href={c.href}
               target="_blank" // Opens the link in a new tab
               rel="noopener noreferrer" // Security best practice
+              aria-label={c.name}
+              className="block"
             >
               <Image
                 src={c.src}
                 width={300}
                 height={200}
                 alt={c.name}
-                className="h-20 object-contain"
+                className="h-16 w-full object-contain opacity-70 grayscale transition duration-300 hover:opacity-100 hover:grayscale-0 md:h-20"
               />
             </Link>
           </li>

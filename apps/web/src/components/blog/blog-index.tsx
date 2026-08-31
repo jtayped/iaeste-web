@@ -55,7 +55,7 @@ function FeaturedPost({
   fallbackLabel: string;
 }) {
   return (
-    <article className="grid items-stretch overflow-hidden rounded-2xl bg-background text-foreground shadow-[0_24px_70px_-32px_hsl(var(--foreground)/0.55)] lg:grid-cols-[1.15fr_0.85fr]">
+    <article className="grid items-stretch overflow-hidden rounded-2xl bg-background text-foreground shadow-[0_24px_70px_-32px_color-mix(in_oklab,var(--foreground)_55%,transparent)] lg:grid-cols-[1.15fr_0.85fr]">
       <div className="relative min-h-72 lg:min-h-[30rem]">
         <Image
           src={post.coverImage}
@@ -76,7 +76,7 @@ function FeaturedPost({
           <p className="mt-6 text-sm text-muted-foreground">
             {formatDate(post.publishDate, post.requestedLocale)} · {post.author}
           </p>
-          <h2 className="mt-4 max-w-xl text-balance text-3xl font-bold leading-tight tracking-[-0.03em] sm:text-4xl">
+          <h2 className="mt-4 max-w-xl text-3xl leading-tight font-bold tracking-[-0.03em] text-balance sm:text-4xl">
             {post.title}
           </h2>
           <p className="mt-5 max-w-prose leading-7 text-muted-foreground">
@@ -85,7 +85,7 @@ function FeaturedPost({
         </div>
         <Link
           href={`/blog/${post.slug}`}
-          className="mt-10 inline-flex w-fit items-center gap-3 font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4"
+          className="mt-10 inline-flex w-fit items-center gap-3 font-semibold text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:outline-none"
         >
           {readLabel}
           <ArrowRight aria-hidden="true" size={18} />
@@ -128,7 +128,7 @@ function PostRow({
             fallbackLabel={fallbackLabel}
           />
         </div>
-        <h2 className="mt-3 text-balance text-2xl font-bold tracking-[-0.025em]">
+        <h2 className="mt-3 text-2xl font-bold tracking-[-0.025em] text-balance">
           {post.title}
         </h2>
         <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">
@@ -138,7 +138,7 @@ function PostRow({
       <Link
         href={`/blog/${post.slug}`}
         aria-label={`${readLabel}: ${post.title}`}
-        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:outline-none"
       >
         <ArrowRight aria-hidden="true" size={18} />
       </Link>
@@ -165,9 +165,9 @@ export default async function BlogIndex({
 
   return (
     <>
-      <section className="bg-primary pb-16 pt-40 text-primary-foreground sm:pb-24 sm:pt-48">
+      <section className="bg-primary pt-40 pb-16 text-primary-foreground sm:pt-48 sm:pb-24">
         <div className="section-padding mx-auto max-w-7xl">
-          <h1 className="max-w-4xl text-balance text-5xl font-bold leading-[0.98] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
+          <h1 className="max-w-4xl text-5xl leading-[0.98] font-bold tracking-[-0.04em] text-balance sm:text-6xl lg:text-7xl">
             {t("title")}
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-primary-foreground/80">
@@ -219,7 +219,7 @@ export default async function BlogIndex({
                   key={pageNumber}
                   href={href}
                   aria-current={pageNumber === page ? "page" : undefined}
-                  className="inline-flex h-11 min-w-11 items-center justify-center rounded-full border px-4 text-sm font-semibold transition-colors hover:bg-muted aria-[current=page]:border-primary aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
+                  className="inline-flex h-11 min-w-11 items-center justify-center rounded-full border px-4 text-sm font-semibold transition-colors hover:bg-default aria-[current=page]:border-primary aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
                 >
                   {pageNumber}
                 </Link>

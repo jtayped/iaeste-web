@@ -10,26 +10,35 @@ const Contact = () => {
   const t = useTranslations("contact");
 
   return (
-    <DivideSection>
-      <div>
-        <div className="flex items-center gap-3.5">
-          <H2>{t("title")}</H2>
-          <ul className="flex items-center gap-2">
-            {socials.map((s) => {
-              const Icon = s.icon;
-              return (
-                <li key={s.name}>
-                  <Link href={s.href}>
-                    <Icon size={25} />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-        <Paragraph>{t("description")}</Paragraph>
+    <DivideSection className="md:items-center">
+      <article>
+        <H2>{t("title")}</H2>
+        <Paragraph className="max-w-[46ch] leading-relaxed text-muted-foreground">
+          {t("description")}
+        </Paragraph>
         <SendEmailBtn icon />
-      </div>
+
+        {/* These were bare 25px glyphs sharing a flex row with the heading:
+            too small to tap, and optically adrift against 30px type. */}
+        <ul className="mt-10 flex flex-wrap items-center gap-2">
+          {socials.map((s) => {
+            const Icon = s.icon;
+            return (
+              <li key={s.name}>
+                <Link
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.name}
+                  className="flex size-11 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <Icon size={18} aria-hidden />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </article>
       <ContactForm />
     </DivideSection>
   );

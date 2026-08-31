@@ -7,7 +7,7 @@ import HowItWorks from "@/components/sections/home/how-it-works";
 
 export default function HomePage() {
   return (
-    <main>
+    <>
       <Hero />
       <Content className="py-10">
         <Collaborators />
@@ -15,6 +15,6 @@ export default function HomePage() {
         <HowItWorks />
         <Contact />
       </Content>
-    </main>
+    </>
   );
 }

@@ -98,16 +98,16 @@ export default async function BlogPostPage({
 
   return (
     <article>
-      <header className="bg-primary pb-20 pt-40 text-primary-foreground sm:pt-48">
+      <header className="bg-primary pt-40 pb-20 text-primary-foreground sm:pt-48">
         <div className="section-padding mx-auto max-w-5xl">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground focus-visible:ring-offset-4 focus-visible:ring-offset-primary"
+            className="inline-flex items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-primary-foreground focus-visible:ring-offset-4 focus-visible:ring-offset-primary focus-visible:outline-none"
           >
             <ArrowLeft aria-hidden="true" size={17} />
             {t("back")}
           </Link>
-          <h1 className="mt-10 max-w-4xl text-balance text-4xl font-bold leading-[1.02] tracking-[-0.04em] sm:text-6xl">
+          <h1 className="mt-10 max-w-4xl text-4xl leading-[1.02] font-bold tracking-[-0.04em] text-balance sm:text-6xl">
             {post.title}
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-primary-foreground/80">
@@ -120,7 +120,7 @@ export default async function BlogPostPage({
       </header>
 
       <div className="section-padding mx-auto max-w-6xl pb-20 sm:pb-28">
-        <div className="relative -mt-10 aspect-[16/9] overflow-hidden rounded-2xl shadow-[0_24px_70px_-36px_hsl(var(--foreground)/0.65)] sm:-mt-12">
+        <div className="relative -mt-10 aspect-[16/9] overflow-hidden rounded-2xl shadow-[0_24px_70px_-36px_color-mix(in_oklab,var(--foreground)_65%,transparent)] sm:-mt-12">
           <Image
             src={post.coverImage}
             alt={post.title}
@@ -152,7 +152,7 @@ export default async function BlogPostPage({
                   href={`/blog/${version.slug}`}
                   locale={version.locale}
                   hrefLang={version.locale}
-                  className="rounded-full border px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="rounded-full border px-4 py-2 text-sm font-semibold transition-colors hover:bg-default focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   {localeLabels[version.locale]}
                 </Link>
@@ -166,7 +166,7 @@ export default async function BlogPostPage({
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-muted px-4 py-2 text-sm"
+                className="rounded-full bg-default px-4 py-2 text-sm"
               >
                 {tag}
               </span>

@@ -1,5 +1,5 @@
 import Section from "@/components/common/sections/section";
-import { H3, Paragraph } from "@repo/ui/typography";
+import { H2, H3 } from "@repo/ui/typography";
 import steps from "@/constants/how-it-works";
 import { useTranslations } from "next-intl";
 
@@ -7,26 +7,30 @@ const HowItWorks = () => {
   const t = useTranslations("HomePage.steps");
 
   return (
-    <Section className="flex flex-col items-center bg-primary py-14 text-primary-foreground">
-      <h2 className="sr-only">{t("title")}</h2>
-      <div className="grid grid-cols-1 gap-20 md:grid-cols-3 md:gap-14 lg:gap-28">
+    <Section className="bg-primary py-16 text-primary-foreground md:py-24">
+      <H2>{t("title")}</H2>
+      <ol className="mt-12 grid grid-cols-1 gap-12 md:mt-16 md:grid-cols-3 md:gap-10 lg:gap-14">
         {steps.map((s, idx) => (
-          <div key={s.key}>
-            <s.icon
-              className="rounded-lg bg-white p-3 text-primary shadow"
-              size={60}
-            />
-            <div>
-              <H3 className="mb-1">
-                {idx + 1}. {t(`${s.key}.title`)}
-              </H3>
-              <Paragraph className="text-primary-foreground/70">
-                {t(`${s.key}.description`)}
-              </Paragraph>
-            </div>
-          </div>
+          <li key={s.key}>
+            {/* The tile was a 60px glyph in 12px of padding, which made it
+                the largest thing in the column. Sized to the type instead. */}
+            <span className="grid size-14 place-items-center rounded-xl bg-white text-primary shadow-sm">
+              <s.icon size={26} aria-hidden />
+            </span>
+            <H3 className="mt-6">
+              {idx + 1}. {t(`${s.key}.title`)}
+            </H3>
+            {/* Already written and translated in all three locales, but the
+                section never rendered it. */}
+            <p className="mt-1.5 text-sm text-primary-foreground/60">
+              {t(`${s.key}.subtitle`)}
+            </p>
+            <p className="mt-4 max-w-[46ch] leading-relaxed text-primary-foreground/80">
+              {t(`${s.key}.description`)}
+            </p>
+          </li>
         ))}
-      </div>
+      </ol>
     </Section>
   );
 };
