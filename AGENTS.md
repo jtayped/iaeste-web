@@ -14,7 +14,7 @@ product and copy rules; this file covers structure and mechanics.
 | `packages/constants`  | Shared domain data and Zod schemas. No React, no I/O.                                |
 | `packages/env`        | The only place that reads `process.env` in front-end code.                           |
 | `packages/api-client` | Typed client **generated** from `apps/api/openapi.json`.                             |
-| `packages/ui`         | Shared shadcn/Radix components. See `packages/ui/AGENTS.md`.                         |
+| `packages/ui`         | Shared HeroUI v3 components. See `packages/ui/AGENTS.md`.                            |
 | `packages/email`      | React Email templates and a Resend sender.                                           |
 | `tooling/*`           | Shared ESLint, Tailwind, and TypeScript configs.                                     |
 
