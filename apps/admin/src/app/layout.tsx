@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     // Only reached by a route that exports no title of its own. Every page
     // does (via `adminMetadata`), so this is the backstop, not the norm.
     default: adminTitle("iaeste lleida"),
-    template: "panell · %s",
+    template: "dashboard · %s",
   },
   description: "gestió del comitè local d'iaeste lleida",
   applicationName: "IAESTE Lleida · Admin",

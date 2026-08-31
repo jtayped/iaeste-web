@@ -41,7 +41,7 @@ export function AppSidebar({
     <Sidebar
       collapsible="icon"
       mobileTitle="navegació"
-      mobileDescription="seccions del panell d'administració"
+      mobileDescription="seccions del dashboard d'administració"
     >
       <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-2">
         <SidebarMenu>

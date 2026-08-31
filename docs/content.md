@@ -7,7 +7,7 @@ CMS at `cms.iaestelleida.cat`. It is a separate product with its own accounts
 published articles through the narrow endpoints under
 `apps/cms/src/app/api/public/blog/*`.
 
-Reach it from the admin sidebar's **continguts** link or directly at
+Reach it from the admin sidebar's **blog** link or directly at
 `https://cms.iaestelleida.cat/admin`.
 
 ## Accounts

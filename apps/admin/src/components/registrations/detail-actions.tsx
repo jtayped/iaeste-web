@@ -42,7 +42,7 @@ export function RegistrationActions({
           <ConfirmAction
             trigger={<Button disabled={pending}>accepta</Button>}
             title={`acceptar ${name}?`}
-            description="passarà a ser membre de la campanya i rebrà un correu amb l'enllaç per entrar al panell."
+            description="passarà a ser membre de la campanya i rebrà un correu amb l'enllaç per entrar al dashboard."
             confirmLabel="accepta"
             pending={pending}
             onConfirm={() => action.mutate({ kind: "accept", id })}

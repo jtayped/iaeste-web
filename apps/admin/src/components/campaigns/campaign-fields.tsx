@@ -77,7 +77,7 @@ export function CampaignFields({
           onChange={(event) => onChange({ label: event.target.value })}
         />
         <p className="text-xs text-muted-foreground">
-          com surt escrit a tot arreu: al panell, als correus i al formulari.
+          com surt escrit a tot arreu: al dashboard, als correus i al formulari.
         </p>
         <FieldError {...(errors.label ? { message: errors.label } : {})} />
       </div>

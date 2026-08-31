@@ -34,25 +34,25 @@ export default async function MemberDetailPage({ params }: PageProps) {
 Rules the shell enforces, and that you must respect when adding a page:
 
 - **Breadcrumb is required and declared as data.** An array of
-  `{ label: string; href?: string }`, root-first, _without_ the `panell` root —
+  `{ label: string; href?: string }`, root-first, _without_ the `dashboard` root —
   the shell prepends it. The last entry has no `href` and renders as the
   current page. `label` is lowercase Catalan for fixed segments; a dynamic leaf
   (a person's name, a campaign label) is shown as it comes from the data.
   The dashboard passes no `breadcrumb` at all: its whole trail is the root.
 - **Dynamic segments** come from the loaded record, so the crumb lives in the
   page (a server component that has already fetched the record), never in a
-  path-derived client component. `panell › sol·licituds › Berta Puig` is a
+  path-derived client component. `dashboard › sol·licituds › Berta Puig` is a
   two-entry `breadcrumb` prop:
   `[{label:"sol·licituds",href:"/registrations"}, {label:"Berta Puig"}]`.
 - **Document title changes per page.** `<PageShell>` sets `document.title` from
-  a `panell · <trail>` template on the client, and every page _also_ exports
+  a `dashboard · <trail>` template on the client, and every page _also_ exports
   Next `metadata` (static routes) or `generateMetadata` (dynamic routes) so the
   server response and the tab are right before hydration. Build both from
   `src/lib/page-title.ts` and they cannot drift:
   `export const metadata = adminMetadata(BREADCRUMB, TITLE, DESCRIPTION)`.
   `adminMetadata` derives the trail with the same `pageTrail()` the shell uses
   and emits an **absolute** title, because `adminTitle` already applies the
-  `panell ·` prefix that the root layout's `panell · %s` template would
+  `dashboard ·` prefix that the root layout's `dashboard · %s` template would
   otherwise apply a second time.
 - **The header is the shell's, not yours.** Title, description, and an optional
   `actions` slot (right-aligned on `sm+`, stacked under the title on a phone)
@@ -62,7 +62,7 @@ The full prop shape (`src/components/shell/page-shell.tsx`):
 
 ```ts
 interface PageShellProps {
-  breadcrumb?: readonly BreadcrumbEntry[]; // default [], no `panell` root
+  breadcrumb?: readonly BreadcrumbEntry[]; // default [], no `dashboard` root
   title: string;
   description?: string;
   actions?: React.ReactNode;
@@ -87,6 +87,12 @@ The catalogue of fixed routes and their Catalan labels lives in `src/lib/nav.ts`
 same wording so a route is never labelled two different ways. The breadcrumb
 itself no longer reads it: crumbs are page-declared, because only the page has
 the record a dynamic leaf names.
+
+`navGroups` has exactly two groups. **principal** is a single item, the
+`dashboard` (`/`, `exact`), which is also the breadcrumb/title root. **organització**
+holds the four working routes in order: `sol·licituds` (carries the pending
+badge), `membres`, `convits`, `campanyes`. Anything that leaves the app is not a
+nav group — see "External links" below.
 
 ## Mobile first — the layout is designed for a phone and scaled up
 
@@ -195,19 +201,25 @@ display classes go in `className`, which is applied to the `<th>` and every
   toggle — never on load. A prompt nobody asked for is how a site earns a
   permanent block.
 
-## The blog CMS link
+## External links
 
-The blog's Payload CMS (`apps/cms`) is linked from the sidebar's `organització`
-group. It is modelled in `src/lib/nav.ts` as an `externalNavItems` entry, kept
-out of `navGroups` on purpose: it is not a route of this app, so it must never
-match `isActive`, resolve a breadcrumb, or be prefetched by `<Link>` (it renders
-as a plain `<a target="_blank" rel="noopener noreferrer">`).
+The sidebar's bottom section, `enllaços externs`, holds three links that leave
+the admin app: `web` (the marketing site), `blog` (the Payload CMS admin at
+`apps/cms`) and `odoo`. They are modelled in `src/lib/nav.ts` as
+`externalNavItems`, kept out of `navGroups` on purpose: they are not routes of
+this app, so they must never match `isActive`, resolve a breadcrumb, or be
+prefetched by `<Link>` (each renders as a plain
+`<a target="_blank" rel="noopener noreferrer">`). `SidebarNav` renders them once,
+in their own `SidebarGroup` pinned to the bottom of `SidebarContent`, never
+interleaved with a nav group.
 
-Its href is not in that module either. `CMS_PUBLIC_ORIGIN` is server-only
-config, so the `(app)` layout resolves `${env.CMS_PUBLIC_ORIGIN}/admin` and
-passes it down as `externalHrefs` — the client sidebar never imports
-`@repo/env`, and nothing about the CMS origin reaches the browser bundle
-beyond the one resolved URL.
+The hrefs are resolved in the `(app)` layout and passed down as `externalHrefs`,
+because `WEB_PUBLIC_ORIGIN` and `CMS_PUBLIC_ORIGIN` are server-only config: the
+client sidebar never imports `@repo/env`. `web` is `env.WEB_PUBLIC_ORIGIN`,
+`blog` is `${env.CMS_PUBLIC_ORIGIN}/admin`, and `odoo` is the fixed
+`ODOO_URL` constant in `nav.ts` (no env var). In production both origin vars are
+required — a missing value fails the env parse at boot rather than shipping a
+`localhost` link (`packages/env/src/parse.ts`, `urlRequiredInProduction`).
 
 ## Data fetching
 

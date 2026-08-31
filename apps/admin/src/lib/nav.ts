@@ -1,5 +1,6 @@
 import {
   Building2,
+  Globe,
   LayoutDashboard,
   Mail,
   Newspaper,
@@ -17,7 +18,7 @@ import {
  * log line, and the Catalan-copy rule is about text the user sees, not about
  * paths (see the plan's "Routes and navigation").
  */
-export type NavGroupId = "principal" | "equip" | "organitzacio";
+export type NavGroupId = "principal" | "organitzacio";
 
 export interface NavItem {
   href: string;
@@ -42,51 +43,55 @@ export const navGroups: NavGroup[] = [
     id: "principal",
     label: "principal",
     items: [
-      { href: "/", label: "panell", icon: LayoutDashboard, exact: true },
+      { href: "/", label: "dashboard", icon: LayoutDashboard, exact: true },
+    ],
+  },
+  {
+    id: "organitzacio",
+    label: "organització",
+    items: [
       {
         href: "/registrations",
         label: "sol·licituds",
         icon: Mail,
         badge: "pending",
       },
-    ],
-  },
-  {
-    id: "equip",
-    label: "equip",
-    items: [
       { href: "/members", label: "membres", icon: Users },
       { href: "/invitations", label: "convits", icon: Mail },
+      { href: "/campaigns", label: "campanyes", icon: Building2 },
     ],
-  },
-  {
-    id: "organitzacio",
-    label: "organització",
-    items: [{ href: "/campaigns", label: "campanyes", icon: Building2 }],
   },
 ];
 
 /**
- * Links that leave the admin app. They are filed into a sidebar group so they
- * sit where you would look for them, but they are kept out of `navGroups` on
+ * Links that leave the admin app entirely. They render in their own section
+ * pinned to the bottom of the sidebar and are kept out of `navGroups` on
  * purpose: they are not routes of this app, so they must never match
  * `isActive`, never resolve a breadcrumb, and never be prefetched by `<Link>`.
  *
- * The href is not here either — `blog` points at `${CMS_PUBLIC_ORIGIN}/admin`,
- * and `CMS_PUBLIC_ORIGIN` is server-only config. The layout resolves it and
- * passes it down, so nothing about the CMS origin reaches this module.
+ * Two of the three hrefs are not here either — `web` and `blog` come from
+ * server-only origin config (`WEB_PUBLIC_ORIGIN`, `${CMS_PUBLIC_ORIGIN}/admin`)
+ * that the layout resolves and passes down, so nothing about those origins
+ * reaches this module. `odoo` is a fixed SaaS URL with no env var.
  */
-export type ExternalNavKey = "blog";
+export type ExternalNavKey = "web" | "blog" | "odoo";
 
 export interface ExternalNavItem {
   key: ExternalNavKey;
   label: string;
   icon: LucideIcon;
-  group: NavGroupId;
 }
 
+/** Lowercase Catalan heading for the bottom-pinned external-links section. */
+export const externalNavLabel = "enllaços externs";
+
+/** Fixed Odoo SaaS URL — no env var, so it lives here as a constant. */
+export const ODOO_URL = "https://iaestelleida.odoo.com";
+
 export const externalNavItems: ExternalNavItem[] = [
-  { key: "blog", label: "continguts", icon: Newspaper, group: "organitzacio" },
+  { key: "web", label: "web", icon: Globe },
+  { key: "blog", label: "blog", icon: Newspaper },
+  { key: "odoo", label: "odoo", icon: Building2 },
 ];
 
 /** Resolved at render time by the server layout, one href per external item. */

@@ -33,7 +33,7 @@ export default function NotFound() {
         description="l'enllaç deu ser antic, o el registre que buscaves ja no hi és."
         action={
           <Link href="/" className={cn(buttonVariants({ size: "sm" }))}>
-            torna al panell
+            torna al dashboard
           </Link>
         }
       />

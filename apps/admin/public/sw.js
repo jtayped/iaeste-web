@@ -37,7 +37,7 @@ self.addEventListener("push", (event) => {
     }
   }
 
-  const title = payload.title || "panell iaeste lleida";
+  const title = payload.title || "dashboard iaeste lleida";
   const url = payload.url || "/";
 
   event.waitUntil(

@@ -16,7 +16,7 @@ export const PAGE_CONTAINER_CLASS =
 
 export interface PageShellProps {
   /**
-   * Root-first, *without* the `panell` root — the shell prepends it. The last
+   * Root-first, *without* the `dashboard` root — the shell prepends it. The last
    * entry needs no `href`; it renders as the current page. Omit entirely on
    * the dashboard, whose only crumb is the root.
    */

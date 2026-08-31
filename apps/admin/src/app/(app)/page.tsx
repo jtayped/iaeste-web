@@ -17,8 +17,8 @@ import { fetchOverview } from "@/lib/overview.server";
 export const dynamic = "force-dynamic";
 
 // The dashboard *is* the root, so its breadcrumb is empty: the shell's own
-// `panell` crumb is the whole trail, and the tab reads just `panell`.
-const TITLE = "panell";
+// `dashboard` crumb is the whole trail, and the tab reads just `dashboard`.
+const TITLE = "dashboard";
 
 export const metadata = adminMetadata([], TITLE);
 
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
         <EmptyState
           icon={CalendarRange}
           title="cap campanya activa"
-          description="els comptadors es calculen sobre la campanya actual. quan n'hi hagi una de marcada com a actual, aquest panell s'omplirà tot sol."
+          description="els comptadors es calculen sobre la campanya actual. quan n'hi hagi una de marcada com a actual, aquest dashboard s'omplirà tot sol."
           action={
             <Link
               href="/campaigns"

@@ -68,7 +68,7 @@ export function CampaignActions({
           </Button>
         }
         title={`arxivar ${campaign.label}?`}
-        description="deixarà de poder rebre inscripcions i altes. l'historial es manté, però no es pot desarxivar des del panell."
+        description="deixarà de poder rebre inscripcions i altes. l'historial es manté, però no es pot desarxivar des del dashboard."
         confirmLabel="arxiva"
         destructive
         pending={pending}

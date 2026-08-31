@@ -17,11 +17,11 @@ import {
 
 import {
   externalNavItems,
+  externalNavLabel,
   isActive,
   navGroups,
   type ExternalNavHrefs,
   type ExternalNavItem,
-  type NavGroupId,
   type NavItem,
 } from "@/lib/nav";
 
@@ -33,8 +33,10 @@ const ROW_CLASS = "h-11 md:h-8";
  * Zero renders no badge at all rather than a `0` — a badge is there to pull
  * the eye, and one that is always present stops doing that.
  *
- * `externalHrefs` carries the one link that leaves the app (the blog CMS).
- * It arrives as a prop because its origin is server-only config.
+ * `externalHrefs` carries the links that leave the app (the marketing site,
+ * the blog CMS, Odoo). They arrive as a prop because two of the three origins
+ * are server-only config; they render in their own section pinned to the
+ * bottom, never interleaved with a nav group.
  *
  * Tapping any row closes the mobile sheet. Client navigation swaps the page
  * underneath without unmounting the sidebar, so the drawer would otherwise sit
@@ -56,9 +58,6 @@ export function SidebarNav({
 
   const badgeFor = (item: NavItem) =>
     item.badge === "pending" && pendingCount > 0 ? pendingCount : null;
-
-  const externalFor = (groupId: NavGroupId) =>
-    externalNavItems.filter((item) => item.group === groupId);
 
   return (
     <>
@@ -88,19 +87,28 @@ export function SidebarNav({
                   </SidebarMenuItem>
                 );
               })}
-
-              {externalFor(group.id).map((item) => (
-                <ExternalNavRow
-                  key={item.key}
-                  item={item}
-                  href={externalHrefs[item.key]}
-                  onNavigate={dismiss}
-                />
-              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       ))}
+
+      {/* Pinned to the bottom: links out of the admin app. Not a nav group —
+          no route matching, no breadcrumb, no `<Link>` prefetch. */}
+      <SidebarGroup className="mt-auto">
+        <SidebarGroupLabel>{externalNavLabel}</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {externalNavItems.map((item) => (
+              <ExternalNavRow
+                key={item.key}
+                item={item}
+                href={externalHrefs[item.key]}
+                onNavigate={dismiss}
+              />
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
     </>
   );
 }
@@ -108,9 +116,8 @@ export function SidebarNav({
 /**
  * A plain `<a>`, not a `<Link>`: this leaves the Next app entirely, so there is
  * no route to prefetch and client navigation would only get in the way. The
- * trailing icon is there because the tab it opens is a different product
- * (the Payload CMS, with its own accounts) and a new tab you did not expect
- * is disorienting.
+ * trailing icon is there because the tab it opens is a different product and a
+ * new tab you did not expect is disorienting.
  */
 function ExternalNavRow({
   item,

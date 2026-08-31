@@ -2,16 +2,13 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { env } from "@repo/env/admin/server";
-import {
-  SIDEBAR_COOKIE_NAME,
-  SidebarInset,
-  SidebarProvider,
-} from "@repo/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@repo/ui/sidebar";
 
 import { ErrorState } from "@/components/error-state";
 import { ServiceWorker } from "@/components/pwa/service-worker";
 import { AppHeader } from "@/components/shell/app-header";
 import { AppSidebar } from "@/components/shell/app-sidebar";
+import { ODOO_URL } from "@/lib/nav";
 import { fetchOverview } from "@/lib/overview.server";
 import { pendingWorkCount } from "@/lib/overview";
 import { can } from "@/lib/permissions";
@@ -22,6 +19,16 @@ import { getServerSession } from "@/lib/session.server";
 // future page that stops reading cookies can't silently become static and
 // start serving one admin's numbers to everyone.
 export const dynamic = "force-dynamic";
+
+// The client sidebar writes its collapsed state to this cookie. The name is
+// hardcoded rather than imported as `SIDEBAR_COOKIE_NAME` from
+// `@repo/ui/sidebar-context`: that module is `"use client"`, and a Server
+// Component importing a plain value export from a client module receives a
+// client reference, not the string — `cookies().get(SIDEBAR_COOKIE_NAME)` was
+// silently `cookies().get(undefined)`, so a collapsed sidebar always sprang
+// back open on reload. `setOpen` in `sidebar-context.tsx` writes this same
+// literal; keep the two in sync.
+const SIDEBAR_STATE_COOKIE = "sidebar_state";
 
 /**
  * The authenticated shell, and the second half of the plan's "doubled"
@@ -67,13 +74,19 @@ export default async function AppLayout({
   const data = overview.status === "ok" ? overview.overview : null;
   const pendingCount = data ? pendingWorkCount(data.counts) : 0;
 
+  // Absent cookie ⇒ open, matching the provider's own `defaultOpen = true`.
   const defaultOpen =
-    (await cookies()).get(SIDEBAR_COOKIE_NAME)?.value !== "false";
+    (await cookies()).get(SIDEBAR_STATE_COOKIE)?.value !== "false";
 
-  // Resolved here because `CMS_PUBLIC_ORIGIN` is server-only config: the
-  // sidebar is a client component and must never import `@repo/env`. The blog
-  // CMS is a separate product with its own accounts — no SSO in v1.
-  const externalHrefs = { blog: `${env.CMS_PUBLIC_ORIGIN}/admin` };
+  // Resolved here because the origins are server-only config: the sidebar is a
+  // client component and must never import `@repo/env`. `blog` points at the
+  // Payload CMS admin — a separate product with its own accounts, no SSO in v1
+  // — and `odoo` is a fixed SaaS URL kept as a constant in `nav.ts`.
+  const externalHrefs = {
+    web: env.WEB_PUBLIC_ORIGIN,
+    blog: `${env.CMS_PUBLIC_ORIGIN}/admin`,
+    odoo: ODOO_URL,
+  };
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>

@@ -147,7 +147,7 @@ export const AcceptedScreen = ({
     >
       <Paragraph>
         benvingut/da a iaeste lleida! rebràs un correu amb un enllaç per entrar
-        al panell del comitè.
+        al dashboard del comitè.
       </Paragraph>
     </StatusScreen>
   );

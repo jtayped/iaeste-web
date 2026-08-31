@@ -74,7 +74,11 @@ const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>(
           setInternalOpen(openState);
         }
 
-        // Remembered across reloads; the app reads it back into `defaultOpen`.
+        // Remembered across reloads; the server layout reads it back into
+        // `defaultOpen`. That layout is a Server Component and cannot import
+        // `SIDEBAR_COOKIE_NAME` from this `"use client"` module (it would get a
+        // client reference, not the string), so it hardcodes the same literal
+        // `"sidebar_state"` — keep the two in sync.
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
       },
       [setOpenProp, open],

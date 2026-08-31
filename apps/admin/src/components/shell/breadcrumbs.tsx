@@ -7,7 +7,7 @@ import { TITLE_ROOT, type BreadcrumbEntry } from "@/lib/page-title";
  * entries, because only the page has the loaded record a dynamic leaf needs.
  * The previous path-derived version could only ever say "detall".
  *
- * The `panell` root is prepended here rather than repeated in every page's
+ * The `dashboard` root is prepended here rather than repeated in every page's
  * `breadcrumb` prop, and it links to `/` — except when it is the only crumb,
  * where it is the current page and React Aria renders it unlinked.
  *
