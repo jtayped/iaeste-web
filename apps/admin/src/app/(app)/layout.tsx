@@ -35,9 +35,9 @@ const SIDEBAR_STATE_COOKIE = "sidebar_state";
  * enforcement.
  *
  * The API independently applies `requireCapability` to every `/v1/admin/*`
- * route, and that is the authorization. This check exists so a member who is
- * not an admin gets a clear answer instead of a shell full of failed requests
- * — it is not what keeps them out.
+ * route, and that is the authorization. The shell check only decides whether
+ * an authenticated account may enter the product; each page subtree applies
+ * its own narrower capability before rendering.
  */
 export default async function AppLayout({
   children,
@@ -65,14 +65,19 @@ export default async function AppLayout({
     redirect("/sign-in?error=no-access");
   }
 
-  const overview = await fetchOverview();
+  const canReadDashboard = can(result.session, "dashboard.read");
+  const canManageNotifications = can(result.session, "notifications.manage");
+  const overview = canReadDashboard ? await fetchOverview() : null;
 
-  // The API disagreeing about `admin.access` outranks the check above — it is
-  // the one with the database.
-  if (overview.status === "forbidden") redirect("/sign-in?error=no-access");
+  // The API disagreeing about this admin-only capability outranks the local
+  // role check. A revoked or malformed session must not render stale counts.
+  if (overview?.status === "forbidden") {
+    redirect("/sign-in?error=no-access");
+  }
 
-  const data = overview.status === "ok" ? overview.overview : null;
+  const data = overview?.status === "ok" ? overview.overview : null;
   const pendingCount = data ? pendingWorkCount(data.counts) : 0;
+  const registrationsActive = Boolean(data?.registrationOpenCampaign);
 
   // Absent cookie ⇒ open, matching the provider's own `defaultOpen = true`.
   const defaultOpen =
@@ -93,10 +98,11 @@ export default async function AppLayout({
       <AppSidebar
         user={result.session.user}
         pendingCount={pendingCount}
+        registrationsActive={registrationsActive}
         externalHrefs={externalHrefs}
       />
       <SidebarInset className="min-w-0">
-        <AppHeader overview={data} />
+        <AppHeader overview={data} showNotifications={canManageNotifications} />
         {/* The content column belongs to `<PageShell>` — it is shared with
             `loading.tsx`, so the skeleton and the page it becomes line up. */}
         <div className="min-w-0 flex-1">{children}</div>

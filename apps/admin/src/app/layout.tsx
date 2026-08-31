@@ -3,6 +3,7 @@ import "@repo/ui/globals.css";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
 
+import { brandIcons, brandSocialHandle } from "@repo/ui/lib/brand-metadata";
 import { Toaster } from "@repo/ui/toast";
 
 import { Providers } from "@/app/providers";
@@ -10,6 +11,7 @@ import { adminTitle } from "@/lib/page-title";
 import { themeInitScript } from "@/lib/theme";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://admin.iaestelleida.cat"),
   title: {
     // Only reached by a route that exports no title of its own. Every page
     // does (via `adminMetadata`), so this is the backstop, not the norm.
@@ -19,12 +21,20 @@ export const metadata: Metadata = {
   description: "gestió del comitè local d'iaeste lleida",
   applicationName: "IAESTE Lleida · Admin",
   manifest: "/manifest.webmanifest",
-  icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  icons: brandIcons,
+  openGraph: {
+    title: adminTitle("iaeste lleida"),
+    description: "gestió del comitè local d'iaeste lleida",
+    url: "/",
+    type: "website",
+    siteName: "iaeste lleida",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: adminTitle("iaeste lleida"),
+    description: "gestió del comitè local d'iaeste lleida",
+    creator: brandSocialHandle,
+    site: brandSocialHandle,
   },
   appleWebApp: { capable: true, title: "Admin", statusBarStyle: "default" },
   // An internal tool behind a session. Keeping it out of every index is

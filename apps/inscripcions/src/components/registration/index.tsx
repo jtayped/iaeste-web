@@ -36,7 +36,7 @@ const PUBLIC_STEPS: readonly Step[] = [
  * whose first half is pre-ticked.
  */
 const INVITED_STEPS: readonly Step[] = [
-  { key: "invitation", label: "convit" },
+  { key: "invitation", label: "invitació" },
   { key: "details", label: "dades" },
 ];
 

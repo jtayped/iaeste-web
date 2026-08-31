@@ -133,7 +133,7 @@ async function createInvitation(
             kind: "duplicate",
             detail:
               error.detail ??
-              "ja hi ha un convit pendent per aquesta adreça en aquesta campanya.",
+              "ja hi ha una invitació pendent per aquesta adreça en aquesta campanya.",
           };
     }
 
@@ -152,7 +152,7 @@ export function useCreateInvitation(): UseMutationResult<
     mutationFn: createInvitation,
     onSuccess: (outcome) => {
       if (outcome.kind !== "created") return;
-      toast.success(`convit enviat a ${outcome.invitation.email}`);
+      toast.success(`invitació enviada a ${outcome.invitation.email}`);
       void queryClient.invalidateQueries({
         queryKey: queryKeys.invitations.all,
       });
@@ -197,7 +197,9 @@ export function useInvitationAction(): UseMutationResult<
     },
     onSuccess: (_data, action) => {
       toast.success(
-        action.kind === "resend" ? "convit reenviat" : "convit anul·lat",
+        action.kind === "resend"
+          ? "invitació reenviada"
+          : "invitació anul·lada",
       );
       void queryClient.invalidateQueries({
         queryKey: queryKeys.invitations.all,

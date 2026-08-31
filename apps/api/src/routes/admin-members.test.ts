@@ -79,6 +79,14 @@ function del(a: ReturnType<typeof makeApp>, path: string) {
   return a.request(path, { method: "DELETE" });
 }
 
+function patch(a: ReturnType<typeof makeApp>, path: string, body: unknown) {
+  return a.request(path, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
 describe("admin members routes", () => {
   let db: Database;
 
@@ -250,6 +258,139 @@ describe("admin members routes", () => {
     };
     assert.equal(detail.profile.role, "admin");
     assert.ok(detail.events.some((e) => e.eventType === "role_changed"));
+  });
+
+  it("edits a member's university and personal emails from the fitxa", async () => {
+    const campaign = await createTestCampaign(db);
+    await createCampaignRepository(db).setCurrent(campaign.id);
+    const u = await makeMember(db, campaign.id, {
+      email: "before@alumnes.udl.cat",
+    });
+    const a = makeApp(db);
+
+    // A fresh member has no user_email rows yet — both slots read as null.
+    const before = (await (
+      await a.request(`/v1/admin/members/${u.id}`)
+    ).json()) as { emails: { university: unknown; personal: unknown } };
+    assert.deepEqual(before.emails, { university: null, personal: null });
+
+    const res = await patch(a, `/v1/admin/members/${u.id}/emails`, {
+      university: "New@alumnes.UDL.cat",
+      personal: "me@gmail.com",
+    });
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as {
+      emails: {
+        university: { email: string; verifiedAt: string | null };
+        personal: { email: string; verifiedAt: string | null };
+      };
+    };
+    assert.equal(body.emails.university.email, "new@alumnes.udl.cat");
+    assert.equal(body.emails.personal.email, "me@gmail.com");
+    // An admin edit is trusted — the address is stored already verified.
+    assert.ok(body.emails.university.verifiedAt);
+    assert.ok(body.emails.personal.verifiedAt);
+
+    const detail = (await (
+      await a.request(`/v1/admin/members/${u.id}`)
+    ).json()) as {
+      profile: { email: string };
+      emails: { university: { email: string }; personal: { email: string } };
+    };
+    assert.equal(detail.emails.university.email, "new@alumnes.udl.cat");
+    assert.equal(detail.emails.personal.email, "me@gmail.com");
+    // Canonical account email re-points at the personal address.
+    assert.equal(detail.profile.email, "me@gmail.com");
+  });
+
+  it("clears one slot but refuses to leave a member with no address", async () => {
+    const campaign = await createTestCampaign(db);
+    await createCampaignRepository(db).setCurrent(campaign.id);
+    const u = await makeMember(db, campaign.id);
+    const a = makeApp(db);
+
+    await patch(a, `/v1/admin/members/${u.id}/emails`, {
+      university: "uni@udl.cat",
+      personal: "p@gmail.com",
+    });
+    assert.equal(
+      (await patch(a, `/v1/admin/members/${u.id}/emails`, { personal: null }))
+        .status,
+      200,
+    );
+    // University is now the only address — clearing it too is a 409.
+    assert.equal(
+      (
+        await patch(a, `/v1/admin/members/${u.id}/emails`, {
+          university: null,
+        })
+      ).status,
+      409,
+    );
+  });
+
+  it("409s an email edit that collides with another account", async () => {
+    const campaign = await createTestCampaign(db);
+    await createCampaignRepository(db).setCurrent(campaign.id);
+    const a = makeApp(db);
+    const other = await makeMember(db, campaign.id, {
+      email: "other@alumnes.udl.cat",
+    });
+    await patch(a, `/v1/admin/members/${other.id}/emails`, {
+      personal: "shared@gmail.com",
+    });
+    const u = await makeMember(db, campaign.id, {
+      email: "u@alumnes.udl.cat",
+    });
+
+    assert.equal(
+      (
+        await patch(a, `/v1/admin/members/${u.id}/emails`, {
+          personal: "shared@gmail.com",
+        })
+      ).status,
+      409,
+    );
+  });
+
+  it("422s when both email slots contain the same address", async () => {
+    const campaign = await createTestCampaign(db);
+    await createCampaignRepository(db).setCurrent(campaign.id);
+    const u = await makeMember(db, campaign.id);
+
+    const response = await patch(
+      makeApp(db),
+      `/v1/admin/members/${u.id}/emails`,
+      {
+        university: "same@example.com",
+        personal: "SAME@example.com",
+      },
+    );
+
+    assert.equal(response.status, 422);
+  });
+
+  it("404s an email edit for an unknown user, 403s a plain member", async () => {
+    assert.equal(
+      (
+        await patch(makeApp(db), "/v1/admin/members/nope/emails", {
+          personal: "x@gmail.com",
+        })
+      ).status,
+      404,
+    );
+    assert.equal(
+      (
+        await patch(
+          makeApp(db, { role: "member" }),
+          "/v1/admin/members/x/emails",
+          {
+            personal: "x@gmail.com",
+          },
+        )
+      ).status,
+      403,
+    );
   });
 
   it("404s an erasure for an unknown user id", async () => {

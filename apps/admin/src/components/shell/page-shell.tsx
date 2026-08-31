@@ -1,5 +1,5 @@
-import { Breadcrumbs } from "@/components/shell/breadcrumbs";
 import { DocumentTitle } from "@/components/shell/document-title";
+import { ResponsiveBreadcrumbs } from "@/components/shell/responsive-breadcrumbs";
 import { adminTitle, pageTrail, type BreadcrumbEntry } from "@/lib/page-title";
 
 export type { BreadcrumbEntry };
@@ -38,10 +38,10 @@ export interface PageShellProps {
  * Because they are all derived from the same two props here, a page cannot be
  * called one thing in the breadcrumb and another in the tab.
  *
- * The breadcrumb sits at the top of the content column rather than in the
- * app header. It is page-owned data, and the header is rendered by the layout
- * one level up — pushing it there would need a client-side context bridge that
- * paints empty and then pops in on every navigation.
+ * The breadcrumb stays at the top of the content column on mobile. On `md+`,
+ * `ResponsiveBreadcrumbs` portals the page-owned trail into the app header,
+ * next to the sidebar control. This keeps dynamic record names authoritative
+ * without asking the parent layout to fetch each page's data again.
  */
 export function PageShell({
   breadcrumb = [],
@@ -55,8 +55,8 @@ export function PageShell({
       <DocumentTitle title={adminTitle(pageTrail(breadcrumb, title))} />
 
       <div className="space-y-6 md:space-y-8">
-        <div className="space-y-4">
-          <Breadcrumbs entries={breadcrumb} />
+        <div>
+          <ResponsiveBreadcrumbs entries={breadcrumb} />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="min-w-0 space-y-1">

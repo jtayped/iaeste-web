@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import RegistrationFlow from "@/components/registration";
 
 export const metadata: Metadata = {
-  title: "convit a l'equip | iaeste lc lleida",
+  title: "invitació a l'equip | iaeste lc lleida",
   // A single-use invitation link is not something to index, and the page is
   // useless without the token that never reaches the server anyway.
   robots: { index: false, follow: false },

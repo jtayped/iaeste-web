@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { Logo } from "@repo/ui/logo";
+
 import { NoAccessNotice } from "@/components/sign-in/no-access-notice";
 import { SignInForm } from "@/components/sign-in/sign-in-form";
 import {
@@ -41,9 +43,9 @@ export default async function SignInPage({
         <div className="space-y-2">
           <span
             aria-hidden
-            className="flex size-9 items-center justify-center rounded-md bg-primary text-xs font-semibold tracking-tight text-primary-foreground"
+            className="flex size-9 items-center justify-center rounded-md bg-[#0B3E5B]"
           >
-            LC
+            <Logo variant="icon" color="white" width={24} alt="" />
           </span>
           <h1 className="text-lg font-semibold tracking-tight">
             administració iaeste lleida

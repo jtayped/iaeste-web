@@ -11,7 +11,9 @@ import { toast } from "@repo/ui/toast";
 
 import type {
   AdminMemberDetail,
+  AdminMemberEmails,
   AdminMemberList,
+  AdminSetMemberEmailsRequest,
   MemberFilter,
   MemberRole,
 } from "@/lib/admin-types";
@@ -134,6 +136,61 @@ export function useMemberAction(): UseMutationResult<
       toast.success(SUCCESS_COPY[action.kind]);
       void queryClient.invalidateQueries({ queryKey: queryKeys.members.all });
       void queryClient.invalidateQueries({ queryKey: queryKeys.overview });
+    },
+    onError: (error) => {
+      const detail = errorDetail(error);
+      toast.error(errorMessage(error), {
+        ...(detail ? { description: detail } : {}),
+      });
+    },
+  });
+}
+
+export interface SetMemberEmailsInput extends Required<AdminSetMemberEmailsRequest> {
+  userId: string;
+}
+
+/**
+ * Set both halves of a member's dual-email pair in one PATCH.
+ *
+ * Both keys always travel, because the endpoint reads an omitted key as "leave
+ * this slot alone" — the only way to *clear* a slot is to send an explicit
+ * `null`, and a form with two inputs cannot tell "unchanged" from "emptied"
+ * unless it states both. Re-sending an address unchanged is idempotent.
+ *
+ * An admin edit is trusted: the API returns both saved addresses already
+ * verified, so there is no confirmation mail to chase afterwards.
+ *
+ * `queryKeys.members.all` is the prefix of `members.detail(userId)`, so the one
+ * invalidation redraws both the fitxa and the list the member is listed in.
+ */
+export function useSetMemberEmails(): UseMutationResult<
+  AdminMemberEmails,
+  Error,
+  SetMemberEmailsInput
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      university,
+      personal,
+    }: SetMemberEmailsInput): Promise<AdminMemberEmails> => {
+      const { emails } = unwrap(
+        await apiClient.PATCH("/v1/admin/members/{userId}/emails", {
+          params: { path: { userId } },
+          body: { university, personal },
+        }),
+      );
+      return emails;
+    },
+    onSuccess: (_emails, { userId }) => {
+      toast.success("correus actualitzats");
+      void queryClient.invalidateQueries({ queryKey: queryKeys.members.all });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.members.detail(userId),
+      });
     },
     onError: (error) => {
       const detail = errorDetail(error);

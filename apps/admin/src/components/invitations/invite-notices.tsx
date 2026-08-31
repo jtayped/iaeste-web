@@ -33,8 +33,8 @@ export function ExternalDomainConfirm({
         <p>
           <span className="font-mono text-xs">{domain}</span> no és{" "}
           <span className="font-mono text-xs">udl.cat</span>. comprova que no
-          sigui una errada abans de continuar: el convit anirà a aquesta adreça
-          i qui el rebi entrarà al comitè.
+          sigui una errada abans de continuar: la invitació anirà a aquesta
+          adreça i qui la rebi entrarà al comitè.
         </p>
         <Button
           type="button"
@@ -56,7 +56,7 @@ export function DuplicateInviteNotice({ detail }: { detail: string }) {
   return (
     <Alert>
       <Info className="size-4" aria-hidden />
-      <AlertTitle>ja hi ha un convit obert per aquesta adreça</AlertTitle>
+      <AlertTitle>ja hi ha una invitació oberta per aquesta adreça</AlertTitle>
       <AlertDescription>
         no n&apos;hem enviat un de nou. si no els ha arribat, fes servir
         «reenvia» a la fila corresponent; si vols canviar-hi alguna cosa,

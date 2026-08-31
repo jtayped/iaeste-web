@@ -24,6 +24,7 @@ import {
   type ExternalNavItem,
   type NavItem,
 } from "@/lib/nav";
+import { can } from "@/lib/permissions";
 
 /** 44px rows inside the mobile sheet, back to the compact 32px on `md+`. */
 const ROW_CLASS = "h-11 md:h-8";
@@ -44,10 +45,14 @@ const ROW_CLASS = "h-11 md:h-8";
  * where the sidebar is a persistent rail and closing it would be wrong.
  */
 export function SidebarNav({
+  role,
   pendingCount,
+  registrationsActive,
   externalHrefs,
 }: {
+  role: string | null;
   pendingCount: number;
+  registrationsActive: boolean;
   externalHrefs: ExternalNavHrefs;
 }) {
   const pathname = usePathname();
@@ -61,36 +66,48 @@ export function SidebarNav({
 
   return (
     <>
-      {navGroups.map((group) => (
-        <SidebarGroup key={group.id}>
-          <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {group.items.map((item) => {
-                const badge = badgeFor(item);
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      className={ROW_CLASS}
-                      isActive={isActive(item, pathname)}
-                      tooltip={item.label}
-                    >
-                      <Link href={item.href} onClick={dismiss}>
-                        <item.icon className="size-4" aria-hidden />
-                        <span>{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {badge === null ? null : (
-                      <SidebarMenuBadge>{badge}</SidebarMenuBadge>
-                    )}
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      ))}
+      {navGroups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) =>
+            can({ user: { role } }, item.capability),
+          ),
+        }))
+        .filter(
+          (group) =>
+            group.items.length > 0 &&
+            (group.id !== "inscripcions" || registrationsActive),
+        )
+        .map((group) => (
+          <SidebarGroup key={group.id}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const badge = badgeFor(item);
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        className={ROW_CLASS}
+                        isActive={isActive(item, pathname)}
+                        tooltip={item.label}
+                      >
+                        <Link href={item.href} onClick={dismiss}>
+                          <item.icon className="size-4" aria-hidden />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                      {badge === null ? null : (
+                        <SidebarMenuBadge>{badge}</SidebarMenuBadge>
+                      )}
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
 
       {/* Pinned to the bottom: links out of the admin app. Not a nav group —
           no route matching, no breadcrumb, no `<Link>` prefetch. */}

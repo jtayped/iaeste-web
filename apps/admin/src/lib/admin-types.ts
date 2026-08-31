@@ -30,6 +30,11 @@ export type AdminMemberListItem = components["schemas"]["AdminMemberListItem"];
 export type AdminMemberList = components["schemas"]["AdminMemberList"];
 export type AdminMemberDetail = components["schemas"]["AdminMemberDetail"];
 export type AdminMemberProfile = components["schemas"]["AdminMemberProfile"];
+export type AdminMemberEmails = components["schemas"]["AdminMemberEmails"];
+/** One slot of the dual-email pair. `null` when that address is not set. */
+export type AdminMemberEmail = components["schemas"]["AdminMemberEmail"];
+export type AdminSetMemberEmailsRequest =
+  components["schemas"]["AdminSetMemberEmailsRequest"];
 export type AdminMemberTimelineMembership =
   components["schemas"]["AdminMemberTimelineMembership"];
 export type AdminMemberTimelineEvent =

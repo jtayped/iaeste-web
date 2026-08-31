@@ -54,7 +54,7 @@ export const KnownPersonNotice = ({
     </div>
 
     <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-      {invited ? "t'hem enviat el convit a " : "hem verificat "}
+      {invited ? "t'hem enviat la invitació a " : "hem verificat "}
       <span className="font-medium text-foreground">{email}</span>
       {prefilled
         ? " i hem omplert les dades que ja teníem. revisa-les i canvia el que calgui abans d'enviar-les."

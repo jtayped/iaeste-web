@@ -13,8 +13,8 @@ import { fetchOverview } from "@/lib/overview.server";
 
 export const dynamic = "force-dynamic";
 
-const BREADCRUMB: BreadcrumbEntry[] = [{ label: "convits" }];
-const TITLE = "convits";
+const BREADCRUMB: BreadcrumbEntry[] = [{ label: "invitacions" }];
+const TITLE = "invitacions";
 const DESCRIPTION =
   "qui hem convidat a entrar sense passar pel formulari públic.";
 
@@ -56,7 +56,7 @@ export default async function InvitationsPage() {
         <EmptyState
           icon={CalendarRange}
           title="cap campanya"
-          description="un convit sempre és a una campanya concreta. crea'n una a «campanyes» i podràs convidar gent des d'aquí."
+          description="una invitació sempre és a una campanya concreta. crea'n una a «campanyes» i podràs convidar gent des d'aquí."
         />
       </PageShell>
     );

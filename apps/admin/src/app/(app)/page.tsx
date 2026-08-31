@@ -1,18 +1,22 @@
 import Link from "next/link";
-import { CalendarRange } from "lucide-react";
+import { CalendarRange, LayoutDashboard } from "lucide-react";
 
 import { buttonVariants } from "@repo/ui/button";
 import { cn } from "@repo/ui/lib/utils";
 
 import { CampaignSummary } from "@/components/dashboard/campaign-summary";
+import {
+  RegistrationOverview,
+  TeamOverview,
+} from "@/components/dashboard/overview-panels";
 import { PendingWork } from "@/components/dashboard/pending-work";
-import { StatSection } from "@/components/dashboard/stat-section";
-import { membershipStats, pendingStats } from "@/components/dashboard/stats";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { PageShell } from "@/components/shell/page-shell";
 import { adminMetadata } from "@/lib/page-title";
 import { fetchOverview } from "@/lib/overview.server";
+import { can } from "@/lib/permissions";
+import { getServerSession } from "@/lib/session.server";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +36,20 @@ export const metadata = adminMetadata([], TITLE);
  * this is one HTTP request, not two.
  */
 export default async function DashboardPage() {
+  const session = await getServerSession();
+
+  if (session.status === "ok" && !can(session.session, "dashboard.read")) {
+    return (
+      <PageShell title={TITLE} description="el teu espai dins del comitè.">
+        <EmptyState
+          icon={LayoutDashboard}
+          title="encara no hi ha res per a tu"
+          description="el teu compte no té cap eina disponible ara mateix. quan n'afegim una, apareixerà aquí."
+        />
+      </PageShell>
+    );
+  }
+
   const result = await fetchOverview();
 
   // `forbidden` never reaches here — the layout redirects on it first.
@@ -48,6 +66,7 @@ export default async function DashboardPage() {
   }
 
   const { currentCampaign, registrationOpenCampaign, counts } = result.overview;
+  const registrationsActive = registrationOpenCampaign !== null;
 
   if (currentCampaign === null) {
     return (
@@ -74,13 +93,22 @@ export default async function DashboardPage() {
       title={TITLE}
       description={`resum de la campanya ${currentCampaign.label}.`}
     >
-      <PendingWork pendingReview={counts.pendingReview} />
-      <StatSection title="sol·licituds" stats={pendingStats(counts)} />
-      <StatSection title="equip" stats={membershipStats(counts)} />
-      <CampaignSummary
-        currentCampaign={currentCampaign}
-        registrationOpenCampaign={registrationOpenCampaign}
-      />
+      {registrationsActive ? (
+        <PendingWork pendingReview={counts.pendingReview} />
+      ) : null}
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.85fr)] lg:gap-8">
+        <TeamOverview counts={counts} />
+        <div className="space-y-6 md:space-y-8">
+          {registrationsActive ? (
+            <RegistrationOverview counts={counts} />
+          ) : null}
+          <CampaignSummary
+            currentCampaign={currentCampaign}
+            registrationOpenCampaign={registrationOpenCampaign}
+          />
+        </div>
+      </div>
     </PageShell>
   );
 }

@@ -33,8 +33,25 @@ interface EventRow {
   createdAt: Date;
 }
 
+interface EmailRow {
+  email: string;
+  verifiedAt: Date | null;
+}
+
+export interface MemberEmails {
+  university: EmailRow | null;
+  personal: EmailRow | null;
+}
+
+function toEmailView(row: EmailRow | null) {
+  return row
+    ? { email: row.email, verifiedAt: row.verifiedAt?.toISOString() ?? null }
+    : null;
+}
+
 export function toMemberDetail(
   profile: ProfileRow,
+  emails: MemberEmails,
   memberships: MembershipJoinRow[],
   events: EventRow[],
 ) {
@@ -50,6 +67,10 @@ export function toMemberDetail(
       studyYear: profile.studyYear,
       role: profile.role,
       createdAt: profile.createdAt.toISOString(),
+    },
+    emails: {
+      university: toEmailView(emails.university),
+      personal: toEmailView(emails.personal),
     },
     memberships: memberships.map((row) => ({
       id: row.membership.id,

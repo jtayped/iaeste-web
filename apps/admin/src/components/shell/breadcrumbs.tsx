@@ -1,4 +1,5 @@
 import { Breadcrumb, BreadcrumbItem } from "@repo/ui/breadcrumb";
+import { cn } from "@repo/ui/lib/utils";
 
 import { TITLE_ROOT, type BreadcrumbEntry } from "@/lib/page-title";
 
@@ -22,11 +23,13 @@ import { TITLE_ROOT, type BreadcrumbEntry } from "@/lib/page-title";
  */
 export function Breadcrumbs({
   entries,
+  className,
 }: {
   entries: readonly BreadcrumbEntry[];
+  className?: string;
 }) {
   return (
-    <Breadcrumb className="flex-nowrap gap-1.5 sm:flex-wrap">
+    <Breadcrumb className={cn("flex-nowrap gap-1.5 sm:flex-wrap", className)}>
       <BreadcrumbItem href="/">{TITLE_ROOT}</BreadcrumbItem>
       {entries.map((entry, index) => (
         <BreadcrumbItem key={`${entry.label}-${index}`} href={entry.href}>

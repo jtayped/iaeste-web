@@ -14,6 +14,8 @@ export const memberEmailKindEnum = pgEnum("member_email_kind", [
   "personal",
 ]);
 
+export type MemberEmailKind = (typeof memberEmailKindEnum.enumValues)[number];
+
 /** Verified and pending addresses that resolve to one Better Auth user. */
 export const userEmail = pgTable(
   "user_email",

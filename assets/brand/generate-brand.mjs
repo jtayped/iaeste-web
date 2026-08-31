@@ -75,18 +75,17 @@ const LOCKUP = {
 
 /**
  * Every app gets the same favicon and installed-icon set, under the same
- * filenames, so each app's metadata block can be a copy of the others'.
+ * filenames, so each app can use the shared metadata declaration.
  *
  * `brand` adds `public/brand/` — the mark and the lockup, for anything that
  * renders a logo in the page. `og` adds the share card's photograph and the
- * two Inter weights it is set in. Admin renders no logo of its own today but
- * keeps `brand` so `<Logo/>` resolves the day someone drops one in; it has no
- * `og` because it is behind a session and marked `noindex`. The CMS gets
- * neither: only the Payload panel's own chrome is ours to brand.
+ * two Inter weights it is set in. The admin remains `noindex`, but it still
+ * uses the shared card when someone sends a link to another committee member.
+ * The CMS gets neither: only the Payload panel's own chrome is ours to brand.
  */
 const APPS = {
   web: { brand: true, og: true },
-  admin: { brand: true, og: false },
+  admin: { brand: true, og: true },
   inscripcions: { brand: true, og: true },
   cms: { brand: false, og: false },
 };

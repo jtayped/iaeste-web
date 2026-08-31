@@ -3,6 +3,8 @@ import "@repo/ui/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
+import { brandIcons, brandSocialHandle } from "@repo/ui/lib/brand-metadata";
+
 const title = "inscriu-te | iaeste lc lleida";
 const description = "uneix-te al comitè local d'iaeste lleida";
 
@@ -17,15 +19,7 @@ export const metadata: Metadata = {
   description,
   applicationName: "Inscripcions · IAESTE LC Lleida",
   manifest: "/manifest.webmanifest",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
-  },
+  icons: brandIcons,
   openGraph: {
     title,
     description,
@@ -39,8 +33,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description,
-    creator: "@IAESTELCLleida",
-    site: "@IAESTELCLleida",
+    creator: brandSocialHandle,
+    site: brandSocialHandle,
   },
   robots: {
     index: true,

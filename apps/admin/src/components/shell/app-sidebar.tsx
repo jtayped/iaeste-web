@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Logo } from "@repo/ui/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -31,10 +32,12 @@ import type { AdminSessionUser } from "@/lib/session.server";
 export function AppSidebar({
   user,
   pendingCount,
+  registrationsActive,
   externalHrefs,
 }: {
   user: AdminSessionUser;
   pendingCount: number;
+  registrationsActive: boolean;
   externalHrefs: ExternalNavHrefs;
 }) {
   return (
@@ -52,9 +55,9 @@ export function AppSidebar({
             >
               <span
                 aria-hidden
-                className="flex size-7 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-[0.6875rem] font-semibold tracking-tight text-sidebar-primary-foreground"
+                className="flex size-7 shrink-0 items-center justify-center rounded-md bg-[#0B3E5B]"
               >
-                LC
+                <Logo variant="icon" color="white" width={18} alt="" />
               </span>
               <span className="grid leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate text-sm font-semibold">
@@ -70,7 +73,12 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarNav pendingCount={pendingCount} externalHrefs={externalHrefs} />
+        <SidebarNav
+          role={user.role}
+          pendingCount={pendingCount}
+          registrationsActive={registrationsActive}
+          externalHrefs={externalHrefs}
+        />
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">

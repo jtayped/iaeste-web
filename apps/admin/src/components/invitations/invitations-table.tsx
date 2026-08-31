@@ -128,7 +128,7 @@ export function InvitationsTable({
 
   return (
     <DataTable
-      label="convits enviats en aquesta campanya"
+      label="invitacions enviades en aquesta campanya"
       columns={COLUMNS}
       rows={query.data?.rows ?? []}
       rowKey={(row) => row.id}
@@ -149,7 +149,7 @@ export function InvitationsTable({
                   anul·la
                 </Button>
               }
-              title="anul·lar aquest convit?"
+              title="anul·lar aquesta invitació?"
               description={`l'enllaç que hem enviat a ${row.email} deixarà de funcionar immediatament.`}
               confirmLabel="anul·la"
               destructive
@@ -167,10 +167,10 @@ export function InvitationsTable({
       }}
       empty={{
         icon: MailPlus,
-        title: q ? "cap coincidència" : "cap convit",
+        title: q ? "cap coincidència" : "cap invitació",
         description: q
-          ? `cap convit coincideix amb «${q}» en aquest filtre.`
-          : "encara no has convidat ningú en aquesta campanya. els convits salten el formulari públic i la revisió.",
+          ? `cap invitació coincideix amb «${q}» en aquest filtre.`
+          : "encara no has convidat ningú en aquesta campanya. les invitacions salten el formulari públic i la revisió.",
       }}
       {...(query.data
         ? {

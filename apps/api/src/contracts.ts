@@ -601,6 +601,65 @@ export const adminMemberProfileSchema = z
   })
   .openapi("AdminMemberProfile");
 
+/**
+ * One stored address for a member. `verifiedAt` is an ISO timestamp when the
+ * member (or an admin) has confirmed the address, `null` while it is still
+ * pending. `null` in place of the whole object means the slot is empty.
+ */
+export const adminMemberEmailSchema = z
+  .object({
+    email: z.string(),
+    verifiedAt: z.string().nullable(),
+  })
+  .nullable()
+  .openapi("AdminMemberEmail");
+
+export const adminMemberEmailsSchema = z
+  .object({
+    university: adminMemberEmailSchema,
+    personal: adminMemberEmailSchema,
+  })
+  .openapi("AdminMemberEmails");
+
+/**
+ * Set / replace / clear a member's addresses from the admin fitxa. A field
+ * set to a string sets that slot (stored already verified — an admin edit is
+ * trusted); a field set to `null` clears it; an omitted field is untouched.
+ * At least one field must be present, and the edit may not leave the member
+ * with no address at all (enforced server-side against the resulting state).
+ * Any well-formed address is accepted in either slot — the university /
+ * personal split is a label here, not a domain rule.
+ */
+export const adminSetMemberEmailsBodySchema = z
+  .object({
+    university: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email("adreça de correu electrònic no vàlida")
+      .nullable(),
+    personal: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email("adreça de correu electrònic no vàlida")
+      .nullable(),
+  })
+  .partial()
+  .refine(
+    (body) => body.university !== undefined || body.personal !== undefined,
+    { message: "indica com a mínim un dels dos correus" },
+  )
+  .refine(
+    ({ university, personal }) =>
+      !university || !personal || university !== personal,
+    {
+      path: ["personal"],
+      message: "els dos correus han de ser diferents",
+    },
+  )
+  .openapi("AdminSetMemberEmailsRequest");
+
 export const adminMemberTimelineMembershipSchema = z
   .object({
     id: z.string(),
@@ -629,6 +688,7 @@ export const adminMemberTimelineEventSchema = z
 export const adminMemberDetailSchema = z
   .object({
     profile: adminMemberProfileSchema,
+    emails: adminMemberEmailsSchema,
     memberships: z.array(adminMemberTimelineMembershipSchema),
     events: z.array(adminMemberTimelineEventSchema),
   })
@@ -653,6 +713,10 @@ export const adminMemberStatusResponseSchema = z
 export const adminSetRoleResponseSchema = z
   .object({ role: z.string() })
   .openapi("AdminSetRoleResponse");
+
+export const adminMemberEmailsResponseSchema = z
+  .object({ emails: adminMemberEmailsSchema })
+  .openapi("AdminMemberEmailsResponse");
 
 export const adminDeleteMemberResponseSchema = z
   .object({

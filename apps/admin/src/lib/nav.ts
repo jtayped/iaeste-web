@@ -1,12 +1,15 @@
 import {
   Building2,
   Globe,
+  Inbox,
   LayoutDashboard,
-  Mail,
   Newspaper,
+  Send,
   Users,
   type LucideIcon,
 } from "lucide-react";
+
+import type { Capability } from "@/lib/permissions";
 
 /**
  * The single catalogue of admin routes: the sidebar, the breadcrumb, and every
@@ -18,13 +21,15 @@ import {
  * log line, and the Catalan-copy rule is about text the user sees, not about
  * paths (see the plan's "Routes and navigation").
  */
-export type NavGroupId = "principal" | "organitzacio";
+export type NavGroupId = "principal" | "inscripcions" | "organitzacio";
 
 export interface NavItem {
   href: string;
   /** Lowercase Catalan, shown in the sidebar and as the breadcrumb leaf. */
   label: string;
   icon: LucideIcon;
+  /** Capability enforced by the matching route subtree. */
+  capability: Capability;
   /** Only `/` needs an exact match; the rest own their subtrees. */
   exact?: boolean;
   /** Set for the one item that carries the pending-review count. */
@@ -43,7 +48,32 @@ export const navGroups: NavGroup[] = [
     id: "principal",
     label: "principal",
     items: [
-      { href: "/", label: "dashboard", icon: LayoutDashboard, exact: true },
+      {
+        href: "/",
+        label: "dashboard",
+        icon: LayoutDashboard,
+        capability: "admin.access",
+        exact: true,
+      },
+    ],
+  },
+  {
+    id: "inscripcions",
+    label: "inscripcions",
+    items: [
+      {
+        href: "/registrations",
+        label: "sol·licituds",
+        icon: Inbox,
+        capability: "registrations.review",
+        badge: "pending",
+      },
+      {
+        href: "/invitations",
+        label: "invitacions",
+        icon: Send,
+        capability: "invitations.write",
+      },
     ],
   },
   {
@@ -51,14 +81,17 @@ export const navGroups: NavGroup[] = [
     label: "organització",
     items: [
       {
-        href: "/registrations",
-        label: "sol·licituds",
-        icon: Mail,
-        badge: "pending",
+        href: "/members",
+        label: "membres",
+        icon: Users,
+        capability: "members.read",
       },
-      { href: "/members", label: "membres", icon: Users },
-      { href: "/invitations", label: "convits", icon: Mail },
-      { href: "/campaigns", label: "campanyes", icon: Building2 },
+      {
+        href: "/campaigns",
+        label: "campanyes",
+        icon: Building2,
+        capability: "campaigns.write",
+      },
     ],
   },
 ];

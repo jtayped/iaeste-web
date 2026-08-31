@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { brandIcons, brandSocialHandle } from "@repo/ui/lib/brand-metadata";
 import { renderOgImage } from "@repo/ui/lib/og-image";
 
 /**
@@ -9,25 +10,6 @@ import { renderOgImage } from "@repo/ui/lib/og-image";
  * `localhost:3000` and every share preview points at nothing.
  */
 const SITE_ORIGIN = "https://iaestelleida.cat";
-
-/**
- * Icons and the manifest are the same on every page, so they ride along here
- * rather than being repeated per layout. Next merges metadata parent-to-child,
- * so declaring them once at the root would be enough — but every layout in
- * this app goes through this function, and keeping them in it means a new
- * section cannot accidentally ship without them.
- */
-const icons: Metadata["icons"] = {
-  icon: [
-    // `.ico` first for the clients that ignore everything else, then the
-    // vector, which is what any current browser will actually pick.
-    { url: "/favicon.ico", sizes: "any" },
-    { url: "/icon.svg", type: "image/svg+xml" },
-    { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-    { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
-  ],
-  apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
-};
 
 export async function generatePageMetadata({
   params,
@@ -50,7 +32,7 @@ export async function generatePageMetadata({
     description: t("description"),
     applicationName: "IAESTE LC Lleida",
     manifest: "/manifest.webmanifest",
-    icons,
+    icons: brandIcons,
     alternates: {
       canonical: "/ca",
       languages: {
@@ -78,8 +60,8 @@ export async function generatePageMetadata({
       card: "summary_large_image",
       title: t("twitterTitle"),
       description: t("twitterDescription"),
-      creator: "@IAESTELCLleida",
-      site: "@IAESTELCLleida",
+      creator: brandSocialHandle,
+      site: brandSocialHandle,
     },
     keywords: t("keywords"),
     robots: {

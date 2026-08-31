@@ -14,7 +14,7 @@ export const LoadingInvitationScreen = () => (
   <StatusScreen
     icon="loading"
     iconClassName="animate-spin"
-    title="obrint el convit…"
+    title="obrint la invitació…"
   >
     <Paragraph>un moment, si us plau.</Paragraph>
   </StatusScreen>
@@ -98,9 +98,9 @@ export const InvalidInvitationScreen = () => (
     }
   >
     <Paragraph>
-      el convit ha caducat, s&apos;ha anul·lat o ja s&apos;ha fet servir. no et
-      podem dir quin dels tres és: així evitem donar pistes sobre convits que no
-      són teus.
+      la invitació ha caducat, s&apos;ha anul·lat o ja s&apos;ha fet servir. no
+      et podem dir quin dels tres és: així evitem donar pistes sobre invitacions
+      que no són teves.
     </Paragraph>
     <Paragraph>
       si encara vols entrar al comitè, demana a qui et va convidar que te
@@ -175,8 +175,8 @@ export const AcceptedScreen = ({
       }
     >
       <Paragraph>
-        aquest convit era per a un compte que ja forma part del comitè, així que
-        no hem canviat res. hem desat les dades que acabes d&apos;omplir.
+        aquesta invitació era per a un compte que ja forma part del comitè, així
+        que no hem canviat res. hem desat les dades que acabes d&apos;omplir.
       </Paragraph>
     </StatusScreen>
   ) : (

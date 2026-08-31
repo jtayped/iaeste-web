@@ -8,8 +8,8 @@ this app.
 ## Every page goes through `<PageShell>` — no exceptions
 
 A page component's top-level element is always `<PageShell>`. It is the single
-place the breadcrumb, the visible page header, and the document title are
-rendered, so those never drift between pages. A new route that renders its own
+place the breadcrumb data, the visible page header, and the document title are
+declared, so those never drift between pages. A new route that renders its own
 ad-hoc header, or omits the breadcrumb, is a bug — reviewers should reject it.
 
 ```tsx
@@ -70,12 +70,11 @@ interface PageShellProps {
 }
 ```
 
-**The breadcrumb renders at the top of the content column, not in the app
-header.** It is page-owned data and the header is rendered by the `(app)`
-layout one level up, so putting it there would need a client-side context
-bridge that paints empty and pops in on every navigation. The header keeps only
-stable chrome: the sidebar toggle, the campaign context, and the notifications
-toggle.
+**The breadcrumb is responsive.** Below `md` it renders at the top of the
+content column. At `md+`, `ResponsiveBreadcrumbs` portals the same page-owned
+trail into the app header beside the sidebar toggle. This keeps a long dynamic
+record name out of the cramped mobile header without duplicating breadcrumb
+data or asking the parent layout to fetch the record again.
 
 `<PageShell>` also owns the content column, exported as `PAGE_CONTAINER_CLASS`
 so `(app)/loading.tsx` can use the same one — the skeleton and the page it
@@ -88,11 +87,12 @@ same wording so a route is never labelled two different ways. The breadcrumb
 itself no longer reads it: crumbs are page-declared, because only the page has
 the record a dynamic leaf names.
 
-`navGroups` has exactly two groups. **principal** is a single item, the
-`dashboard` (`/`, `exact`), which is also the breadcrumb/title root. **organització**
-holds the four working routes in order: `sol·licituds` (carries the pending
-badge), `membres`, `convits`, `campanyes`. Anything that leaves the app is not a
-nav group — see "External links" below.
+`navGroups` has three groups. **principal** is a single item, the `dashboard`
+(`/`, `exact`), which is also the breadcrumb/title root. **inscripcions** holds
+`sol·licituds` (carries the pending badge) and `invitacions`; the shell hides
+this whole group when no campaign is open for registration. **organització**
+holds `membres` and `campanyes`. Anything that leaves the app is not a nav group
+— see "External links" below.
 
 ## Mobile first — the layout is designed for a phone and scaled up
 
@@ -138,7 +138,7 @@ added to the mobile nav needs the same handler.
 ## Tables
 
 **Every list screen renders through one component: `<DataTable>`**
-(`src/components/data-table/`). Members, sol·licituds, convits and campanyes
+(`src/components/data-table/`). Members, sol·licituds, invitacions and campanyes
 all use it, and a new list must too. It owns the header row, the row density,
 the loading skeleton, the empty state, the error state and the pager, so a
 list cannot look like a different product from the one next to it. A page that

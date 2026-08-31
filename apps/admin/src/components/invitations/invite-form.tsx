@@ -260,7 +260,7 @@ export function InviteForm({
                 type="submit"
                 disabled={pending || campaignId.length === 0}
               >
-                {pending ? "enviant…" : "envia el convit"}
+                {pending ? "enviant…" : "envia la invitació"}
               </Button>
               <Button
                 type="button"
