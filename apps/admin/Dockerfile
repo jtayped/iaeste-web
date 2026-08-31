@@ -28,8 +28,17 @@ COPY --from=pruner /app/out/full/ .
 # Server components re-read the runtime env, so keep the container's
 # API_INTERNAL_URL set to the same value.
 ARG API_INTERNAL_URL=http://iaeste-api:3004
+# next.config.ts imports @repo/env/admin/server, which parses the whole schema
+# while `next build` runs with NODE_ENV=production. CMS_PUBLIC_ORIGIN and
+# WEB_PUBLIC_ORIGIN are required in production (no dev fallback), so the build
+# needs them present. These are non-secret placeholders confined to this stage:
+# both values are re-read from the runtime env by server components, and Coolify
+# must supply the real origins — a missing one fails the container at boot
+# rather than shipping a localhost link.
 ENV NEXT_TELEMETRY_DISABLED=1 \
-    API_INTERNAL_URL=$API_INTERNAL_URL
+    API_INTERNAL_URL=$API_INTERNAL_URL \
+    CMS_PUBLIC_ORIGIN=http://localhost:3006 \
+    WEB_PUBLIC_ORIGIN=http://localhost:3000
 
 RUN npx turbo run build --filter=admin
 

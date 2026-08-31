@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { z } from "zod";
 
-import { parseEnv } from "./parse";
+import { parseEnv, urlRequiredInProduction } from "./parse";
 
 describe("parseEnv", () => {
   it("returns the parsed values on success", () => {
@@ -52,5 +52,31 @@ describe("parseEnv", () => {
         "test",
       ),
     );
+  });
+});
+
+describe("urlRequiredInProduction", () => {
+  const schema = (nodeEnv: string | undefined) =>
+    z.object({ URL: urlRequiredInProduction("http://localhost:3006", nodeEnv) });
+
+  it("applies the localhost fallback outside production", () => {
+    for (const nodeEnv of ["development", "test", undefined]) {
+      assert.deepEqual(schema(nodeEnv).parse({ URL: undefined }), {
+        URL: "http://localhost:3006",
+      });
+    }
+  });
+
+  it("requires the variable in production", () => {
+    assert.throws(() => schema("production").parse({ URL: undefined }));
+  });
+
+  it("still validates a supplied value in every environment", () => {
+    for (const nodeEnv of ["development", "production"]) {
+      assert.deepEqual(schema(nodeEnv).parse({ URL: "https://cms.example.cat" }), {
+        URL: "https://cms.example.cat",
+      });
+      assert.throws(() => schema(nodeEnv).parse({ URL: "not-a-url" }));
+    }
   });
 });

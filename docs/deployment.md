@@ -74,9 +74,13 @@ arguments in image history.
 Next.js compiles `NEXT_PUBLIC_*` values into the bundle. Changing one requires
 a new image.
 
-| Variable                         | Build value | Runtime value |
-| -------------------------------- | ----------- | ------------- |
-| `NEXT_PUBLIC_INSCRIPCIONS_STATE` | real value  | none          |
+| Variable              | Build value | Runtime value |
+| --------------------- | ----------- | ------------- |
+| `NEXT_PUBLIC_API_URL` | real value  | none          |
+
+The site reads the registration campaign from the API at request time, so it
+no longer takes `NEXT_PUBLIC_INSCRIPCIONS_STATE`: opening or closing
+registrations is an admin action, not a redeploy of this image.
 
 The web build also receives non-secret placeholders for the server values that
 Next.js validates while collecting page data. Coolify must supply their real
@@ -97,6 +101,20 @@ Coolify does not need runtime variables for this image.
 - `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_INSCRIPCIONS_STATE`
 - `NEXT_PUBLIC_WHATSAPP_INVITE`
+
+### Admin
+
+The admin app compiles no `NEXT_PUBLIC_*` values. `API_INTERNAL_URL` is baked
+in at build time (see the intro) and re-read at runtime; keep the container's
+value identical. The image also bakes non-secret localhost placeholders for the
+two origin variables below while `next build` parses `@repo/env/admin/server`.
+Set the real values on the Coolify resource — both are **required in
+production** and a missing one fails the container at boot rather than shipping
+a `localhost` link in the sidebar:
+
+- `API_INTERNAL_URL` — internal address of `apps/api`, e.g. `http://iaeste-api:3004`
+- `CMS_PUBLIC_ORIGIN` — `https://cms.iaestelleida.cat` (sidebar "blog" link → `/admin`)
+- `WEB_PUBLIC_ORIGIN` — `https://iaestelleida.cat` (sidebar "web" link)
 
 ### API
 

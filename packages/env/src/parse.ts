@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 
 /**
  * Parses a set of environment variables against a schema, failing loudly at
@@ -27,4 +27,24 @@ export function parseEnv<TSchema extends z.ZodType>(
   }
 
   return parsed.data;
+}
+
+/**
+ * A URL that is required in production but falls back to a localhost dev port
+ * anywhere else.
+ *
+ * A dev default is a convenience; shipped to production it is a trap — a var
+ * nobody set silently resolves to `http://localhost:...` and the deployed page
+ * links there. Gating the `.default()` on `NODE_ENV` means a missing value in
+ * production fails the env parse loudly at boot (see `parseEnv`) instead.
+ *
+ * `nodeEnv` is a parameter, defaulted to `process.env.NODE_ENV`, only so the
+ * two branches are unit-testable without mutating the process environment.
+ */
+export function urlRequiredInProduction(
+  devFallback: string,
+  nodeEnv: string | undefined = process.env.NODE_ENV,
+) {
+  const url = z.string().url();
+  return nodeEnv === "production" ? url : url.default(devFallback);
 }

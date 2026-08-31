@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { parseEnv } from "./parse";
+import { parseEnv, urlRequiredInProduction } from "./parse";
 
 /**
  * Server-only configuration for the admin app. There is deliberately **no**
@@ -23,8 +23,17 @@ const schema = z.object({
    * Public origin of `apps/cms`. Used only to link the admin sidebar out to
    * the blog CMS at `${CMS_PUBLIC_ORIGIN}/admin`. Rendered server-side and
    * passed down as a prop, so it never reaches the browser bundle.
+   *
+   * Dev falls back to the local CMS port; production must set it, or the
+   * sidebar's blog link silently points at `localhost`.
    */
-  CMS_PUBLIC_ORIGIN: z.string().url().default("http://localhost:3006"),
+  CMS_PUBLIC_ORIGIN: urlRequiredInProduction("http://localhost:3006"),
+  /**
+   * Public origin of `apps/web`, the marketing site. Used only for the admin
+   * sidebar's "web" external link, resolved server-side like
+   * `CMS_PUBLIC_ORIGIN` and with the same dev-default / prod-required rule.
+   */
+  WEB_PUBLIC_ORIGIN: urlRequiredInProduction("http://localhost:3000"),
 });
 
 export const env = parseEnv(
@@ -32,6 +41,7 @@ export const env = parseEnv(
   {
     API_INTERNAL_URL: process.env.API_INTERNAL_URL,
     CMS_PUBLIC_ORIGIN: process.env.CMS_PUBLIC_ORIGIN,
+    WEB_PUBLIC_ORIGIN: process.env.WEB_PUBLIC_ORIGIN,
   },
   "admin server",
 );
