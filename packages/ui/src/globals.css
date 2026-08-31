@@ -374,6 +374,40 @@
     @apply rounded-lg;
   }
 
+  /* HeroUI writes a breadcrumb trail as bold grey links that underline on
+     hover and turn `--link` blue on the page you are on. The admin's reads as
+     a quiet path with the leaf as the only solid thing in it, so: normal
+     weight throughout, the hover is a darkening rather than an underline, and
+     the current crumb is plain foreground, not a colour that says "link". */
+  .breadcrumbs__link {
+    @apply font-normal transition-colors;
+
+    &:hover,
+    &[data-hovered="true"] {
+      @apply text-foreground no-underline;
+    }
+
+    &[data-current="true"] {
+      @apply text-foreground;
+    }
+  }
+
+  .breadcrumbs__separator {
+    @apply size-3.5;
+  }
+
+  /* Every crumb is `shrink-0`, which at 360px pushes a long leaf — a full
+     name, say — past the right edge of the viewport. Only the leaf is allowed
+     to give way, and only the leaf truncates: an ellipsized middle crumb is
+     unreadable *and* still a link to somewhere. */
+  .breadcrumbs__item[data-current] {
+    @apply min-w-0 shrink;
+
+    .breadcrumbs__link {
+      @apply truncate;
+    }
+  }
+
   /* React Aria portals every popover straight onto `document.body`, as a
      plain sibling of whatever else is there — see
      `node_modules/react-aria/dist/private/overlays/Overlay.js`. It never

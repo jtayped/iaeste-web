@@ -1,115 +1,47 @@
+"use client";
+
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { ChevronRight, MoreHorizontal } from "lucide-react";
+import {
+  BreadcrumbsItem as HeroUIBreadcrumbsItem,
+  BreadcrumbsRoot as HeroUIBreadcrumbsRoot,
+  type BreadcrumbsItemProps as HeroUIBreadcrumbsItemProps,
+  type BreadcrumbsRootProps as HeroUIBreadcrumbsRootProps,
+} from "@heroui/react/breadcrumbs";
 
-import { cn } from "@repo/ui/lib/utils";
+/**
+ * The trail is a React Aria collection now, which is why the old
+ * `BreadcrumbLink` / `BreadcrumbPage` / `BreadcrumbSeparator` triple is gone.
+ *
+ * React Aria builds the `<ol>` from its item nodes and will not accept
+ * arbitrary `<li>`s between them, so a separator could not stay a component
+ * the caller places. It does not need to: the collection knows which crumb is
+ * last, and that one alone gets `aria-current="page"`, loses its separator,
+ * and renders as a `<span>` rather than a link to the page you are already on
+ * — the three things the caller used to spell out by hand.
+ *
+ * A crumb with an `href` needs `@repo/ui/router-provider` mounted above it, or
+ * pressing it is a full document load instead of a client transition.
+ */
 
-const Breadcrumb = React.forwardRef<
-  HTMLElement,
-  React.ComponentPropsWithoutRef<"nav"> & {
-    separator?: React.ReactNode;
-  }
->(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />);
+export interface BreadcrumbProps extends HeroUIBreadcrumbsRootProps {
+  /** Labels the landmark and the list it wraps. */
+  "aria-label"?: string;
+}
+
+const Breadcrumb = React.forwardRef<HTMLOListElement, BreadcrumbProps>(
+  ({ "aria-label": ariaLabel = "breadcrumb", ...props }, ref) => (
+    // React Aria labels the `<ol>` but adds no landmark, and a breadcrumb
+    // trail is one of the few navigations worth jumping to directly.
+    <nav aria-label={ariaLabel}>
+      <HeroUIBreadcrumbsRoot ref={ref} aria-label={ariaLabel} {...props} />
+    </nav>
+  ),
+);
 Breadcrumb.displayName = "Breadcrumb";
 
-const BreadcrumbList = React.forwardRef<
-  HTMLOListElement,
-  React.ComponentPropsWithoutRef<"ol">
->(({ className, ...props }, ref) => (
-  <ol
-    ref={ref}
-    className={cn(
-      "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
-      className,
-    )}
-    {...props}
-  />
-));
-BreadcrumbList.displayName = "BreadcrumbList";
+export type BreadcrumbItemProps = HeroUIBreadcrumbsItemProps &
+  React.ComponentProps<typeof HeroUIBreadcrumbsItem>;
 
-const BreadcrumbItem = React.forwardRef<
-  HTMLLIElement,
-  React.ComponentPropsWithoutRef<"li">
->(({ className, ...props }, ref) => (
-  <li
-    ref={ref}
-    className={cn("inline-flex items-center gap-1.5", className)}
-    {...props}
-  />
-));
-BreadcrumbItem.displayName = "BreadcrumbItem";
+const BreadcrumbItem = HeroUIBreadcrumbsItem;
 
-const BreadcrumbLink = React.forwardRef<
-  HTMLAnchorElement,
-  React.ComponentPropsWithoutRef<"a"> & {
-    asChild?: boolean;
-  }
->(({ asChild, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : "a";
-
-  return (
-    <Comp
-      ref={ref}
-      className={cn("transition-colors hover:text-foreground", className)}
-      {...props}
-    />
-  );
-});
-BreadcrumbLink.displayName = "BreadcrumbLink";
-
-const BreadcrumbPage = React.forwardRef<
-  HTMLSpanElement,
-  React.ComponentPropsWithoutRef<"span">
->(({ className, ...props }, ref) => (
-  <span
-    ref={ref}
-    role="link"
-    aria-disabled="true"
-    aria-current="page"
-    className={cn("font-normal text-foreground", className)}
-    {...props}
-  />
-));
-BreadcrumbPage.displayName = "BreadcrumbPage";
-
-const BreadcrumbSeparator = ({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<"li">) => (
-  <li
-    role="presentation"
-    aria-hidden="true"
-    className={cn("[&>svg]:h-3.5 [&>svg]:w-3.5", className)}
-    {...props}
-  >
-    {children ?? <ChevronRight />}
-  </li>
-);
-BreadcrumbSeparator.displayName = "BreadcrumbSeparator";
-
-const BreadcrumbEllipsis = ({
-  className,
-  ...props
-}: React.ComponentProps<"span">) => (
-  <span
-    role="presentation"
-    aria-hidden="true"
-    className={cn("flex h-9 w-9 items-center justify-center", className)}
-    {...props}
-  >
-    <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More</span>
-  </span>
-);
-BreadcrumbEllipsis.displayName = "BreadcrumbEllipsis";
-
-export {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbEllipsis,
-};
+export { Breadcrumb, BreadcrumbItem };

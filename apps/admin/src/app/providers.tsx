@@ -3,6 +3,8 @@
 import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import { RouterProvider } from "@repo/ui/router-provider";
+
 /**
  * TanStack Query, mounted at the root and currently used by nothing.
  *
@@ -33,6 +35,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider>{children}</RouterProvider>
+    </QueryClientProvider>
   );
 }
