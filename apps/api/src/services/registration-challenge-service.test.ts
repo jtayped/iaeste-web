@@ -28,9 +28,9 @@ function createRecordingEmailer(): Emailer & { sent: SendEmailOptions[] } {
  * nothing else in the response leaks it.
  */
 function codeFrom(sent: SendEmailOptions): string {
-  const match = /(\d{3}) (\d{3})/.exec(JSON.stringify(sent.react));
+  const match = /\d{6}/.exec(JSON.stringify(sent.react));
   assert.ok(match, "no six-digit code in the sent email");
-  return `${match[1]}${match[2]}`;
+  return match[0];
 }
 
 /**

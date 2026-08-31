@@ -30,7 +30,7 @@ export const Progress = ({
 }) => (
   <motion.ol
     variants={childVariants}
-    className="mb-6 flex items-center gap-2"
+    className="mb-6 flex items-center justify-between gap-2"
     aria-label="passos de la inscripció"
   >
     {steps.map((step, index) => {
@@ -38,7 +38,13 @@ export const Progress = ({
       const active = index === current;
 
       return (
-        <li key={step.key} className="flex flex-1 items-center gap-2">
+        <li
+          key={step.key}
+          className={cn(
+            "flex items-center gap-2",
+            index < steps.length - 1 && "flex-1",
+          )}
+        >
           <span
             aria-current={active ? "step" : undefined}
             className={cn(

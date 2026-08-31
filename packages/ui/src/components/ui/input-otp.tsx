@@ -4,6 +4,7 @@ import {
   InputOTPRoot as HeroUIInputOTPRoot,
   InputOTPSeparator as HeroUIInputOTPSeparator,
   InputOTPSlot as HeroUIInputOTPSlot,
+  REGEXP_ONLY_DIGITS,
   type InputOTPProps as HeroUIInputOTPProps,
   type InputOTPGroupProps,
   type InputOTPSeparatorProps,
@@ -26,13 +27,31 @@ export interface InputOTPProps extends HeroUIInputOTPProps {
  * already built on, so none of that changes. What it adds is a
  * `FieldErrorContext`: pass `isInvalid` and a nested `FormMessage` shows the
  * validation message the same way a `TextField` would.
+ *
+ * Digits only by default: `pattern` drops non-digit keystrokes, and
+ * `pasteTransformer` strips spaces and punctuation out of a pasted value
+ * first — an emailed code copied as "418 502" still fills the six boxes
+ * cleanly instead of putting the space in a slot and dropping a digit. Both
+ * can be overridden for an alphanumeric code.
  */
 const InputOTP = React.forwardRef<HTMLInputElement, InputOTPProps>(
-  ({ className, disabled, isDisabled, ...props }, ref) => (
+  (
+    {
+      className,
+      disabled,
+      isDisabled,
+      pattern = REGEXP_ONLY_DIGITS,
+      pasteTransformer = (pasted) => pasted.replace(/\D/g, ""),
+      ...props
+    },
+    ref,
+  ) => (
     <HeroUIInputOTPRoot
       ref={ref}
       isDisabled={isDisabled ?? disabled}
       className={className}
+      pattern={pattern}
+      pasteTransformer={pasteTransformer}
       {...props}
     />
   ),

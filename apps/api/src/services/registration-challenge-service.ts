@@ -53,9 +53,13 @@ function generateCode(): string {
   return crypto.randomInt(0, 1_000_000).toString().padStart(6, "0");
 }
 
-/** `418502` reads back as `418 502` — grouped digits are easier to copy. */
+/**
+ * The six digits, unseparated. The email spaces them out visually with letter
+ * spacing, so a literal space here only rode along on copy-paste and landed in
+ * the OTP field, pushing a digit off the end.
+ */
 function forDisplay(code: string): string {
-  return `${code.slice(0, 3)} ${code.slice(3)}`;
+  return code;
 }
 
 export interface RegistrationSession extends KnownPerson {

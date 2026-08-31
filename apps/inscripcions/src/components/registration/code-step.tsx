@@ -130,8 +130,14 @@ export const CodeStepForm = ({
                   </InputOTP>
                   {/* Not `FormMessage`: that one lives inside its field root,
                       and this root is a flex row of six boxes. Same shape as
-                      the rejected-code line below it. */}
-                  {fieldState.error && (
+                      the rejected-code line below it.
+
+                      Suppressed while the server `error` is showing: a rejected
+                      code clears the field, which drops it to zero digits and
+                      makes the resolver's "sis xifres" length hint fire on top
+                      of the real server error. In that state only the server
+                      line should show. */}
+                  {fieldState.error && !error && (
                     <p
                       className={cn(
                         FIELD_HINT,
