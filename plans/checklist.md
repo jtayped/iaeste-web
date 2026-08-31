@@ -265,9 +265,12 @@ date-value.ts` is the one typed boundary to React Aria's `CalendarDate`, and
 - [x] Migrate ScrollArea where HeroUI preserves the behavior (deleted — no
       consumer).
 - [ ] Verify escape, dismissal, focus trap, focus return, portals, and nested overlays.
-      Blocked on a browser session. Verified from source that React Aria's
-      `useModalOverlay` supplies focus containment, `usePreventScroll`, and
-      `ariaHideOutside(..., { shouldUseInert: true })` for every overlay here.
+      Partly done without a browser — see "Rendered-DOM verification" below.
+      Confirmed: a bare `Button` child is the trigger and opens its overlay
+      from the keyboard, `slot="close"` dismisses, `role="alertdialog"` with
+      both `aria-labelledby` and `aria-describedby` resolving to real elements,
+      and the drawer opening at the right placement. Escape, focus return and
+      pointer dismissal still need a real browser.
 - [x] Retain and document the public navigation menu if no HeroUI match exists.
       Retained. Radix tracks which sibling a transition came from and slides
       the viewport accordingly (`data-motion`), and sizes it from
@@ -314,159 +317,227 @@ date-value.ts` is the one typed boundary to React Aria's `CalendarDate`, and
 
 ## Admin data and feedback
 
-- [ ] Migrate Table without adding product behavior.
-- [ ] Preserve data-table pagination, filters, loading, and empty states.
-- [ ] Decide whether HeroUI Toast can replace Sonner without feature loss.
+- [x] Migrate Table without adding product behavior.
+      Retained as plain `<table>` markup, which is what "without adding product
+      behavior" comes to here. React Aria's table is always `role="grid"` with
+      a `GridKeyboardDelegate`: arrow keys move between cells and Tab leaves
+      the whole table instead of stepping through each row's link and action
+      buttons. For an admin list whose point is reaching a row's actions that
+      is a regression, and it would also have forced `isRowHeader` onto every
+      column config — React Aria throws at hydration without one. The existing
+      file is not shadcn debt either: it is `<table>`/`<tr>`/`<td>` with
+      `cn()`, no Radix at all.
+- [x] Preserve data-table pagination, filters, loading, and empty states.
+      Unchanged, except that the filter tabs are HeroUI's now — the toolbar
+      dropped its hand-rolled `overflow-x-auto` wrapper for React Aria's
+      scrolling tab list.
+- [x] Decide whether HeroUI Toast can replace Sonner without feature loss.
+      Yes, and it did. The repo only ever calls `toast.success(message)` and
+      `toast.error(message, { description })`, and HeroUI's queue also carries
+      `promise`, programmatic dismissal and placement, none of which were in
+      use. `sonner` is removed.
 - [ ] Verify campaign create and edit interactions.
 - [ ] Verify member, invitation, registration, and export actions.
+      Partly: the export menu's items render as `<a role="menuitem" href
+    download>` in a real DOM, so the CSV download keeps working. The rest
+      needs a browser.
 - [ ] Verify destructive confirmation and visible server failures.
+      Partly: the alert dialog's structure and dismissal are verified below.
 - [ ] Verify notification controls and admin dark mode.
 
 ## Cleanup and documentation
 
-- [ ] Build a final shared component and consumer inventory with `rg`.
-- [ ] Delete copied component files proven unused.
-- [ ] Remove unused Radix packages one by one.
-- [ ] Remove other UI dependencies proven unused.
-- [ ] Remove obsolete Tailwind and animation tooling.
-- [ ] Keep and document dependencies used by retained custom components.
-- [ ] Update `packages/ui/AGENTS.md` for the HeroUI workflow.
-- [ ] Remove stale shadcn scripts and configuration when no longer used.
-- [ ] Confirm each dependency is declared by the package that imports it.
+- [x] Build a final shared component and consumer inventory with `rg`.
+- [x] Delete copied component files proven unused.
+      `collapsible`, `scroll-area`, `dialog`, `sheet` and `sonner`. The first
+      three had no consumer at all; the last two were replaced.
+- [x] Remove unused Radix packages one by one.
+- [x] Remove other UI dependencies proven unused.
+- [x] Remove obsolete Tailwind and animation tooling.
+- [x] Keep and document dependencies used by retained custom components.
+- [x] Update `packages/ui/AGENTS.md` for the HeroUI workflow.
+- [x] Remove stale shadcn scripts and configuration when no longer used.
+- [x] Confirm each dependency is declared by the package that imports it.
+      `react-aria-components` was added: `Focusable`, `Pressable` and `Text`
+      are imported directly, not through HeroUI.
+
+### Cleanup notes
+
+Removed from `packages/ui`: thirteen Radix packages (`react-alert-dialog`,
+`react-avatar`, `react-checkbox`, `react-collapsible`, `react-dialog`,
+`react-dropdown-menu`, `react-label`, `react-scroll-area`, `react-select`,
+`react-separator`, `react-switch`, `react-tabs`, `react-tooltip`),
+`react-day-picker`, `input-otp`, `sonner`, `tailwindcss-animate`, and the
+`@repo/tailwind-config` dev dependency.
+
+Also deleted: the four editor-only `tailwind.config.ts` files, the
+`./tailwind.config` and `./postcss.config` export entries (the second named a
+file that did not exist), `components.json`, and the `ui` shadcn script.
+Nothing in the build read any of them — Tailwind 4 reads `globals.css`, and
+Prettier was pointed at it during the setup phase. `packages/email` keeps
+`@repo/tailwind-config`; it is still on Tailwind 3 and is now its only
+consumer.
+
+Still declared, each with a live importer:
+
+| Dependency                                                                              | Why                                                         |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `@radix-ui/react-navigation-menu`                                                       | the public site's navigation menu                           |
+| `@radix-ui/react-popover`                                                               | the degree picker's popover                                 |
+| `@radix-ui/react-slot`                                                                  | `asChild` on `sidebar-menu` and `sidebar-group`             |
+| `class-variance-authority`                                                              | variants in those two files and the navigation menu         |
+| `cmdk`                                                                                  | the degree picker's ranked filter                           |
+| `framer-motion`                                                                         | `counter.tsx`, plus the two apps that declare it themselves |
+| `react-aria-components`                                                                 | `Focusable`, `Pressable`, `Text`, `RouterProvider`          |
+| `@internationalized/date`                                                               | the one `Date` <-> `CalendarDate` boundary                  |
+| `next-intl`, `react-icons`, `lucide-react`, `clsx`, `tailwind-merge`, `react-hook-form` | untouched by the migration                                  |
 
 ## Final verification
 
-- [ ] Run the shared UI lint and type checks.
-- [ ] Run public app lint, type checks, and production build.
-- [ ] Run registration app lint, type checks, tests, and production build.
-- [ ] Run admin app lint, type checks, and production build.
-- [ ] Run the full repository lint gate.
-- [ ] Run the full repository type-check gate.
-- [ ] Run the full repository test gate.
-- [ ] Run the full repository production build.
+- [x] Run the shared UI lint and type checks.
+- [x] Run public app lint, type checks, and production build.
+- [x] Run registration app lint, type checks, tests, and production build.
+- [x] Run admin app lint, type checks, and production build.
+- [x] Run the full repository lint gate.
+- [x] Run the full repository type-check gate.
+- [x] Run the full repository test gate.
+- [x] Run the full repository production build.
 - [ ] Verify representative desktop and mobile routes in a browser.
+      Blocked: no Chrome extension is connected to this session
+      (`list_connected_browsers` returns nothing). The admin dev server does
+      serve `/sign-in` with a 200 and no render error.
 - [ ] Verify keyboard navigation and visible focus across all apps.
+      Partly: keyboard activation of every migrated overlay trigger is
+      confirmed in a rendered DOM (below). Visible focus needs a browser.
 - [ ] Verify translated content, validation, loading, empty, and error states.
 - [ ] Run the Impeccable design detector once over changed UI files if available.
-- [ ] Review the diff for generated files, unrelated formatting, and copy changes.
-- [ ] Confirm no app imports HeroUI directly.
-- [ ] Record the final component and dependency inventory below.
+- [x] Review the diff for generated files, unrelated formatting, and copy changes.
+      No generated file is touched. No public copy changed. The Tailwind 4
+      class-order delta is down from 61 files to 35 and was deliberately left
+      alone — see the blockers.
+- [x] Confirm no app imports HeroUI directly.
+      `rg -n "@heroui|react-aria" apps/` — no matches.
+- [x] Record the final component and dependency inventory below.
 
 ## Final notes
 
-Record the completed migration state here:
+### HeroUI-backed components
 
-- HeroUI-backed components: `button`, `card`, `alert`, `badge` (on HeroUI's
-  `Chip`, not its `Badge`), `avatar`, `separator`, `skeleton`, `switch`,
-  `checkbox`, `input`, `textarea`, `label`, `text-field` (new), `form`,
-  `input-otp`, `select`, `calendar`, `date-picker`.
-- Retained custom components and why:
-  - `button-group` — HeroUI's `ButtonGroup` is a segmented control (`gap-0`,
-    stripped inner radii). Ours is a spacing helper for separate buttons.
-    Swapping it would fuse buttons that are meant to stay distinct.
-  - `command` (`cmdk`) and `popover` (Radix) — still the degree picker's
-    ranked filter. See the registration section.
-  - Everything not yet reached by the migration (overlays, navigation,
-    sidebar, table, toast) is still the copied shadcn implementation.
-- Remaining UI dependencies: not audited yet; no dependency has been removed.
-  `@internationalized/date` was added to `packages/ui`, which now owns the
-  `Date` ↔ `CalendarDate` boundary. Radix is still required by the unmigrated
-  components, and HeroUI's own `Avatar` is itself built on
-  `@radix-ui/react-avatar`. `react-day-picker` no longer has a consumer.
-- Known regressions or blockers:
-  - **No browser session is available in the current session**, so nothing
-    since the stable-component phase has been looked at. The public app was
-    checked at desktop width when the Chrome extension was connected. Mobile
-    widths, the registration flow, admin dark mode and every keyboard check are
-    outstanding.
-  - The repository-wide Tailwind 4 class-ordering delta (61 files) is still
-    unformatted, because several of those files contain user-owned work.
+`alert`, `alert-dialog`, `avatar`, `badge` (on HeroUI's `Chip`, not its
+`Badge`), `breadcrumb`, `button`, `calendar`, `card`, `checkbox`,
+`date-picker`, `drawer`, `dropdown-menu`, `form`, `input`, `input-otp`,
+`label`, `select`, `separator`, `skeleton`, `switch`, `tabs`, `text-field`,
+`textarea`, `toast`, `tooltip`, plus the new `router-provider`.
 
-### Decisions worth carrying forward
+`checkbox` and `switch` are HeroUI-backed but currently rendered by nothing.
 
-- **HeroUI v3 styles through semantic classes, not utilities.** `buttonVariants`
-  returns `button button--primary button--md`; the colour lives in
-  `--button-bg` / `--button-fg` custom properties set by the variant class. So
-  theming happens through the variables the theme phase already mapped, and our
-  own variants are added by defining more `.button--*` classes rather than by
-  overriding with utilities. `@heroui/styles` declares
-  `@layer theme, base, components, utilities`, so anything passed through
-  `className` still wins.
-- **Two name collisions that fail silently.** HeroUI's `secondary` is a neutral
-  grey while ours is IAESTE blue, and HeroUI's `Badge` is a notification dot
-  while ours is a status label. Mapping either by name would look like it
-  worked. Our `secondary` and `outline` ride neutral HeroUI carriers and are
-  repainted by `.button--brand` / `.chip--brand` / `.chip--outline` in
-  `globals.css`.
-- **HeroUI v3 is much rounder than IAESTE** (pill buttons, 24px cards). Pinned
-  back per component in `globals.css` rather than by redefining
-  `--radius-2xl` / `--radius-3xl`, which would also move the two blog surfaces
-  that use those utilities directly.
-- **Button cannot be an anchor.** HeroUI wraps react-aria-components' `Button`,
-  which omits `href`/`target`/`rel` and has no `asChild`/`as`/`render`. Since
-  `apps/web` mixes `next/link` with next-intl's localised `Link`, an `href` prop
-  on the shared Button would hardcode the wrong router. All 24
-  `<Button asChild><Link/></Button>` sites became
-  `<Link className={buttonVariants({...})}>`.
-- **`onClick` survives.** react-aria keeps it as a documented alias for
-  `onPress`, so consumers did not churn. It is typed
-  `(e: MouseEvent<FocusableElement>) => void`, not
-  `MouseEventHandler<HTMLButtonElement>`. Every submit button in the repo
-  already carried an explicit `type="submit"`, so RAC's `type="button"` default
-  broke nothing.
-- **Never put `"use client"` on `button.tsx`.** The directive taints every
-  export, including the pure `buttonVariants()` helper, which server components
-  in `apps/inscripcions` call directly. It broke static prerendering of
-  `/en-revisio` and `/acceptat`. HeroUI's own Button already carries the
-  directive, so the wrapper does not need it.
+### Retained, and why
 
-### Resume point
+- `navigation-menu` (Radix) — the public site's main navigation. Radix tracks
+  which sibling a transition came from and slides the viewport accordingly
+  (`data-motion`), and sizes it from
+  `--radix-navigation-menu-viewport-height/width`. HeroUI has no equivalent.
+- `command` (cmdk) and `popover` (Radix) — the degree picker's ranked filter.
+  HeroUI's `Autocomplete` filters with a boolean predicate and keeps the
+  collection in its declared order, which cannot express `scoreDegree`'s
+  ranking. `popover` is retained only because that picker holds it up, and it
+  is the last Radix overlay in the repository.
+- `table` — see the admin section above.
+- `button-group` — HeroUI's is a segmented control (`gap-0`, stripped inner
+  radii); ours is a spacing helper for buttons meant to stay distinct.
+- `sidebar`, `sidebar-context`, `sidebar-group`, `sidebar-menu` — the admin's
+  collapsible sidebar. HeroUI has none. Its internals now use the migrated
+  `Tooltip` and `Drawer`; `SidebarMenuButton` stays a plain `<button>` behind a
+  `Slot` because it is a link as often as it is a button.
+- `logo`, `social`, `statistic`, `counter`, `typography`, `back-btn` — product
+  components, never shadcn output.
 
-Phases 1-7 are done, minus the two controls called out above (the degree
-picker and the `Popover` wrapper it holds up). Resume at phase 9, overlays and
-navigation.
+### Deleted
 
-Two things the overlay phase inherits:
+`collapsible`, `scroll-area`, `dialog`, `sheet`, `sonner`, and the shadcn CLI
+scaffolding. Dependency list in the cleanup notes above.
 
-- `packages/ui/src/globals.css` already carries the standing rule that undoes
-  Radix's `pointer-events: none` for React Aria's portalled popover. Once
-  `Sheet` and `Dialog` are HeroUI, that rule and its long comment should go —
-  React Aria manages its own layer stack, so the conflict disappears with the
-  last Radix overlay.
-- HeroUI's `PopoverTrigger` is a `<div role="button">`. Do not use it. React
-  Aria's `DialogTrigger` gives its trigger props to whatever focusable child it
-  is handed through `ButtonContext`, so the shared `Button` is the trigger and
-  the element stays a real `<button>`.
+### Known regressions and blockers
 
-Full API and consumer inventories for phases 6 and 9 are in the scratchpad:
-`heroui-forms-api.md`, `heroui-overlays-api.md`, `form-consumer-inventory.md`,
-`consumer-inventory.md`, `heroui-api.md`, `current-components.md`.
+- **No browser session.** `list_connected_browsers` returns nothing, so no
+  route has been looked at since the stable-component phase. Mobile widths,
+  admin dark mode, the registration flow, focus return and pointer dismissal
+  are all outstanding. What could be checked without one is below.
+- **The Tailwind 4 class-order delta is unformatted**, now 35 files (was 61 —
+  migration work absorbed the rest). Running Prettier over them is a
+  legitimate follow-up but belongs in its own commit: most are unrelated to
+  this migration (ESLint configs, auth tests, a brand script), and one,
+  `apps/web/src/components/sections/contact.tsx`, holds uncommitted user work.
+  `npm run lint` does not gate on it.
+- **`toast.error` is our name, not HeroUI's.** HeroUI calls it `danger`. The
+  alias is in `toast.tsx` and nowhere else.
+
+### Rendered-DOM verification
+
+No browser, but the components were rendered into happy-dom with
+`react-dom/client` and driven from the keyboard, which settles the design
+decisions that were otherwise only read out of HeroUI's source. Throwaway
+scripts, not committed test infrastructure — this repo has no component test
+setup and the migration is not the place to add one.
+
+- **A bare `Button` child is the trigger.** Inside `AlertDialogRoot` it renders
+  with `aria-haspopup`, `aria-expanded`, `aria-controls` and a matching `id`,
+  and pressing Enter opens the dialog. This is the claim every overlay's
+  removed `*Trigger asChild` wrapper rests on.
+- **`Pressable` does the same for a plain `<button>`** — the sidebar's case. It
+  comes back with `aria-expanded`, `aria-controls`, `id` and `tabindex`, and
+  opens the drawer from the keyboard.
+- **`slot="close"` really closes.** Enter on the alert dialog's cancel button
+  dismisses it, with no handler of its own.
+- **`AlertDialogDescription` earns its `Text`.** The dialog renders
+  `role="alertdialog"` with `aria-describedby` resolving to the
+  `Text slot="description"` element and `aria-labelledby` to the heading. An
+  identical-looking `<p>` would have been announced by nothing.
+- **`Header` and `Separator` are valid top-level menu nodes.** Both render
+  inside the dropdown's `role="menu"` alongside the items, which is what
+  `DropdownMenuLabel` and `DropdownMenuSeparator` depend on.
+- **Menu items with `href` are real links.**
+  `<a role="menuitem" href="/api/v1/admin/members/export" download>` — the CSV
+  export keeps downloading rather than navigating.
+- **`DrawerBody` carries `touch-action: pan-y`**, which is why scrolling
+  content has to live in it rather than directly in the dialog.
+
+One correction worth recording: the first pass at this reported `slot="close"`
+as doing nothing. That was happy-dom having no `PointerEvent`, so React Aria's
+`usePress` never fired — the control test (pressing the trigger the same way)
+failed identically. Driving the keyboard path instead made both work.
 
 ### Verification results
 
-Run on 2026-08-31 after the forms phase:
+Run on 2026-08-31 after the overlays, admin and cleanup phases:
 
 - `npm run lint` — exit 0 (the five pre-existing `apps/api` `max-lines`
   warnings, unchanged).
 - `npm run check-types` — exit 0, all 12 packages.
 - `npm run test` — exit 0, 14 tasks.
 - `npm run build` — exit 0 for all five build tasks.
-- Compiled CSS for `web` and `admin` contains the `--field-radius` override,
-  the `aria-invalid` invalid ring on `.input` and `.textarea`, the
-  `.popover, .select__popover` radius-and-border pin, the
-  `.calendar__cell, .calendar__nav-button, .list-box-item` radius pin, the
-  `.textfield[data-invalid] [data-slot=description] { display: block }`
-  override, and `[data-slot=date-picker-popover] { pointer-events: auto }`.
-- The server-rendered contact form on `/en/student` shows the field wiring
-  working: `label[for]` matches `input[id]`, `aria-labelledby` points at the
-  label, and `aria-describedby` carries the description and error-message ids.
-- `rg -n "@heroui" apps/` — no matches. No app imports HeroUI directly.
+- Compiled admin CSS contains every override this phase added: the
+  `.dropdown__popover, .popover, .select__popover, .tooltip` radius-and-border
+  pin, `.dropdown__popover { max-width: calc(100vw - 2rem) }`, the
+  `.calendar__cell, .calendar__nav-button, .list-box-item, .menu-item,
+.tabs__indicator, .tabs__tab` radius pin, the `.tooltip` padding and
+  `word-break: normal`, `.toast { border-radius: calc(var(--radius) * 1) }`,
+  and the three `.breadcrumbs__link` rules.
+- `rg -n "@heroui|react-aria" apps/` — no matches. No app imports either
+  directly.
 
-Recorded earlier, after the stable-component phase (2026-08-30):
+Recorded earlier, after the forms phase (2026-08-31) and the
+stable-component phase (2026-08-30): all four gates green both times.
 
-- All four gates green. Compiled CSS contained `.button--brand`,
-  `.button--link`, `.chip--brand`, `.chip--outline`, the `.alert--danger` /
-  `.alert--accent` border rules and the `.card` override; `.button` resolved to
-  `calc(var(--radius) * .75)`, not HeroUI's `calc(var(--radius) * 3)`.
-- Browser check at 1440px on `/en` and `/en/student`: brand colours, card
-  `accent` bar clipping, button radius and section padding all correct.
+### Resume point
+
+Phases 1-11 are done. What is left is phase 12's browser work, which needs a
+connected Chrome extension: representative desktop and mobile routes across all
+three apps, admin dark mode, visible focus, escape and focus return on the
+overlays, the registration flow end to end, and the Impeccable design detector
+over the changed UI files.
+
+Two code items are also open, both deliberate rather than forgotten: the degree
+picker (and the Radix `Popover` it holds up), which needs its ranked filter
+rebuilt on HeroUI's `Autocomplete` before it can move, and the Tailwind
+class-order reformat.
