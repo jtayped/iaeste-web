@@ -20,6 +20,52 @@ export const LoadingInvitationScreen = () => (
   </StatusScreen>
 );
 
+export const LoadingDraftScreen = () => (
+  <StatusScreen
+    icon="loading"
+    iconClassName="animate-spin"
+    title="obrint la inscripció…"
+  >
+    <Paragraph>estem comprovant l&apos;enllaç.</Paragraph>
+  </StatusScreen>
+);
+
+export const InvalidDraftScreen = () => (
+  <StatusScreen
+    icon="link-off"
+    tone="warning"
+    title="aquest enllaç no és vàlid"
+    actions={
+      <Link href="/formulari" className={buttonVariants()}>
+        torna a començar
+      </Link>
+    }
+  >
+    <Paragraph>
+      pot haver caducat, ja s&apos;ha fet servir o haver estat substituït per un
+      enllaç més nou.
+    </Paragraph>
+  </StatusScreen>
+);
+
+export const IdentityConflictScreen = () => (
+  <StatusScreen
+    icon="warning"
+    tone="warning"
+    title="aquests correus ja són en comptes diferents"
+    actions={
+      <a href="mailto:iaeste@udl.cat" className={buttonVariants()}>
+        escriu-nos
+      </a>
+    }
+  >
+    <Paragraph>
+      no els podem unir automàticament. escriu-nos a iaeste@udl.cat i ho
+      revisarem sense perdre l&apos;historial de cap compte.
+    </Paragraph>
+  </StatusScreen>
+);
+
 /**
  * The single dead end of the invited path.
  *
@@ -88,7 +134,7 @@ export const UnreachableScreen = ({ onRetry }: { onRetry: () => void }) => (
   <StatusScreen
     icon="warning"
     tone="warning"
-    title="no hem pogut obrir el convit ara mateix"
+    title="no hem pogut obrir l'enllaç ara mateix"
     actions={
       <>
         <Button onClick={onRetry}>

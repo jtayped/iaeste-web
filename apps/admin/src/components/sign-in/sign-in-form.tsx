@@ -25,6 +25,14 @@ type State =
  *
  * Only a transport failure is surfaced as an error, because that one is the
  * user's problem to retry.
+ *
+ * `errorCallbackURL` points a *failed verification* back at `/sign-in`
+ * instead of Better Auth's default (the same `callbackURL`, which the
+ * authenticated shell would immediately bounce to `/sign-in` anyway, losing
+ * the `?error=` query in the process). This does not reopen the oracle above:
+ * reaching that error page requires the token from the emailed link, which an
+ * anonymous requester never gets. See the `?error=` handling in
+ * `app/sign-in/page.tsx`.
  */
 export function SignInForm() {
   const [email, setEmail] = React.useState("");
@@ -39,6 +47,7 @@ export function SignInForm() {
     const { error } = await signIn.magicLink({
       email: trimmed,
       callbackURL: "/",
+      errorCallbackURL: "/sign-in",
     });
 
     if (error) {

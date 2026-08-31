@@ -120,22 +120,26 @@ export function createAuth(config: CreateAuthConfig) {
         expiresIn: MAGIC_LINK_EXPIRES_IN_SECONDS,
         storeToken: "hashed",
         disableSignUp: true,
-        sendMagicLink: async ({ email, url }) => {
+        sendMagicLink: async ({ email, url, metadata }) => {
+          const deliveryEmail =
+            typeof metadata?.iaesteDeliveryEmail === "string"
+              ? metadata.iaesteDeliveryEmail
+              : email;
           const isDevelopment = config.runtime !== "production";
           // In local development, print the sign-in link to the server log so
           // magic-link auth works without a configured email transport. This
           // never runs in production, where the email below is the only path.
           if (isDevelopment) {
             console.log(
-              `\n\x1b[36m[dev] magic-link sign-in for ${email}:\x1b[0m\n${url}\n`,
+              `\n\x1b[36m[dev] magic-link sign-in for ${deliveryEmail}:\x1b[0m\n${url}\n`,
             );
           }
           try {
             await config.emailer.send({
-              to: email,
+              to: deliveryEmail,
               subject: "el teu enllaç d'accés · iaeste lc lleida",
               react: SignInMagicLink({
-                email,
+                email: deliveryEmail,
                 link: url,
                 expiresInMinutes: MAGIC_LINK_EXPIRES_IN_SECONDS / 60,
               }),

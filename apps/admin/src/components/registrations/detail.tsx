@@ -127,7 +127,12 @@ export function RegistrationDetail({
       <Section title="dades de la sol·licitud">
         <FieldList>
           <Field label="nom">{name}</Field>
-          <Field label="correu">{registration.email}</Field>
+          <Field label="correu universitari">
+            {registration.universityEmail ?? "no consta"}
+          </Field>
+          <Field label="correu personal">
+            {registration.personalEmail ?? "no consta"}
+          </Field>
           <Field label="telèfon">{profile.phoneDisplay}</Field>
           <Field label="grau">{profile.degree}</Field>
           <Field label="curs">{profile.studyYear}</Field>

@@ -5,9 +5,7 @@ import {
   registration,
   type registrationStatusEnum,
 } from "../schema/registration";
-import { user } from "../schema/auth";
-import { memberProfile } from "../schema/member-profile";
-import { createMembershipRepository } from "./memberships";
+import { acceptRegistrationTx } from "./registrations-accept";
 import { IllegalTransitionError, NotFoundError } from "./errors";
 import { firstOrThrow } from "./util";
 
@@ -29,12 +27,14 @@ export interface RegistrationProfileSnapshot {
 export interface CreateRegistrationInput {
   campaignId: string;
   email: string;
+  universityEmail?: string;
+  personalEmail?: string;
   profileSnapshot: RegistrationProfileSnapshot;
   source?: string;
   verificationExpiresAt?: Date;
   /**
    * Set to `pending_review` when the address was already proven — the form's
-   * code step now happens before submission, so there is nothing left to
+   * link-verification step now happens before submission, so there is nothing left to
    * verify afterwards and a `pending_email` row would strand the applicant
    * waiting for an email that should never be sent. Defaults to the column's
    * own `pending_email` for the older link-in-the-email path.
@@ -62,6 +62,8 @@ export function createRegistrationRepository(db: Database) {
           .values({
             campaignId: input.campaignId,
             email: input.email.toLowerCase(),
+            universityEmail: input.universityEmail?.toLowerCase() ?? null,
+            personalEmail: input.personalEmail?.toLowerCase() ?? null,
             profileSnapshot: input.profileSnapshot,
             source: input.source ?? "public_form",
             verificationExpiresAt: input.verificationExpiresAt ?? null,
@@ -138,6 +140,8 @@ export function createRegistrationRepository(db: Database) {
         const like = `%${needle}%`;
         const search = or(
           ilike(registration.email, like),
+          ilike(registration.universityEmail, like),
+          ilike(registration.personalEmail, like),
           sql`${registration.profileSnapshot} ->> 'name' ilike ${like}`,
           sql`${registration.profileSnapshot} ->> 'surnames' ilike ${like}`,
         );
@@ -250,84 +254,9 @@ export function createRegistrationRepository(db: Database) {
      * registration from producing two `membership` rows.
      */
     async accept(registrationId: string, input: AcceptRegistrationInput) {
-      return db.transaction(async (tx) => {
-        const [accepted] = await tx
-          .update(registration)
-          .set({
-            status: "accepted",
-            reviewedAt: new Date(),
-            reviewerId: input.reviewerId,
-          })
-          .where(
-            and(
-              eq(registration.id, registrationId),
-              eq(registration.status, "pending_review"),
-            ),
-          )
-          .returning();
-
-        if (!accepted)
-          throw await illegalOrMissing(tx, registrationId, "pending_review");
-
-        const snapshot =
-          accepted.profileSnapshot as RegistrationProfileSnapshot;
-
-        const [existingUser] = await tx
-          .select()
-          .from(user)
-          .where(eq(user.email, accepted.email));
-
-        const memberUser =
-          existingUser ??
-          firstOrThrow(
-            await tx
-              .insert(user)
-              .values({
-                id: crypto.randomUUID(),
-                name: `${snapshot.name} ${snapshot.surnames}`.trim(),
-                email: accepted.email,
-                emailVerified: true,
-              })
-              .returning(),
-          );
-
-        await tx
-          .insert(memberProfile)
-          .values({
-            userId: memberUser.id,
-            name: snapshot.name,
-            surnames: snapshot.surnames,
-            phoneE164: snapshot.phoneE164,
-            phoneDisplay: snapshot.phoneDisplay,
-            degree: snapshot.degree,
-            studyYear: snapshot.studyYear,
-          })
-          .onConflictDoUpdate({
-            target: memberProfile.userId,
-            set: {
-              name: snapshot.name,
-              surnames: snapshot.surnames,
-              phoneE164: snapshot.phoneE164,
-              phoneDisplay: snapshot.phoneDisplay,
-              degree: snapshot.degree,
-              studyYear: snapshot.studyYear,
-            },
-          });
-
-        const memberships = createMembershipRepository(tx);
-        const membershipRow = await memberships.join({
-          userId: memberUser.id,
-          campaignId: accepted.campaignId,
-          source: input.membershipSource ?? "registration",
-          actorId: input.reviewerId,
-        });
-
-        return {
-          registration: accepted,
-          user: memberUser,
-          membership: membershipRow,
-        };
-      });
+      return db.transaction((tx) =>
+        acceptRegistrationTx(tx, registrationId, input),
+      );
     },
   };
 }

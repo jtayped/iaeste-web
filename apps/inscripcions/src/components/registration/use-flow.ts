@@ -3,25 +3,27 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 
+import type { MemberEmailKind } from "@repo/constants/validators/member-email";
+
 import { apiClient } from "@/lib/api";
-import type { CodeStep, ProfileForm } from "@/lib/form-schema";
-import { mapAcceptResult, mapLookupResult } from "@/lib/invitation-flow";
+import type { EmailStep, EmailStepValues } from "@/lib/form-schema";
+import { mapLookupResult } from "@/lib/invitation-flow";
 import {
   mapStartResult,
-  mapSubmitResult,
-  mapVerifyCodeResult,
+  mapVerifyDraftResult,
   readToken,
+  type Session,
 } from "@/lib/registration-flow";
 
-import type { DetailsContext } from "./details-step";
 import {
   toInvitationContext,
-  toMappedIssues,
-  toRequestProfile,
   toSessionContext,
   unmappedMessage,
   type MappedFieldIssue,
 } from "./context";
+import { EMPTY_EMAILS, type Mode, type Stage } from "./flow-types";
+import { useSubmitDetails } from "./use-submit-details";
+export type { Mode, Stage } from "./flow-types";
 
 const NETWORK_FAILURE =
   "no hem pogut connectar amb el servidor. comprova la connexió i torna-ho a provar.";
@@ -29,87 +31,93 @@ const GENERIC_FAILURE =
   "no hem pogut desar la inscripció. torna-ho a provar d'aquí a un moment.";
 const RATE_LIMITED =
   "hem rebut massa peticions. torna-ho a provar d'aquí una estona.";
+const DRAFT_SESSION_KEY = "iaeste-registration-draft-session";
 
-export type Mode =
-  | { kind: "public" }
-  /** `/convit#token=…`. The token never reaches the server as part of a URL. */
-  | { kind: "invitation" };
-
-export type Stage =
-  | { kind: "loadingInvitation" }
-  | { kind: "invalidInvitation" }
-  | { kind: "rateLimited"; retry: () => void }
-  | { kind: "unreachable"; retry: () => void }
-  | { kind: "email" }
-  | { kind: "code"; email: string }
-  | { kind: "details"; context: DetailsContext }
-  | { kind: "accepted"; alreadyMember: boolean };
-
-/**
- * The whole state machine behind both ways into the registration form, kept
- * out of the component so the rendering stays a flat switch over `stage`.
- *
- * The two paths converge deliberately early: once an address is proven —
- * by a code on the public path, by the invitation token on the other — both
- * produce the same `DetailsContext` and the same last screen.
- */
 export function useRegistrationFlow(mode: Mode) {
   const router = useRouter();
   const invited = mode.kind === "invitation";
-
   const [stage, setStage] = React.useState<Stage>(
-    invited ? { kind: "loadingInvitation" } : { kind: "email" },
+    invited ? { kind: "loadingInvitation" } : { kind: "loadingDraft" },
   );
   const [busy, setBusy] = React.useState(false);
-  const [resending, setResending] = React.useState(false);
-  const [error, setError] = React.useState<string | undefined>();
+  const [resending, setResending] = React.useState<MemberEmailKind>();
+  const [error, setError] = React.useState<string>();
   const [fieldIssues, setFieldIssues] = React.useState<
     readonly MappedFieldIssue[]
   >([]);
-  const [resendIn, setResendIn] = React.useState(0);
-  // Survives a trip forward to the code step and back, so "canvia el correu"
-  // and a lapsed session both return to a field that is already filled in.
-  const [email, setEmail] = React.useState("");
+  const [emails, setEmails] = React.useState<EmailStepValues>(EMPTY_EMAILS);
 
-  // The proof carried between steps. Refs, not state: nothing renders them,
-  // and a re-render must never be able to drop one mid-flow.
   const emailToken = React.useRef<string | undefined>(undefined);
   const invitationToken = React.useRef<string | undefined>(undefined);
-  // Accepting an invitation is single use. Without this, a double-click fires
-  // the request twice and the second answer — a token that has just been
-  // consumed — would drop a successful new member onto the invalid screen.
-  const accepting = React.useRef(false);
-  const lookedUp = React.useRef(false);
+  const initialised = React.useRef(false);
 
-  React.useEffect(() => {
-    if (resendIn <= 0) return;
-    const timer = setTimeout(() => setResendIn((left) => left - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [resendIn]);
+  const applySession = React.useCallback((session: Session) => {
+    emailToken.current = session.token;
+    window.sessionStorage.setItem(DRAFT_SESSION_KEY, session.token);
+    setError(undefined);
+    if (session.ready) {
+      setStage({ kind: "details", context: toSessionContext(session) });
+    } else {
+      setStage({ kind: "verification", emails: session.emails, session });
+    }
+  }, []);
 
-  // --- invitation entry ---------------------------------------------------
+  const openDraftLink = React.useCallback(
+    async (token: string) => {
+      setStage({ kind: "loadingDraft" });
+      let outcome;
+      try {
+        outcome = mapVerifyDraftResult(
+          await apiClient.POST("/v1/registrations/verify-link", {
+            body: { token },
+          }),
+        );
+      } catch {
+        setStage({
+          kind: "unreachable",
+          retry: () => void openDraftLink(token),
+        });
+        return;
+      }
+
+      switch (outcome.kind) {
+        case "ok":
+          applySession(outcome.session);
+          return;
+        case "invalidLink":
+          setStage({ kind: "invalidDraft" });
+          return;
+        case "identityConflict":
+          setStage({ kind: "identityConflict" });
+          return;
+        case "rateLimited":
+          setStage({
+            kind: "rateLimited",
+            retry: () => void openDraftLink(token),
+          });
+          return;
+        case "failed":
+          setStage({
+            kind: "unreachable",
+            retry: () => void openDraftLink(token),
+          });
+      }
+    },
+    [applySession],
+  );
 
   const lookupInvitation = React.useCallback(async () => {
     const fragment = new URLSearchParams(window.location.hash.slice(1)).get(
       "token",
     );
     const token = invitationToken.current ?? readToken(fragment);
-
     if (!token) {
       setStage({ kind: "invalidInvitation" });
       return;
     }
-
-    if (!invitationToken.current) {
-      invitationToken.current = token;
-      // Strip it from the address bar so a screenshot or a shared URL cannot
-      // hand someone else the committee.
-      window.history.replaceState(window.history.state, "", "/convit");
-    }
-
+    invitationToken.current = token;
+    window.history.replaceState(window.history.state, "", "/convit");
     setStage({ kind: "loadingInvitation" });
-
-    const retry = () => void lookupInvitation();
 
     let outcome;
     try {
@@ -117,221 +125,177 @@ export function useRegistrationFlow(mode: Mode) {
         await apiClient.POST("/v1/invitations/lookup", { body: { token } }),
       );
     } catch {
-      setStage({ kind: "unreachable", retry });
+      setStage({
+        kind: "unreachable",
+        retry: () => void lookupInvitation(),
+      });
       return;
     }
-
-    switch (outcome.kind) {
-      case "ok":
-        setStage({
-          kind: "details",
-          context: toInvitationContext(outcome.invitation),
-        });
-        return;
-      case "invalid":
-        setStage({ kind: "invalidInvitation" });
-        return;
-      case "rateLimited":
-        setStage({ kind: "rateLimited", retry });
-        return;
-      case "failed":
-        setStage({ kind: "unreachable", retry });
+    if (outcome.kind === "ok") {
+      setStage({
+        kind: "details",
+        context: toInvitationContext(outcome.invitation),
+      });
+    } else if (outcome.kind === "invalid") {
+      setStage({ kind: "invalidInvitation" });
+    } else if (outcome.kind === "rateLimited") {
+      setStage({
+        kind: "rateLimited",
+        retry: () => void lookupInvitation(),
+      });
+    } else {
+      setStage({
+        kind: "unreachable",
+        retry: () => void lookupInvitation(),
+      });
     }
   }, []);
 
+  const resumeDraft = React.useCallback(
+    async (token: string, showLoading: boolean) => {
+      if (showLoading) setStage({ kind: "loadingDraft" });
+      setBusy(!showLoading);
+      setError(undefined);
+      try {
+        const outcome = mapVerifyDraftResult(
+          await apiClient.POST("/v1/registrations/resume", {
+            body: { token },
+          }),
+        );
+        setBusy(false);
+        if (outcome.kind === "ok") applySession(outcome.session);
+        else if (outcome.kind === "identityConflict")
+          setStage({ kind: "identityConflict" });
+        else if (outcome.kind === "invalidLink") {
+          window.sessionStorage.removeItem(DRAFT_SESSION_KEY);
+          if (showLoading) setStage({ kind: "invalidDraft" });
+          else setError("la sessió ha caducat. torna a començar.");
+        } else if (showLoading) {
+          setStage({
+            kind: "unreachable",
+            retry: () => void resumeDraft(token, true),
+          });
+        } else setError(GENERIC_FAILURE);
+      } catch {
+        setBusy(false);
+        if (showLoading) {
+          setStage({
+            kind: "unreachable",
+            retry: () => void resumeDraft(token, true),
+          });
+        } else setError(NETWORK_FAILURE);
+      }
+    },
+    [applySession],
+  );
+
   React.useEffect(() => {
-    if (!invited || lookedUp.current) return;
-    lookedUp.current = true;
-    void lookupInvitation();
-  }, [invited, lookupInvitation]);
+    if (initialised.current) return;
+    initialised.current = true;
+    if (invited) {
+      void lookupInvitation();
+      return;
+    }
+    const token = readToken(
+      new URLSearchParams(window.location.hash.slice(1)).get("token"),
+    );
+    if (!token) {
+      const stored = window.sessionStorage.getItem(DRAFT_SESSION_KEY);
+      const storedToken = readToken(stored);
+      if (storedToken) {
+        void resumeDraft(storedToken, true);
+        return;
+      }
+      setStage({ kind: "email" });
+      return;
+    }
+    window.history.replaceState(window.history.state, "", "/formulari");
+    void openDraftLink(token);
+  }, [invited, lookupInvitation, openDraftLink, resumeDraft]);
 
-  // --- public entry -------------------------------------------------------
+  async function startVerification(values: EmailStep) {
+    const { universityEmail, personalEmail } = values;
+    // Only the addresses actually supplied travel to the API, and only those
+    // become rows on the checklist — a draft started with one address must
+    // never show a second row waiting on a link nobody was sent.
+    const body = {
+      ...(universityEmail ? { universityEmail } : {}),
+      ...(personalEmail ? { personalEmail } : {}),
+    };
 
-  async function sendCode(address: string, isResend: boolean) {
-    setEmail(address);
+    setEmails({
+      universityEmail: universityEmail ?? "",
+      personalEmail: personalEmail ?? "",
+    });
     setError(undefined);
-    if (isResend) setResending(true);
-    else setBusy(true);
-
+    setBusy(true);
     let outcome;
     try {
       outcome = mapStartResult(
-        await apiClient.POST("/v1/registrations/start", {
-          body: { email: address },
-        }),
-      );
-    } catch {
-      setBusy(false);
-      setResending(false);
-      setError(NETWORK_FAILURE);
-      return;
-    }
-
-    setBusy(false);
-    setResending(false);
-
-    switch (outcome.kind) {
-      case "sent":
-        setResendIn(outcome.resendAfterSeconds);
-        setStage({ kind: "code", email: address });
-        return;
-      case "closed":
-        router.push("/inscripcions-tancades");
-        return;
-      case "rateLimited":
-        setError(RATE_LIMITED);
-        return;
-      case "invalid":
-        setError(unmappedMessage(outcome.issues));
-        return;
-      case "failed":
-        setError(GENERIC_FAILURE);
-    }
-  }
-
-  async function submitCode(address: string, values: CodeStep) {
-    setError(undefined);
-    setBusy(true);
-
-    let outcome;
-    try {
-      outcome = mapVerifyCodeResult(
-        await apiClient.POST("/v1/registrations/verify-code", {
-          body: { email: address, code: values.code },
-        }),
+        await apiClient.POST("/v1/registrations/start", { body }),
       );
     } catch {
       setBusy(false);
       setError(NETWORK_FAILURE);
       return;
     }
-
     setBusy(false);
-
-    switch (outcome.kind) {
-      case "ok":
-        emailToken.current = outcome.session.token;
-        setStage({
-          kind: "details",
-          context: toSessionContext(outcome.session),
-        });
-        return;
-      case "badCode":
-        setError(
-          "aquest codi no és correcte o ja ha caducat. torna-ho a provar.",
-        );
-        return;
-      case "rateLimited":
-        setError(
-          "hem rebut massa intents. torna-ho a provar d'aquí una estona.",
-        );
-        return;
-      case "failed":
-        setError(GENERIC_FAILURE);
+    if (outcome.kind === "sent") {
+      setStage({
+        kind: "verification",
+        emails: {
+          ...(universityEmail
+            ? {
+                university: { maskedAddress: universityEmail, verified: false },
+              }
+            : {}),
+          ...(personalEmail
+            ? { personal: { maskedAddress: personalEmail, verified: false } }
+            : {}),
+        },
+      });
+    } else if (outcome.kind === "closed") {
+      router.push("/inscripcions-tancades");
+    } else if (outcome.kind === "rateLimited") {
+      setError(RATE_LIMITED);
+    } else if (outcome.kind === "invalid") {
+      setError(unmappedMessage(outcome.issues));
+    } else {
+      setError(GENERIC_FAILURE);
     }
   }
 
-  // --- the shared last step -----------------------------------------------
-
-  async function submitPublicDetails(values: ProfileForm) {
+  async function refreshDraft() {
     const token = emailToken.current;
-    if (!token) {
-      setStage({ kind: "email" });
-      setError("la sessió ha caducat. torna a començar pel correu.");
-      return;
-    }
+    if (!token) return;
+    await resumeDraft(token, false);
+  }
 
+  async function resendLink(kind: MemberEmailKind) {
+    const token = emailToken.current;
+    if (!token) return;
+    setResending(kind);
     setError(undefined);
-    setFieldIssues([]);
-    setBusy(true);
-
-    let outcome;
     try {
-      outcome = mapSubmitResult(
-        await apiClient.POST("/v1/registrations", {
-          body: { emailToken: token, ...toRequestProfile(values) },
-        }),
-      );
+      await apiClient.POST("/v1/registrations/resend-link", {
+        body: { token, kind },
+      });
     } catch {
-      setBusy(false);
       setError(NETWORK_FAILURE);
-      return;
-    }
-
-    setBusy(false);
-
-    switch (outcome.kind) {
-      case "created":
-        router.push("/en-revisio");
-        return;
-      case "closed":
-        router.push("/inscripcions-tancades");
-        return;
-      case "alreadyRegistered":
-        router.push("/ja-inscrit");
-        return;
-      case "expiredSession":
-        // The token is spent either way, so going back to step one is the
-        // only honest option — a retry with the same token cannot work.
-        emailToken.current = undefined;
-        setStage({ kind: "email" });
-        setError(
-          "has trigat massa i hem hagut de tancar la sessió. torna a demanar un codi.",
-        );
-        return;
-      case "invalid":
-        setFieldIssues(toMappedIssues(outcome.issues));
-        setError(unmappedMessage(outcome.issues));
-        return;
-      case "failed":
-        setError(GENERIC_FAILURE);
+    } finally {
+      setResending(undefined);
     }
   }
 
-  async function submitInvitedDetails(values: ProfileForm) {
-    const token = invitationToken.current;
-    if (!token || accepting.current) return;
-
-    accepting.current = true;
-    setError(undefined);
-    setBusy(true);
-
-    let outcome;
-    try {
-      outcome = mapAcceptResult(
-        await apiClient.POST("/v1/invitations/accept", {
-          body: { token, ...toRequestProfile(values) },
-        }),
-      );
-    } catch {
-      accepting.current = false;
-      setBusy(false);
-      setError(NETWORK_FAILURE);
-      return;
-    }
-
-    setBusy(false);
-
-    switch (outcome.kind) {
-      case "accepted":
-        // The guard is deliberately not released: the token is spent.
-        setStage({ kind: "accepted", alreadyMember: outcome.alreadyMember });
-        return;
-      case "invalid":
-        setStage({ kind: "invalidInvitation" });
-        return;
-      case "rateLimited":
-        // Retryable, so the form stays and the guard comes back off.
-        accepting.current = false;
-        setError(RATE_LIMITED);
-        return;
-      case "failed":
-        accepting.current = false;
-        setError(
-          "no hem pogut desar les dades. torna-ho a provar d'aquí a un moment.",
-        );
-    }
-  }
+  const submitDetails = useSubmitDetails({
+    invited,
+    emailToken,
+    invitationToken,
+    setStage,
+    setBusy,
+    setError,
+    setFieldIssues,
+  });
 
   return {
     invited,
@@ -340,12 +304,14 @@ export function useRegistrationFlow(mode: Mode) {
     resending,
     error,
     fieldIssues,
-    resendIn,
-    email,
-    sendCode,
-    submitCode,
-    submitDetails: invited ? submitInvitedDetails : submitPublicDetails,
-    changeEmail() {
+    emails,
+    startVerification,
+    refreshDraft,
+    resendLink,
+    submitDetails,
+    restart() {
+      emailToken.current = undefined;
+      window.sessionStorage.removeItem(DRAFT_SESSION_KEY);
       setError(undefined);
       setStage({ kind: "email" });
     },

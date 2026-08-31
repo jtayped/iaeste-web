@@ -1,8 +1,13 @@
+import { z } from "zod";
+
 import {
   type RegistrationProfile,
   registrationProfileSchema,
 } from "@repo/constants/validators/registration";
-import { z } from "zod";
+import {
+  memberEmailsSchema,
+  type MemberEmails,
+} from "@repo/constants/validators/member-email";
 
 /**
  * The details step, for both ways in.
@@ -18,26 +23,47 @@ export const profileFormSchema = registrationProfileSchema;
 export type ProfileForm = RegistrationProfile;
 
 /** Step one of the public flow, on its own. */
-export const emailStepSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .min(1, "escriu el teu correu")
-    .email("adreça de correu electrònic no vàlida"),
-});
+export const emailStepSchema = memberEmailsSchema;
 
-export type EmailStep = z.infer<typeof emailStepSchema>;
+export type EmailStep = MemberEmails;
 
-/** Step two. Six digits, nothing else — the OTP control cannot produce more. */
-export const codeStepSchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .regex(/^\d{6}$/, "el codi té sis xifres"),
-});
+/**
+ * The same rules, bound to what the two inputs actually hold.
+ *
+ * A blank field means "not supplied", which the shared schema implements with
+ * a `preprocess` — and that widens its input type to `unknown`, which React
+ * Hook Form cannot bind a text input to. This wrapper is string-in, string-out
+ * so the form has a concrete shape to bind to, and delegates every actual
+ * judgement to the shared schema, which stays the only place the rules live.
+ * The submit handler runs that schema again to get the normalised addresses.
+ */
+export const emailStepFormSchema = z
+  .object({ universityEmail: z.string(), personalEmail: z.string() })
+  .superRefine((values, ctx) => {
+    const result = emailStepSchema.safeParse(values);
+    if (result.success) return;
 
-export type CodeStep = z.infer<typeof codeStepSchema>;
+    for (const issue of result.error.issues) {
+      ctx.addIssue({
+        code: "custom",
+        path: [...issue.path],
+        message: issue.message,
+      });
+    }
+  });
+
+/** What the inputs hold while they are being typed: always strings, never absent. */
+export type EmailStepValues = z.infer<typeof emailStepFormSchema>;
+
+/**
+ * "At least one address" is a rule about the pair, not about either field, so
+ * the form shows it once above both rather than hanging it off whichever field
+ * the schema happened to attach it to. Read back out of the schema itself so
+ * the copy on screen cannot drift from the copy that is enforced.
+ */
+export const AT_LEAST_ONE_EMAIL_MESSAGE: string =
+  emailStepSchema.safeParse({ universityEmail: "", personalEmail: "" }).error
+    ?.issues[0]?.message ?? "cal indicar com a mínim una adreça de correu";
 
 /** Field order used for the error summary and for focusing the first mistake. */
 export const FIELD_ORDER = [

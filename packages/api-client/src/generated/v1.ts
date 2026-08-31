@@ -52,7 +52,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/registrations/verify-code": {
+    "/v1/registrations/verify-link": {
         parameters: {
             query?: never;
             header?: never;
@@ -61,7 +61,39 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["verifyRegistrationCode"];
+        post: operations["verifyRegistrationDraftLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/registrations/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resumeRegistrationDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/registrations/resend-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resendRegistrationDraftLink"];
         delete?: never;
         options?: never;
         head?: never;
@@ -586,12 +618,27 @@ export interface components {
              * Format: email
              * @example joan@alumnes.udl.cat
              */
-            email: string;
+            universityEmail?: string;
+            /**
+             * Format: email
+             * @example joan@example.com
+             */
+            personalEmail?: string;
         };
         RegistrationSession: {
             token: string;
             expiresAt: string;
-            email: string;
+            ready: boolean;
+            emails: {
+                university?: {
+                    maskedAddress: string;
+                    verified: boolean;
+                };
+                personal?: {
+                    maskedAddress: string;
+                    verified: boolean;
+                };
+            };
             known: boolean;
             profile: components["schemas"]["KnownProfile"];
             memberships: components["schemas"]["KnownMembership"][];
@@ -611,11 +658,13 @@ export interface components {
             /** @enum {string} */
             status: "active" | "left" | "kicked";
         };
-        RegistrationVerifyCodeRequest: {
-            /** Format: email */
-            email: string;
-            /** @example 418502 */
-            code: string;
+        RegistrationDraftTokenRequest: {
+            token: string;
+        };
+        RegistrationDraftResendRequest: {
+            token: string;
+            /** @enum {string} */
+            kind: "university" | "personal";
         };
         RegistrationCreated: {
             /** @enum {string} */
@@ -706,6 +755,8 @@ export interface components {
             id: string;
             campaignId: string;
             email: string;
+            universityEmail: string | null;
+            personalEmail: string | null;
             status: components["schemas"]["RegistrationStatus"];
             profileSnapshot: components["schemas"]["AdminRegistrationProfileSnapshot"];
             source: string;
@@ -1089,7 +1140,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description Too many code requests from this address or client. */
+            /** @description Too many link requests from either address or client. */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1100,7 +1151,7 @@ export interface operations {
             };
         };
     };
-    verifyRegistrationCode: {
+    verifyRegistrationDraftLink: {
         parameters: {
             query?: never;
             header?: never;
@@ -1109,11 +1160,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RegistrationVerifyCodeRequest"];
+                "application/json": components["schemas"]["RegistrationDraftTokenRequest"];
             };
         };
         responses: {
-            /** @description The code was right. Returns a short-lived session token plus the stored profile and membership history for this address. */
+            /** @description The link was valid. Returns a draft session and every supplied address's verification state. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1122,8 +1173,17 @@ export interface operations {
                     "application/json": components["schemas"]["RegistrationSession"];
                 };
             };
-            /** @description The code is wrong, expired, already used, or out of attempts. Deliberately one generic answer for all four. */
+            /** @description The link is invalid, expired, or already used. */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The two addresses already belong to different accounts. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1138,6 +1198,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    resumeRegistrationDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationDraftTokenRequest"];
+            };
+        };
+        responses: {
+            /** @description Current verification state for a live draft session. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationSession"];
+                };
+            };
+            /** @description The draft session is invalid or expired. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The two addresses already belong to different accounts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    resendRegistrationDraftLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationDraftResendRequest"];
+            };
+        };
+        responses: {
+            /** @description Always returned for a well-formed request. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationStartResponse"];
                 };
             };
         };

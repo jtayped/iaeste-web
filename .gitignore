@@ -38,3 +38,7 @@ dist/
 
 # local tool scratch state
 .impeccable/
+
+# normalized roster for the historical-members import — real names, personal
+# emails and phone numbers; never commit. Regenerate from the source sheets.
+packages/db/historical-members.json

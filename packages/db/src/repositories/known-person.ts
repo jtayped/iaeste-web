@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, or } from "drizzle-orm";
 
 import type { Db } from "../client";
 import { user } from "../schema/auth";
@@ -6,6 +6,7 @@ import { memberProfile } from "../schema/member-profile";
 import { membership } from "../schema/membership";
 import { membershipCampaign } from "../schema/membership-campaign";
 import { registration } from "../schema/registration";
+import { userEmail } from "../schema/user-email";
 import type {
   RegistrationProfileSnapshot,
   RegistrationStatus,
@@ -44,6 +45,13 @@ const UNKNOWN: KnownPerson = {
   openCampaignRegistrationStatus: null,
 };
 
+export class EmailIdentityConflictError extends Error {
+  constructor() {
+    super("The supplied email addresses belong to different users.");
+    this.name = "EmailIdentityConflictError";
+  }
+}
+
 /**
  * What the committee already holds on one email address.
  *
@@ -61,22 +69,42 @@ const UNKNOWN: KnownPerson = {
 export function createKnownPersonRepository(db: Db) {
   return {
     async lookup(rawEmail: string): Promise<KnownPerson> {
-      const email = rawEmail.trim().toLowerCase();
-      if (!email) return UNKNOWN;
+      return this.lookupEmails([rawEmail]);
+    },
 
-      const [account] = await db
-        .select({ id: user.id })
-        .from(user)
-        .where(eq(user.email, email));
+    async lookupEmails(rawEmails: readonly string[]): Promise<KnownPerson> {
+      const emails = [
+        ...new Set(
+          rawEmails.map((email) => email.trim().toLowerCase()).filter(Boolean),
+        ),
+      ];
+      if (emails.length === 0) return UNKNOWN;
 
-      const [profileRow] = account
+      const [aliasAccounts, canonicalAccounts] = await Promise.all([
+        db
+          .select({ id: userEmail.userId })
+          .from(userEmail)
+          .where(inArray(userEmail.email, emails)),
+        db
+          .select({ id: user.id })
+          .from(user)
+          .where(inArray(user.email, emails)),
+      ]);
+      const accountIds = new Set([
+        ...aliasAccounts.map((row) => row.id),
+        ...canonicalAccounts.map((row) => row.id),
+      ]);
+      if (accountIds.size > 1) throw new EmailIdentityConflictError();
+      const accountId = accountIds.values().next().value as string | undefined;
+
+      const [profileRow] = accountId
         ? await db
             .select()
             .from(memberProfile)
-            .where(eq(memberProfile.userId, account.id))
+            .where(eq(memberProfile.userId, accountId))
         : [];
 
-      const membershipRows = account
+      const membershipRows = accountId
         ? await db
             .select({
               status: membership.status,
@@ -89,7 +117,7 @@ export function createKnownPersonRepository(db: Db) {
               membershipCampaign,
               eq(membership.campaignId, membershipCampaign.id),
             )
-            .where(eq(membership.userId, account.id))
+            .where(eq(membership.userId, accountId))
             .orderBy(desc(membershipCampaign.membershipStartsAt))
         : [];
 
@@ -98,7 +126,13 @@ export function createKnownPersonRepository(db: Db) {
       const [latestRegistration] = await db
         .select()
         .from(registration)
-        .where(eq(registration.email, email))
+        .where(
+          or(
+            inArray(registration.email, emails),
+            inArray(registration.universityEmail, emails),
+            inArray(registration.personalEmail, emails),
+          ),
+        )
         .orderBy(desc(registration.createdAt))
         .limit(1);
 
@@ -114,7 +148,11 @@ export function createKnownPersonRepository(db: Db) {
             .where(
               and(
                 eq(registration.campaignId, openCampaign.id),
-                eq(registration.email, email),
+                or(
+                  inArray(registration.email, emails),
+                  inArray(registration.universityEmail, emails),
+                  inArray(registration.personalEmail, emails),
+                ),
               ),
             )
         : [];

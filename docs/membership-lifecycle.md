@@ -63,9 +63,11 @@ explicit, audited action — never a silent status flip.
 **10. Roles for v1.** `member` and `admin` only. No finer-grained roles until
 a real need appears.
 
-**11. Non-UdL invitations.** Public registration requires a `udl.cat` /
-`*.udl.cat` address. An admin may invite an external address behind an
-explicit confirmation step — this is the only path for a non-UdL member.
+**11. Registration addresses and non-UdL invitations.** Public registration
+requires at least one of: an exact `udl.cat`/`alumnes.udl.cat` address, or a
+personal address outside those two domains — never neither, but both may be
+supplied. An admin may still invite an external address behind an explicit
+confirmation step.
 
 **12. Data retention.** Profile and contact details are not purged when a
 person graduates or their membership lapses — `member_profile` and past
@@ -81,27 +83,31 @@ not for a settled compliance position.
 `admin.iaestelleida.cat`, `api.iaestelleida.cat`, per the plan's target shape.
 IAESTE Lleida is assumed to control all four; confirm DNS access before IA-62.
 
-## Registration flow (revised 2026-08-30)
+## Registration flow (revised 2026-08-31)
 
-Email verification happens **before** the form, not after it. The public flow
-is three steps:
+Every supplied address is verified **before** the form is submitted. The
+public flow is three steps:
 
-1. **email** — `POST /v1/registrations/start`. Answers a constant "ok" and
-   mails a six-digit code. It reveals exactly one thing: whether a campaign is
-   open. Never whether the address is known.
-2. **code** — `POST /v1/registrations/verify-code`. A correct code returns a
-   short-lived session token _and_ everything already on file for that
-   address: the stored profile, past campaign memberships, and any existing
-   registration in the open campaign. Five wrong guesses retire the challenge.
-3. **details** — `POST /v1/registrations`, carrying the session token instead
-   of an email. The row is written straight to `pending_review`.
+1. **emails** — `POST /v1/registrations/start` accepts a university address,
+   a personal address, or both — never neither — creates a draft and sends a
+   seven-day link to each address supplied. Its constant response reveals
+   only whether a campaign is open.
+2. **confirmation** — each link verifies only its bound address and creates a
+   resumable draft session. The page shows masked status for whichever
+   address(es) were supplied. Stored profile and membership history stay
+   hidden until every supplied link has been opened. Resending rotates the
+   outstanding link.
+3. **details** — `POST /v1/registrations`, carrying the draft session token
+   instead of either address. Only a draft with every supplied address
+   verified can create a registration, which lands directly in
+   `pending_review`.
 
 Two consequences worth stating plainly:
 
-- **There is no enumeration oracle.** Showing someone their own membership
-  history on a public page is only safe because the code step stands in front
-  of it. Nothing that reveals whether an address is known may ever be moved in
-  front of that step.
+- **There is no enumeration oracle.** Nothing that reveals whether an address
+  is known appears before every supplied inbox has been proved. A draft whose
+  addresses resolve to different users is stopped for manual review and never
+  merged automatically.
 - **`pending_email` is a legacy state.** Nothing new enters it. `/verificar`,
   `/enllac-caducat` and `resend-verification` stay only because links issued
   under the old flow are sitting in inboxes; `/verificacio-pendent` is gone,
@@ -113,9 +119,12 @@ renders the identical component with the first two steps already done —
 `POST /v1/invitations/lookup` returns the same "what we know" payload for the
 same reason the code step does. They still become members with no review.
 
-Storage is `email_challenge` (one table, both phases): the code's hash and
-expiry, an attempt counter, then the session token's hash and expiry. Neither
-the code nor the session token is ever stored in the clear.
+Storage is `registration_draft` plus `registration_draft_email`, one row per
+supplied address (one or two — the schema never required both). Verification
+and session tokens are stored only as hashes. Accepted members receive a
+`user_email` identity for each address they supplied, linked to one Better
+Auth user. Historical users and registrations are backfilled by exact domain;
+a missing second address is left missing rather than guessed.
 
 ## IA-07 — email deliverability
 

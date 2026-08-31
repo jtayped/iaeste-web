@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
-  codeStepSchema,
+  AT_LEAST_ONE_EMAIL_MESSAGE,
+  emailStepFormSchema,
   emailStepSchema,
   profileFormSchema,
 } from "./form-schema";
@@ -45,29 +46,104 @@ describe("profileFormSchema", () => {
 });
 
 describe("emailStepSchema", () => {
-  it("normalises the address before it is sent", () => {
+  it("normalises both addresses before they are sent", () => {
     const result = emailStepSchema.safeParse({
-      email: " JOAN@ALUMNES.UDL.CAT ",
+      universityEmail: " JOAN@ALUMNES.UDL.CAT ",
+      personalEmail: " JOAN@EXAMPLE.COM ",
     });
 
     assert.equal(result.success, true);
-    assert.equal(result.data?.email, "joan@alumnes.udl.cat");
+    assert.equal(result.data?.universityEmail, "joan@alumnes.udl.cat");
+    assert.equal(result.data?.personalEmail, "joan@example.com");
   });
 
   it("rejects anything that is not an address", () => {
-    assert.equal(emailStepSchema.safeParse({ email: "nope" }).success, false);
-    assert.equal(emailStepSchema.safeParse({ email: "" }).success, false);
+    assert.equal(
+      emailStepSchema.safeParse({
+        universityEmail: "nope",
+        personalEmail: "joan@example.com",
+      }).success,
+      false,
+    );
+  });
+
+  it("accepts a university address on its own", () => {
+    const result = emailStepSchema.safeParse({
+      universityEmail: "joan@alumnes.udl.cat",
+      personalEmail: "",
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.data?.universityEmail, "joan@alumnes.udl.cat");
+    assert.equal(result.data?.personalEmail, undefined);
+  });
+
+  it("accepts a personal address on its own", () => {
+    const result = emailStepSchema.safeParse({
+      universityEmail: "",
+      personalEmail: "joan@example.com",
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.data?.universityEmail, undefined);
+    assert.equal(result.data?.personalEmail, "joan@example.com");
+  });
+
+  it("rejects neither address, which is the one combination there is no form for", () => {
+    const result = emailStepSchema.safeParse({
+      universityEmail: "",
+      personalEmail: "   ",
+    });
+
+    assert.equal(result.success, false);
   });
 });
 
-describe("codeStepSchema", () => {
-  it("accepts exactly six digits", () => {
-    assert.equal(codeStepSchema.safeParse({ code: "418502" }).success, true);
+describe("emailStepFormSchema", () => {
+  const both = {
+    universityEmail: "joan@alumnes.udl.cat",
+    personalEmail: "joan@example.com",
+  };
+
+  it("keeps the inputs as strings, so the two fields stay bindable", () => {
+    const result = emailStepFormSchema.safeParse({
+      universityEmail: "joan@alumnes.udl.cat",
+      personalEmail: "",
+    });
+
+    assert.equal(result.success, true);
+    assert.deepEqual(result.data, {
+      universityEmail: "joan@alumnes.udl.cat",
+      personalEmail: "",
+    });
   });
 
-  it("rejects a partial or non-numeric code", () => {
-    for (const code of ["41850", "4185021", "41850a", ""]) {
-      assert.equal(codeStepSchema.safeParse({ code }).success, false);
-    }
+  it("delegates every rule to the shared schema, paths included", () => {
+    const result = emailStepFormSchema.safeParse({
+      ...both,
+      universityEmail: "joan@example.com",
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(
+      result.error?.issues.find((issue) => issue.path[0] === "universityEmail")
+        ?.message,
+      "fes servir el correu @udl.cat o @alumnes.udl.cat",
+    );
+  });
+
+  it("reports the empty pair with the message the form shows above both fields", () => {
+    const result = emailStepFormSchema.safeParse({
+      universityEmail: "",
+      personalEmail: "",
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(
+      result.error?.issues.some(
+        (issue) => issue.message === AT_LEAST_ONE_EMAIL_MESSAGE,
+      ),
+      true,
+    );
   });
 });

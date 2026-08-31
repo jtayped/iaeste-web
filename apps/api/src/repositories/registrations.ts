@@ -122,6 +122,17 @@ export function createDrizzleRegistrationRepository(
         );
       }
 
+      // The canonical address, preferring personal over university — same
+      // defensive-net reasoning as `phone` above: `memberEmailsSchema`
+      // already guarantees at least one exists.
+      const canonicalEmail =
+        registration.personalEmail ?? registration.universityEmail;
+      if (!canonicalEmail) {
+        throw new Error(
+          "Registration has neither a personal nor a university email after request validation.",
+        );
+      }
+
       const profileSnapshot: RegistrationProfileSnapshot = {
         name: registration.name,
         surnames: registration.surnames,
@@ -140,9 +151,11 @@ export function createDrizzleRegistrationRepository(
       try {
         created = await registrations.create({
           campaignId: openCampaign.id,
-          email: registration.email,
+          email: canonicalEmail,
+          universityEmail: registration.universityEmail,
+          personalEmail: registration.personalEmail,
           profileSnapshot,
-          // The address was proven by the code step before any of this was
+          // Both addresses were proven by their links before any of this was
           // collected, so there is nothing left to verify. Landing in
           // `pending_email` here would strand the applicant waiting for an
           // email we are never going to send.
@@ -165,11 +178,11 @@ export function createDrizzleRegistrationRepository(
       try {
         const emailer = dependencies.emailer ?? getEmailer();
         await emailer.send({
-          to: created.email,
+          to: created.personalEmail ?? created.email,
           subject: "sol·licitud rebuda · iaeste lc lleida",
           react: RegistrationPending({
             name: registration.name,
-            email: created.email,
+            email: created.personalEmail ?? created.email,
             campaign: openCampaign.label,
           }),
         });
@@ -232,7 +245,8 @@ export function createGoogleSheetsRegistrationRepository(): RegistrationReposito
             [
               registration.name,
               registration.surnames,
-              registration.email,
+              registration.universityEmail,
+              registration.personalEmail,
               registration.phone,
               registration.degree,
               registration.year,

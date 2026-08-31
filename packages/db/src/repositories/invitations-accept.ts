@@ -1,11 +1,14 @@
 import { and, eq, gt, sql } from "drizzle-orm";
 
+import { isUniversityEmail } from "@repo/constants/validators/member-email";
+
 import type { Db } from "../client";
 import { user } from "../schema/auth";
 import { memberInvitation } from "../schema/member-invitation";
 import { memberProfile } from "../schema/member-profile";
 import { membership } from "../schema/membership";
 import { registration } from "../schema/registration";
+import { userEmail } from "../schema/user-email";
 import { createMembershipEventRepository } from "./membership-events";
 import { createMembershipRepository } from "./memberships";
 import { IllegalTransitionError, NotFoundError } from "./errors";
@@ -54,10 +57,18 @@ export async function acceptInvitationTx(
   const now = new Date();
   const fullName = `${input.profile.name} ${input.profile.surnames}`.trim();
 
+  const [existingAlias] = await tx
+    .select({ userId: userEmail.userId })
+    .from(userEmail)
+    .where(eq(userEmail.email, invitation.email));
   const [existingUser] = await tx
     .select()
     .from(user)
-    .where(eq(user.email, invitation.email));
+    .where(
+      existingAlias
+        ? eq(user.id, existingAlias.userId)
+        : eq(user.email, invitation.email),
+    );
 
   const memberUser = existingUser
     ? firstOrThrow(
@@ -79,6 +90,16 @@ export async function acceptInvitationTx(
           })
           .returning(),
       );
+
+  await tx
+    .insert(userEmail)
+    .values({
+      userId: memberUser.id,
+      email: invitation.email,
+      kind: isUniversityEmail(invitation.email) ? "university" : "personal",
+      verifiedAt: now,
+    })
+    .onConflictDoNothing();
 
   await tx
     .insert(memberProfile)
@@ -119,6 +140,9 @@ export async function acceptInvitationTx(
     await tx.insert(registration).values({
       campaignId: invitation.campaignId,
       email: invitation.email,
+      ...(isUniversityEmail(invitation.email)
+        ? { universityEmail: invitation.email }
+        : { personalEmail: invitation.email }),
       profileSnapshot: input.profile,
       source: "invitation",
       status: "accepted",

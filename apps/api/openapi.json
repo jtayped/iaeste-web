@@ -156,15 +156,17 @@
       "RegistrationStartRequest": {
         "type": "object",
         "properties": {
-          "email": {
+          "universityEmail": {
             "type": "string",
             "format": "email",
             "example": "joan@alumnes.udl.cat"
+          },
+          "personalEmail": {
+            "type": "string",
+            "format": "email",
+            "example": "joan@example.com"
           }
-        },
-        "required": [
-          "email"
-        ]
+        }
       },
       "RegistrationSession": {
         "type": "object",
@@ -175,8 +177,43 @@
           "expiresAt": {
             "type": "string"
           },
-          "email": {
-            "type": "string"
+          "ready": {
+            "type": "boolean"
+          },
+          "emails": {
+            "type": "object",
+            "properties": {
+              "university": {
+                "type": "object",
+                "properties": {
+                  "maskedAddress": {
+                    "type": "string"
+                  },
+                  "verified": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "maskedAddress",
+                  "verified"
+                ]
+              },
+              "personal": {
+                "type": "object",
+                "properties": {
+                  "maskedAddress": {
+                    "type": "string"
+                  },
+                  "verified": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "maskedAddress",
+                  "verified"
+                ]
+              }
+            }
           },
           "known": {
             "type": "boolean"
@@ -207,7 +244,8 @@
         "required": [
           "token",
           "expiresAt",
-          "email",
+          "ready",
+          "emails",
           "known",
           "profile",
           "memberships",
@@ -265,22 +303,36 @@
           "status"
         ]
       },
-      "RegistrationVerifyCodeRequest": {
+      "RegistrationDraftTokenRequest": {
         "type": "object",
         "properties": {
-          "email": {
+          "token": {
             "type": "string",
-            "format": "email"
-          },
-          "code": {
-            "type": "string",
-            "pattern": "^\\d{6}$",
-            "example": "418502"
+            "pattern": "^[a-f0-9]{64}$/i"
           }
         },
         "required": [
-          "email",
-          "code"
+          "token"
+        ]
+      },
+      "RegistrationDraftResendRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$/i"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "university",
+              "personal"
+            ]
+          }
+        },
+        "required": [
+          "token",
+          "kind"
         ]
       },
       "RegistrationCreated": {
@@ -605,6 +657,18 @@
           "email": {
             "type": "string"
           },
+          "universityEmail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "personalEmail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "status": {
             "$ref": "#/components/schemas/RegistrationStatus"
           },
@@ -649,6 +713,8 @@
           "id",
           "campaignId",
           "email",
+          "universityEmail",
+          "personalEmail",
           "status",
           "profileSnapshot",
           "source",
@@ -1889,7 +1955,7 @@
             }
           },
           "429": {
-            "description": "Too many code requests from this address or client.",
+            "description": "Too many link requests from either address or client.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1901,9 +1967,9 @@
         }
       }
     },
-    "/v1/registrations/verify-code": {
+    "/v1/registrations/verify-link": {
       "post": {
-        "operationId": "verifyRegistrationCode",
+        "operationId": "verifyRegistrationDraftLink",
         "tags": [
           "Registrations"
         ],
@@ -1912,14 +1978,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegistrationVerifyCodeRequest"
+                "$ref": "#/components/schemas/RegistrationDraftTokenRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "The code was right. Returns a short-lived session token plus the stored profile and membership history for this address.",
+            "description": "The link was valid. Returns a draft session and every supplied address's verification state.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1929,7 +1995,17 @@
             }
           },
           "400": {
-            "description": "The code is wrong, expired, already used, or out of attempts. Deliberately one generic answer for all four.",
+            "description": "The link is invalid, expired, or already used.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The two addresses already belong to different accounts.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1944,6 +2020,86 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/registrations/resume": {
+      "post": {
+        "operationId": "resumeRegistrationDraft",
+        "tags": [
+          "Registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationDraftTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current verification state for a live draft session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The draft session is invalid or expired.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The two addresses already belong to different accounts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/registrations/resend-link": {
+      "post": {
+        "operationId": "resendRegistrationDraftLink",
+        "tags": [
+          "Registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationDraftResendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Always returned for a well-formed request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationStartResponse"
                 }
               }
             }

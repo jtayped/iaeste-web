@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { DEGREE_OPTIONS } from "../constants/studies";
+import { memberEmailsSchema } from "./member-email";
 import { isValidPhone } from "./phone";
 
 const emailSchema = z
@@ -53,9 +54,9 @@ export type RegistrationProfile = z.infer<typeof registrationProfileSchema>;
  * `registration` row and the one an admin export reads, so it stays defined
  * here rather than being reassembled per caller.
  */
-export const registrationSchema = registrationProfileSchema.extend({
-  email: emailSchema,
-});
+export const registrationSchema = registrationProfileSchema.extend(
+  memberEmailsSchema.shape,
+);
 
 export type Registration = z.infer<typeof registrationSchema>;
 

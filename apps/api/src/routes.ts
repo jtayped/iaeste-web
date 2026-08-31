@@ -50,7 +50,8 @@ import {
   registrationSessionSchema,
   registrationStartBodySchema,
   registrationStartResponseSchema,
-  registrationVerifyCodeBodySchema,
+  registrationDraftTokenBodySchema,
+  registrationDraftResendBodySchema,
   publicRegistrationStatusSchema,
   resendVerificationResponseSchema,
   verifiedSchema,
@@ -90,13 +91,12 @@ export const registrationStatusRoute = createRoute({
 });
 
 /**
- * Step one of the public form: claim an address, get a six-digit code.
+ * Step one of the public form: claim a university address, a personal
+ * address, or both — never neither — and receive a link per address.
  *
  * Deliberately non-revealing, exactly like `resend-verification` below. The
- * response is the same "ok" whether a code was sent, the address already had
- * a live one, or the send was suppressed by a limiter — so this endpoint
- * cannot answer "is this person a member" to anyone who types an address.
- * Everything worth knowing arrives only after the code comes back.
+ * response is the same "ok" whether links were sent or a send was suppressed
+ * by a limiter, so this endpoint cannot answer whether either person exists.
  */
 export const startRegistrationRoute = createRoute({
   method: "post",
@@ -129,52 +129,101 @@ export const startRegistrationRoute = createRoute({
       content: { "application/json": { schema: apiErrorSchema } },
     },
     429: {
-      description: "Too many code requests from this address or client.",
+      description: "Too many link requests from either address or client.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
   },
 });
 
 /**
- * Step two: trade the code for a session, and with it everything already on
- * file about this person.
- *
- * This is the only door to that data. A six-digit code is small enough to
- * brute-force given unlimited tries, so the attempt cap on the challenge row
- * (not the code's length) is what secures it — five wrong guesses retire the
- * challenge and the person has to request a new code.
+ * Verify one address and return a resumable draft session. Personal data is
+ * withheld until every supplied address's independently delivered link has
+ * been opened.
  */
-export const verifyRegistrationCodeRoute = createRoute({
+export const verifyRegistrationDraftLinkRoute = createRoute({
   method: "post",
-  path: "/v1/registrations/verify-code",
-  operationId: "verifyRegistrationCode",
+  path: "/v1/registrations/verify-link",
+  operationId: "verifyRegistrationDraftLink",
   tags: ["Registrations"],
   request: {
     body: {
       required: true,
       content: {
-        "application/json": { schema: registrationVerifyCodeBodySchema },
+        "application/json": { schema: registrationDraftTokenBodySchema },
       },
     },
   },
   responses: {
     200: {
       description:
-        "The code was right. Returns a short-lived session token plus the " +
-        "stored profile and membership history for this address.",
+        "The link was valid. Returns a draft session and every supplied address's verification state.",
       content: {
         "application/json": { schema: registrationSessionSchema },
       },
     },
     400: {
-      description:
-        "The code is wrong, expired, already used, or out of attempts. " +
-        "Deliberately one generic answer for all four.",
+      description: "The link is invalid, expired, or already used.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description: "The two addresses already belong to different accounts.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
     429: {
       description: "Too many attempts from this client.",
       content: { "application/json": { schema: apiErrorSchema } },
+    },
+  },
+});
+
+export const resumeRegistrationDraftRoute = createRoute({
+  method: "post",
+  path: "/v1/registrations/resume",
+  operationId: "resumeRegistrationDraft",
+  tags: ["Registrations"],
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: registrationDraftTokenBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Current verification state for a live draft session.",
+      content: { "application/json": { schema: registrationSessionSchema } },
+    },
+    400: {
+      description: "The draft session is invalid or expired.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description: "The two addresses already belong to different accounts.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+  },
+});
+
+export const resendRegistrationDraftLinkRoute = createRoute({
+  method: "post",
+  path: "/v1/registrations/resend-link",
+  operationId: "resendRegistrationDraftLink",
+  tags: ["Registrations"],
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: registrationDraftResendBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Always returned for a well-formed request.",
+      content: {
+        "application/json": { schema: registrationStartResponseSchema },
+      },
     },
   },
 });

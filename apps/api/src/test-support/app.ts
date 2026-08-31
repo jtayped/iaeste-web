@@ -13,7 +13,8 @@ import type { RegistrationService } from "../services/registration-service";
 export const validRegistration: Registration = {
   name: "Joan",
   surnames: "Garcia Serra",
-  email: "joan@alumnes.udl.cat",
+  universityEmail: "joan@alumnes.udl.cat",
+  personalEmail: "joan@example.com",
   phone: "+34 623 32 42 34",
   degree: "grau en informàtica (lleida)",
   year: 2,
@@ -41,14 +42,22 @@ export const validRegistrationBody = {
 export function createChallengeServiceStub(
   overrides: Partial<RegistrationChallengeService> = {},
 ): RegistrationChallengeService {
-  const emailFor = (token: string) =>
-    token === VALID_EMAIL_TOKEN ? validRegistration.email : undefined;
+  const draftFor = (token: string) =>
+    token === VALID_EMAIL_TOKEN
+      ? {
+          draftId: "draft_123",
+          universityEmail: validRegistration.universityEmail,
+          personalEmail: validRegistration.personalEmail,
+        }
+      : undefined;
 
   return {
     start: async () => ({ resendAfterSeconds: 60 }),
-    verifyCode: async () => undefined,
-    resolveSession: async (token) => emailFor(token),
-    consumeSession: async (token) => emailFor(token),
+    verifyLink: async () => undefined,
+    resume: async () => undefined,
+    resend: async () => undefined,
+    resolveSession: async (token) => draftFor(token),
+    consumeSession: async (token) => Boolean(draftFor(token)),
     ...overrides,
   };
 }

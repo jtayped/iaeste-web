@@ -8,6 +8,7 @@ import InvitationCancelled from "./emails/invitation-cancelled";
 import MembershipAccepted from "./emails/acceptance";
 import MembershipRejected from "./emails/rejection";
 import RegistrationPending from "./emails/pending-review";
+import RegistrationVerificationLink from "./emails/registration-verification-link";
 import SignInMagicLink from "./emails/magic-link";
 import UserInvitation from "./emails/invitation";
 import UserRequest from "./emails/request";
@@ -40,6 +41,14 @@ const templates: [string, () => ReactElement][] = [
   [
     "rejection",
     () => <MembershipRejected {...MembershipRejected.PreviewProps} />,
+  ],
+  [
+    "registration-verification-link",
+    () => (
+      <RegistrationVerificationLink
+        {...RegistrationVerificationLink.PreviewProps}
+      />
+    ),
   ],
   ["request", () => <UserRequest {...UserRequest.PreviewProps} />],
   ["verify-email", () => <VerifyUserEmail {...VerifyUserEmail.PreviewProps} />],

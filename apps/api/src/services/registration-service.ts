@@ -48,6 +48,8 @@ export interface AdminRegistrationView {
   id: string;
   campaignId: string;
   email: string;
+  universityEmail: string | null;
+  personalEmail: string | null;
   status: RegistrationStatus;
   profileSnapshot: RegistrationProfileSnapshot;
   source: string;
@@ -63,6 +65,8 @@ interface RegistrationRow {
   id: string;
   campaignId: string;
   email: string;
+  universityEmail: string | null;
+  personalEmail: string | null;
   status: RegistrationStatus;
   profileSnapshot: unknown;
   source: string;
@@ -79,6 +83,8 @@ function toView(row: RegistrationRow): AdminRegistrationView {
     id: row.id,
     campaignId: row.campaignId,
     email: row.email,
+    universityEmail: row.universityEmail,
+    personalEmail: row.personalEmail,
     status: row.status,
     profileSnapshot: row.profileSnapshot as RegistrationProfileSnapshot,
     source: row.source,

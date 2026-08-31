@@ -14,6 +14,7 @@
     "db:reset": "dotenv -e ../../.env -- tsx scripts/reset.ts",
     "db:seed": "dotenv -e ../../.env -- tsx scripts/seed.ts",
     "db:campaign": "dotenv -e ../../.env -- tsx scripts/manage-campaign.ts",
+    "db:import-members": "dotenv -e ../../.env -- tsx scripts/import-historical-members.ts",
     "auth:generate-schema": "tsx scripts/generate-auth-schema.ts"
   },
   "exports": {
@@ -25,6 +26,7 @@
     "./test-support/fixtures": "./src/test-support/fixtures.ts"
   },
   "dependencies": {
+    "@repo/constants": "*",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.23.0"
   },

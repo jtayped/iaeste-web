@@ -4,7 +4,7 @@ import { Children, isValidElement, type ReactNode } from "react";
 
 import { createAuth, revokeAllUserSessions } from "@repo/auth";
 import type { Database } from "@repo/db/client";
-import { user, verification } from "@repo/db/schema";
+import { user, userEmail, verification } from "@repo/db/schema";
 import { closeTestDb, getTestDb, truncateAll } from "@repo/db/test-support";
 import type { Emailer } from "@repo/email/resend";
 
@@ -41,9 +41,11 @@ function createAuthHarness(
   } = {},
 ) {
   let magicLink: string | undefined;
+  let deliveredTo: string | undefined;
   const origin = options.origin ?? ADMIN_ORIGIN;
   const emailer: Emailer = {
     async send(message) {
+      deliveredTo = Array.isArray(message.to) ? message.to[0] : message.to;
       magicLink = findHref(message.react);
       assert.ok(magicLink, "the email must contain the sign-in link");
     },
@@ -62,6 +64,7 @@ function createAuthHarness(
     logger: quietLogger,
     registrationRepository: createRepository(),
     registrationService: createRegistrationServiceStub(),
+    db,
   });
 
   return {
@@ -70,6 +73,9 @@ function createAuthHarness(
     getMagicLink() {
       assert.ok(magicLink, "a magic-link email should have been recorded");
       return magicLink;
+    },
+    getDeliveredTo() {
+      return deliveredTo;
     },
   };
 }
@@ -250,5 +256,48 @@ describe("Better Auth routes", () => {
     });
     assert.equal(secondSignedOut.status, 200);
     assert.equal(await secondSignedOut.json(), null);
+  });
+
+  it("signs the canonical user in through either verified address", async () => {
+    const userId = crypto.randomUUID();
+    const personalEmail = "member@example.com";
+    const universityEmail = "member@alumnes.udl.cat";
+    await db.insert(user).values({
+      id: userId,
+      name: "member",
+      email: personalEmail,
+      emailVerified: true,
+      role: "member",
+    });
+    await db.insert(userEmail).values([
+      {
+        userId,
+        email: personalEmail,
+        kind: "personal",
+        verifiedAt: new Date(),
+      },
+      {
+        userId,
+        email: universityEmail,
+        kind: "university",
+        verifiedAt: new Date(),
+      },
+    ]);
+    const { app, getMagicLink, getDeliveredTo } = createAuthHarness(db);
+
+    const request = await requestMagicLink(app, universityEmail);
+    assert.equal(request.status, 200);
+    assert.equal(getDeliveredTo(), universityEmail);
+
+    const verified = await app.request(getMagicLink());
+    const cookie = sessionCookie(verified);
+    const session = await app.request("/api/auth/get-session", {
+      headers: { cookie },
+    });
+    assert.equal(
+      ((await session.json()) as { user: { id: string; email: string } }).user
+        .id,
+      userId,
+    );
   });
 });

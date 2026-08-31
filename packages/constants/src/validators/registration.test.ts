@@ -6,7 +6,8 @@ import { registrationSchema } from "./registration";
 const validRegistration = {
   name: "Joan",
   surnames: "Garcia Serra",
-  email: "joan@alumnes.udl.cat",
+  universityEmail: "joan@alumnes.udl.cat",
+  personalEmail: "joan@example.com",
   phone: "+34 623 32 42 34",
   degree: "grau en informàtica (lleida)",
   year: 2,

@@ -11,6 +11,7 @@ import {
 import { createRegistrationRepository } from "./registrations";
 import { createMembershipRepository } from "./memberships";
 import { registration } from "../schema/registration";
+import { userEmail } from "../schema/user-email";
 import { eq } from "drizzle-orm";
 import { IllegalTransitionError, NotFoundError } from "./errors";
 
@@ -239,14 +240,16 @@ describe("registrations repository", () => {
     assert.equal(await memberships.countForUser(acceptedUser.id), 1);
   });
 
-  it("reuses the existing user when the same email registers again in a later campaign", async () => {
+  it("reuses the existing user and refreshes both login addresses in a later campaign", async () => {
     const registrations = createRegistrationRepository(db);
     const reviewer = await createTestUser(db);
 
     const campaign1 = await createTestCampaign(db);
     const reg1 = await registrations.create({
       campaignId: campaign1.id,
-      email: "returning@alumnes.udl.cat",
+      email: "old-personal@example.com",
+      universityEmail: "returning@alumnes.udl.cat",
+      personalEmail: "old-personal@example.com",
       profileSnapshot: testProfileSnapshot(),
     });
     await registrations.markEmailVerified(reg1.id);
@@ -257,7 +260,9 @@ describe("registrations repository", () => {
     const campaign2 = await createTestCampaign(db);
     const reg2 = await registrations.create({
       campaignId: campaign2.id,
-      email: "returning@alumnes.udl.cat",
+      email: "new-personal@example.com",
+      universityEmail: "returning@alumnes.udl.cat",
+      personalEmail: "new-personal@example.com",
       profileSnapshot: testProfileSnapshot(),
     });
     await registrations.markEmailVerified(reg2.id);
@@ -266,6 +271,14 @@ describe("registrations repository", () => {
     });
 
     assert.equal(secondUser.id, firstUser.id);
+    const aliases = await db
+      .select({ email: userEmail.email })
+      .from(userEmail)
+      .where(eq(userEmail.userId, firstUser.id));
+    assert.deepEqual(
+      new Set(aliases.map((row) => row.email)),
+      new Set(["returning@alumnes.udl.cat", "new-personal@example.com"]),
+    );
   });
 
   it("listForAdmin scopes to a campaign, filters by status and q, and paginates", async () => {

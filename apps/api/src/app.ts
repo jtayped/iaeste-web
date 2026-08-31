@@ -17,7 +17,9 @@ import {
   createMembershipRepository,
   createOverviewRepository,
   createPushSubscriptionRepository,
+  createUserEmailRepository,
   IllegalTransitionError,
+  EmailIdentityConflictError,
   NotFoundError,
 } from "@repo/db/repositories";
 
@@ -80,7 +82,9 @@ import {
   healthRoute,
   registrationStatusRoute,
   startRegistrationRoute,
-  verifyRegistrationCodeRoute,
+  verifyRegistrationDraftLinkRoute,
+  resumeRegistrationDraftRoute,
+  resendRegistrationDraftLinkRoute,
   resendVerificationRoute,
   invitationAcceptRoute,
   invitationLookupRoute,
@@ -260,16 +264,52 @@ export function createApp(dependencies: AppDependencies = {}) {
   // Better Auth gets its canonical scheme and host from ADMIN_PUBLIC_ORIGIN,
   // so it does not need to trust client-spoofable X-Forwarded-* headers when
   // requests arrive through the admin rewrite and Coolify's Traefik proxy.
-  app.on(["GET", "POST", "PUT", "PATCH", "DELETE"], "/api/auth/*", (c) => {
-    const auth = dependencies.auth ?? getAuth();
-    return auth.handler(c.req.raw);
-  });
+  app.on(
+    ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    "/api/auth/*",
+    async (c) => {
+      const auth = dependencies.auth ?? getAuth();
+      const request = c.req.raw;
+      if (
+        request.method === "POST" &&
+        new URL(request.url).pathname.endsWith("/sign-in/magic-link")
+      ) {
+        const body = (await request.clone().json()) as {
+          email?: unknown;
+          metadata?: unknown;
+          [key: string]: unknown;
+        };
+        if (typeof body.email === "string") {
+          const requestedEmail = body.email.trim().toLowerCase();
+          const alias =
+            await createUserEmailRepository(adminDb()).resolveVerified(
+              requestedEmail,
+            );
+          if (alias) {
+            body.email = alias.canonicalEmail;
+            body.metadata = { iaesteDeliveryEmail: alias.email };
+          } else {
+            body.email = requestedEmail;
+            delete body.metadata;
+          }
+          const headers = new Headers(request.headers);
+          const rewritten = new Request(request.url, {
+            method: request.method,
+            headers,
+            body: JSON.stringify(body),
+          });
+          return auth.handler(rewritten);
+        }
+      }
+      return auth.handler(request);
+    },
+  );
 
   // Step one of the public form. See startRegistrationRoute's doc comment:
   // the 200 says nothing about whether an email went out, and the only
   // condition allowed to change the answer is the campaign calendar.
   app.openapi(startRegistrationRoute, async (c) => {
-    const { email } = c.req.valid("json");
+    const emails = c.req.valid("json");
     const ip = ipOf(c.req.header("x-forwarded-for"));
     // A client-side limit on top of the per-address one inside the service,
     // so a single machine cannot walk a list of addresses to farm codes.
@@ -285,7 +325,7 @@ export function createApp(dependencies: AppDependencies = {}) {
     }
 
     try {
-      const { resendAfterSeconds } = await challengeService.start(email);
+      const { resendAfterSeconds } = await challengeService.start(emails);
       return c.json({ status: "ok" as const, resendAfterSeconds }, 200);
     } catch (error) {
       if (error instanceof RegistrationsClosedError) {
@@ -302,13 +342,30 @@ export function createApp(dependencies: AppDependencies = {}) {
     }
   });
 
-  // Step two. One generic 400 covers a wrong code, an expired one, one
-  // already spent, and one whose challenge ran out of attempts — telling
-  // them apart would hand an attacker a progress bar.
-  app.openapi(verifyRegistrationCodeRoute, async (c) => {
-    const { email, code } = c.req.valid("json");
+  function serialiseDraftSession(
+    session: Awaited<ReturnType<typeof challengeService.resume>> extends infer T
+      ? NonNullable<T>
+      : never,
+  ) {
+    return {
+      token: session.token,
+      expiresAt: session.expiresAt.toISOString(),
+      ready: session.ready,
+      emails: session.emails,
+      known: session.known,
+      profile: session.profile,
+      memberships: session.memberships.map((row) => ({
+        campaignLabel: row.campaignLabel,
+        status: row.status as "active" | "left" | "kicked",
+      })),
+      openCampaignRegistrationStatus: session.openCampaignRegistrationStatus,
+    };
+  }
+
+  app.openapi(verifyRegistrationDraftLinkRoute, async (c) => {
+    const { token } = c.req.valid("json");
     const ip = ipOf(c.req.header("x-forwarded-for"));
-    if (!allowRequest(`reg-code:${ip}`, 30, 60_000)) {
+    if (!allowRequest(`reg-link:${ip}`, 30, 60_000)) {
       return c.json(
         errorBody(
           c.get("requestId"),
@@ -319,30 +376,71 @@ export function createApp(dependencies: AppDependencies = {}) {
       );
     }
 
-    const session = await challengeService.verifyCode(email, code);
+    let session;
+    try {
+      session = await challengeService.verifyLink(token);
+    } catch (error) {
+      if (error instanceof EmailIdentityConflictError) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "CONFLICT",
+            "These addresses belong to different member accounts.",
+          ),
+          409,
+        );
+      }
+      throw error;
+    }
     if (!session) {
       return c.json(
         errorBody(
           c.get("requestId"),
           "INVALID_TOKEN",
-          "This code is invalid, expired, or already used.",
+          "This link is invalid, expired, or already used.",
         ),
         400,
       );
     }
 
+    return c.json(serialiseDraftSession(session), 200);
+  });
+
+  app.openapi(resumeRegistrationDraftRoute, async (c) => {
+    const { token } = c.req.valid("json");
+    try {
+      const session = await challengeService.resume(token);
+      if (session) return c.json(serialiseDraftSession(session), 200);
+    } catch (error) {
+      if (error instanceof EmailIdentityConflictError) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "CONFLICT",
+            "These addresses belong to different member accounts.",
+          ),
+          409,
+        );
+      }
+      throw error;
+    }
+    return c.json(
+      errorBody(
+        c.get("requestId"),
+        "INVALID_TOKEN",
+        "This registration session is invalid or expired.",
+      ),
+      400,
+    );
+  });
+
+  app.openapi(resendRegistrationDraftLinkRoute, async (c) => {
+    const { token, kind } = c.req.valid("json");
+    await challengeService.resend(token, kind);
     return c.json(
       {
-        token: session.token,
-        expiresAt: session.expiresAt.toISOString(),
-        email: session.email,
-        known: session.known,
-        profile: session.profile,
-        memberships: session.memberships.map((row) => ({
-          campaignLabel: row.campaignLabel,
-          status: row.status as "active" | "left" | "kicked",
-        })),
-        openCampaignRegistrationStatus: session.openCampaignRegistrationStatus,
+        status: "ok" as const,
+        resendAfterSeconds: 60,
       },
       200,
     );
@@ -357,8 +455,8 @@ export function createApp(dependencies: AppDependencies = {}) {
     // they typed. Two concurrent submissions are made safe by the unique
     // index on (campaign, email) instead, which is where the guarantee
     // actually belongs.
-    const email = await challengeService.resolveSession(body.emailToken);
-    if (!email) {
+    const draft = await challengeService.resolveSession(body.emailToken);
+    if (!draft) {
       return c.json(
         errorBody(
           c.get("requestId"),
@@ -369,7 +467,7 @@ export function createApp(dependencies: AppDependencies = {}) {
       );
     }
 
-    const parsed = registrationSchema.safeParse({ ...body, email });
+    const parsed = registrationSchema.safeParse({ ...body, ...draft });
     if (!parsed.success) {
       return c.json(
         errorBody(

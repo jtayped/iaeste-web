@@ -12,10 +12,20 @@ The request endpoint still returns a generic success response and sends a
 link for an unknown address, but verification fails without creating a user.
 This keeps the request endpoint from revealing which addresses have accounts.
 
+Each member can have one verified university address and one verified personal
+address in `user_email`. Either address resolves to the same Better Auth user.
+`user.email` remains the canonical address required by Better Auth; the API
+rewrites an alias sign-in request to that canonical identity while delivering
+the link to the verified address the member actually entered. An unverified
+address is never used for sign-in.
+
 Magic links expire after ten minutes. The database stores a hash of each
 token, not the token from the email. A successful verification creates an
 opaque database session and returns its token in a host-only cookie with
 `HttpOnly` and `SameSite=Lax`. Production cookies also have `Secure`.
+These login links are separate from the seven-day links that only verify and
+resume a public registration draft. A registration link never grants a member
+session.
 
 ### Local development
 

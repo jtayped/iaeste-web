@@ -22,29 +22,22 @@ function createRecordingEmailer(): Emailer & { sent: SendEmailOptions[] } {
   };
 }
 
-/**
- * The code only ever exists in the email, so the test reads it back out of
- * the recorded send — exactly the path a real applicant takes, and proof that
- * nothing else in the response leaks it.
- */
-function codeFrom(sent: SendEmailOptions): string {
-  const match = /\d{6}/.exec(JSON.stringify(sent.react));
-  assert.ok(match, "no six-digit code in the sent email");
-  return match[0];
+function tokenFrom(sent: SendEmailOptions): string {
+  const match = /#token=([a-f0-9]{64})/i.exec(JSON.stringify(sent.react));
+  assert.ok(match?.[1], "no verification token in the sent email");
+  return match[1];
 }
 
-/**
- * The per-address cooldown lives in a process-wide `Map`, so two tests that
- * share an address would have the second one silently skip its send. A fresh
- * address per test is what keeps them independent.
- */
 let addressCounter = 0;
-function freshAddress(): string {
+function freshEmails() {
   addressCounter += 1;
-  return `person-${addressCounter}@alumnes.udl.cat`;
+  return {
+    universityEmail: `person-${addressCounter}@alumnes.udl.cat`,
+    personalEmail: `person-${addressCounter}@example.com`,
+  };
 }
 
-describe("registration challenge service", () => {
+describe("registration draft service", () => {
   let db: Database;
 
   before(async () => {
@@ -69,87 +62,99 @@ describe("registration challenge service", () => {
       db,
       emailer: createRecordingEmailer(),
     });
-
     await assert.rejects(
-      () => service.start(freshAddress()),
+      () => service.start(freshEmails()),
       RegistrationsClosedError,
     );
   });
 
-  it("mails a six-digit code and trades it for a session", async () => {
+  it("sends two links and becomes ready only after both are opened", async () => {
     await openCampaign();
     const emailer = createRecordingEmailer();
     const service = createRegistrationChallengeService({ db, emailer });
-    const email = freshAddress();
+    const emails = freshEmails();
 
-    await service.start(email);
+    await service.start(emails);
+    assert.equal(emailer.sent.length, 2);
+    assert.deepEqual(
+      new Set(emailer.sent.map((message) => message.to)),
+      new Set([emails.universityEmail, emails.personalEmail]),
+    );
 
+    const universityMessage = emailer.sent.find(
+      (message) => message.to === emails.universityEmail,
+    );
+    const personalMessage = emailer.sent.find(
+      (message) => message.to === emails.personalEmail,
+    );
+    assert.ok(universityMessage && personalMessage);
+
+    const first = await service.verifyLink(tokenFrom(universityMessage));
+    assert.ok(first);
+    assert.equal(first.ready, false);
+    assert.equal(first.emails.university?.verified, true);
+    assert.equal(first.emails.personal?.verified, false);
+    assert.equal(await service.resolveSession(first.token), undefined);
+
+    const second = await service.verifyLink(tokenFrom(personalMessage));
+    assert.ok(second?.ready);
+    const resolved = await service.resolveSession(second.token);
+    assert.ok(resolved?.draftId);
+    assert.equal(resolved.universityEmail, emails.universityEmail);
+    assert.equal(resolved.personalEmail, emails.personalEmail);
+
+    const resumed = await service.resume(first.token);
+    assert.equal(resumed?.ready, true);
+  });
+
+  it("becomes ready with a single supplied address, and never asks for the other", async () => {
+    await openCampaign();
+    const emailer = createRecordingEmailer();
+    const service = createRegistrationChallengeService({ db, emailer });
+    addressCounter += 1;
+    const universityEmail = `solo-${addressCounter}@alumnes.udl.cat`;
+
+    await service.start({ universityEmail });
     assert.equal(emailer.sent.length, 1);
-    assert.equal(emailer.sent[0]?.to, email);
-    assert.equal(
-      emailer.sent[0]?.subject,
-      "el teu codi d'inscripció · iaeste lc lleida",
-    );
+    assert.equal(emailer.sent[0]?.to, universityEmail);
 
-    const session = await service.verifyCode(email, codeFrom(emailer.sent[0]!));
+    const session = await service.verifyLink(tokenFrom(emailer.sent[0]!));
+    assert.ok(session?.ready);
+    assert.equal(session.emails.university?.verified, true);
+    assert.equal(session.emails.personal, undefined);
 
-    assert.ok(session);
-    assert.equal(session?.email, email);
-    // Nobody by that address has ever been near us.
-    assert.equal(session?.known, false);
-    assert.equal(session?.profile, null);
-    assert.equal(await service.resolveSession(session!.token), email);
+    const resolved = await service.resolveSession(session.token);
+    assert.equal(resolved?.universityEmail, universityEmail);
+    assert.equal(resolved?.personalEmail, undefined);
+
+    // Nothing to resend for a kind that was never supplied.
+    await service.resend(session.token, "personal");
+    assert.equal(emailer.sent.length, 1);
   });
 
-  it("rejects a code issued for a different address", async () => {
+  it("verification links are single use", async () => {
     await openCampaign();
     const emailer = createRecordingEmailer();
     const service = createRegistrationChallengeService({ db, emailer });
-
-    const mine = freshAddress();
-    const theirs = freshAddress();
-    await service.start(mine);
-    await service.start(theirs);
-
-    assert.equal(
-      await service.verifyCode(theirs, codeFrom(emailer.sent[0]!)),
-      undefined,
-    );
+    await service.start(freshEmails());
+    const token = tokenFrom(emailer.sent[0]!);
+    assert.ok(await service.verifyLink(token));
+    assert.equal(await service.verifyLink(token), undefined);
   });
 
-  it("gives up on a challenge after five wrong guesses", async () => {
+  it("spends a completed draft once", async () => {
     await openCampaign();
     const emailer = createRecordingEmailer();
     const service = createRegistrationChallengeService({ db, emailer });
-
-    const email = freshAddress();
-    await service.start(email);
-    const real = codeFrom(emailer.sent[0]!);
-    const wrong = real === "000000" ? "111111" : "000000";
-
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      assert.equal(await service.verifyCode(email, wrong), undefined);
-    }
-
-    // A six-digit code is 20 bits; the attempt cap, not the length, is what
-    // makes it unguessable. Even the right code stops working after it.
-    assert.equal(await service.verifyCode(email, real), undefined);
+    await service.start(freshEmails());
+    await service.verifyLink(tokenFrom(emailer.sent[0]!));
+    const complete = await service.verifyLink(tokenFrom(emailer.sent[1]!));
+    assert.ok(complete);
+    assert.equal(await service.consumeSession(complete.token), true);
+    assert.equal(await service.consumeSession(complete.token), false);
   });
 
-  it("spends a session once, so a resubmitted form cannot register twice", async () => {
-    await openCampaign();
-    const emailer = createRecordingEmailer();
-    const service = createRegistrationChallengeService({ db, emailer });
-
-    const email = freshAddress();
-    await service.start(email);
-    const session = await service.verifyCode(email, codeFrom(emailer.sent[0]!));
-
-    assert.equal(await service.consumeSession(session!.token), email);
-    assert.equal(await service.consumeSession(session!.token), undefined);
-  });
-
-  it("survives a mail provider that is down", async () => {
+  it("does not expose mail-provider failures", async () => {
     await openCampaign();
     const service = createRegistrationChallengeService({
       db,
@@ -159,9 +164,6 @@ describe("registration challenge service", () => {
         },
       },
     });
-
-    // Failing here would tell a prober that this address is one the mail
-    // provider rejects, which is itself a signal worth hiding.
-    await assert.doesNotReject(() => service.start(freshAddress()));
+    await assert.doesNotReject(() => service.start(freshEmails()));
   });
 });

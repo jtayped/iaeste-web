@@ -43,6 +43,8 @@ export const registration = pgTable(
     // Lowercase, normalised. Deliberately a plain column with a unique
     // index rather than `citext` — see the plan's "Rules" section.
     email: text("email").notNull(),
+    universityEmail: text("university_email"),
+    personalEmail: text("personal_email"),
     // The form as submitted: name, surnames, phone (E.164 + display),
     // degree, study year, previous-member flag, free-text note. Never
     // rewritten after insert.
@@ -64,6 +66,14 @@ export const registration = pgTable(
     uniqueIndex("registration_campaign_email_key").on(
       table.campaignId,
       table.email,
+    ),
+    uniqueIndex("registration_campaign_university_email_key").on(
+      table.campaignId,
+      table.universityEmail,
+    ),
+    uniqueIndex("registration_campaign_personal_email_key").on(
+      table.campaignId,
+      table.personalEmail,
     ),
     index("registration_email_idx").on(table.email),
     index("registration_campaign_status_idx").on(

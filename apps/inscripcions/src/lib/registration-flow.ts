@@ -74,26 +74,25 @@ export function mapStartResult(result: ApiResult<StartResponse>): StartOutcome {
 }
 
 /**
- * What step two should do next. `badCode` collapses wrong, expired, spent and
- * out-of-attempts into one outcome, because the API answers all four the same
- * way on purpose.
+ * What opening a registration verification link should do next.
  */
-export type VerifyCodeOutcome =
+export type VerifyDraftOutcome =
   | { kind: "ok"; session: Session }
-  | { kind: "badCode" }
+  | { kind: "invalidLink" }
+  | { kind: "identityConflict" }
   | { kind: "rateLimited" }
   | { kind: "failed" };
 
-export function mapVerifyCodeResult(
+export function mapVerifyDraftResult(
   result: ApiResult<RegistrationSession>,
-): VerifyCodeOutcome {
+): VerifyDraftOutcome {
   const { data, error, response } = result;
 
   if (error) {
     if (response?.status === 429) return { kind: "rateLimited" };
-    return error.error.code === "INVALID_TOKEN"
-      ? { kind: "badCode" }
-      : { kind: "failed" };
+    if (error.error.code === "INVALID_TOKEN") return { kind: "invalidLink" };
+    if (error.error.code === "CONFLICT") return { kind: "identityConflict" };
+    return { kind: "failed" };
   }
 
   return data ? { kind: "ok", session: data } : { kind: "failed" };

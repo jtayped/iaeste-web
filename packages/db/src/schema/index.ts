@@ -4,6 +4,8 @@ export * from "./membership-campaign";
 export * from "./registration";
 export * from "./registration-verification";
 export * from "./email-challenge";
+export * from "./registration-draft";
+export * from "./user-email";
 export * from "./membership";
 export * from "./member-invitation";
 export * from "./membership-event";

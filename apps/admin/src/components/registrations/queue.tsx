@@ -59,8 +59,8 @@ const COLUMNS: DataTableColumn<AdminRegistration>[] = [
   },
   {
     id: "email",
-    header: "correu",
-    cell: (row) => row.email,
+    header: "correu personal",
+    cell: (row) => row.personalEmail ?? row.email,
     className: "hidden lg:table-cell",
   },
   {

@@ -43,6 +43,13 @@
       "when": 1788103346594,
       "tag": "0005_aromatic_hawkeye",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788193011874,
+      "tag": "0006_jittery_cobalt_man",
+      "breakpoints": true
     }
   ]
 }

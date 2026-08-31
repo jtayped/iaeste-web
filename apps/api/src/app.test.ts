@@ -40,7 +40,8 @@ describe("API", () => {
     assert.ok(document.paths["/v1/registrations"]);
     assert.ok(document.paths["/v1/registrations/status"]);
     assert.ok(document.paths["/v1/registrations/start"]);
-    assert.ok(document.paths["/v1/registrations/verify-code"]);
+    assert.ok(document.paths["/v1/registrations/verify-link"]);
+    assert.ok(document.paths["/v1/registrations/resume"]);
   });
 
   it("reports whether a campaign accepts public registrations", async () => {
@@ -106,7 +107,7 @@ describe("API", () => {
     });
   });
 
-  it("issues a code without saying anything about the address", async () => {
+  it("issues two links without saying anything about either address", async () => {
     const app = createTestApp(
       undefined,
       undefined,
@@ -121,7 +122,10 @@ describe("API", () => {
     const response = await app.request("/v1/registrations/start", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: validRegistration.email }),
+      body: JSON.stringify({
+        universityEmail: validRegistration.universityEmail,
+        personalEmail: validRegistration.personalEmail,
+      }),
     });
 
     assert.equal(response.status, 200);
@@ -131,7 +135,7 @@ describe("API", () => {
     });
   });
 
-  it("answers a wrong code the same way as an expired or spent one", async () => {
+  it("answers an invalid verification link generically", async () => {
     const app = createTestApp(
       undefined,
       undefined,
@@ -139,12 +143,12 @@ describe("API", () => {
       undefined,
       undefined,
       undefined,
-      createChallengeServiceStub({ verifyCode: async () => undefined }),
+      createChallengeServiceStub({ verifyLink: async () => undefined }),
     );
-    const response = await app.request("/v1/registrations/verify-code", {
+    const response = await app.request("/v1/registrations/verify-link", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: validRegistration.email, code: "000000" }),
+      body: JSON.stringify({ token: "0".repeat(64) }),
     });
     const body = (await response.json()) as { error: { code: string } };
 

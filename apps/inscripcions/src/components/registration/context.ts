@@ -29,9 +29,19 @@ export function toMappedIssues(issues: FieldIssue[]): MappedFieldIssue[] {
   );
 }
 
+/**
+ * A draft carries whichever addresses were supplied at the start — one of the
+ * two, or both — so the summary line joins what is actually there rather than
+ * assuming a pair.
+ */
 export function toSessionContext(session: Session): DetailsContext {
+  const addresses = (["university", "personal"] as const).flatMap((kind) => {
+    const entry = session.emails[kind];
+    return entry ? [entry.maskedAddress] : [];
+  });
+
   return {
-    email: session.email,
+    email: addresses.join(" · "),
     profile: session.profile,
     memberships: session.memberships,
     invited: false,

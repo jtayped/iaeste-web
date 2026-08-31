@@ -11,3 +11,5 @@ export * from "./member-erasure";
 export * from "./push-subscriptions";
 export * from "./email-challenges";
 export * from "./known-person";
+export * from "./registration-drafts";
+export * from "./user-emails";

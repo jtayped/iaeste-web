@@ -30,7 +30,8 @@ function createRecordingEmailer(): Emailer & { sent: SendEmailOptions[] } {
 const validRegistration: Registration = {
   name: "Joan",
   surnames: "Garcia Serra",
-  email: "joan@alumnes.udl.cat",
+  universityEmail: "joan@alumnes.udl.cat",
+  personalEmail: "joan@example.com",
   phone: "+34 623 32 42 34",
   degree: "grau en informàtica (lleida)",
   year: 2,
@@ -103,7 +104,7 @@ describe("createDrizzleRegistrationRepository", () => {
     const registrations = createRegistrationRepository(db);
     const saved = await registrations.getByCampaignAndEmail(
       campaign.id,
-      validRegistration.email,
+      validRegistration.personalEmail!,
     );
 
     assert.ok(saved);
@@ -158,7 +159,7 @@ describe("createDrizzleRegistrationRepository", () => {
     await repository.create(validRegistration);
 
     assert.equal(emailer.sent.length, 1);
-    assert.equal(emailer.sent[0]?.to, validRegistration.email);
+    assert.equal(emailer.sent[0]?.to, validRegistration.personalEmail);
     assert.equal(
       emailer.sent[0]?.subject,
       "sol·licitud rebuda · iaeste lc lleida",
@@ -185,7 +186,7 @@ describe("createDrizzleRegistrationRepository", () => {
     const registrations = createRegistrationRepository(db);
     const saved = await registrations.getByCampaignAndEmail(
       (await createCampaignRepository(db).getOpenForRegistration())!.id,
-      validRegistration.email,
+      validRegistration.personalEmail!,
     );
     assert.ok(saved);
     assert.equal(saved?.status, "pending_review");

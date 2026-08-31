@@ -6,7 +6,7 @@ import type { components } from "@repo/api-client";
 import {
   mapStartResult,
   mapSubmitResult,
-  mapVerifyCodeResult,
+  mapVerifyDraftResult,
   mapVerifyResult,
   readRegistrationId,
   readToken,
@@ -137,11 +137,18 @@ describe("mapStartResult", () => {
   });
 });
 
-describe("mapVerifyCodeResult", () => {
+describe("mapVerifyDraftResult", () => {
   const session = {
     token: "t",
     expiresAt: "2026-09-01T00:00:00.000Z",
-    email: "joan@alumnes.udl.cat",
+    ready: true,
+    emails: {
+      university: {
+        maskedAddress: "jo••@alumnes.udl.cat",
+        verified: true,
+      },
+      personal: { maskedAddress: "jo••@example.com", verified: true },
+    },
     known: true,
     profile: null,
     memberships: [],
@@ -149,25 +156,25 @@ describe("mapVerifyCodeResult", () => {
   };
 
   it("hands the session through on success", () => {
-    assert.deepEqual(mapVerifyCodeResult({ data: session }), {
+    assert.deepEqual(mapVerifyDraftResult({ data: session }), {
       kind: "ok",
       session,
     });
   });
 
-  it("collapses every rejected code into one outcome", () => {
+  it("maps an invalid or spent link to one outcome", () => {
     assert.deepEqual(
-      mapVerifyCodeResult({
+      mapVerifyDraftResult({
         error: apiError("INVALID_TOKEN"),
         response: status(400),
       }),
-      { kind: "badCode" },
+      { kind: "invalidLink" },
     );
   });
 
   it("keeps a rate limit apart, because waiting actually helps there", () => {
     assert.deepEqual(
-      mapVerifyCodeResult({
+      mapVerifyDraftResult({
         error: apiError("CONFLICT"),
         response: status(429),
       }),

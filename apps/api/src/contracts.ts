@@ -1,6 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
 import { DEGREE_OPTIONS } from "@repo/constants/studies";
+import { isUniversityEmail } from "@repo/constants/validators/member-email";
 import { isValidPhone } from "@repo/constants/validators/phone";
 
 import { API_VERSION } from "./version";
@@ -38,7 +39,7 @@ export const registrationRequestSchema = z
   .object({
     ...registrationProfileShape,
     /**
-     * The session handed back by `POST /v1/registrations/verify-code`. This
+     * The session handed back by a registration verification link. This
      * is where the address comes from — a body cannot claim one, so a
      * registration can only ever be filed against an inbox the submitter
      * actually opened.
@@ -67,15 +68,50 @@ export const registrationStatusSchema = z
 
 // --- Registration: proving the address before anything is collected -------
 
-export const registrationStartBodySchema = z
-  .object({
-    email: z
+/** An empty or missing field means "not supplied", not an invalid address. */
+function optionalRegistrationEmail(
+  refine: [(email: string) => boolean, string],
+) {
+  return z.preprocess(
+    (value) =>
+      typeof value === "string" && value.trim() === "" ? undefined : value,
+    z
       .string()
       .trim()
       .toLowerCase()
       .email()
-      .openapi({ example: "joan@alumnes.udl.cat" }),
+      .refine(...refine)
+      .optional(),
+  );
+}
+
+/**
+ * A university address, a personal one, or both — never neither. See
+ * `@repo/constants`'s `memberEmailsSchema`, which this contract-layer copy
+ * deliberately mirrors (English messages, `.openapi()` metadata) rather than
+ * importing directly.
+ */
+export const registrationStartBodySchema = z
+  .object({
+    universityEmail: optionalRegistrationEmail([
+      isUniversityEmail,
+      "must be a udl.cat or alumnes.udl.cat address",
+    ]).openapi({ example: "joan@alumnes.udl.cat" }),
+    personalEmail: optionalRegistrationEmail([
+      (email) => !isUniversityEmail(email),
+      "must be a personal address",
+    ]).openapi({ example: "joan@example.com" }),
   })
+  .refine(
+    ({ universityEmail, personalEmail }) =>
+      Boolean(universityEmail || personalEmail),
+    { path: ["personalEmail"], message: "at least one address is required" },
+  )
+  .refine(
+    ({ universityEmail, personalEmail }) =>
+      !universityEmail || !personalEmail || universityEmail !== personalEmail,
+    { path: ["personalEmail"], message: "the two addresses must differ" },
+  )
   .openapi("RegistrationStartRequest");
 
 /**
@@ -91,16 +127,16 @@ export const registrationStartResponseSchema = z
   })
   .openapi("RegistrationStartResponse");
 
-export const registrationVerifyCodeBodySchema = z
+export const registrationDraftTokenBodySchema = z
+  .object({ token: z.string().regex(/^[a-f0-9]{64}$/i) })
+  .openapi("RegistrationDraftTokenRequest");
+
+export const registrationDraftResendBodySchema = z
   .object({
-    email: z.string().trim().toLowerCase().email(),
-    code: z
-      .string()
-      .trim()
-      .regex(/^\d{6}$/, "el codi té sis xifres")
-      .openapi({ example: "418502" }),
+    token: z.string().regex(/^[a-f0-9]{64}$/i),
+    kind: z.enum(["university", "personal"]),
   })
-  .openapi("RegistrationVerifyCodeRequest");
+  .openapi("RegistrationDraftResendRequest");
 
 /** What the form can prefill, in the shape the form's own fields use. */
 export const knownProfileSchema = z
@@ -130,7 +166,23 @@ export const registrationSessionSchema = z
   .object({
     token: z.string(),
     expiresAt: z.string(),
-    email: z.string(),
+    ready: z.boolean(),
+    // Only the kind(s) actually supplied at `start` appear here — a draft
+    // started with just a university address never gets a `personal` key.
+    emails: z.object({
+      university: z
+        .object({
+          maskedAddress: z.string(),
+          verified: z.boolean(),
+        })
+        .optional(),
+      personal: z
+        .object({
+          maskedAddress: z.string(),
+          verified: z.boolean(),
+        })
+        .optional(),
+    }),
     known: z.boolean(),
     profile: knownProfileSchema.nullable(),
     memberships: z.array(knownMembershipSchema),
@@ -260,6 +312,8 @@ export const adminRegistrationSchema = z
     id: z.string(),
     campaignId: z.string(),
     email: z.string(),
+    universityEmail: z.string().nullable(),
+    personalEmail: z.string().nullable(),
     status: registrationStatusSchema,
     profileSnapshot: adminRegistrationProfileSnapshotSchema,
     source: z.string(),
