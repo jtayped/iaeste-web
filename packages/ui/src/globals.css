@@ -111,6 +111,9 @@
        as its buttons. One token covers every field, so no component has to
        pin its own corner. */
     --field-radius: calc(var(--radius) * 0.75);
+    /* The selected pill in a segmented control (HeroUI's tab indicator). */
+    --segment: var(--background);
+    --segment-foreground: var(--foreground);
     /* 5.6:1 at rest and 4.5:1 after HeroUI's light-theme hover mix. */
     --danger: hsl(0 84.2% 43%);
     --danger-foreground: hsl(210 40% 98%);
@@ -177,6 +180,10 @@
     --field-placeholder: var(--muted);
     /* 3.1:1 on the dark field background. */
     --field-border: hsl(215 16% 38%);
+    /* Lifted well clear of the `--default` track it sits on, since on a dark
+       surface the selected pill has to be the lighter of the two. */
+    --segment: hsl(217.2 32.6% 27%);
+    --segment-foreground: var(--foreground);
     --danger: hsl(0 62.8% 30.6%);
     --danger-foreground: hsl(210 40% 98%);
     --border: hsl(217.2 32.6% 17.5%);
@@ -357,8 +364,14 @@
 
   .calendar__cell,
   .calendar__nav-button,
-  .list-box-item {
+  .list-box-item,
+  .tabs__tab,
+  .tabs__indicator {
     @apply rounded-md;
+  }
+
+  .tabs__list-container {
+    @apply rounded-lg;
   }
 
   /* React Aria portals every popover straight onto `document.body`, as a

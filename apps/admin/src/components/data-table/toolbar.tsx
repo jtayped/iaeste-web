@@ -66,7 +66,7 @@ export function TableSearch({
       <div className="relative">
         <Search
           aria-hidden
-          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
         />
         <Input
           id={id}
@@ -106,22 +106,16 @@ export function TableFilter({
       {label ? (
         <span className="block text-xs text-muted-foreground">{label}</span>
       ) : null}
+      {/* Four options do not fit 360px. `TabsList` scrolls sideways in its own
+          container rather than wrapping or shrinking the labels. */}
       <Tabs value={value} onValueChange={onChange}>
-        {/* Four options do not fit 360px: the list scrolls sideways in its own
-            container rather than wrapping or shrinking the labels. */}
-        <div className="max-w-full overflow-x-auto pb-1">
-          <TabsList className="w-max">
-            {options.map((option) => (
-              <TabsTrigger
-                key={option.value}
-                value={option.value}
-                className="min-h-9"
-              >
-                {option.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+        <TabsList aria-label={label}>
+          {options.map((option) => (
+            <TabsTrigger key={option.value} value={option.value}>
+              {option.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
       </Tabs>
     </div>
   );

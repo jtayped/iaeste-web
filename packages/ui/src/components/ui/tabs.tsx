@@ -1,55 +1,109 @@
 "use client";
 
 import * as React from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
+import {
+  Tab as HeroUITab,
+  TabIndicator as HeroUITabIndicator,
+  TabList as HeroUITabList,
+  TabListContainer as HeroUITabListContainer,
+  TabPanel as HeroUITabPanel,
+  TabsRoot as HeroUITabsRoot,
+  type TabListContainerProps as HeroUITabListContainerProps,
+  type TabPanelProps as HeroUITabPanelProps,
+  type TabProps as HeroUITabProps,
+  type TabsRootProps as HeroUITabsRootProps,
+} from "@heroui/react/tabs";
 
 import { cn } from "@repo/ui/lib/utils";
 
-const Tabs = TabsPrimitive.Root;
+export interface TabsProps extends Omit<
+  HeroUITabsRootProps,
+  "selectedKey" | "defaultSelectedKey" | "onSelectionChange"
+> {
+  /**
+   * React Aria calls these `selectedKey` / `onSelectionChange` and types them
+   * `Key`. Every tab set here is keyed by a plain string, so the conversion
+   * happens once, here.
+   */
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+}
 
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      "inline-flex h-9 items-center justify-center rounded-lg bg-default p-1 text-muted-foreground",
-      className,
-    )}
-    {...props}
-  />
-));
-TabsList.displayName = TabsPrimitive.List.displayName;
+const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
+  ({ value, defaultValue, onValueChange, ...props }, ref) => (
+    <HeroUITabsRoot
+      ref={ref}
+      selectedKey={value}
+      defaultSelectedKey={defaultValue}
+      onSelectionChange={(key) => onValueChange?.(String(key))}
+      {...props}
+    />
+  ),
+);
+Tabs.displayName = "Tabs";
 
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap ring-offset-background transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow",
-      className,
-    )}
-    {...props}
-  />
-));
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
+export interface TabsListProps extends HeroUITabListContainerProps {
+  "aria-label"?: string;
+}
 
-const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none",
-      className,
-    )}
-    {...props}
-  />
-));
-TabsContent.displayName = TabsPrimitive.Content.displayName;
+/**
+ * The track the tabs sit in. React Aria splits it in two — a container that
+ * draws the track and scrolls, and the tab list itself — but nothing here ever
+ * wants one without the other, and the container is what gives a list too wide
+ * for a phone its own horizontal scroll with edge chevrons, instead of pushing
+ * the page sideways.
+ */
+const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
+  ({ className, children, "aria-label": ariaLabel, ...props }, ref) => (
+    <HeroUITabListContainer ref={ref} className={className} {...props}>
+      <HeroUITabList aria-label={ariaLabel}>{children}</HeroUITabList>
+    </HeroUITabListContainer>
+  ),
+);
+TabsList.displayName = "TabsList";
+
+export interface TabsTriggerProps extends Omit<
+  HeroUITabProps,
+  "id" | "children"
+> {
+  value: string;
+  children?: React.ReactNode;
+  /** Native alias for HeroUI's `isDisabled`. */
+  disabled?: boolean;
+}
+
+/**
+ * `TabIndicator` is the sliding pill, and it lives inside the tab rather than
+ * beside it: React Aria positions it against whichever tab is selected and
+ * animates it across. HeroUI's own height is 32px; 36px is the touch target
+ * the admin's filters were built at.
+ */
+const TabsTrigger = React.forwardRef<HTMLDivElement, TabsTriggerProps>(
+  ({ value, className, disabled, isDisabled, children, ...props }, ref) => (
+    <HeroUITab
+      ref={ref}
+      id={value}
+      isDisabled={isDisabled ?? disabled}
+      className={cn("h-9", className)}
+      {...props}
+    >
+      {children}
+      <HeroUITabIndicator />
+    </HeroUITab>
+  ),
+);
+TabsTrigger.displayName = "TabsTrigger";
+
+export interface TabsContentProps extends Omit<HeroUITabPanelProps, "id"> {
+  value: string;
+}
+
+const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
+  ({ value, ...props }, ref) => (
+    <HeroUITabPanel ref={ref} id={value} {...props} />
+  ),
+);
+TabsContent.displayName = "TabsContent";
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };
