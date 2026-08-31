@@ -50,7 +50,7 @@ export function CampaignSummary({
 }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         campanyes
       </h2>
       <Card className="divide-y divide-border rounded-lg border-border p-0 shadow-none">

@@ -83,7 +83,7 @@ export const ErrorSummary = ({
     id="form-error-summary"
     tabIndex={-1}
     aria-live="polite"
-    className="rounded-md border border-destructive/40 bg-destructive/5 p-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
+    className="rounded-md border border-destructive/40 bg-destructive/5 p-4 focus-visible:ring-1 focus-visible:ring-destructive focus-visible:outline-none"
   >
     <div className="flex items-center gap-2 text-destructive">
       <AlertCircleIcon aria-hidden="true" className="size-4 shrink-0" />
@@ -101,7 +101,7 @@ export const ErrorSummary = ({
             <li key={field}>
               <button
                 type="button"
-                className="text-left underline decoration-muted-foreground/30 underline-offset-4 transition-colors hover:text-destructive hover:decoration-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
+                className="text-left underline decoration-muted-foreground/30 underline-offset-4 transition-colors hover:text-destructive hover:decoration-destructive focus-visible:ring-1 focus-visible:ring-destructive focus-visible:outline-none"
                 onClick={() => onSelectField(field)}
               >
                 {FIELD_LABELS[field]}: {errors[field]?.message}

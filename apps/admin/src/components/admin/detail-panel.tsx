@@ -21,7 +21,7 @@ export function Section({
   return (
     <section className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
           {title}
         </h2>
         {action}
@@ -51,7 +51,7 @@ export function Field({
       <dt className="text-xs text-muted-foreground sm:w-44 sm:shrink-0">
         {label}
       </dt>
-      <dd className="min-w-0 break-words text-sm">{children}</dd>
+      <dd className="min-w-0 text-sm break-words">{children}</dd>
     </div>
   );
 }

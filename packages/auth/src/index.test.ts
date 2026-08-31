@@ -100,8 +100,7 @@ describe("createAuth", () => {
       (plugin) => plugin.id === "admin",
     );
     const options = adminPlugin?.options as
-      | { defaultRole?: string; adminRoles?: string[] }
-      | undefined;
+      { defaultRole?: string; adminRoles?: string[] } | undefined;
 
     assert.equal(options?.defaultRole, "member");
     assert.deepEqual(options?.adminRoles, ["admin"]);

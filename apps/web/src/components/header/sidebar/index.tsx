@@ -64,7 +64,7 @@ const SidebarComponent = () => {
         <button
           onClick={toggleSidebar}
           aria-label="close menu"
-          className="-mr-2 grid size-11 place-items-center rounded-lg outline-none transition-colors hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-white/40"
+          className="-mr-2 grid size-11 place-items-center rounded-lg transition-colors outline-none hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-white/40"
         >
           <X size={24} />
         </button>
@@ -83,7 +83,7 @@ const SidebarComponent = () => {
         <Item href="/blog">{t("pages.blog.name")}</Item>
       </motion.nav>
 
-      <div className="section-padding shrink-0 space-y-3 border-t border-white/10 pb-8 pt-5">
+      <div className="section-padding shrink-0 space-y-3 border-t border-white/10 pt-5 pb-8">
         <ChangeTranslation />
         <Link
           href="#contact-form"

@@ -969,7 +969,7 @@ export const adminDeleteMemberRoute = createRoute({
     "membership rows, the membership-event entries where they are the " +
     "target, invitations they sent, and every registration / " +
     "email-challenge / magic-link token for their address. This is NOT " +
-    "the reversible leave / kick (\"donar de baixa\") flow, which keeps " +
+    'the reversible leave / kick ("donar de baixa") flow, which keeps ' +
     "all of that history. Requires `members.delete`, the most privileged " +
     "grant, held by `admin` only.",
   request: { params: userIdParamSchema },

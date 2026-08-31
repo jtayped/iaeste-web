@@ -253,7 +253,10 @@ describe("admin members routes", () => {
   });
 
   it("404s an erasure for an unknown user id", async () => {
-    assert.equal((await del(makeApp(db), "/v1/admin/members/nope")).status, 404);
+    assert.equal(
+      (await del(makeApp(db), "/v1/admin/members/nope")).status,
+      404,
+    );
   });
 
   it("erases a user and every row about them, leaving other members intact", async () => {

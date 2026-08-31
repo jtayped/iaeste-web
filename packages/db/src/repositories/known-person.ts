@@ -120,8 +120,7 @@ export function createKnownPersonRepository(db: Db) {
         : [];
 
       const snapshot = latestRegistration?.profileSnapshot as
-        | RegistrationProfileSnapshot
-        | undefined;
+        RegistrationProfileSnapshot | undefined;
 
       const profile: KnownProfile | null = profileRow
         ? {

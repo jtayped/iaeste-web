@@ -45,7 +45,7 @@ export function CampaignContext({ overview }: { overview: AdminOverview }) {
 
   if (currentCampaign === null && registrationOpenCampaign === null) {
     return (
-      <span className="whitespace-nowrap text-xs text-muted-foreground">
+      <span className="text-xs whitespace-nowrap text-muted-foreground">
         cap campanya activa
       </span>
     );

@@ -18,9 +18,7 @@ export type Role = "administrator" | "editor";
  * `role` is optional here so both shapes assign cleanly.
  */
 type MaybeUser =
-  | { id?: string | number; role?: Role | null }
-  | null
-  | undefined;
+  { id?: string | number; role?: Role | null } | null | undefined;
 
 export const isAdmin = (user: MaybeUser): boolean =>
   user?.role === "administrator";

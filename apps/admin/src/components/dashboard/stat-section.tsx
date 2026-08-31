@@ -10,7 +10,7 @@ export function StatSection({
 }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {title}
       </h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

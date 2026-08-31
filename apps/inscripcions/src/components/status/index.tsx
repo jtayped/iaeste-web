@@ -181,7 +181,7 @@ const StatusScreen = ({
             variants={textVariants}
             initial="hidden"
             animate="visible"
-            className="mx-auto mt-4 max-w-prose text-sm leading-relaxed text-muted-foreground sm:text-base [&>p:not(:first-child)]:mt-4 [&>p]:mt-0"
+            className="mx-auto mt-4 max-w-prose text-sm leading-relaxed text-muted-foreground sm:text-base [&>p]:mt-0 [&>p:not(:first-child)]:mt-4"
           >
             {children}
           </motion.div>

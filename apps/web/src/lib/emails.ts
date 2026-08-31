@@ -6,8 +6,7 @@ import { contactFormSchema } from "@repo/constants/validators/contact-form";
 import { env } from "@repo/env/web/server";
 
 export type SendContactFormResult =
-  | { ok: true }
-  | { ok: false; reason: "invalid" | "failed" };
+  { ok: true } | { ok: false; reason: "invalid" | "failed" };
 
 const emailer = createResendEmailer({
   apiKey: env.RESEND_API_KEY,

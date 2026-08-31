@@ -40,9 +40,7 @@ const byRole: Record<AuthRole, readonly Capability[]> = {
 };
 
 type SessionLike =
-  | { user?: { role?: string | null } | null }
-  | null
-  | undefined;
+  { user?: { role?: string | null } | null } | null | undefined;
 
 /**
  * Whether `session`'s user may exercise `capability`. Unknown / missing /

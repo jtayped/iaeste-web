@@ -41,11 +41,7 @@ export type InvitationRole = components["schemas"]["InvitationRole"];
 
 /** `GET /v1/admin/invitations`'s optional `status` query parameter. */
 export type InvitationStatusFilter =
-  | "all"
-  | "pending"
-  | "accepted"
-  | "cancelled"
-  | "expired";
+  "all" | "pending" | "accepted" | "cancelled" | "expired";
 
 /** `GET /v1/admin/members`'s `filter` query parameter. */
 export type MemberFilter = "all" | "current" | "past";

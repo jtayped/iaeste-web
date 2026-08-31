@@ -53,9 +53,10 @@ function toBlogPost(dto: BlogPostSummary | BlogPostDetail): BlogPost {
       : null,
     bodyLexical: detail?.body ?? null,
     alternates: detail
-      ? detail.alternates.map(
-          (alt): BlogPostVersion => ({ locale: alt.locale, slug: alt.slug }),
-        )
+      ? detail.alternates.map((alt): BlogPostVersion => ({
+          locale: alt.locale,
+          slug: alt.slug,
+        }))
       : null,
   };
 }

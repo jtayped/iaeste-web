@@ -29,7 +29,7 @@ const Hero = () => {
       <div className="section-padding flex h-svh min-h-[34rem] items-center justify-center bg-gradient-to-b from-primary/75 via-primary/65 to-primary/80 pt-20 text-white">
         <div className="flex max-w-3xl flex-col items-center text-center">
           <div className="flex items-center gap-2 lg:gap-3">
-            <h1 className="text-6xl font-extrabold leading-none tracking-[-0.035em] lg:text-8xl">
+            <h1 className="text-6xl leading-none font-extrabold tracking-[-0.035em] lg:text-8xl">
               iaeste
             </h1>
             {/* "lc ▣" over "lleida": both lines now scale with the wordmark, so
@@ -39,7 +39,7 @@ const Hero = () => {
                 <motion.span
                   initial={{ x: -10, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  className="text-3xl font-bold leading-none tracking-tight lg:text-5xl"
+                  className="text-3xl leading-none font-bold tracking-tight lg:text-5xl"
                 >
                   lc
                 </motion.span>
@@ -63,7 +63,7 @@ const Hero = () => {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-xl font-extrabold leading-none tracking-tight lg:text-3xl"
+                className="text-xl leading-none font-extrabold tracking-tight lg:text-3xl"
               >
                 lleida
               </motion.span>
@@ -76,7 +76,7 @@ const Hero = () => {
             initial={{ y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
-            className="mt-7 max-w-2xl text-pretty text-lg leading-relaxed text-white/90"
+            className="mt-7 max-w-2xl text-lg leading-relaxed text-pretty text-white/90"
           >
             {t("description")}
           </motion.p>

@@ -318,6 +318,7 @@ data-erasure operation (account + associated records), distinct from
 deactivation.
 
 Implemented alongside deactivate:
+
 - `packages/db/src/repositories/member-erasure.ts` — `eraseUser(userId)` in one
   transaction, FK-safe order, returns per-table row counts.
 - New capability `members.delete` in `packages/auth` — `admin` role only.

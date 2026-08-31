@@ -38,7 +38,7 @@ export function MembershipTimeline({
           <li key={membership.id} className="relative">
             <span
               aria-hidden
-              className="absolute -left-[1.4375rem] top-1.5 size-2 rounded-full bg-border ring-4 ring-background"
+              className="absolute top-1.5 -left-[1.4375rem] size-2 rounded-full bg-border ring-4 ring-background"
             />
             <div className="flex flex-wrap items-center gap-2">
               <Link
@@ -87,7 +87,7 @@ export function EventLog({
             className="flex flex-col gap-0.5 px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
           >
             <span className="text-sm">{eventLabel(event.eventType)}</span>
-            <span className="text-xs tabular-nums text-muted-foreground">
+            <span className="text-xs text-muted-foreground tabular-nums">
               {formatDateTime(event.createdAt)}
             </span>
           </li>

@@ -45,7 +45,7 @@ export function StatCard({ stat }: { stat: Stat }) {
       </div>
       <p
         className={cn(
-          "mt-2 text-2xl font-semibold tabular-nums tracking-tight",
+          "mt-2 text-2xl font-semibold tracking-tight tabular-nums",
           emphasise ? "text-primary" : null,
         )}
       >
@@ -60,7 +60,7 @@ export function StatCard({ stat }: { stat: Stat }) {
   return (
     <Link
       href={stat.href}
-      className="group rounded-lg outline-none ring-ring focus-visible:ring-2"
+      className="group rounded-lg ring-ring outline-none focus-visible:ring-2"
     >
       {body}
     </Link>

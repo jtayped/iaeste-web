@@ -167,8 +167,7 @@ export function useCreateInvitation(): UseMutationResult<
 }
 
 export type InvitationAction =
-  | { kind: "resend"; id: string }
-  | { kind: "cancel"; id: string };
+  { kind: "resend"; id: string } | { kind: "cancel"; id: string };
 
 export function useInvitationAction(): UseMutationResult<
   void,

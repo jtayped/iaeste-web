@@ -152,9 +152,7 @@ export function mapSubmitResult(
  * people's inboxes; nothing new sends one.
  */
 export type VerifyOutcome =
-  | { kind: "verified" }
-  | { kind: "invalidToken" }
-  | { kind: "failed" };
+  { kind: "verified" } | { kind: "invalidToken" } | { kind: "failed" };
 
 export function mapVerifyResult(result: ApiResult<Verified>): VerifyOutcome {
   const { data, error } = result;

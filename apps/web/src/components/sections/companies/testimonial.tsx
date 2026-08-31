@@ -10,7 +10,7 @@ const Testimonial = () => {
 
   return (
     <DivideSection className="relative overflow-hidden bg-gradient-to-b from-primary/95 to-primary py-16 text-primary-foreground">
-      <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+      <div className="absolute -top-20 -right-20 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
       <div className="flex items-center justify-center p-8">
         <Image
           src={"/factory-data/logo.png"}
@@ -21,7 +21,7 @@ const Testimonial = () => {
         />
       </div>
       <article className="relative pr-4">
-        <Quote className="absolute -left-6 -top-10 z-0 h-32 w-32 rotate-12 text-white/5" />
+        <Quote className="absolute -top-10 -left-6 z-0 h-32 w-32 rotate-12 text-white/5" />
         <p className="mb-4 text-xs font-bold tracking-[0.2em] text-primary-foreground/60">
           {t("tag")}
         </p>
@@ -29,7 +29,7 @@ const Testimonial = () => {
           {t("title")}
         </H2>
         <blockquote className="relative border-l-4 border-white/20 pl-6">
-          <p className="text-lg italic leading-relaxed text-blue-50/90 md:text-xl">
+          <p className="text-lg leading-relaxed text-blue-50/90 italic md:text-xl">
             &quot;{t("text")}&quot;
           </p>
           <footer className="mt-8 flex items-center gap-4">
@@ -42,7 +42,7 @@ const Testimonial = () => {
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold leading-tight text-white">
+              <span className="text-lg leading-tight font-bold text-white">
                 {t("author")}
               </span>
               <span className="text-sm font-medium text-blue-200/70">

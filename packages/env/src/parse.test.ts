@@ -57,7 +57,9 @@ describe("parseEnv", () => {
 
 describe("urlRequiredInProduction", () => {
   const schema = (nodeEnv: string | undefined) =>
-    z.object({ URL: urlRequiredInProduction("http://localhost:3006", nodeEnv) });
+    z.object({
+      URL: urlRequiredInProduction("http://localhost:3006", nodeEnv),
+    });
 
   it("applies the localhost fallback outside production", () => {
     for (const nodeEnv of ["development", "test", undefined]) {
@@ -73,9 +75,12 @@ describe("urlRequiredInProduction", () => {
 
   it("still validates a supplied value in every environment", () => {
     for (const nodeEnv of ["development", "production"]) {
-      assert.deepEqual(schema(nodeEnv).parse({ URL: "https://cms.example.cat" }), {
-        URL: "https://cms.example.cat",
-      });
+      assert.deepEqual(
+        schema(nodeEnv).parse({ URL: "https://cms.example.cat" }),
+        {
+          URL: "https://cms.example.cat",
+        },
+      );
       assert.throws(() => schema(nodeEnv).parse({ URL: "not-a-url" }));
     }
   });

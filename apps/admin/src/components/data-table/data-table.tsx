@@ -106,7 +106,7 @@ export function DataTable<Row>({
                   </TableHead>
                 ))}
                 {rowActions ? (
-                  <TableHead className="whitespace-nowrap text-right">
+                  <TableHead className="text-right whitespace-nowrap">
                     accions
                   </TableHead>
                 ) : null}
@@ -132,7 +132,7 @@ export function DataTable<Row>({
                         {href && column.primary === true ? (
                           <Link
                             href={href}
-                            className="inline-flex min-h-11 items-center rounded underline-offset-4 outline-none ring-ring hover:underline focus-visible:ring-2 md:min-h-0"
+                            className="inline-flex min-h-11 items-center rounded underline-offset-4 ring-ring outline-none hover:underline focus-visible:ring-2 md:min-h-0"
                           >
                             {column.cell(row)}
                           </Link>

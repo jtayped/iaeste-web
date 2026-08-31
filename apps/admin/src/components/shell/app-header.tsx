@@ -26,7 +26,7 @@ export function AppHeader({ overview }: { overview: AdminOverview | null }) {
           closed drawer, so the header has to say where you are. */}
       <Link
         href="/"
-        className="truncate rounded-md px-1 text-sm font-semibold tracking-tight outline-none ring-ring focus-visible:ring-2 md:hidden"
+        className="truncate rounded-md px-1 text-sm font-semibold tracking-tight ring-ring outline-none focus-visible:ring-2 md:hidden"
       >
         iaeste lleida
       </Link>

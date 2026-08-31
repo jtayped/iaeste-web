@@ -143,78 +143,76 @@ export async function renderOgImage(title: string) {
   const { background, emblem, regular, extrabold } = await loadAssets();
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        fontFamily: "Inter",
+        color: "#ffffff",
+        backgroundColor: `rgb(${NAVY})`,
+      }}
+    >
+      {/* Not `next/image`: satori renders a bare <img> and nothing else. */}
+      <img
+        src={background}
+        width={ogImageSize.width}
+        height={ogImageSize.height}
+        alt=""
+        style={{ position: "absolute", top: 0, left: 0 }}
+      />
+      {/* The hero's graded wash, a few points deeper. The hero carries only
+            display type over it; a 48px line needs more ground under it than a
+            96px one. Darkest at the foot, where the photograph is brightest. */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundImage: `linear-gradient(to bottom, rgba(${NAVY}, 0.80), rgba(${NAVY}, 0.72) 42%, rgba(${NAVY}, 0.90))`,
+        }}
+      />
       <div
         style={{
           display: "flex",
-          position: "relative",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
           width: "100%",
           height: "100%",
-          fontFamily: "Inter",
-          color: "#ffffff",
-          backgroundColor: `rgb(${NAVY})`,
+          padding: "72px 96px",
         }}
       >
-        {/* Not `next/image`: satori renders a bare <img> and nothing else. */}
-        <img
-          src={background}
-          width={ogImageSize.width}
-          height={ogImageSize.height}
-          alt=""
-          style={{ position: "absolute", top: 0, left: 0 }}
-        />
-        {/* The hero's graded wash, a few points deeper. The hero carries only
-            display type over it; a 48px line needs more ground under it than a
-            96px one. Darkest at the foot, where the photograph is brightest. */}
+        <Wordmark emblem={emblem} />
+        {/* Separates the identity from the message without adding a second
+              typographic voice. */}
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundImage: `linear-gradient(to bottom, rgba(${NAVY}, 0.80), rgba(${NAVY}, 0.72) 42%, rgba(${NAVY}, 0.90))`,
+            width: 72,
+            height: 3,
+            marginTop: 34,
+            backgroundColor: "rgba(255, 255, 255, 0.55)",
           }}
         />
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            height: "100%",
-            padding: "72px 96px",
+            marginTop: 32,
+            maxWidth: 880,
+            fontSize: 48,
+            fontWeight: 400,
+            lineHeight: 1.28,
+            textAlign: "center",
+            color: "rgba(255, 255, 255, 0.95)",
           }}
         >
-          <Wordmark emblem={emblem} />
-          {/* Separates the identity from the message without adding a second
-              typographic voice. */}
-          <div
-            style={{
-              width: 72,
-              height: 3,
-              marginTop: 34,
-              backgroundColor: "rgba(255, 255, 255, 0.55)",
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              marginTop: 32,
-              maxWidth: 880,
-              fontSize: 48,
-              fontWeight: 400,
-              lineHeight: 1.28,
-              textAlign: "center",
-              color: "rgba(255, 255, 255, 0.95)",
-            }}
-          >
-            {withoutBrandPrefix(title)}
-          </div>
+          {withoutBrandPrefix(title)}
         </div>
       </div>
-    ),
+    </div>,
     {
       ...ogImageSize,
       fonts: [

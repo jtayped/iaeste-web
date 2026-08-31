@@ -48,7 +48,7 @@ export function AppSidebar({
           <SidebarMenuItem>
             <Link
               href="/"
-              className="flex items-center gap-2 rounded-md px-1.5 py-1 outline-none ring-sidebar-ring focus-visible:ring-2"
+              className="flex items-center gap-2 rounded-md px-1.5 py-1 ring-sidebar-ring outline-none focus-visible:ring-2"
             >
               <span
                 aria-hidden
