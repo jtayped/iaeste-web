@@ -53,7 +53,7 @@ work unchecked and explain it under final notes.
       fixed — see styling setup notes).
 - [x] Replace removed Tailwind functions and deprecated utilities.
 - [x] Verify npm resolves the intended Tailwind version for each workspace.
-- [ ] Remove old JavaScript Tailwind configuration only after all consumers move.
+- [x] Remove old JavaScript Tailwind configuration only after all consumers move.
 
 ### Styling setup notes
 
@@ -121,8 +121,11 @@ work unchecked and explain it under final notes.
 - [x] Keep all app imports behind `@repo/ui/*`.
 - [x] Define shared mappings for legacy variants, sizes, and state props.
 - [x] Handle `disabled`, `required`, native events, and React Aria events correctly.
-- [ ] Handle controlled and uncontrolled open state correctly.
-      Done for `Select` and `DatePicker`; the rest waits on the overlay phase.
+- [x] Handle controlled and uncontrolled open state correctly.
+      Every overlay root takes React Aria's `isOpen` / `defaultOpen` /
+      `onOpenChange`. The Radix spelling was not kept: unlike `Select` and
+      `Tabs`, these structures changed anyway, so a translation layer would
+      have bought nothing.
 - [x] Replace `asChild` without nested interactive elements or broken links.
 - [x] Rewrite consumers where a compatibility wrapper would hide a semantic mismatch.
 
@@ -153,7 +156,8 @@ work unchecked and explain it under final notes.
 - [ ] Migrate Popover.
       Left on Radix: its only remaining consumer is the degree picker's `cmdk`
       build, and moving the wrapper before that field would strand it. The date
-      picker no longer uses it.
+      picker no longer uses it, and it is now the last Radix overlay in the
+      repository.
 - [x] Migrate Calendar and DatePicker.
 - [x] Centralize JavaScript Date and React Aria date-value conversion.
 - [x] Retain and document `cmdk` if it remains necessary.
@@ -246,19 +250,67 @@ date-value.ts` is the one typed boundary to React Aria's `CalendarDate`, and
 
 ## Overlays and navigation
 
-- [ ] Migrate AlertDialog.
-- [ ] Migrate Dialog and Modal behavior.
-- [ ] Migrate Sheet consumers to the correct Drawer or Modal interaction.
-- [ ] Migrate DropdownMenu.
-- [ ] Migrate Tooltip.
-- [ ] Migrate Tabs.
-- [ ] Migrate Breadcrumb.
-- [ ] Migrate Collapsible.
-- [ ] Migrate ScrollArea where HeroUI preserves the behavior.
+- [x] Migrate AlertDialog.
+- [x] Migrate Dialog and Modal behavior.
+      `dialog.tsx` was deleted, not migrated: its only consumer was
+      `CommandDialog`, which nothing rendered. No modal is left that is not a
+      drawer or an alert dialog, so no `Modal` wrapper was added for a caller
+      that does not exist.
+- [x] Migrate Sheet consumers to the correct Drawer or Modal interaction.
+- [x] Migrate DropdownMenu.
+- [x] Migrate Tooltip.
+- [x] Migrate Tabs.
+- [x] Migrate Breadcrumb.
+- [x] Migrate Collapsible (deleted — no consumer, see cleanup notes).
+- [x] Migrate ScrollArea where HeroUI preserves the behavior (deleted — no
+      consumer).
 - [ ] Verify escape, dismissal, focus trap, focus return, portals, and nested overlays.
-- [ ] Retain and document the public navigation menu if no HeroUI match exists.
-- [ ] Preserve the custom sidebar's state, shortcut, mobile mode, links, and dark theme.
-- [ ] Update sidebar internals to migrated Button, Tooltip, and Drawer components.
+      Blocked on a browser session. Verified from source that React Aria's
+      `useModalOverlay` supplies focus containment, `usePreventScroll`, and
+      `ariaHideOutside(..., { shouldUseInert: true })` for every overlay here.
+- [x] Retain and document the public navigation menu if no HeroUI match exists.
+      Retained. Radix tracks which sibling a transition came from and slides
+      the viewport accordingly (`data-motion`), and sizes it from
+      `--radix-navigation-menu-viewport-height/width`. HeroUI has no
+      equivalent, and it is the public site's main navigation.
+- [x] Preserve the custom sidebar's state, shortcut, mobile mode, links, and dark theme.
+      The cookie, `Cmd/Ctrl+B`, `SIDEBAR_COOKIE_NAME` and the server-read
+      `defaultOpen` are untouched; only the mobile branch and the tooltip
+      changed.
+- [x] Update sidebar internals to migrated Button, Tooltip, and Drawer components.
+      Tooltip and Drawer, yes. `SidebarMenuButton` stays a plain `<button>`
+      behind a `Slot`: it is a link as often as it is a button, and HeroUI's
+      Button cannot be an anchor — the same constraint that shaped the Button
+      phase.
+
+### Overlay notes
+
+- **Triggers come from context, not from a wrapper.** React Aria's
+  `DialogTrigger` and `MenuTrigger` hand their props to a focusable child
+  through `PressResponder`, and `TooltipTrigger` through `FocusableProvider`.
+  The shared `Button` is a React Aria control, so it _is_ the trigger with no
+  wrapper at all — which is why `AlertDialogTrigger`, `SheetTrigger` and one of
+  the two `DropdownMenuTrigger`s simply disappeared from the call sites.
+  `TooltipTrigger` and `DropdownMenuTrigger` survive only for the sidebar's
+  plain `<button>`, and are React Aria's `Focusable` and `Pressable`: they
+  clone the child and merge props and refs onto it. That is what `asChild` was
+  standing in for.
+- **HeroUI's own `*.Trigger` parts are not usable here.** `AlertDialog.Trigger`,
+  `Modal.Trigger`, `Popover.Trigger` and `Tooltip.Trigger` all render a
+  `<div role="button">`. Wrapping a real button in one nests interactive
+  elements.
+- **The compound parts are folded.** Every overlay `*Content` in
+  `@repo/ui` is HeroUI's backdrop + container + dialog (or popover + menu) in
+  one component, because no caller wants fewer than all of them —
+  the same shape `TabsList` uses for its container and list.
+- **`@repo/ui/router-provider` is new** and mounted in the admin's `Providers`.
+  React Aria's `href` (breadcrumb items, menu items) is a full document load
+  without it. It leaves `download`, `target` and modifier-clicks to the
+  browser, so the members CSV export still downloads.
+- **`aria-describedby` is not automatic outside `role="alertdialog"`.**
+  `AlertDialogDescription` is React Aria's `Text` and claims the description
+  slot; `DrawerDescription` is a plain paragraph, matching React Aria's own
+  position that a dialog's body text is read anyway.
 
 ## Admin data and feedback
 
