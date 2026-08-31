@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@repo/ui/dropdown-menu";
 
 import type { AdminCampaignWithCounts } from "@/lib/admin-types";
@@ -43,32 +42,29 @@ export function MembersExportMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="w-full sm:w-auto">
-          <Download className="size-4" aria-hidden />
-          exporta csv
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      {/* The button is the trigger: React Aria hands it the trigger props
+          through context, so it needs no wrapper of its own. */}
+      <Button variant="outline" size="sm" className="w-full sm:w-auto">
+        <Download className="size-4" aria-hidden />
+        exporta csv
+      </Button>
+      <DropdownMenuContent placement="bottom end" className="w-56">
         <DropdownMenuLabel>membres d&apos;una campanya</DropdownMenuLabel>
         {hasCurrent ? (
-          <DropdownMenuItem asChild>
-            <a href="/api/v1/admin/members/export" download>
-              campanya actual
-            </a>
+          <DropdownMenuItem href="/api/v1/admin/members/export" download>
+            campanya actual
           </DropdownMenuItem>
         ) : null}
         {others.length > 0 ? (
           <>
             {hasCurrent ? <DropdownMenuSeparator /> : null}
             {others.map((campaign) => (
-              <DropdownMenuItem key={campaign.id} asChild>
-                <a
-                  href={`/api/v1/admin/members/export?campaignId=${encodeURIComponent(campaign.id)}`}
-                  download
-                >
-                  {campaign.label}
-                </a>
+              <DropdownMenuItem
+                key={campaign.id}
+                href={`/api/v1/admin/members/export?campaignId=${encodeURIComponent(campaign.id)}`}
+                download
+              >
+                {campaign.label}
               </DropdownMenuItem>
             ))}
           </>

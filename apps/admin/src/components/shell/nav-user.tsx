@@ -54,7 +54,7 @@ export function NavUser({ user }: { user: AdminSessionUser }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger>
         <SidebarMenuButton size="lg" tooltip={displayName}>
           <Avatar className="size-7 rounded-md">
             {user.image ? <AvatarImage src={user.image} alt="" /> : null}
@@ -72,24 +72,27 @@ export function NavUser({ user }: { user: AdminSessionUser }) {
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
-        side={isMobile ? "bottom" : "right"}
-        align="end"
-        sideOffset={8}
+        className="w-(--trigger-width) min-w-56"
+        placement={isMobile ? "bottom end" : "right bottom"}
+        offset={8}
       >
         <DropdownMenuLabel className="font-normal">
           <div className="grid leading-tight">
-            <span className="truncate text-sm font-medium">{displayName}</span>
+            <span className="truncate text-sm font-medium text-foreground">
+              {displayName}
+            </span>
             <span className="truncate text-xs text-muted-foreground">
               {user.email}
             </span>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {/* The menu stays open while the request is in flight, so the pending
+            label is somewhere the user can still see it. */}
         <DropdownMenuItem
           disabled={pending}
-          onSelect={(event) => {
-            event.preventDefault();
+          shouldCloseOnSelect={false}
+          onAction={() => {
             void handleSignOut();
           }}
         >

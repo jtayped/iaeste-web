@@ -359,8 +359,17 @@
      which leaves a white popover with no edge against a white page. */
   .popover,
   .select__popover,
+  .dropdown__popover,
   .tooltip {
     @apply rounded-md border;
+  }
+
+  /* HeroUI caps a menu at 48% of the viewport. At 360px that is 172px, which
+     clips both of the admin's menus — one asks for `w-56`, the other matches a
+     sidebar trigger. A menu should be as wide as its longest campaign name,
+     stopping only at the edge of the screen. */
+  .dropdown__popover {
+    @apply max-w-[calc(100vw-2rem)];
   }
 
   /* HeroUI's tooltip is tighter than IAESTE's and, more importantly, breaks
@@ -373,6 +382,7 @@
   .calendar__cell,
   .calendar__nav-button,
   .list-box-item,
+  .menu-item,
   .tabs__tab,
   .tabs__indicator {
     @apply rounded-md;
