@@ -121,15 +121,35 @@ export function createAuth(config: CreateAuthConfig) {
         storeToken: "hashed",
         disableSignUp: true,
         sendMagicLink: async ({ email, url }) => {
-          await config.emailer.send({
-            to: email,
-            subject: "el teu enllaç d'accés · iaeste lc lleida",
-            react: SignInMagicLink({
-              email,
-              link: url,
-              expiresInMinutes: MAGIC_LINK_EXPIRES_IN_SECONDS / 60,
-            }),
-          });
+          const isDevelopment = config.runtime !== "production";
+          // In local development, print the sign-in link to the server log so
+          // magic-link auth works without a configured email transport. This
+          // never runs in production, where the email below is the only path.
+          if (isDevelopment) {
+            console.log(
+              `\n\x1b[36m[dev] magic-link sign-in for ${email}:\x1b[0m\n${url}\n`,
+            );
+          }
+          try {
+            await config.emailer.send({
+              to: email,
+              subject: "el teu enllaç d'accés · iaeste lc lleida",
+              react: SignInMagicLink({
+                email,
+                link: url,
+                expiresInMinutes: MAGIC_LINK_EXPIRES_IN_SECONDS / 60,
+              }),
+            });
+          } catch (error) {
+            // A placeholder or missing email transport shouldn't block sign-in
+            // in dev — the link was logged above. In production, surface it.
+            if (!isDevelopment) throw error;
+            console.warn(
+              `[dev] email transport failed; use the logged magic-link URL instead (${
+                (error as Error).message
+              })`,
+            );
+          }
         },
       }),
       admin({

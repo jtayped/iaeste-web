@@ -17,6 +17,16 @@ token, not the token from the email. A successful verification creates an
 opaque database session and returns its token in a host-only cookie with
 `HttpOnly` and `SameSite=Lax`. Production cookies also have `Secure`.
 
+### Local development
+
+Outside production (`runtime !== "production"`) the sign-in link is also
+printed to the API server log, prefixed `[dev] magic-link sign-in for`, so
+local sign-in works without a configured email transport. In dev a failing
+email transport (for example a placeholder `RESEND_API_KEY`) is logged and
+swallowed rather than failing the request — the logged URL is the link to
+follow. Neither behaviour runs in production, where the email is the only
+path and a send failure surfaces to the caller.
+
 The two Better Auth roles are `member` and `admin`. They control access to
 the admin product only. Annual membership remains in the IAESTE membership
 tables. The organization plugin and admin impersonation routes are disabled.
