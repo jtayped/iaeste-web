@@ -51,6 +51,21 @@ const SelectValue = React.forwardRef<HTMLSpanElement, SelectValueProps>(
 );
 SelectValue.displayName = "SelectValue";
 
+/**
+ * How the trigger tells the root which `<label>` names it.
+ *
+ * The admin labels its selects the plain-HTML way — a sibling `<label
+ * htmlFor>` pointing at the trigger's id — which is enough for a native
+ * `<select>` but not for this one. A `<button>` takes no part in `for`/`id`
+ * naming, so the browser exposes an unnamed combobox and React Aria warns
+ * that a Select with no visible label needs `aria-label`. The trigger reports
+ * its id up, the root finds the label that points at it and hands React Aria
+ * the `aria-labelledby` it was asking for.
+ */
+const SelectTriggerIdContext = React.createContext<
+  ((triggerId: string | undefined) => void) | null
+>(null);
+
 export interface SelectProps extends Omit<
   HeroUISelectRootProps<object>,
   | "className"
@@ -88,21 +103,56 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
       ...props
     },
     ref,
-  ) => (
-    <HeroUISelectRoot
-      ref={ref}
-      className={className}
-      isDisabled={isDisabled ?? disabled}
-      selectedKey={value}
-      defaultSelectedKey={defaultValue}
-      onSelectionChange={(key) => {
-        if (key !== null) onValueChange?.(String(key));
-      }}
-      {...props}
-    >
-      {children}
-    </HeroUISelectRoot>
-  ),
+  ) => {
+    const [labelId, setLabelId] = React.useState<string>();
+
+    const registerTriggerId = React.useCallback(
+      (triggerId: string | undefined) => {
+        const label =
+          triggerId === undefined
+            ? null
+            : document.querySelector<HTMLLabelElement>(
+                `label[for="${CSS.escape(triggerId)}"]`,
+              );
+
+        if (label === null) {
+          setLabelId(undefined);
+          return;
+        }
+
+        // A label written for a native control has no id of its own — it did
+        // not need one. `aria-labelledby` does.
+        if (label.id === "") label.id = `${triggerId}-label`;
+        setLabelId(label.id);
+      },
+      [],
+    );
+
+    // An explicit name from the caller always wins; the label lookup is only
+    // there for the selects that have no name at all.
+    const named =
+      props["aria-label"] !== undefined ||
+      props["aria-labelledby"] !== undefined;
+
+    return (
+      <SelectTriggerIdContext.Provider value={registerTriggerId}>
+        <HeroUISelectRoot
+          ref={ref}
+          className={className}
+          isDisabled={isDisabled ?? disabled}
+          selectedKey={value}
+          defaultSelectedKey={defaultValue}
+          onSelectionChange={(key) => {
+            if (key !== null) onValueChange?.(String(key));
+          }}
+          {...props}
+          {...(named ? {} : { "aria-labelledby": labelId })}
+        >
+          {children}
+        </HeroUISelectRoot>
+      </SelectTriggerIdContext.Provider>
+    );
+  },
 );
 Select.displayName = "Select";
 
@@ -120,12 +170,20 @@ export interface SelectTriggerProps extends Omit<
  * here rather than left for every consumer to render.
  */
 const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
-  ({ className, children, ...props }, ref) => (
-    <HeroUISelectTrigger ref={ref} className={className} {...props}>
-      {children}
-      <HeroUISelectIndicator />
-    </HeroUISelectTrigger>
-  ),
+  ({ className, children, id, ...props }, ref) => {
+    const registerTriggerId = React.useContext(SelectTriggerIdContext);
+
+    React.useEffect(() => {
+      registerTriggerId?.(id);
+    }, [registerTriggerId, id]);
+
+    return (
+      <HeroUISelectTrigger ref={ref} id={id} className={className} {...props}>
+        {children}
+        <HeroUISelectIndicator />
+      </HeroUISelectTrigger>
+    );
+  },
 );
 SelectTrigger.displayName = "SelectTrigger";
 
