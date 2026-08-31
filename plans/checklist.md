@@ -339,7 +339,7 @@ date-value.ts` is the one typed boundary to React Aria's `CalendarDate`, and
 - [ ] Verify campaign create and edit interactions.
 - [ ] Verify member, invitation, registration, and export actions.
       Partly: the export menu's items render as `<a role="menuitem" href
-    download>` in a real DOM, so the CSV download keeps working. The rest
+download>` in a real DOM, so the CSV download keeps working. The rest
       needs a browser.
 - [ ] Verify destructive confirmation and visible server failures.
       Partly: the alert dialog's structure and dismissal are verified below.
@@ -403,14 +403,22 @@ Still declared, each with a live importer:
 - [x] Run the full repository test gate.
 - [x] Run the full repository production build.
 - [ ] Verify representative desktop and mobile routes in a browser.
-      Blocked: no Chrome extension is connected to this session
-      (`list_connected_browsers` returns nothing). The admin dev server does
-      serve `/sign-in` with a 200 and no render error.
+      Partly complete. Chrome passes now cover the full registration flow at
+      desktop and 390px, plus every authenticated admin list/detail route,
+      overlays, menus, tables and the mobile drawer at 360×640. Public mobile
+      routes are still outstanding. See `plans/verification-findings.md`.
 - [ ] Verify keyboard navigation and visible focus across all apps.
-      Partly: keyboard activation of every migrated overlay trigger is
-      confirmed in a rendered DOM (below). Visible focus needs a browser.
+      Partly: keyboard activation, Escape and focus return work for menus,
+      selects, drawers and nested date pickers in Chrome. AlertDialog cancel
+      loses focus to `<body>`. Public and registration visible focus still need
+      their remaining browser pass.
 - [ ] Verify translated content, validation, loading, empty, and error states.
-- [ ] Run the Impeccable design detector once over changed UI files if available.
+      Partly: admin loading, filtered empty states and dark mode work. The
+      campaign calendar is in English inside the Catalan-only admin. Successful
+      destructive mutations and visible API failure toasts were not triggered.
+- [x] Run the Impeccable design detector once over changed UI files if available.
+      `detect.mjs --json packages/ui/src apps/admin/src apps/inscripcions/src`
+      returned no findings on 2026-08-31.
 - [x] Review the diff for generated files, unrelated formatting, and copy changes.
       No generated file is touched. No public copy changed. The Tailwind 4
       class-order delta is down from 61 files to 35 and was deliberately left
@@ -459,10 +467,23 @@ scaffolding. Dependency list in the cleanup notes above.
 
 ### Known regressions and blockers
 
-- **No browser session.** `list_connected_browsers` returns nothing, so no
-  route has been looked at since the stable-component phase. Mobile widths,
-  admin dark mode, the registration flow, focus return and pointer dismissal
-  are all outstanding. What could be checked without one is below.
+- **The desktop sidebar is broken in both states and does not persist its
+  collapsed state.** Expanded and collapsed rails overlay and clip the page.
+  The `sidebar_state=false` cookie reaches the document request, but the reload
+  renders expanded. The mobile drawer works.
+- **Shared Select controls are unnamed to assistive technology.** React Aria's
+  native select has no `id`, `aria-label` or `aria-labelledby`, and logs a
+  warning on every affected route.
+- **AlertDialog cancellation loses focus.** The dialog closes but leaves focus
+  on `<body>` rather than its trigger.
+- **The campaign calendar is English in the Catalan-only admin.** Month, weekday
+  and navigation labels all use the default English locale.
+- **Tailwind 3 custom-property syntax remains in eight migrated classes.** The
+  compiled Tailwind 4 CSS contains invalid declarations for five sidebar widths,
+  the degree popover width, the retained popover transform origin and the
+  sidebar skeleton max-width. The expanded desktop sidebar visibly overlays the
+  dashboard. See `plans/verification-findings.md` for the per-item impact and
+  source locations.
 - **The Tailwind 4 class-order delta is unformatted**, now 35 files (was 61 —
   migration work absorbed the rest). Running Prettier over them is a
   legitimate follow-up but belongs in its own commit: most are unrelated to
@@ -531,11 +552,11 @@ stable-component phase (2026-08-30): all four gates green both times.
 
 ### Resume point
 
-Phases 1-11 are done. What is left is phase 12's browser work, which needs a
-connected Chrome extension: representative desktop and mobile routes across all
-three apps, admin dark mode, visible focus, escape and focus return on the
-overlays, the registration flow end to end, and the Impeccable design detector
-over the changed UI files.
+Phases 1-11 are done. Phase 12 is partly complete. The authenticated admin and
+admin mobile passes are complete and their findings are recorded. What remains
+is public mobile verification, OTP paste/autofill, registration recovery states
+and successful destructive admin mutations with their visible failures. The
+Impeccable design detector has run and returned no findings.
 
 Two code items are also open, both deliberate rather than forgotten: the degree
 picker (and the Radix `Popover` it holds up), which needs its ranked filter
