@@ -3,6 +3,7 @@
 import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import { I18nProvider } from "@repo/ui/i18n-provider";
 import { RouterProvider } from "@repo/ui/router-provider";
 
 /**
@@ -36,7 +37,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider>{children}</RouterProvider>
+      {/* The panel is Catalan-only, so React Aria's own widgets are too —
+          without this the date picker's calendar formats itself in whatever
+          language the browser happens to prefer. */}
+      <I18nProvider locale="ca-ES">
+        <RouterProvider>{children}</RouterProvider>
+      </I18nProvider>
     </QueryClientProvider>
   );
 }

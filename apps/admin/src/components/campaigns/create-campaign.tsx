@@ -117,7 +117,9 @@ export function CreateCampaign() {
             </div>
           </form>
         </DrawerBody>
-        <DrawerClose />
+        {/* Labelled here, not in the shared component: React Aria ships no
+            Catalan bundle, so its default close label falls back to English. */}
+        <DrawerClose aria-label="tanca" />
       </DrawerContent>
     </Drawer>
   );
