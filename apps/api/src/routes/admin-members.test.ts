@@ -6,7 +6,19 @@ import {
   createCampaignRepository,
   createMembershipRepository,
 } from "@repo/db/repositories";
-import { memberProfile } from "@repo/db/schema";
+import { and, eq } from "drizzle-orm";
+
+import {
+  emailChallenge,
+  memberInvitation,
+  memberProfile,
+  membership,
+  membershipEvent,
+  registration,
+  registrationVerification,
+  session,
+  user,
+} from "@repo/db/schema";
 import { closeTestDb, getTestDb, truncateAll } from "@repo/db/test-support";
 import {
   createTestCampaign,
@@ -63,6 +75,10 @@ function post(a: ReturnType<typeof makeApp>, path: string, body?: unknown) {
   });
 }
 
+function del(a: ReturnType<typeof makeApp>, path: string) {
+  return a.request(path, { method: "DELETE" });
+}
+
 describe("admin members routes", () => {
   let db: Database;
 
@@ -83,6 +99,7 @@ describe("admin members routes", () => {
       (await post(a, "/v1/admin/members/x/kick", { reason: "y" })).status,
       403,
     );
+    assert.equal((await del(a, "/v1/admin/members/x")).status, 403);
   });
 
   it("lists members with search and pagination", async () => {
@@ -233,5 +250,154 @@ describe("admin members routes", () => {
     };
     assert.equal(detail.profile.role, "admin");
     assert.ok(detail.events.some((e) => e.eventType === "role_changed"));
+  });
+
+  it("404s an erasure for an unknown user id", async () => {
+    assert.equal((await del(makeApp(db), "/v1/admin/members/nope")).status, 404);
+  });
+
+  it("erases a user and every row about them, leaving other members intact", async () => {
+    const campaign = await createTestCampaign(db);
+    await createCampaignRepository(db).setCurrent(campaign.id);
+
+    // A bystander who is deactivated ("donar de baixa") — the flow that must
+    // keep working, and whose history must survive the erasure below.
+    const bystander = await makeMember(db, campaign.id, {
+      email: "bystander@alumnes.udl.cat",
+    });
+    const bystanderMembership = await createMembershipRepository(
+      db,
+    ).getForUserAndCampaign(bystander.id, campaign.id);
+    await createMembershipRepository(db).kick(bystanderMembership!.id, {
+      actorId: bystander.id,
+      reason: "prova",
+    });
+
+    const victim = await makeMember(db, campaign.id, {
+      email: "victim@alumnes.udl.cat",
+    });
+
+    // Rows keyed by the victim's email, not a user FK.
+    const [reg] = await db
+      .insert(registration)
+      .values({
+        campaignId: campaign.id,
+        email: "victim@alumnes.udl.cat",
+        profileSnapshot: { name: "V", surnames: "C" },
+      })
+      .returning();
+    await db.insert(registrationVerification).values({
+      registrationId: reg!.id,
+      tokenHash: "hash",
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    await db.insert(emailChallenge).values({
+      email: "victim@alumnes.udl.cat",
+      codeHash: "codehash",
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+
+    // A live session and an invitation the victim sent.
+    await db.insert(session).values({
+      id: "sess_victim",
+      token: "tok_victim",
+      userId: victim.id,
+      expiresAt: new Date(Date.now() + 3_600_000),
+      updatedAt: new Date(),
+    });
+    await db.insert(memberInvitation).values({
+      campaignId: campaign.id,
+      email: "invitee@alumnes.udl.cat",
+      inviterId: victim.id,
+      tokenHash: "inv_hash",
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+
+    const res = await del(makeApp(db), `/v1/admin/members/${victim.id}`);
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as {
+      userId: string;
+      deleted: Record<string, number>;
+    };
+    assert.equal(body.userId, victim.id);
+    assert.equal(body.deleted.memberships, 1);
+    assert.equal(body.deleted.membershipEvents, 1);
+    assert.equal(body.deleted.registrations, 1);
+    assert.equal(body.deleted.registrationVerifications, 1);
+    assert.equal(body.deleted.emailChallenges, 1);
+    assert.equal(body.deleted.memberInvitations, 1);
+    assert.equal(body.deleted.sessions, 1);
+    assert.equal(body.deleted.memberProfile, 1);
+
+    const gone = async (rows: Promise<unknown[]>) =>
+      assert.equal((await rows).length, 0);
+
+    await gone(db.select().from(user).where(eq(user.id, victim.id)));
+    await gone(
+      db
+        .select()
+        .from(memberProfile)
+        .where(eq(memberProfile.userId, victim.id)),
+    );
+    await gone(
+      db.select().from(membership).where(eq(membership.userId, victim.id)),
+    );
+    await gone(
+      db
+        .select()
+        .from(membershipEvent)
+        .where(eq(membershipEvent.targetUserId, victim.id)),
+    );
+    await gone(db.select().from(session).where(eq(session.userId, victim.id)));
+    await gone(
+      db
+        .select()
+        .from(registration)
+        .where(eq(registration.email, "victim@alumnes.udl.cat")),
+    );
+    await gone(
+      db
+        .select()
+        .from(registrationVerification)
+        .where(eq(registrationVerification.registrationId, reg!.id)),
+    );
+    await gone(
+      db
+        .select()
+        .from(emailChallenge)
+        .where(eq(emailChallenge.email, "victim@alumnes.udl.cat")),
+    );
+    await gone(
+      db
+        .select()
+        .from(memberInvitation)
+        .where(eq(memberInvitation.inviterId, victim.id)),
+    );
+
+    // 404 afterwards, and the deactivated bystander is untouched.
+    assert.equal(
+      (await makeApp(db).request(`/v1/admin/members/${victim.id}`)).status,
+      404,
+    );
+    const survivors = await db
+      .select()
+      .from(user)
+      .where(eq(user.id, bystander.id));
+    assert.equal(survivors.length, 1);
+    const bystanderRows = await db
+      .select()
+      .from(membership)
+      .where(
+        and(
+          eq(membership.userId, bystander.id),
+          eq(membership.status, "kicked"),
+        ),
+      );
+    assert.equal(bystanderRows.length, 1);
+    const bystanderEvents = await db
+      .select()
+      .from(membershipEvent)
+      .where(eq(membershipEvent.targetUserId, bystander.id));
+    assert.ok(bystanderEvents.some((e) => e.eventType === "kicked"));
   });
 });

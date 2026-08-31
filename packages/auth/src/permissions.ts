@@ -15,8 +15,9 @@ export const capabilities = [
   "campaigns.write", // create and edit drafts
   "campaigns.rollover", // open, close, make-current, archive
   "members.read",
-  "members.status.write", // leave, kick, restore
+  "members.status.write", // leave, kick, restore ("donar de baixa" — keeps history)
   "members.role.write", // promote / demote
+  "members.delete", // irreversibly erase a user and every row about them
   "invitations.write", // invite a member
   "invitations.grant_admin", // invite someone as admin
   "sheets.sync",
@@ -26,9 +27,12 @@ export type Capability = (typeof capabilities)[number];
 
 /**
  * v1: `admin` holds every capability, `member` holds none. The distinct
- * `members.role.write` / `invitations.grant_admin` entries already exist so
- * a later refinement (e.g. a "board" tier that may invite members but not
- * grant admin) is a one-line change here.
+ * `members.role.write` / `invitations.grant_admin` / `members.delete`
+ * entries already exist so a later refinement (e.g. a "board" tier that may
+ * invite members and end memberships but never erase a user) is a one-line
+ * change here. `members.delete` is intentionally the most dangerous grant —
+ * an irreversible erasure, not the reversible "donar de baixa" — so any
+ * narrower role added later must not receive it by default.
  */
 const byRole: Record<AuthRole, readonly Capability[]> = {
   member: [],

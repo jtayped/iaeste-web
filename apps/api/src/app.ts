@@ -11,6 +11,7 @@ import { registrationSchema } from "@repo/constants/validators/registration";
 import { getDb } from "@repo/db/client";
 import {
   createCampaignRepository,
+  createMemberErasureRepository,
   createMemberRepository,
   createMembershipEventRepository,
   createMembershipRepository,
@@ -54,6 +55,7 @@ import {
   adminCreateCampaignRoute,
   adminCancelInvitationRoute,
   adminCreateInvitationRoute,
+  adminDeleteMemberRoute,
   adminGetMemberRoute,
   adminGetRegistrationRoute,
   adminListInvitationsRoute,
@@ -94,7 +96,7 @@ import { API_VERSION } from "./version";
 
 type AppDependencies = {
   getRegistrationStatus?: () => Promise<PublicRegistrationStatus>;
-  logger?: Pick<Console, "error">;
+  logger?: Pick<Console, "error"> & Partial<Pick<Console, "warn">>;
   registrationRepository?: RegistrationRepository;
   registrationService?: RegistrationService;
   registrationChallengeService?: RegistrationChallengeService;
@@ -520,6 +522,14 @@ export function createApp(dependencies: AppDependencies = {}) {
   // Before the `:userId` matcher below, or "export" is read as a user id.
   app.use("/v1/admin/members/export", requireCapability("members.read"));
   app.use("/v1/admin/members/:userId", requireCapability("members.read"));
+  // DELETE on the same path is the irreversible erasure — it needs the
+  // stricter capability on top of `members.read`. Method-scoped so a plain
+  // GET of a member is unaffected.
+  app.on(
+    "DELETE",
+    "/v1/admin/members/:userId",
+    requireCapability("members.delete"),
+  );
   app.use(
     "/v1/admin/members/:userId/leave",
     requireCapability("members.status.write"),
@@ -1147,6 +1157,45 @@ export function createApp(dependencies: AppDependencies = {}) {
       details: { role },
     });
     return c.json({ role: updated.role ?? role }, 200);
+  });
+
+  // Irreversible, total erasure — distinct from leave/kick, which keep the
+  // account and the history. `member-erasure.ts` does every delete in one
+  // transaction; here we just map "no such user" to a 404 and then make a
+  // best-effort pass to drop any session Better Auth might still hold.
+  app.openapi(adminDeleteMemberRoute, async (c) => {
+    const { userId } = c.req.valid("param");
+    try {
+      const result =
+        await createMemberErasureRepository(adminDb()).eraseUser(userId);
+      // The only trace this action leaves: the target's own audit rows are
+      // destroyed with them, so who-erased-whom lives in the log stream, not
+      // the database. `warn` (not `error`) so it stands out without paging.
+      logger.warn?.(`[${c.get("requestId")}] admin erased user`, {
+        actorId: c.get("authUser").id,
+        actorEmail: c.get("authUser").email,
+        targetUserId: result.userId,
+        targetEmail: result.email,
+        deleted: result.deleted,
+      });
+      try {
+        await revokeAllUserSessions(authInstance(), userId);
+      } catch (error) {
+        logger.error(
+          `[${c.get("requestId")}] failed to revoke sessions after erasure`,
+          error,
+        );
+      }
+      return c.json(result, 200);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return c.json(
+          errorBody(c.get("requestId"), "NOT_FOUND", "No user with that id."),
+          404,
+        );
+      }
+      throw error;
+    }
   });
 
   // --- Admin: invitations --------------------------------------------

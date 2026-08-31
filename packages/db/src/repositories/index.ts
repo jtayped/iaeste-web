@@ -7,6 +7,7 @@ export * from "./invitations";
 export * from "./membership-events";
 export * from "./overview";
 export * from "./members";
+export * from "./member-erasure";
 export * from "./push-subscriptions";
 export * from "./email-challenges";
 export * from "./known-person";

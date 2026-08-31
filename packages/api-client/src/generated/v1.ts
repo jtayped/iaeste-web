@@ -385,7 +385,8 @@ export interface paths {
         get: operations["adminGetMember"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** @description Permanently and irreversibly erase this user and every row that refers to them: their account and sessions, member profile, all membership rows, the membership-event entries where they are the target, invitations they sent, and every registration / email-challenge / magic-link token for their address. This is NOT the reversible leave / kick ("donar de baixa") flow, which keeps all of that history. Requires `members.delete`, the most privileged grant, held by `admin` only. */
+        delete: operations["adminDeleteMember"];
         options?: never;
         head?: never;
         patch?: never;
@@ -911,6 +912,23 @@ export interface components {
         AdminSetRoleRequest: {
             /** @enum {string} */
             role: "member" | "admin";
+        };
+        AdminDeleteMemberResponse: {
+            userId: string;
+            email: string;
+            deleted: {
+                registrations: number;
+                registrationVerifications: number;
+                emailChallenges: number;
+                authVerifications: number;
+                memberInvitations: number;
+                membershipEvents: number;
+                memberships: number;
+                pushSubscriptions: number;
+                sessions: number;
+                accounts: number;
+                memberProfile: number;
+            };
         };
         AdminInvitationList: {
             rows: components["schemas"]["AdminInvitation"][];
@@ -2121,6 +2139,55 @@ export interface operations {
                 };
             };
             /** @description No member (member_profile row) with that user id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminDeleteMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The user and all their data were erased. The body reports the row count removed from each table. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteMemberResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No user with that id. */
             404: {
                 headers: {
                     [name: string]: unknown;

@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { Button } from "@repo/ui/button";
 import { Label } from "@repo/ui/label";
 import {
@@ -14,7 +16,7 @@ import { ActionBar, Section } from "@/components/admin/detail-panel";
 import { ConfirmAction } from "@/components/admin/confirm-action";
 import type { AdminMemberDetail, MemberRole } from "@/lib/admin-types";
 import { fullName } from "@/lib/admin-types";
-import { useMemberAction } from "@/lib/members";
+import { useDeleteMember, useMemberAction } from "@/lib/members";
 
 /**
  * Which of leave/kick/restore is offered follows the member's *current*
@@ -25,6 +27,8 @@ import { useMemberAction } from "@/lib/members";
  */
 export function MemberActions({ member }: { member: AdminMemberDetail }) {
   const action = useMemberAction();
+  const deleteMember = useDeleteMember();
+  const router = useRouter();
   const { profile } = member;
   const userId = profile.userId;
   const name = fullName(profile);
@@ -43,7 +47,7 @@ export function MemberActions({ member }: { member: AdminMemberDetail }) {
             htmlFor="member-role"
             className="text-xs text-muted-foreground"
           >
-            què pot fer al panell
+            què pot fer al dashboard
           </Label>
           <Select
             value={role}
@@ -130,6 +134,41 @@ export function MemberActions({ member }: { member: AdminMemberDetail }) {
               readmet al comitè
             </Button>
           )}
+        </ActionBar>
+      </Section>
+
+      <Section
+        title="elimina definitivament"
+        className="rounded-lg border border-destructive/40 bg-destructive/5 p-4"
+      >
+        <p className="text-xs text-muted-foreground">
+          esborra el compte, el perfil, totes les altes i baixes, l&apos;historial
+          d&apos;activitat, les sol·licituds fetes amb aquest correu i les
+          invitacions que ha enviat. no és donar de baixa: no es pot desfer i no
+          en queda cap rastre. fes-ho només si la persona ho demana o hi ha una
+          obligació legal.
+        </p>
+        <ActionBar>
+          <ConfirmAction
+            trigger={
+              <Button
+                variant="destructive"
+                disabled={pending || deleteMember.isPending}
+              >
+                elimina definitivament
+              </Button>
+            }
+            title={`eliminar ${name} per sempre?`}
+            description={`s'esborraran el compte de ${name} i totes les dades relacionades (perfil, historial, sol·licituds i invitacions) de manera irreversible. no és el mateix que donar de baixa, que manté l'historial i permet readmetre la persona.`}
+            confirmLabel="elimina definitivament"
+            destructive
+            pending={deleteMember.isPending}
+            onConfirm={() =>
+              deleteMember.mutate(userId, {
+                onSuccess: () => router.push("/members"),
+              })
+            }
+          />
         </ActionBar>
       </Section>
     </div>

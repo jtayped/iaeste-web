@@ -600,6 +600,28 @@ export const adminSetRoleResponseSchema = z
   .object({ role: z.string() })
   .openapi("AdminSetRoleResponse");
 
+export const adminDeleteMemberResponseSchema = z
+  .object({
+    userId: z.string(),
+    email: z.string(),
+    // Per-table row counts removed by the erasure, for the audit log and so
+    // the admin sees exactly what was destroyed.
+    deleted: z.object({
+      registrations: z.number().int(),
+      registrationVerifications: z.number().int(),
+      emailChallenges: z.number().int(),
+      authVerifications: z.number().int(),
+      memberInvitations: z.number().int(),
+      membershipEvents: z.number().int(),
+      memberships: z.number().int(),
+      pushSubscriptions: z.number().int(),
+      sessions: z.number().int(),
+      accounts: z.number().int(),
+      memberProfile: z.number().int(),
+    }),
+  })
+  .openapi("AdminDeleteMemberResponse");
+
 // --- Invitations: admin + public onboarding ----------------------------
 
 export const invitationRoleSchema = z

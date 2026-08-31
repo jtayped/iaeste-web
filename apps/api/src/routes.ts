@@ -18,6 +18,7 @@ import {
   adminInvitationListQuerySchema,
   adminInvitationListSchema,
   adminInvitationSchema,
+  adminDeleteMemberResponseSchema,
   adminKickBodySchema,
   adminLeaveBodySchema,
   adminMemberDetailSchema,
@@ -951,6 +952,38 @@ export const adminMemberSetRoleRoute = createRoute({
     },
     404: {
       description: "No member (member_profile row) with that user id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminDeleteMemberRoute = createRoute({
+  method: "delete",
+  path: "/v1/admin/members/{userId}",
+  operationId: "adminDeleteMember",
+  tags: ["Admin"],
+  description:
+    "Permanently and irreversibly erase this user and every row that " +
+    "refers to them: their account and sessions, member profile, all " +
+    "membership rows, the membership-event entries where they are the " +
+    "target, invitations they sent, and every registration / " +
+    "email-challenge / magic-link token for their address. This is NOT " +
+    "the reversible leave / kick (\"donar de baixa\") flow, which keeps " +
+    "all of that history. Requires `members.delete`, the most privileged " +
+    "grant, held by `admin` only.",
+  request: { params: userIdParamSchema },
+  responses: {
+    200: {
+      description:
+        "The user and all their data were erased. The body reports the " +
+        "row count removed from each table.",
+      content: {
+        "application/json": { schema: adminDeleteMemberResponseSchema },
+      },
+    },
+    404: {
+      description: "No user with that id.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
     ...adminAuthResponses,

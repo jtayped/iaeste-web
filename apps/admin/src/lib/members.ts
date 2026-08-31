@@ -143,3 +143,38 @@ export function useMemberAction(): UseMutationResult<
     },
   });
 }
+
+/**
+ * Permanent, irreversible erasure of a user and every row about them.
+ *
+ * Kept apart from `useMemberAction` on purpose: leave / kick / restore are
+ * reversible status changes on a membership, this destroys the account and
+ * the whole history. It is never offered next to those in the same control —
+ * see `member-actions.tsx`. The member fitxa the caller is on stops existing
+ * the moment this succeeds, so the caller navigates away in `onSuccess`
+ * rather than this hook re-fetching a now-404 detail.
+ */
+export function useDeleteMember(): UseMutationResult<void, Error, string> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: string): Promise<void> => {
+      unwrap(
+        await apiClient.DELETE("/v1/admin/members/{userId}", {
+          params: { path: { userId } },
+        }),
+      );
+    },
+    onSuccess: () => {
+      toast.success("usuari eliminat definitivament");
+      void queryClient.invalidateQueries({ queryKey: queryKeys.members.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.overview });
+    },
+    onError: (error) => {
+      const detail = errorDetail(error);
+      toast.error(errorMessage(error), {
+        ...(detail ? { description: detail } : {}),
+      });
+    },
+  });
+}
