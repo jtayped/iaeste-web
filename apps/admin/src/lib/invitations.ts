@@ -7,7 +7,7 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 
-import { toast } from "@repo/ui/sonner";
+import { toast } from "@repo/ui/toast";
 
 import type {
   AdminInvitation,

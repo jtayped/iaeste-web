@@ -3,7 +3,7 @@ import "@repo/ui/globals.css";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
 
-import { Toaster } from "@repo/ui/sonner";
+import { Toaster } from "@repo/ui/toast";
 
 import { Providers } from "@/app/providers";
 import { adminTitle } from "@/lib/page-title";
@@ -61,7 +61,7 @@ export default function RootLayout({
       </head>
       <body className="bg-background text-sm text-foreground antialiased">
         <Providers>{children}</Providers>
-        <Toaster position="bottom-right" />
+        <Toaster />
       </body>
     </html>
   );

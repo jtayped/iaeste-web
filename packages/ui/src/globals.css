@@ -379,6 +379,13 @@
     @apply flex-col-reverse items-stretch sm:flex-row sm:items-center;
   }
 
+  /* Same radius-and-border pin as the dialogs: a toast is a floating surface
+     too, and one carried on its shadow alone has no edge against a white
+     page. */
+  .toast {
+    @apply rounded-lg border;
+  }
+
   /* An edge-anchored panel gets an edge. HeroUI carries the drawer on its
      shadow alone, which against a white page leaves the seam between panel
      and page invisible. */

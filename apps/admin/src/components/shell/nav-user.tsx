@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@repo/ui/dropdown-menu";
 import { SidebarMenuButton, useSidebar } from "@repo/ui/sidebar";
-import { toast } from "@repo/ui/sonner";
+import { toast } from "@repo/ui/toast";
 
 import { signOut } from "@/lib/auth-client";
 import type { AdminSessionUser } from "@/lib/session.server";

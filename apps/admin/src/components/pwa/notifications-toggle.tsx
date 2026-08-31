@@ -4,7 +4,7 @@ import * as React from "react";
 import { Bell, BellOff, BellRing } from "lucide-react";
 
 import { Button } from "@repo/ui/button";
-import { toast } from "@repo/ui/sonner";
+import { toast } from "@repo/ui/toast";
 import { Tooltip, TooltipContent } from "@repo/ui/tooltip";
 
 import {
