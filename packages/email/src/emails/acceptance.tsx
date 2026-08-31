@@ -3,8 +3,8 @@ import EmailWrapper from "./wrapper";
 
 interface MembershipAcceptedProps {
   name: string;
-  /** First-login magic link. Personal and single use. */
-  loginLink: string;
+  /** Page where the member can request a one-time sign-in link. */
+  signInLink: string;
   /** Academic year the membership belongs to, e.g. `2026-2027`. */
   campaign: string;
   /**
@@ -16,11 +16,11 @@ interface MembershipAcceptedProps {
 
 export const MembershipAccepted = ({
   name,
-  loginLink,
+  signInLink,
   campaign,
   via = "registration",
 }: MembershipAcceptedProps) => {
-  const previewText = `ja ets membre de iaeste lc lleida el curs ${campaign}. entra per primer cop al teu compte.`;
+  const previewText = `ja ets membre de iaeste lc lleida el curs ${campaign}. inicia sessió per entrar al dashboard.`;
 
   return (
     <EmailWrapper previewText={previewText}>
@@ -38,24 +38,19 @@ export const MembershipAccepted = ({
         </Text>
       )}
       <Text>
-        fes clic al següent botó per entrar per primer cop al teu compte:
+        per entrar al dashboard, fes servir el correu amb què ets al comitè.
+        t&apos;hi enviarem un enllaç d&apos;accés d&apos;un sol ús.
       </Text>
       <Section>
         <Button
-          href={loginLink}
+          href={signInLink}
           className="w-full rounded-lg bg-blue-900 py-3 text-center text-white"
         >
-          entrar al meu compte
+          iniciar sessió
         </Button>
       </Section>
       <Text>
-        un cop dins, comprova que les teves dades siguin correctes. si
-        l&apos;enllaç ja no funciona, en pots demanar un de nou des de la pàgina
-        d&apos;inici de sessió.
-      </Text>
-      <Text className="mb-0 text-xs">
-        aquest enllaç és personal i d&apos;un sol ús: no el comparteixis amb
-        ningú.
+        un cop hagis entrat, comprova que les teves dades siguin correctes.
       </Text>
     </EmailWrapper>
   );
@@ -63,7 +58,7 @@ export const MembershipAccepted = ({
 
 MembershipAccepted.PreviewProps = {
   name: "John Doe",
-  loginLink: "https://example.com/entrar",
+  signInLink: "https://example.com/sign-in",
   campaign: "2026-2027",
   via: "registration",
 } as MembershipAcceptedProps;

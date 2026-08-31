@@ -281,8 +281,7 @@ export function createInvitationService(
           subject: "ja ets membre · iaeste lc lleida",
           react: MembershipAccepted({
             name: `${profile.name}`.trim() || result.invitation.email,
-            // First login happens on the admin sign-in page (magic link).
-            loginLink: `${getAdminPublicOrigin()}/sign-in`,
+            signInLink: `${getAdminPublicOrigin()}/sign-in`,
             campaign: campaign?.label ?? result.invitation.campaignId,
             via: "invitation",
           }),

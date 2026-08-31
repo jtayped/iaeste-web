@@ -317,10 +317,7 @@ export function createDrizzleRegistrationService(
       const snapshot = result.registration
         .profileSnapshot as RegistrationProfileSnapshot;
 
-      // Placeholder until IA-30 wires up real magic-link auth: there is no
-      // admin app or first-login flow yet, so this just points at where
-      // that sign-in page will eventually live. NOT a functional link.
-      const loginLink = `${getAdminPublicOrigin()}/entrar?userId=${result.user.id}`;
+      const signInLink = `${getAdminPublicOrigin()}/sign-in`;
 
       let notificationSent = true;
       try {
@@ -329,7 +326,7 @@ export function createDrizzleRegistrationService(
           subject: "ja ets membre · iaeste lc lleida",
           react: MembershipAccepted({
             name: snapshot.name,
-            loginLink,
+            signInLink,
             campaign: campaign?.label ?? result.registration.campaignId,
             via: "registration",
           }),

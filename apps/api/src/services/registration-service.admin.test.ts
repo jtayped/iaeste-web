@@ -54,6 +54,9 @@ describe("registration service admin actions", () => {
       assert.equal(result.notificationSent, true);
       assert.equal(emailer.sent.length, 1);
       assert.equal(emailer.sent[0]?.to, "accept@alumnes.udl.cat");
+      const acceptanceEmail = JSON.stringify(emailer.sent[0]?.react);
+      assert.match(acceptanceEmail, /"href":"[^"]+\/sign-in"/);
+      assert.doesNotMatch(acceptanceEmail, /\/entrar|userId/);
 
       const registrations = createRegistrationRepository(db);
       const row = await registrations.getById(created.id);

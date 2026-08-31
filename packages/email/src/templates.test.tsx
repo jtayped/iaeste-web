@@ -85,11 +85,11 @@ describe("pending-review", () => {
 describe("acceptance", () => {
   const props = {
     name: "John Doe",
-    loginLink: "https://example.com/entrar",
+    signInLink: "https://example.com/sign-in",
     campaign: "2026-2027",
   } as const;
 
-  it("carries the same first-login link on both paths", async () => {
+  it("carries the same sign-in page link on both paths", async () => {
     const fromRegistration = await render(
       <MembershipAccepted {...props} via="registration" />,
     );
@@ -98,8 +98,10 @@ describe("acceptance", () => {
     );
 
     for (const html of [fromRegistration, fromInvitation]) {
-      assert.match(html, /https:\/\/example\.com\/entrar/);
-      assert.match(html, /entrar al meu compte/);
+      assert.match(html, /https:\/\/example\.com\/sign-in/);
+      assert.match(html, /iniciar sessió/);
+      assert.match(html, /enllaç d&#x27;accés d&#x27;un sol ús/);
+      assert.doesNotMatch(html, /aquest enllaç és personal/);
     }
 
     assert.match(fromRegistration, /ha revisat la teva/);
