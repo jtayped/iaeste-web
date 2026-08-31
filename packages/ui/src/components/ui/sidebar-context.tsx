@@ -3,7 +3,6 @@
 import * as React from "react";
 
 import { cn } from "@repo/ui/lib/utils";
-import { TooltipProvider } from "@repo/ui/tooltip";
 import { useIsMobile } from "@repo/ui/hooks/use-mobile";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -124,25 +123,23 @@ const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>(
 
     return (
       <SidebarContext.Provider value={contextValue}>
-        <TooltipProvider delayDuration={0}>
-          <div
-            ref={ref}
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH,
-                "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-                ...style,
-              } as React.CSSProperties
-            }
-            className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full text-sidebar-foreground has-[[data-variant=inset]]:bg-sidebar",
-              className,
-            )}
-            {...props}
-          >
-            {children}
-          </div>
-        </TooltipProvider>
+        <div
+          ref={ref}
+          style={
+            {
+              "--sidebar-width": SIDEBAR_WIDTH,
+              "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+              ...style,
+            } as React.CSSProperties
+          }
+          className={cn(
+            "group/sidebar-wrapper flex min-h-svh w-full text-sidebar-foreground has-[[data-variant=inset]]:bg-sidebar",
+            className,
+          )}
+          {...props}
+        >
+          {children}
+        </div>
       </SidebarContext.Provider>
     );
   },

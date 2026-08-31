@@ -100,15 +100,12 @@ const SidebarMenuButton = React.forwardRef<
     const tooltipProps =
       typeof tooltip === "string" ? { children: tooltip } : tooltip;
 
+    // Disabling the root, rather than hiding the content, is what keeps an
+    // expanded sidebar from announcing a label the item already shows.
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent
-          side="right"
-          align="center"
-          hidden={state !== "collapsed" || isMobile}
-          {...tooltipProps}
-        />
+      <Tooltip isDisabled={state !== "collapsed" || isMobile}>
+        <TooltipTrigger>{button}</TooltipTrigger>
+        <TooltipContent placement="right" {...tooltipProps} />
       </Tooltip>
     );
   },

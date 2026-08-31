@@ -5,7 +5,7 @@ import { Bell, BellOff, BellRing } from "lucide-react";
 
 import { Button } from "@repo/ui/button";
 import { toast } from "@repo/ui/sonner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@repo/ui/tooltip";
+import { Tooltip, TooltipContent } from "@repo/ui/tooltip";
 
 import {
   currentSubscription,
@@ -153,23 +153,23 @@ function ToggleButton({
 }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={label}
-          aria-pressed={active}
-          disabled={disabled}
-          onClick={onClick}
-          className="size-11 shrink-0 md:size-8"
-        >
-          <Icon
-            className={active ? "size-4 text-primary" : "size-4"}
-            aria-hidden
-          />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom">{tooltip}</TooltipContent>
+      {/* The button is the trigger: React Aria hands it the trigger props
+          through context, so it needs no wrapper of its own. */}
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={label}
+        aria-pressed={active}
+        disabled={disabled}
+        onClick={onClick}
+        className="size-11 shrink-0 md:size-8"
+      >
+        <Icon
+          className={active ? "size-4 text-primary" : "size-4"}
+          aria-hidden
+        />
+      </Button>
+      <TooltipContent placement="bottom">{tooltip}</TooltipContent>
     </Tooltip>
   );
 }

@@ -358,8 +358,16 @@
      The border comes back too: HeroUI carries an overlay on its shadow alone,
      which leaves a white popover with no edge against a white page. */
   .popover,
-  .select__popover {
+  .select__popover,
+  .tooltip {
     @apply rounded-md border;
+  }
+
+  /* HeroUI's tooltip is tighter than IAESTE's and, more importantly, breaks
+     mid-word: `break-all` turns "dispositiu" into "disposi/tiu". Catalan is
+     long enough already. */
+  .tooltip {
+    @apply px-3 py-1.5 break-normal text-popover-foreground;
   }
 
   .calendar__cell,

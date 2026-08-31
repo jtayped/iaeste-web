@@ -1,32 +1,54 @@
 "use client";
 
 import * as React from "react";
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { Focusable } from "react-aria-components/Focusable";
+import {
+  TooltipContent as HeroUITooltipContent,
+  TooltipRoot as HeroUITooltipRoot,
+  type TooltipContentProps as HeroUITooltipContentProps,
+  type TooltipRootProps as HeroUITooltipRootProps,
+} from "@heroui/react/tooltip";
 
-import { cn } from "@repo/ui/lib/utils";
+export interface TooltipProps extends HeroUITooltipRootProps {
+  /** Suppresses the tooltip without unmounting it. */
+  isDisabled?: boolean;
+}
 
-const TooltipProvider = TooltipPrimitive.Provider;
+/**
+ * `Tooltip` is the root *and* the trigger's scope: React Aria puts the trigger
+ * props on a context that the focusable child reads, so the button goes
+ * directly inside, with the content beside it.
+ *
+ * ```tsx
+ * <Tooltip>
+ *   <Button size="icon" aria-label="avisos" />
+ *   <TooltipContent placement="bottom">rep un avís…</TooltipContent>
+ * </Tooltip>
+ * ```
+ *
+ * `delay` is 0 rather than React Aria's 1500ms. Every tooltip here labels an
+ * icon-only control — a collapsed sidebar item, the notifications bell — where
+ * the tooltip *is* the name of the thing. Waiting a second and a half to learn
+ * what a button does is the wrong trade for a control with no visible label.
+ */
+const Tooltip = ({ delay = 0, ...props }: TooltipProps) => (
+  <HeroUITooltipRoot delay={delay} {...props} />
+);
+Tooltip.displayName = "Tooltip";
 
-const Tooltip = TooltipPrimitive.Root;
+/**
+ * Only needed when the trigger is not already a React Aria control.
+ *
+ * `Button` and the other HeroUI-backed controls pick up the trigger props from
+ * context on their own, so they go straight inside `Tooltip`. This wraps the
+ * ones that cannot — the sidebar's menu button, which is a plain `<button>` or
+ * a `next/link` behind a `Slot` — and hands them the same props by cloning.
+ * The child must forward its ref and spread what it is given.
+ */
+const TooltipTrigger = Focusable;
 
-const TooltipTrigger = TooltipPrimitive.Trigger;
+export type TooltipContentProps = HeroUITooltipContentProps;
 
-const TooltipContent = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Portal>
-    <TooltipPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      className={cn(
-        "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        className,
-      )}
-      {...props}
-    />
-  </TooltipPrimitive.Portal>
-));
-TooltipContent.displayName = TooltipPrimitive.Content.displayName;
+const TooltipContent = HeroUITooltipContent;
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
+export { Tooltip, TooltipTrigger, TooltipContent };
