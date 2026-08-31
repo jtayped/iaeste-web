@@ -101,7 +101,7 @@ const DegreeField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
 
             <PopoverContent
               align="start"
-              className="w-[--radix-popover-trigger-width] p-0"
+              className="w-(--radix-popover-trigger-width) p-0"
             >
               <Command filter={scoreDegree}>
                 <CommandInput placeholder="escriu per filtrar…" />
