@@ -1,141 +1,111 @@
 "use client";
 
 import * as React from "react";
-import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
+import { Text } from "react-aria-components/Text";
+import {
+  AlertDialogBackdrop as HeroUIAlertDialogBackdrop,
+  AlertDialogBody as HeroUIAlertDialogBody,
+  AlertDialogContainer as HeroUIAlertDialogContainer,
+  AlertDialogDialog as HeroUIAlertDialogDialog,
+  AlertDialogFooter as HeroUIAlertDialogFooter,
+  AlertDialogHeader as HeroUIAlertDialogHeader,
+  AlertDialogHeading as HeroUIAlertDialogHeading,
+  AlertDialogRoot as HeroUIAlertDialogRoot,
+  type AlertDialogContainerProps as HeroUIAlertDialogContainerProps,
+} from "@heroui/react/alert-dialog";
 
 import { cn } from "@repo/ui/lib/utils";
-import { buttonVariants } from "@repo/ui/button";
 
-const AlertDialog = AlertDialogPrimitive.Root;
+/**
+ * The confirmation dialog: `role="alertdialog"`, and — unlike a plain modal —
+ * it does not close on a click outside or on escape, because the whole point
+ * is that the answer is deliberate.
+ *
+ * ```tsx
+ * <AlertDialog isOpen={open} onOpenChange={setOpen}>
+ *   <Button>expulsa</Button>
+ *   <AlertDialogContent>
+ *     <AlertDialogHeader>
+ *       <AlertDialogTitle>expulsar?</AlertDialogTitle>
+ *       <AlertDialogDescription>…</AlertDialogDescription>
+ *     </AlertDialogHeader>
+ *     <AlertDialogFooter>
+ *       <Button slot="close" variant="outline">cancel·la</Button>
+ *       <Button onClick={confirm}>expulsa</Button>
+ *     </AlertDialogFooter>
+ *   </AlertDialogContent>
+ * </AlertDialog>
+ * ```
+ *
+ * The trigger is whichever focusable child comes first: React Aria puts the
+ * trigger props on a context that `Button` reads. A button with `slot="close"`
+ * closes the dialog with no handler of its own.
+ */
 
-const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
+const AlertDialog = HeroUIAlertDialogRoot;
 
-const AlertDialogPortal = AlertDialogPrimitive.Portal;
+export interface AlertDialogContentProps extends Omit<
+  HeroUIAlertDialogContainerProps,
+  "children" | "className"
+> {
+  className?: string;
+  /** A function child receives `close`, for a footer button that dismisses. */
+  children?: React.ComponentProps<typeof HeroUIAlertDialogDialog>["children"];
+}
 
-const AlertDialogOverlay = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className,
-    )}
-    {...props}
-  />
-));
-AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
+/**
+ * Backdrop, positioning container and dialog in one, since a caller never
+ * wants fewer than all three. `className` lands on the dialog — the part with
+ * a width.
+ */
+const AlertDialogContent = ({
+  className,
+  children,
+  ...props
+}: AlertDialogContentProps) => (
+  <HeroUIAlertDialogBackdrop>
+    <HeroUIAlertDialogContainer {...props}>
+      <HeroUIAlertDialogDialog className={className}>
+        {children}
+      </HeroUIAlertDialogDialog>
+    </HeroUIAlertDialogContainer>
+  </HeroUIAlertDialogBackdrop>
+);
+AlertDialogContent.displayName = "AlertDialogContent";
 
-const AlertDialogContent = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <AlertDialogPortal>
-    <AlertDialogOverlay />
-    <AlertDialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-        className,
-      )}
-      {...props}
-    />
-  </AlertDialogPortal>
-));
-AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
+const AlertDialogHeader = HeroUIAlertDialogHeader;
 
-const AlertDialogHeader = ({
+const AlertDialogTitle = HeroUIAlertDialogHeading;
+
+/**
+ * React Aria's `Text` rather than a paragraph: inside an `alertdialog` it
+ * claims the description slot, which is what points the dialog's
+ * `aria-describedby` at this text. A plain `<p>` would look identical and be
+ * announced by nothing.
+ */
+const AlertDialogDescription = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col space-y-2 text-center sm:text-left",
-      className,
-    )}
-    {...props}
-  />
-);
-AlertDialogHeader.displayName = "AlertDialogHeader";
-
-const AlertDialogFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className,
-    )}
-    {...props}
-  />
-);
-AlertDialogFooter.displayName = "AlertDialogFooter";
-
-const AlertDialogTitle = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Title
-    ref={ref}
-    className={cn("text-lg font-semibold", className)}
-    {...props}
-  />
-));
-AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName;
-
-const AlertDialogDescription = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Description
-    ref={ref}
+}: React.ComponentProps<typeof Text>) => (
+  <Text
+    slot="description"
     className={cn("text-sm text-muted-foreground", className)}
     {...props}
   />
-));
-AlertDialogDescription.displayName =
-  AlertDialogPrimitive.Description.displayName;
+);
+AlertDialogDescription.displayName = "AlertDialogDescription";
 
-const AlertDialogAction = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Action>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Action
-    ref={ref}
-    className={cn(buttonVariants(), className)}
-    {...props}
-  />
-));
-AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
+/** The scrolling middle, for a dialog that asks for something as well. */
+const AlertDialogBody = HeroUIAlertDialogBody;
 
-const AlertDialogCancel = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Cancel
-    ref={ref}
-    className={cn(
-      buttonVariants({ variant: "outline" }),
-      "mt-2 sm:mt-0",
-      className,
-    )}
-    {...props}
-  />
-));
-AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName;
+const AlertDialogFooter = HeroUIAlertDialogFooter;
 
 export {
   AlertDialog,
-  AlertDialogPortal,
-  AlertDialogOverlay,
-  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
-  AlertDialogFooter,
   AlertDialogTitle,
   AlertDialogDescription,
-  AlertDialogAction,
-  AlertDialogCancel,
+  AlertDialogBody,
+  AlertDialogFooter,
 };

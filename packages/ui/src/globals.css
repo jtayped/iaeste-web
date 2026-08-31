@@ -364,6 +364,21 @@
     @apply rounded-md border;
   }
 
+  /* Same radius-and-border pin as the popovers above: HeroUI's dialogs are
+     32px-cornered and carried on their shadow alone, which on a white page is
+     a white panel with no edge. */
+  .alert-dialog__dialog {
+    @apply rounded-lg border;
+  }
+
+  /* HeroUI keeps a dialog's buttons in one row at every width. At 360px two
+     Catalan labels side by side leaves neither a comfortable target, so they
+     stack — confirming action on top, as they did before — and only sit in a
+     row once there is room for one. */
+  .alert-dialog__footer {
+    @apply flex-col-reverse items-stretch sm:flex-row sm:items-center;
+  }
+
   /* HeroUI caps a menu at 48% of the viewport. At 360px that is 172px, which
      clips both of the admin's menus — one asks for `w-56`, the other matches a
      sidebar trigger. A menu should be as wide as its longest campaign name,
