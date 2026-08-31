@@ -57,8 +57,12 @@ function harness(db: Database) {
   const app = createApp({
     auth,
     logger: quietLogger,
-    // The real default calls getDb() (DATABASE_URL); point the profile gate
-    // at the same test database Better Auth and the seed helpers use.
+    // The real default calls getDb() (DATABASE_URL, unset in CI) — point
+    // every admin-domain handler at the same test database Better Auth and
+    // the seed helpers use. This also covers the magic-link sign-in route's
+    // own email-alias lookup (app.ts's `/api/auth/*` handler), which reads
+    // through this same `db`, not just the routes under `/v1/admin/*`.
+    db,
     hasMemberProfile: async (userId) => {
       const rows = await db
         .select({ userId: memberProfile.userId })
