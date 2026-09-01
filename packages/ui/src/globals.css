@@ -75,7 +75,16 @@
 }
 
 @layer base {
-  :root {
+  /* HeroUI also writes its light palette to `.light`, `.default`, and
+     `[data-theme]`. Match each of those scopes, rather than only `:root`, so
+     its stock #0485F7 accent cannot leak back into an app that marks its
+     document with one of those theme selectors. `!important` is deliberate:
+     this is the product-level brand token, not a component default. */
+  :root,
+  .light,
+  .default,
+  [data-theme="light"],
+  [data-theme="default"] {
     --background: hsl(0 0% 100%);
     --foreground: hsl(222.2 84% 4.9%);
     --surface: hsl(0 0% 100%);
@@ -91,8 +100,8 @@
     --muted: hsl(215.4 16.3% 40%);
     --default: hsl(210 40% 96.1%);
     --default-foreground: hsl(222.2 47.4% 11.2%);
-    --accent: hsl(202 78% 20%);
-    --accent-foreground: hsl(210 40% 98%);
+    --accent: hsl(202 78% 20%) !important;
+    --accent-foreground: hsl(210 40% 98%) !important;
     --secondary: hsl(206 78% 47%);
     --secondary-foreground: hsl(222.2 47.4% 11.2%);
     --secondary-hover: color-mix(
