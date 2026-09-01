@@ -108,7 +108,7 @@ export function mapVerifyDraftResult(
  * step, which is why it is a separate outcome from a generic failure.
  */
 export type SubmitOutcome =
-  | { kind: "created"; id: string }
+  | { kind: "created"; id: string; accepted: boolean }
   | { kind: "closed" }
   | { kind: "alreadyRegistered" }
   | { kind: "expiredSession" }
@@ -135,8 +135,13 @@ export function mapSubmitResult(
     }
   }
 
-  if (data?.status === "created" && data.id)
-    return { kind: "created", id: data.id };
+  if (data?.status === "created" && data.id) {
+    return {
+      kind: "created",
+      id: data.id,
+      accepted: data.outcome === "accepted",
+    };
+  }
 
   return { kind: "failed" };
 }

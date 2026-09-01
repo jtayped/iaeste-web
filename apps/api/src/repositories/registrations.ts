@@ -11,15 +11,19 @@ import {
   createRegistrationRepository,
   type RegistrationProfileSnapshot,
 } from "@repo/db/repositories";
+import MembershipAccepted from "@repo/email/acceptance";
 import RegistrationPending from "@repo/email/pending-review";
 import { createResendEmailer, type Emailer } from "@repo/email/resend";
 
-import { getEmailConfig } from "../config";
+import { getAdminPublicOrigin, getEmailConfig } from "../config";
 import { requireEnvironmentVariable } from "../lib/env";
 import "../lib/react-global";
 
 export interface RegistrationRepository {
-  create(registration: Registration): Promise<{ id: string }>;
+  create(registration: Registration): Promise<{
+    id: string;
+    outcome: "pending_review" | "accepted";
+  }>;
 }
 
 /**
@@ -147,9 +151,9 @@ export function createDrizzleRegistrationRepository(
       };
 
       const registrations = createRegistrationRepository(db);
-      let created;
+      let result;
       try {
-        created = await registrations.create({
+        result = await registrations.createWithAutomaticAcceptance({
           campaignId: openCampaign.id,
           email: canonicalEmail,
           universityEmail: registration.universityEmail,
@@ -168,29 +172,43 @@ export function createDrizzleRegistrationRepository(
         throw error;
       }
 
-      // Nothing past this point may roll back or fail the request —
+      // Nothing past this point may roll back or fail the request.
       // `getEmailer()` construction (e.g. a misconfigured RESEND_API_KEY)
-      // included. The registration row already exists in `pending_review`,
-      // which is the durable, valuable side effect; the applicant is in the
-      // committee's queue whether or not this receipt arrives. Returning a
-      // 5xx would be strictly worse, because resubmitting the form would
-      // then collide with the row that actually did save.
+      // included. The registration row and any automatic renewal already
+      // exist, which is the durable, valuable side effect. Returning a 5xx
+      // would be strictly worse because resubmitting would collide with the
+      // row that actually did save.
       try {
         const emailer = dependencies.emailer ?? getEmailer();
-        await emailer.send({
-          to: created.personalEmail ?? created.email,
-          subject: "sol·licitud rebuda · iaeste lc lleida",
-          react: RegistrationPending({
-            name: registration.name,
-            email: created.personalEmail ?? created.email,
-            campaign: openCampaign.label,
-          }),
-        });
+        const recipient =
+          result.registration.personalEmail ?? result.registration.email;
+        await emailer.send(
+          result.outcome === "accepted"
+            ? {
+                to: recipient,
+                subject: "membresia renovada · iaeste lc lleida",
+                react: MembershipAccepted({
+                  name: registration.name,
+                  signInLink: `${getAdminPublicOrigin()}/sign-in`,
+                  campaign: openCampaign.label,
+                  via: "renewal",
+                }),
+              }
+            : {
+                to: recipient,
+                subject: "sol·licitud rebuda · iaeste lc lleida",
+                react: RegistrationPending({
+                  name: registration.name,
+                  email: recipient,
+                  campaign: openCampaign.label,
+                }),
+              },
+        );
       } catch (error) {
-        console.error("Failed to send pending-review email", error);
+        console.error("Failed to send registration outcome email", error);
       }
 
-      return { id: created.id };
+      return { id: result.registration.id, outcome: result.outcome };
     },
   };
 }
@@ -260,7 +278,7 @@ export function createGoogleSheetsRegistrationRepository(): RegistrationReposito
       // (IA-12) and never actually invoked as the app's default — kept
       // only so IA-54 can relocate this logic — so a synthetic id here
       // satisfies the interface without meaning anything.
-      return { id: crypto.randomUUID() };
+      return { id: crypto.randomUUID(), outcome: "pending_review" };
     },
   };
 }

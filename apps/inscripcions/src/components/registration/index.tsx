@@ -57,6 +57,10 @@ const HEADINGS = {
     title: "les teves dades",
     lead: "l'últim pas. revisa-ho tot i envia la inscripció.",
   },
+  detailsRenewal: {
+    title: "renova la membresia",
+    lead: "revisa les dades i confirma que vols continuar amb nosaltres aquesta campanya.",
+  },
   detailsInvited: {
     title: "t'han convidat a l'equip",
     lead: "omple aquestes dades i ja estàs dins. no has d'esperar cap revisió.",
@@ -111,7 +115,9 @@ export const RegistrationFlow = ({ mode }: { mode: Mode }) => {
           : HEADINGS.verificationBoth
         : invited
           ? HEADINGS.detailsInvited
-          : HEADINGS.detailsPublic;
+          : stage.context.willAutoAccept
+            ? HEADINGS.detailsRenewal
+            : HEADINGS.detailsPublic;
 
   return (
     <MotionConfig reducedMotion="user">

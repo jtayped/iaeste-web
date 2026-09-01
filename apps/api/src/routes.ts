@@ -8,6 +8,7 @@ import {
   adminCampaignSchema,
   adminCreateCampaignBodySchema,
   adminOverviewSchema,
+  adminOwnProfileSchema,
   pushPublicKeySchema,
   pushSubscribeBodySchema,
   pushSubscribeResponseSchema,
@@ -38,6 +39,7 @@ import {
   invitationLookupResponseSchema,
   userIdParamSchema,
   adminUpdateCampaignBodySchema,
+  adminUpdateOwnProfileBodySchema,
   campaignIdParamSchema,
   adminAcceptResponseSchema,
   adminListQuerySchema,
@@ -246,10 +248,9 @@ export const createRegistrationRoute = createRoute({
   responses: {
     201: {
       description:
-        "The registration was saved. Because `emailToken` already proves " +
-        "the address, it lands in `pending_review` — there is no " +
-        "verification email and nothing further for the applicant to do " +
-        "but wait for the committee.",
+        "The registration was saved. An active member of the immediately " +
+        "preceding campaign is accepted automatically; every other " +
+        "registration lands in `pending_review`.",
       content: {
         "application/json": { schema: registrationCreatedSchema },
       },
@@ -828,6 +829,61 @@ export const adminRestoreRegistrationRoute = createRoute({
 });
 
 // --- Admin: members ---------------------------------------------------
+
+export const adminGetOwnProfileRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/profile",
+  operationId: "adminGetOwnProfile",
+  tags: ["Admin"],
+  description:
+    "Return the signed-in member's current profile and login addresses. " +
+    "The user id comes from the session. Requires `admin.access`.",
+  responses: {
+    200: {
+      description: "The signed-in member's profile.",
+      content: { "application/json": { schema: adminOwnProfileSchema } },
+    },
+    404: {
+      description: "The session user has no member profile.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminUpdateOwnProfileRoute = createRoute({
+  method: "patch",
+  path: "/v1/admin/profile",
+  operationId: "adminUpdateOwnProfile",
+  tags: ["Admin"],
+  description:
+    "Update the signed-in member's name, phone, degree and study year. " +
+    "Role, membership state and email addresses are not writable here. " +
+    "The user id comes from the session. Requires `admin.access`.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: adminUpdateOwnProfileBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "The signed-in member's updated profile.",
+      content: { "application/json": { schema: adminOwnProfileSchema } },
+    },
+    404: {
+      description: "The session user has no member profile.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    422: {
+      description: "One or more profile fields are invalid.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
 
 export const adminListMembersRoute = createRoute({
   method: "get",

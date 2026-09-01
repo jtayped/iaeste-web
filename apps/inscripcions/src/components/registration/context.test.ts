@@ -13,6 +13,7 @@ const base = {
   profile: null,
   memberships: [],
   openCampaignRegistrationStatus: null,
+  willAutoAccept: false,
 };
 
 const session = (emails: Session["emails"]): Session =>

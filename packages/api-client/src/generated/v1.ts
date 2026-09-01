@@ -201,6 +201,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Return the signed-in member's current profile and login addresses. The user id comes from the session. Requires `admin.access`. */
+        get: operations["adminGetOwnProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Update the signed-in member's name, phone, degree and study year. Role, membership state and email addresses are not writable here. The user id comes from the session. Requires `admin.access`. */
+        patch: operations["adminUpdateOwnProfile"];
+        trace?: never;
+    };
     "/v1/admin/overview": {
         parameters: {
             query?: never;
@@ -661,6 +679,7 @@ export interface components {
             memberships: components["schemas"]["KnownMembership"][];
             /** @enum {string|null} */
             openCampaignRegistrationStatus: "pending_email" | "pending_review" | "accepted" | "rejected" | null;
+            willAutoAccept: boolean;
         };
         KnownProfile: {
             name: string;
@@ -688,6 +707,11 @@ export interface components {
             status: "created";
             /** @example registration_123 */
             id: string;
+            /**
+             * @description Returning members from the immediately preceding campaign are accepted automatically; everyone else waits for review.
+             * @enum {string}
+             */
+            outcome: "pending_review" | "accepted";
         };
         RegistrationRequest: {
             /** @example Joan */
@@ -744,6 +768,45 @@ export interface components {
         PushUnsubscribeRequest: {
             /** Format: uri */
             endpoint: string;
+        };
+        AdminOwnProfile: {
+            profile: components["schemas"]["AdminMemberProfile"];
+            emails: components["schemas"]["AdminMemberEmails"];
+        };
+        AdminMemberProfile: {
+            userId: string;
+            name: string;
+            surnames: string;
+            email: string;
+            phoneE164: string;
+            phoneDisplay: string;
+            degree: string;
+            studyYear: number;
+            role: string | null;
+            createdAt: string;
+        };
+        AdminMemberEmails: {
+            university: components["schemas"]["AdminMemberEmail"];
+            personal: components["schemas"]["AdminMemberEmail"];
+        };
+        AdminMemberEmail: {
+            email: string;
+            verifiedAt: string | null;
+        } | null;
+        AdminUpdateOwnProfileRequest: {
+            /** @example Joan */
+            name: string;
+            /** @example Garcia Serra */
+            surnames: string;
+            /** @example +34 623 32 42 34 */
+            phone: string;
+            /**
+             * @example grau en informàtica (lleida)
+             * @enum {string}
+             */
+            degree: "grau en informàtica (lleida)" | "grau en informàtica (igualada)" | "grau en tècniques d'interacció digital" | "grau en disseny digital" | "doble grau en informàtica i ADE" | "grau en enginyeria mecànica" | "grau en enginyeria química" | "grau en enginyeria de l'energia" | "grau en eng. electrònica industrial" | "grau en organització industrial" | "doble grau en organització industrial i ADE" | "doble grau en mecànica i energia" | "grau en arquitectura tècnica" | "altre";
+            /** @example 2 */
+            year: number;
         };
         AdminOverview: {
             currentCampaign: components["schemas"]["AdminCampaignRef"];
@@ -934,26 +997,6 @@ export interface components {
             memberships: components["schemas"]["AdminMemberTimelineMembership"][];
             events: components["schemas"]["AdminMemberTimelineEvent"][];
         };
-        AdminMemberProfile: {
-            userId: string;
-            name: string;
-            surnames: string;
-            email: string;
-            phoneE164: string;
-            phoneDisplay: string;
-            degree: string;
-            studyYear: number;
-            role: string | null;
-            createdAt: string;
-        };
-        AdminMemberEmails: {
-            university: components["schemas"]["AdminMemberEmail"];
-            personal: components["schemas"]["AdminMemberEmail"];
-        };
-        AdminMemberEmail: {
-            email: string;
-            verifiedAt: string | null;
-        } | null;
         AdminMemberTimelineMembership: {
             id: string;
             campaignId: string;
@@ -1316,7 +1359,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The registration was saved. Because `emailToken` already proves the address, it lands in `pending_review` — there is no verification email and nothing further for the applicant to do but wait for the committee. */
+            /** @description The registration was saved. An active member of the immediately preceding campaign is accepted automatically; every other registration lands in `pending_review`. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1580,6 +1623,113 @@ export interface operations {
             };
             /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminGetOwnProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The signed-in member's profile. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOwnProfile"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session user has no member profile. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminUpdateOwnProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUpdateOwnProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description The signed-in member's updated profile. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOwnProfile"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session user has no member profile. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description One or more profile fields are invalid. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

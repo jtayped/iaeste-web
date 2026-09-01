@@ -239,6 +239,9 @@
               "rejected",
               null
             ]
+          },
+          "willAutoAccept": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -249,7 +252,8 @@
           "known",
           "profile",
           "memberships",
-          "openCampaignRegistrationStatus"
+          "openCampaignRegistrationStatus",
+          "willAutoAccept"
         ]
       },
       "KnownProfile": {
@@ -347,11 +351,20 @@
           "id": {
             "type": "string",
             "example": "registration_123"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "pending_review",
+              "accepted"
+            ],
+            "description": "Returning members from the immediately preceding campaign are accepted automatically; everyone else waits for review."
           }
         },
         "required": [
           "status",
-          "id"
+          "id",
+          "outcome"
         ]
       },
       "RegistrationRequest": {
@@ -548,6 +561,162 @@
         },
         "required": [
           "endpoint"
+        ]
+      },
+      "AdminOwnProfile": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/AdminMemberProfile"
+          },
+          "emails": {
+            "$ref": "#/components/schemas/AdminMemberEmails"
+          }
+        },
+        "required": [
+          "profile",
+          "emails"
+        ]
+      },
+      "AdminMemberProfile": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "surnames": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneE164": {
+            "type": "string"
+          },
+          "phoneDisplay": {
+            "type": "string"
+          },
+          "degree": {
+            "type": "string"
+          },
+          "studyYear": {
+            "type": "number"
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "surnames",
+          "email",
+          "phoneE164",
+          "phoneDisplay",
+          "degree",
+          "studyYear",
+          "role",
+          "createdAt"
+        ]
+      },
+      "AdminMemberEmails": {
+        "type": "object",
+        "properties": {
+          "university": {
+            "$ref": "#/components/schemas/AdminMemberEmail"
+          },
+          "personal": {
+            "$ref": "#/components/schemas/AdminMemberEmail"
+          }
+        },
+        "required": [
+          "university",
+          "personal"
+        ]
+      },
+      "AdminMemberEmail": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "verifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "verifiedAt"
+        ]
+      },
+      "AdminUpdateOwnProfileRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "Joan"
+          },
+          "surnames": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "Garcia Serra"
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "example": "+34 623 32 42 34"
+          },
+          "degree": {
+            "type": "string",
+            "enum": [
+              "grau en informàtica (lleida)",
+              "grau en informàtica (igualada)",
+              "grau en tècniques d'interacció digital",
+              "grau en disseny digital",
+              "doble grau en informàtica i ADE",
+              "grau en enginyeria mecànica",
+              "grau en enginyeria química",
+              "grau en enginyeria de l'energia",
+              "grau en eng. electrònica industrial",
+              "grau en organització industrial",
+              "doble grau en organització industrial i ADE",
+              "doble grau en mecànica i energia",
+              "grau en arquitectura tècnica",
+              "altre"
+            ],
+            "example": "grau en informàtica (lleida)"
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6,
+            "example": 2
+          }
+        },
+        "required": [
+          "name",
+          "surnames",
+          "phone",
+          "degree",
+          "year"
         ]
       },
       "AdminOverview": {
@@ -1317,92 +1486,6 @@
           "emails",
           "memberships",
           "events"
-        ]
-      },
-      "AdminMemberProfile": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "surnames": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "phoneE164": {
-            "type": "string"
-          },
-          "phoneDisplay": {
-            "type": "string"
-          },
-          "degree": {
-            "type": "string"
-          },
-          "studyYear": {
-            "type": "number"
-          },
-          "role": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "userId",
-          "name",
-          "surnames",
-          "email",
-          "phoneE164",
-          "phoneDisplay",
-          "degree",
-          "studyYear",
-          "role",
-          "createdAt"
-        ]
-      },
-      "AdminMemberEmails": {
-        "type": "object",
-        "properties": {
-          "university": {
-            "$ref": "#/components/schemas/AdminMemberEmail"
-          },
-          "personal": {
-            "$ref": "#/components/schemas/AdminMemberEmail"
-          }
-        },
-        "required": [
-          "university",
-          "personal"
-        ]
-      },
-      "AdminMemberEmail": {
-        "type": [
-          "object",
-          "null"
-        ],
-        "properties": {
-          "email": {
-            "type": "string"
-          },
-          "verifiedAt": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "email",
-          "verifiedAt"
         ]
       },
       "AdminMemberTimelineMembership": {
@@ -2195,7 +2278,7 @@
         },
         "responses": {
           "201": {
-            "description": "The registration was saved. Because `emailToken` already proves the address, it lands in `pending_review` — there is no verification email and nothing further for the applicant to do but wait for the committee.",
+            "description": "The registration was saved. An active member of the immediately preceding campaign is accepted automatically; every other registration lands in `pending_review`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2513,6 +2596,126 @@
           },
           "403": {
             "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/profile": {
+      "get": {
+        "operationId": "adminGetOwnProfile",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Return the signed-in member's current profile and login addresses. The user id comes from the session. Requires `admin.access`.",
+        "responses": {
+          "200": {
+            "description": "The signed-in member's profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOwnProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The session user has no member profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "adminUpdateOwnProfile",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Update the signed-in member's name, phone, degree and study year. Role, membership state and email addresses are not writable here. The user id comes from the session. Requires `admin.access`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateOwnProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The signed-in member's updated profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOwnProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The session user has no member profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "One or more profile fields are invalid.",
             "content": {
               "application/json": {
                 "schema": {

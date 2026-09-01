@@ -52,3 +52,11 @@ export class DuplicateEmailSlotsError extends Error {
     this.name = "DuplicateEmailSlotsError";
   }
 }
+
+/** The supplied addresses resolve to more than one member account. */
+export class EmailIdentityConflictError extends Error {
+  constructor() {
+    super("The supplied email addresses belong to different users.");
+    this.name = "EmailIdentityConflictError";
+  }
+}

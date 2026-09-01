@@ -6,6 +6,7 @@ import {
   type registrationStatusEnum,
 } from "../schema/registration";
 import { acceptRegistrationTx } from "./registrations-accept";
+import { findAutomaticallyAcceptedUser } from "./automatic-acceptance";
 import { IllegalTransitionError, NotFoundError } from "./errors";
 import { firstOrThrow } from "./util";
 
@@ -44,7 +45,8 @@ export interface CreateRegistrationInput {
 }
 
 export interface AcceptRegistrationInput {
-  reviewerId: string;
+  /** Null for an automatic returning-member renewal. */
+  reviewerId: string | null;
   membershipSource?: string;
 }
 
@@ -72,6 +74,56 @@ export function createRegistrationRepository(db: Database) {
           })
           .returning(),
       );
+    },
+
+    /**
+     * Saves a verified public registration and renews it in the same
+     * transaction when one of its addresses belongs to an active member of
+     * the immediately preceding campaign.
+     */
+    async createWithAutomaticAcceptance(input: CreateRegistrationInput) {
+      return db.transaction(async (tx) => {
+        const created = firstOrThrow(
+          await tx
+            .insert(registration)
+            .values({
+              campaignId: input.campaignId,
+              email: input.email.toLowerCase(),
+              universityEmail: input.universityEmail?.toLowerCase() ?? null,
+              personalEmail: input.personalEmail?.toLowerCase() ?? null,
+              profileSnapshot: input.profileSnapshot,
+              source: input.source ?? "public_form",
+              verificationExpiresAt: input.verificationExpiresAt ?? null,
+              status: input.status ?? "pending_review",
+              verifiedAt: input.verifiedAt ?? new Date(),
+            })
+            .returning(),
+        );
+
+        const addresses = [
+          created.email,
+          created.universityEmail,
+          created.personalEmail,
+        ].filter((email): email is string => Boolean(email));
+        const returningUserId = await findAutomaticallyAcceptedUser(
+          tx,
+          addresses,
+          created.campaignId,
+        );
+
+        if (!returningUserId) {
+          return { registration: created, outcome: "pending_review" as const };
+        }
+
+        const accepted = await acceptRegistrationTx(tx, created.id, {
+          reviewerId: null,
+          membershipSource: "registration",
+        });
+        return {
+          registration: accepted.registration,
+          outcome: "accepted" as const,
+        };
+      });
     },
 
     async getById(id: string) {

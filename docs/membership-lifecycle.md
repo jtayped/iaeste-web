@@ -16,9 +16,11 @@ proxying in three apps. Revisit only with a concrete user story, not a vague
 
 **2. Does the committee want an admin review step, or does verified + UdL
 email admit automatically?**
-Review. A verified UdL email proves the address, not that the person should
-be a member. IA-53 (registration review) and most of IA-40's acceptance
-transaction exist because of this answer.
+Review, except for returning members. A verified address proves the identity,
+not that a new applicant should be a member. Someone with an active membership
+in the immediately preceding non-draft campaign is known to the committee and
+renews automatically when they submit the form. A `left` or `kicked` row never
+grants automatic acceptance.
 
 **3. Is Google Sheets still wanted once the admin table has filters and CSV
 export?**
@@ -99,8 +101,9 @@ public flow is three steps:
    outstanding link.
 3. **details** — `POST /v1/registrations`, carrying the draft session token
    instead of either address. Only a draft with every supplied address
-   verified can create a registration, which lands directly in
-   `pending_review`.
+   verified can create a registration. An active member of the immediately
+   preceding non-draft campaign is accepted in the same transaction. Every other
+   registration lands in `pending_review`.
 
 Two consequences worth stating plainly:
 

@@ -7,7 +7,10 @@ import { secureHeaders } from "hono/secure-headers";
 import { can, revokeAllUserSessions, type Auth } from "@repo/auth";
 import type { Database } from "@repo/db/client";
 import { parsePhone } from "@repo/constants/validators/phone";
-import { registrationSchema } from "@repo/constants/validators/registration";
+import {
+  memberProfileSchema,
+  registrationSchema,
+} from "@repo/constants/validators/registration";
 import { getDb } from "@repo/db/client";
 import {
   createCampaignRepository,
@@ -36,7 +39,7 @@ import {
 } from "./lib/web-push";
 import { createRequireCapability } from "./lib/admin-auth";
 import { toCampaignView } from "./lib/campaign-view";
-import { toMemberDetail } from "./lib/member-detail";
+import { toMemberDetail, toOwnProfile } from "./lib/member-detail";
 import { allowRequest } from "./lib/rate-limit";
 import {
   createInvitationService,
@@ -61,6 +64,7 @@ import {
   adminCancelInvitationRoute,
   adminCreateInvitationRoute,
   adminDeleteMemberRoute,
+  adminGetOwnProfileRoute,
   adminGetMemberRoute,
   adminGetRegistrationRoute,
   adminListInvitationsRoute,
@@ -81,6 +85,7 @@ import {
   adminSetCampaignCurrentRoute,
   adminSetCampaignRegistrationRoute,
   adminUpdateCampaignRoute,
+  adminUpdateOwnProfileRoute,
   adminRejectRegistrationRoute,
   createRegistrationRoute,
   healthRoute,
@@ -363,6 +368,7 @@ export function createApp(dependencies: AppDependencies = {}) {
         status: row.status as "active" | "left" | "kicked",
       })),
       openCampaignRegistrationStatus: session.openCampaignRegistrationStatus,
+      willAutoAccept: session.willAutoAccept,
     };
   }
 
@@ -497,13 +503,22 @@ export function createApp(dependencies: AppDependencies = {}) {
       // Previously fired when the applicant clicked the verification link.
       // The address is proven before submission now, so the moment a row
       // appears is the moment the committee has something to review.
-      void pushNotifier.notifyAdmins({
-        title: "Nova sol·licitud",
-        body: `${parsed.data.name} ${parsed.data.surnames} espera revisió.`,
-        url: "/registrations",
-        tag: "registration-review",
-      });
-      return c.json({ status: "created" as const, id: created.id }, 201);
+      if (created.outcome === "pending_review") {
+        void pushNotifier.notifyAdmins({
+          title: "Nova sol·licitud",
+          body: `${parsed.data.name} ${parsed.data.surnames} espera revisió.`,
+          url: "/registrations",
+          tag: "registration-review",
+        });
+      }
+      return c.json(
+        {
+          status: "created" as const,
+          id: created.id,
+          outcome: created.outcome,
+        },
+        201,
+      );
     } catch (error) {
       if (error instanceof RegistrationsClosedError) {
         return c.json(
@@ -602,6 +617,7 @@ export function createApp(dependencies: AppDependencies = {}) {
     hasMemberProfile: dependencies.hasMemberProfile,
   });
 
+  app.use("/v1/admin/profile", requireCapability("admin.access"));
   app.use("/v1/admin/overview", requireCapability("dashboard.read"));
   app.use(
     "/v1/admin/push/public-key",
@@ -710,6 +726,63 @@ export function createApp(dependencies: AppDependencies = {}) {
       body.endpoint,
     );
     return c.json({ status: "unsubscribed" as const }, 200);
+  });
+
+  app.openapi(adminGetOwnProfileRoute, async (c) => {
+    const userId = c.get("authUser").id;
+    const db = adminDb();
+    const profile = await createMemberRepository(db).getProfile(userId);
+    if (!profile) {
+      return c.json(
+        errorBody(c.get("requestId"), "NOT_FOUND", "No member profile."),
+        404,
+      );
+    }
+
+    const emails = await createUserEmailRepository(db).listForUser(userId);
+    return c.json(toOwnProfile(profile, emails), 200);
+  });
+
+  app.openapi(adminUpdateOwnProfileRoute, async (c) => {
+    const userId = c.get("authUser").id;
+    // The OpenAPI copy carries field metadata, while this shared schema is
+    // the domain authority used by the registration form too.
+    const parsed = memberProfileSchema.safeParse(c.req.valid("json"));
+    if (!parsed.success) {
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "VALIDATION_ERROR",
+          "The request is invalid.",
+          parsed.error.issues.map((issue) => ({
+            path: issue.path.map((part) =>
+              typeof part === "symbol" ? part.description || "unknown" : part,
+            ),
+            message: issue.message,
+          })),
+        ),
+        422,
+      );
+    }
+    const body = parsed.data;
+    const phone = parsePhone(body.phone);
+    if (!phone) throw new Error("phone failed to parse after validation");
+
+    const db = adminDb();
+    const profile = await createMemberRepository(db).updateProfile(userId, {
+      ...body,
+      phoneE164: phone.e164,
+      phoneDisplay: phone.display,
+    });
+    if (!profile) {
+      return c.json(
+        errorBody(c.get("requestId"), "NOT_FOUND", "No member profile."),
+        404,
+      );
+    }
+
+    const emails = await createUserEmailRepository(db).listForUser(userId);
+    return c.json(toOwnProfile(profile, emails), 200);
   });
 
   app.openapi(adminOverviewRoute, async (c) => {

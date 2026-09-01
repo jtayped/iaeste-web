@@ -133,6 +133,7 @@ export function createRegistrationChallengeService(
           profile: null,
           memberships: [],
           openCampaignRegistrationStatus: null,
+          willAutoAccept: false,
         };
 
     const emails: RegistrationDraftSession["emails"] = {};

@@ -30,12 +30,26 @@ function apiError(
 }
 
 describe("mapSubmitResult", () => {
-  it("maps a 201 to the pending-verification flow", () => {
+  it("maps a reviewed registration separately from an automatic renewal", () => {
     const outcome = mapSubmitResult({
-      data: { status: "created", id: "reg_1" },
+      data: {
+        status: "created",
+        id: "reg_1",
+        outcome: "pending_review",
+      },
     });
 
-    assert.deepEqual(outcome, { kind: "created", id: "reg_1" });
+    assert.deepEqual(outcome, {
+      kind: "created",
+      id: "reg_1",
+      accepted: false,
+    });
+    assert.deepEqual(
+      mapSubmitResult({
+        data: { status: "created", id: "reg_2", outcome: "accepted" },
+      }),
+      { kind: "created", id: "reg_2", accepted: true },
+    );
   });
 
   it("tells a closed campaign apart from a duplicate registration", () => {
@@ -153,6 +167,7 @@ describe("mapVerifyDraftResult", () => {
     profile: null,
     memberships: [],
     openCampaignRegistrationStatus: null,
+    willAutoAccept: false,
   };
 
   it("hands the session through on success", () => {

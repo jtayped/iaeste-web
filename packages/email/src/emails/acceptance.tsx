@@ -11,7 +11,7 @@ interface MembershipAcceptedProps {
    * How the person reached the membership. Only the opening line changes; the
    * first-login block below is identical for both paths.
    */
-  via?: "registration" | "invitation";
+  via?: "registration" | "invitation" | "renewal";
 }
 
 export const MembershipAccepted = ({
@@ -30,6 +30,11 @@ export const MembershipAccepted = ({
         <Text>
           has acceptat la invitació i ja ets membre de iaeste lc lleida el curs{" "}
           {campaign}.
+        </Text>
+      ) : via === "renewal" ? (
+        <Text>
+          com que ja vas ser membre la campanya passada, hem renovat la teva
+          membresia per al curs {campaign} sense cap revisió.
         </Text>
       ) : (
         <Text>

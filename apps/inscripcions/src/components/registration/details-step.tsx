@@ -69,6 +69,8 @@ export interface DetailsContext {
   campaignLabel?: string;
   /** Their status in the open campaign, if they already applied to it. */
   openCampaignRegistrationStatus?: string | null;
+  /** The API has matched an active membership in the last campaign. */
+  willAutoAccept?: boolean;
 }
 
 const emptyDefaults: ProfileForm = {
@@ -215,6 +217,8 @@ export const DetailsStepForm = ({
                     </>
                   ) : context.invited ? (
                     "entra a l'equip"
+                  ) : context.willAutoAccept ? (
+                    "renova la membresia"
                   ) : (
                     "envia la inscripció"
                   )}
@@ -223,7 +227,9 @@ export const DetailsStepForm = ({
               <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
                 {context.invited
                   ? "com que t'hem convidat, no has d'esperar cap revisió: seràs membre en acabar."
-                  : "ja hem verificat el teu correu. quan enviïs les dades, el comitè revisarà la sol·licitud i t'escriurà."}
+                  : context.willAutoAccept
+                    ? "com que vas ser membre la campanya passada, renovarem la teva membresia en acabar. no has d'esperar cap revisió."
+                    : "ja hem verificat el teu correu. quan enviïs les dades, el comitè revisarà la sol·licitud i t'escriurà."}
               </p>
             </div>
           </motion.div>

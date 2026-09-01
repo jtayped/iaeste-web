@@ -89,15 +89,18 @@ describe("acceptance", () => {
     campaign: "2026-2027",
   } as const;
 
-  it("carries the same sign-in page link on both paths", async () => {
+  it("carries the same sign-in page link on every path", async () => {
     const fromRegistration = await render(
       <MembershipAccepted {...props} via="registration" />,
     );
     const fromInvitation = await render(
       <MembershipAccepted {...props} via="invitation" />,
     );
+    const fromRenewal = await render(
+      <MembershipAccepted {...props} via="renewal" />,
+    );
 
-    for (const html of [fromRegistration, fromInvitation]) {
+    for (const html of [fromRegistration, fromInvitation, fromRenewal]) {
       assert.match(html, /https:\/\/example\.com\/sign-in/);
       assert.match(html, /iniciar sessió/);
       assert.match(html, /enllaç d&#x27;accés d&#x27;un sol ús/);
@@ -106,6 +109,8 @@ describe("acceptance", () => {
 
     assert.match(fromRegistration, /ha revisat la teva/);
     assert.match(fromInvitation, /has acceptat la/);
+    assert.match(fromRenewal, /hem renovat la teva/);
+    assert.doesNotMatch(fromRenewal, /ha revisat la teva/);
   });
 });
 

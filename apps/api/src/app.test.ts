@@ -90,7 +90,7 @@ describe("API", () => {
     const app = createTestApp(
       createRepository(async (registration) => {
         saved = registration;
-        return { id: "registration_123" };
+        return { id: "registration_123", outcome: "pending_review" };
       }),
     );
     const response = await app.request("/v1/registrations", {
@@ -104,6 +104,7 @@ describe("API", () => {
     assert.deepEqual(await response.json(), {
       status: "created",
       id: "registration_123",
+      outcome: "pending_review",
     });
   });
 
@@ -161,7 +162,7 @@ describe("API", () => {
     const app = createTestApp(
       createRepository(async () => {
         saveCount += 1;
-        return { id: "registration_123" };
+        return { id: "registration_123", outcome: "pending_review" };
       }),
     );
     const response = await app.request("/v1/registrations", {
@@ -218,7 +219,7 @@ describe("API", () => {
     const app = createTestApp(
       createRepository(async () => {
         saveCount += 1;
-        return { id: "registration_123" };
+        return { id: "registration_123", outcome: "pending_review" };
       }),
     );
     const response = await app.request("/v1/registrations", {

@@ -69,7 +69,7 @@ export function useSubmitDetails({
     setBusy(false);
     if (outcome.kind === "created") {
       window.sessionStorage.removeItem(DRAFT_SESSION_KEY);
-      router.push("/en-revisio");
+      router.push(outcome.accepted ? "/acceptat?via=renewal" : "/en-revisio");
     } else if (outcome.kind === "closed") router.push("/inscripcions-tancades");
     else if (outcome.kind === "alreadyRegistered") router.push("/ja-inscrit");
     else if (outcome.kind === "expiredSession") {

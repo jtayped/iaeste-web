@@ -5,9 +5,14 @@ import type { Registration } from "@repo/constants/validators/registration";
 import type { Database } from "@repo/db/client";
 import {
   createCampaignRepository,
+  createMembershipRepository,
   createRegistrationRepository,
 } from "@repo/db/repositories";
 import { closeTestDb, getTestDb, truncateAll } from "@repo/db/test-support";
+import {
+  createTestCampaign,
+  createTestUser,
+} from "@repo/db/test-support/fixtures";
 import type { Emailer, SendEmailOptions } from "@repo/email/resend";
 
 import { createApp } from "../app";
@@ -124,6 +129,82 @@ describe("createDrizzleRegistrationRepository", () => {
       studyYear: 2,
       note: "Hola",
     });
+  });
+
+  it("automatically accepts an active member of the immediately preceding campaign", async () => {
+    const previous = await createTestCampaign(db, {
+      label: "2025-2026",
+      membershipStartsAt: new Date("2025-09-01T00:00:00Z"),
+      membershipEndsAt: new Date("2026-06-30T00:00:00Z"),
+      registrationOpensAt: new Date("2025-08-01T00:00:00Z"),
+      registrationClosesAt: new Date("2025-09-30T00:00:00Z"),
+      state: "published",
+    });
+    const current = await openCampaignForRegistration(db);
+    const returning = await createTestUser(db, {
+      email: validRegistration.personalEmail,
+    });
+    await createMembershipRepository(db).join({
+      userId: returning.id,
+      campaignId: previous.id,
+      source: "registration",
+    });
+    const emailer = createRecordingEmailer();
+
+    const result = await createDrizzleRegistrationRepository({
+      emailer,
+    }).create(validRegistration);
+
+    assert.equal(result.outcome, "accepted");
+    const saved = await createRegistrationRepository(db).getById(result.id);
+    assert.equal(saved?.status, "accepted");
+    assert.equal(saved?.reviewerId, null);
+    const renewed = await createMembershipRepository(db).getForUserAndCampaign(
+      returning.id,
+      current.id,
+    );
+    assert.equal(renewed?.status, "active");
+    assert.equal(
+      emailer.sent[0]?.subject,
+      "membresia renovada · iaeste lc lleida",
+    );
+    assert.match(JSON.stringify(emailer.sent[0]?.react), /hem renovat la teva/);
+  });
+
+  it("keeps an older member in review when they skipped the last campaign", async () => {
+    const older = await createTestCampaign(db, {
+      label: "2024-2025",
+      membershipStartsAt: new Date("2024-09-01T00:00:00Z"),
+      membershipEndsAt: new Date("2025-06-30T00:00:00Z"),
+      registrationOpensAt: new Date("2024-08-01T00:00:00Z"),
+      registrationClosesAt: new Date("2024-09-30T00:00:00Z"),
+      state: "archived",
+    });
+    await createTestCampaign(db, {
+      label: "2025-2026",
+      membershipStartsAt: new Date("2025-09-01T00:00:00Z"),
+      membershipEndsAt: new Date("2026-06-30T00:00:00Z"),
+      registrationOpensAt: new Date("2025-08-01T00:00:00Z"),
+      registrationClosesAt: new Date("2025-09-30T00:00:00Z"),
+      state: "published",
+    });
+    await openCampaignForRegistration(db);
+    const former = await createTestUser(db, {
+      email: validRegistration.personalEmail,
+    });
+    await createMembershipRepository(db).join({
+      userId: former.id,
+      campaignId: older.id,
+      source: "registration",
+    });
+
+    const result = await createDrizzleRegistrationRepository({
+      emailer: createRecordingEmailer(),
+    }).create(validRegistration);
+
+    assert.equal(result.outcome, "pending_review");
+    const saved = await createRegistrationRepository(db).getById(result.id);
+    assert.equal(saved?.status, "pending_review");
   });
 
   it("throws clearly when no campaign is open for registration", async () => {

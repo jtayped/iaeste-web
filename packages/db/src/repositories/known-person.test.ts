@@ -39,6 +39,7 @@ describe("known person repository", () => {
       profile: null,
       memberships: [],
       openCampaignRegistrationStatus: null,
+      willAutoAccept: false,
     });
   });
 
@@ -144,6 +145,59 @@ describe("known person repository", () => {
     );
 
     assert.equal(known.openCampaignRegistrationStatus, "pending_review");
+  });
+
+  it("previews automatic acceptance only for an active member of the last campaign", async () => {
+    const previous = await createTestCampaign(db, {
+      membershipStartsAt: new Date("2025-09-01T00:00:00Z"),
+      membershipEndsAt: new Date("2026-06-30T00:00:00Z"),
+      registrationOpensAt: new Date("2025-08-01T00:00:00Z"),
+      registrationClosesAt: new Date("2025-09-30T00:00:00Z"),
+      state: "published",
+    });
+    const target = await createTestCampaign(db, {
+      membershipStartsAt: new Date("2026-09-01T00:00:00Z"),
+      membershipEndsAt: new Date("2027-06-30T00:00:00Z"),
+      registrationOpensAt: new Date("2026-08-01T00:00:00Z"),
+      registrationClosesAt: new Date("2026-09-30T00:00:00Z"),
+    });
+    await createCampaignRepository(db).setRegistrationOpen(target.id);
+
+    const active = await createTestUser(db, {
+      email: "active-last-year@example.com",
+    });
+    const left = await createTestUser(db, {
+      email: "left-last-year@example.com",
+    });
+    const memberships = createMembershipRepository(db);
+    await memberships.join({
+      userId: active.id,
+      campaignId: previous.id,
+      source: "registration",
+    });
+    const leftMembership = await memberships.join({
+      userId: left.id,
+      campaignId: previous.id,
+      source: "registration",
+    });
+    await memberships.leave(leftMembership.id);
+
+    assert.equal(
+      (
+        await createKnownPersonRepository(db).lookup(
+          "active-last-year@example.com",
+        )
+      ).willAutoAccept,
+      true,
+    );
+    assert.equal(
+      (
+        await createKnownPersonRepository(db).lookup(
+          "left-last-year@example.com",
+        )
+      ).willAutoAccept,
+      false,
+    );
   });
 
   it("matches an address regardless of the case it was typed in", async () => {

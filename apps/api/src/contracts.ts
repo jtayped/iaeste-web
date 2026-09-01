@@ -52,6 +52,10 @@ export const registrationCreatedSchema = z
   .object({
     status: z.literal("created"),
     id: z.string().openapi({ example: "registration_123" }),
+    outcome: z.enum(["pending_review", "accepted"]).openapi({
+      description:
+        "Returning members from the immediately preceding campaign are accepted automatically; everyone else waits for review.",
+    }),
   })
   .openapi("RegistrationCreated");
 
@@ -199,6 +203,8 @@ export const registrationSessionSchema = z
     openCampaignRegistrationStatus: z
       .enum(REGISTRATION_STATUS_VALUES)
       .nullable(),
+    /** True when this proven identity can renew without committee review. */
+    willAutoAccept: z.boolean(),
   })
   .openapi("RegistrationSession");
 
@@ -693,6 +699,24 @@ export const adminMemberDetailSchema = z
     events: z.array(adminMemberTimelineEventSchema),
   })
   .openapi("AdminMemberDetail");
+
+/** The signed-in member's editable profile plus their login addresses. */
+export const adminOwnProfileSchema = z
+  .object({
+    profile: adminMemberProfileSchema,
+    emails: adminMemberEmailsSchema,
+  })
+  .openapi("AdminOwnProfile");
+
+export const adminUpdateOwnProfileBodySchema = z
+  .object({
+    name: registrationProfileShape.name,
+    surnames: registrationProfileShape.surnames,
+    phone: registrationProfileShape.phone,
+    degree: registrationProfileShape.degree,
+    year: registrationProfileShape.year,
+  })
+  .openapi("AdminUpdateOwnProfileRequest");
 
 export const adminLeaveBodySchema = z
   .object({ reason: z.string().trim().max(2_000).optional() })

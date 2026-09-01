@@ -65,6 +65,7 @@ export function createChallengeServiceStub(
 export function createRepository(
   create: RegistrationRepository["create"] = async () => ({
     id: "registration_123",
+    outcome: "pending_review",
   }),
 ): RegistrationRepository {
   return { create };

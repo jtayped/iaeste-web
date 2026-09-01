@@ -11,6 +11,8 @@ import type {
   RegistrationProfileSnapshot,
   RegistrationStatus,
 } from "./registrations";
+import { findAutomaticallyAcceptedUser } from "./automatic-acceptance";
+import { EmailIdentityConflictError } from "./errors";
 
 /** Everything the form can prefill, in the shape the form's fields use. */
 export interface KnownProfile {
@@ -36,6 +38,8 @@ export interface KnownPerson {
   memberships: KnownMembership[];
   /** Status of this person's registration in the campaign now open, if any. */
   openCampaignRegistrationStatus: RegistrationStatus | null;
+  /** Whether submitting for the open campaign will renew membership at once. */
+  willAutoAccept: boolean;
 }
 
 const UNKNOWN: KnownPerson = {
@@ -43,14 +47,8 @@ const UNKNOWN: KnownPerson = {
   profile: null,
   memberships: [],
   openCampaignRegistrationStatus: null,
+  willAutoAccept: false,
 };
-
-export class EmailIdentityConflictError extends Error {
-  constructor() {
-    super("The supplied email addresses belong to different users.");
-    this.name = "EmailIdentityConflictError";
-  }
-}
 
 /**
  * What the committee already holds on one email address.
@@ -157,6 +155,10 @@ export function createKnownPersonRepository(db: Db) {
             )
         : [];
 
+      const automaticallyAcceptedUserId = openCampaign
+        ? await findAutomaticallyAcceptedUser(db, emails, openCampaign.id)
+        : undefined;
+
       const snapshot = latestRegistration?.profileSnapshot as
         RegistrationProfileSnapshot | undefined;
 
@@ -189,6 +191,7 @@ export function createKnownPersonRepository(db: Db) {
         })),
         openCampaignRegistrationStatus:
           (openRegistration?.status as RegistrationStatus | undefined) ?? null,
+        willAutoAccept: Boolean(automaticallyAcceptedUserId),
       };
     },
   };

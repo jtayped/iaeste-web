@@ -13,3 +13,4 @@ export * from "./email-challenges";
 export * from "./known-person";
 export * from "./registration-drafts";
 export * from "./user-emails";
+export * from "./automatic-acceptance";

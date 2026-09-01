@@ -46,6 +46,7 @@ export function toSessionContext(session: Session): DetailsContext {
     memberships: session.memberships,
     invited: false,
     openCampaignRegistrationStatus: session.openCampaignRegistrationStatus,
+    willAutoAccept: session.willAutoAccept,
   };
 }
 
