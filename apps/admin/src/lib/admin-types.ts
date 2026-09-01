@@ -35,6 +35,9 @@ export type AdminMemberEmails = components["schemas"]["AdminMemberEmails"];
 export type AdminMemberEmail = components["schemas"]["AdminMemberEmail"];
 export type AdminSetMemberEmailsRequest =
   components["schemas"]["AdminSetMemberEmailsRequest"];
+export type AdminOwnProfile = components["schemas"]["AdminOwnProfile"];
+export type AdminUpdateOwnProfileRequest =
+  components["schemas"]["AdminUpdateOwnProfileRequest"];
 export type AdminMemberTimelineMembership =
   components["schemas"]["AdminMemberTimelineMembership"];
 export type AdminMemberTimelineEvent =

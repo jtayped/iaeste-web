@@ -49,6 +49,31 @@ function toEmailView(row: EmailRow | null) {
     : null;
 }
 
+function toProfileView(profile: ProfileRow) {
+  return {
+    userId: profile.userId,
+    name: profile.name,
+    surnames: profile.surnames,
+    email: profile.email,
+    phoneE164: profile.phoneE164,
+    phoneDisplay: profile.phoneDisplay,
+    degree: profile.degree,
+    studyYear: profile.studyYear,
+    role: profile.role,
+    createdAt: profile.createdAt.toISOString(),
+  };
+}
+
+export function toOwnProfile(profile: ProfileRow, emails: MemberEmails) {
+  return {
+    profile: toProfileView(profile),
+    emails: {
+      university: toEmailView(emails.university),
+      personal: toEmailView(emails.personal),
+    },
+  };
+}
+
 export function toMemberDetail(
   profile: ProfileRow,
   emails: MemberEmails,
@@ -56,18 +81,7 @@ export function toMemberDetail(
   events: EventRow[],
 ) {
   return {
-    profile: {
-      userId: profile.userId,
-      name: profile.name,
-      surnames: profile.surnames,
-      email: profile.email,
-      phoneE164: profile.phoneE164,
-      phoneDisplay: profile.phoneDisplay,
-      degree: profile.degree,
-      studyYear: profile.studyYear,
-      role: profile.role,
-      createdAt: profile.createdAt.toISOString(),
-    },
+    profile: toProfileView(profile),
     emails: {
       university: toEmailView(emails.university),
       personal: toEmailView(emails.personal),

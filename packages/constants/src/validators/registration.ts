@@ -50,6 +50,20 @@ export const registrationProfileSchema = z.object({
 export type RegistrationProfile = z.infer<typeof registrationProfileSchema>;
 
 /**
+ * The mutable part of an existing member's profile.
+ *
+ * This deliberately reuses the registration rules. A person's current
+ * details and the details collected when they join must not accept different
+ * names, phone numbers, degrees or study years. The annual registration note
+ * is a historical snapshot, so it is the only field omitted here.
+ */
+export const memberProfileSchema = registrationProfileSchema.omit({
+  note: true,
+});
+
+export type MemberProfile = z.infer<typeof memberProfileSchema>;
+
+/**
  * A profile plus the address it belongs to. Still the shape stored in a
  * `registration` row and the one an admin export reads, so it stays defined
  * here rather than being reassembled per caller.

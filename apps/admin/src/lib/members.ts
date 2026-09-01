@@ -187,6 +187,7 @@ export function useSetMemberEmails(): UseMutationResult<
     },
     onSuccess: (_emails, { userId }) => {
       toast.success("correus actualitzats");
+      void queryClient.invalidateQueries({ queryKey: queryKeys.profile });
       void queryClient.invalidateQueries({ queryKey: queryKeys.members.all });
       void queryClient.invalidateQueries({
         queryKey: queryKeys.members.detail(userId),

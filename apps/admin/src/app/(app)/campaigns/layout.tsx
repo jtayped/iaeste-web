@@ -1,4 +1,4 @@
-import { requirePageCapability } from "@/lib/permissions";
+import { requirePageCapability } from "@/lib/permissions.server";
 
 export default async function CampaignsLayout({
   children,

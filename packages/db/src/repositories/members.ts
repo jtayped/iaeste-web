@@ -1,5 +1,7 @@
 import { and, eq, ilike, or, sql } from "drizzle-orm";
 
+import type { MemberProfile } from "@repo/constants/validators/registration";
+
 import type { Db } from "../client";
 import { user } from "../schema/auth";
 import { memberProfile } from "../schema/member-profile";
@@ -60,6 +62,26 @@ export function createMemberRepository(db: Db) {
   const totalExpr = sql<number>`(
     select count(*) from ${membership} m2 where m2.user_id = ${memberProfile.userId}
   )`;
+
+  async function getProfile(userId: string) {
+    const [row] = await db
+      .select({
+        userId: memberProfile.userId,
+        name: memberProfile.name,
+        surnames: memberProfile.surnames,
+        email: user.email,
+        phoneE164: memberProfile.phoneE164,
+        phoneDisplay: memberProfile.phoneDisplay,
+        degree: memberProfile.degree,
+        studyYear: memberProfile.studyYear,
+        role: user.role,
+        createdAt: memberProfile.createdAt,
+      })
+      .from(memberProfile)
+      .innerJoin(user, eq(user.id, memberProfile.userId))
+      .where(eq(memberProfile.userId, userId));
+    return row;
+  }
 
   function whereClause(params: MemberListParams) {
     const clauses = [];
@@ -125,24 +147,47 @@ export function createMemberRepository(db: Db) {
     },
 
     /** The profile + account role for one member, or undefined. */
-    async getProfile(userId: string) {
-      const [row] = await db
-        .select({
-          userId: memberProfile.userId,
-          name: memberProfile.name,
-          surnames: memberProfile.surnames,
-          email: user.email,
-          phoneE164: memberProfile.phoneE164,
-          phoneDisplay: memberProfile.phoneDisplay,
-          degree: memberProfile.degree,
-          studyYear: memberProfile.studyYear,
-          role: user.role,
-          createdAt: memberProfile.createdAt,
-        })
-        .from(memberProfile)
-        .innerJoin(user, eq(user.id, memberProfile.userId))
-        .where(eq(memberProfile.userId, userId));
-      return row;
+    getProfile,
+
+    /**
+     * Updates the signed-in member's mutable details and keeps Better Auth's
+     * display name in sync. The API chooses `userId` from the session, never
+     * from this input.
+     */
+    async updateProfile(
+      userId: string,
+      input: MemberProfile & { phoneE164: string; phoneDisplay: string },
+    ) {
+      const now = new Date();
+      const updated = await db.transaction(async (tx) => {
+        const [row] = await tx
+          .update(memberProfile)
+          .set({
+            name: input.name,
+            surnames: input.surnames,
+            phoneE164: input.phoneE164,
+            phoneDisplay: input.phoneDisplay,
+            degree: input.degree,
+            studyYear: input.year,
+            updatedAt: now,
+          })
+          .where(eq(memberProfile.userId, userId))
+          .returning({ userId: memberProfile.userId });
+
+        if (!row) return undefined;
+
+        await tx
+          .update(user)
+          .set({
+            name: `${input.name} ${input.surnames}`.trim(),
+            updatedAt: now,
+          })
+          .where(eq(user.id, userId));
+
+        return row;
+      });
+
+      return updated ? getProfile(userId) : undefined;
     },
 
     /** Sets `user.role`. Better Auth's admin plugin owns the column values. */

@@ -15,6 +15,7 @@ import type {
  */
 export const queryKeys = {
   overview: ["overview"] as const,
+  profile: ["profile"] as const,
 
   registrations: {
     all: ["registrations"] as const,

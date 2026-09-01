@@ -3,6 +3,7 @@ import { cache } from "react";
 import type {
   AdminCampaignWithCounts,
   AdminMemberDetail,
+  AdminOwnProfile,
   AdminRegistrationDetail,
 } from "@/lib/admin-types";
 import { getServerApiClient } from "@/lib/api.server";
@@ -58,6 +59,19 @@ export const fetchMember = cache(
       unwrap(
         await client.GET("/v1/admin/members/{userId}", {
           params: { path: { userId } },
+          cache: "no-store",
+        }),
+      ),
+    );
+  },
+);
+
+export const fetchOwnProfile = cache(
+  async (): Promise<ServerFetch<AdminOwnProfile>> => {
+    const client = await getServerApiClient();
+    return run(async () =>
+      unwrap(
+        await client.GET("/v1/admin/profile", {
           cache: "no-store",
         }),
       ),

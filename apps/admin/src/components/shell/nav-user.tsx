@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, UserRound } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import {
@@ -30,7 +30,7 @@ function initials(user: AdminSessionUser): string {
 
 export function NavUser({ user }: { user: AdminSessionUser }) {
   const router = useRouter();
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   const [pending, setPending] = React.useState(false);
 
   const displayName = user.name ?? user.email;
@@ -86,6 +86,11 @@ export function NavUser({ user }: { user: AdminSessionUser }) {
             </span>
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem href="/profile" onAction={() => setOpenMobile(false)}>
+          <UserRound className="size-4" aria-hidden />
+          el meu perfil
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {/* The menu stays open while the request is in flight, so the pending
             label is somewhere the user can still see it. */}
