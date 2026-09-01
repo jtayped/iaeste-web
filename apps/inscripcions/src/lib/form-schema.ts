@@ -4,41 +4,32 @@ import {
   type RegistrationProfile,
   registrationProfileSchema,
 } from "@repo/constants/validators/registration";
-import {
-  memberEmailsSchema,
-  type MemberEmails,
-} from "@repo/constants/validators/member-email";
+import { memberEmailSchema } from "@repo/constants/validators/member-email";
 
 /**
  * The details step, for both ways in.
  *
- * There is no email field and no confirmation field any more. A public
- * applicant proved their address two steps earlier by typing a code we mailed
- * them; an invited person never types it at all, because it is bound to their
- * invitation token. Mistyping the address is no longer possible, which is
- * what the confirmation field existed to catch.
+ * There is no email field here. A public applicant proved their address by
+ * entering a code we mailed them; an invited person has it bound to their
+ * invitation token. Both routes therefore reach this form with a proven
+ * address rather than asking someone to type it twice.
  */
 export const profileFormSchema = registrationProfileSchema;
 
 export type ProfileForm = RegistrationProfile;
 
 /** Step one of the public flow, on its own. */
-export const emailStepSchema = memberEmailsSchema;
+export const emailStepSchema = z.object({ email: memberEmailSchema });
 
-export type EmailStep = MemberEmails;
+export type EmailStep = z.infer<typeof emailStepSchema>;
 
 /**
- * The same rules, bound to what the two inputs actually hold.
- *
- * A blank field means "not supplied", which the shared schema implements with
- * a `preprocess` — and that widens its input type to `unknown`, which React
- * Hook Form cannot bind a text input to. This wrapper is string-in, string-out
- * so the form has a concrete shape to bind to, and delegates every actual
- * judgement to the shared schema, which stays the only place the rules live.
- * The submit handler runs that schema again to get the normalised addresses.
+ * The form keeps the raw input as a string while the shared schema owns email
+ * validation and normalisation. The submit handler runs the shared schema
+ * again before classifying the address as university or personal.
  */
 export const emailStepFormSchema = z
-  .object({ universityEmail: z.string(), personalEmail: z.string() })
+  .object({ email: z.string() })
   .superRefine((values, ctx) => {
     const result = emailStepSchema.safeParse(values);
     if (result.success) return;
@@ -55,15 +46,15 @@ export const emailStepFormSchema = z
 /** What the inputs hold while they are being typed: always strings, never absent. */
 export type EmailStepValues = z.infer<typeof emailStepFormSchema>;
 
-/**
- * "At least one address" is a rule about the pair, not about either field, so
- * the form shows it once above both rather than hanging it off whichever field
- * the schema happened to attach it to. Read back out of the schema itself so
- * the copy on screen cannot drift from the copy that is enforced.
- */
-export const AT_LEAST_ONE_EMAIL_MESSAGE: string =
-  emailStepSchema.safeParse({ universityEmail: "", personalEmail: "" }).error
-    ?.issues[0]?.message ?? "cal indicar com a mínim una adreça de correu";
+/** Step two. The OTP control only accepts digits, and the server repeats this check. */
+export const codeStepSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "el codi té sis xifres"),
+});
+
+export type CodeStep = z.infer<typeof codeStepSchema>;
 
 /** Field order used for the error summary and for focusing the first mistake. */
 export const FIELD_ORDER = [

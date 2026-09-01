@@ -3,7 +3,7 @@ import EmailWrapper from "./wrapper";
 
 interface VerificationCodeProps {
   email: string;
-  /** Six digits, unseparated — the letter spacing below does the grouping. */
+  /** Six digits, optionally grouped with one space for easier reading. */
   code: string;
   /** Lifetime of the code, in minutes. Passed in so the copy cannot drift from the token actually issued. */
   expiresInMinutes: number;
@@ -36,9 +36,9 @@ export const VerificationCode = ({
         </Text>
       </Section>
       <Text className="mb-0 text-xs">
-        el codi caduca en {expiresInMinutes} minuts i només serveix per al
-        correu <u>({email})</u>. si no has demanat inscriure&apos;t, ignora
-        aquest correu: sense el codi ningú pot continuar.
+        el codi caduca en {expiresInMinutes} minuts i només serveix per a{" "}
+        <u>{email}</u>. si no has demanat inscriure&apos;t, ignora aquest
+        correu: sense el codi ningú pot continuar.
       </Text>
     </EmailWrapper>
   );
@@ -46,7 +46,7 @@ export const VerificationCode = ({
 
 VerificationCode.PreviewProps = {
   email: "john.doe@example.com",
-  code: "418502",
+  code: "418 502",
   expiresInMinutes: 10,
 } as VerificationCodeProps;
 

@@ -24,9 +24,13 @@ export interface Step {
 export const Progress = ({
   steps,
   current,
+  furthest,
+  onSelect,
 }: {
   steps: readonly Step[];
   current: number;
+  furthest: number;
+  onSelect: (key: string) => void;
 }) => (
   <motion.ol
     variants={childVariants}
@@ -36,17 +40,11 @@ export const Progress = ({
     {steps.map((step, index) => {
       const done = index < current;
       const active = index === current;
+      const canNavigate = index <= furthest && !active;
 
-      return (
-        <li
-          key={step.key}
-          className={cn(
-            "flex items-center gap-2",
-            index < steps.length - 1 && "flex-1",
-          )}
-        >
+      const marker = (
+        <>
           <span
-            aria-current={active ? "step" : undefined}
             className={cn(
               "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums transition-colors",
               done && "bg-primary text-primary-foreground",
@@ -68,6 +66,34 @@ export const Progress = ({
           >
             {step.label}
           </span>
+        </>
+      );
+
+      return (
+        <li
+          key={step.key}
+          className={cn(
+            "flex items-center gap-2",
+            index < steps.length - 1 && "flex-1",
+          )}
+        >
+          {canNavigate ? (
+            <button
+              type="button"
+              onClick={() => onSelect(step.key)}
+              className="flex min-w-0 items-center gap-2 rounded-md outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              aria-label={`ves al pas ${step.label}`}
+            >
+              {marker}
+            </button>
+          ) : (
+            <span
+              aria-current={active ? "step" : undefined}
+              className="flex min-w-0 items-center gap-2"
+            >
+              {marker}
+            </span>
+          )}
           {index < steps.length - 1 && (
             <span
               aria-hidden="true"

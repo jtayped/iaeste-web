@@ -91,6 +91,7 @@ import {
   healthRoute,
   registrationStatusRoute,
   startRegistrationRoute,
+  verifyRegistrationCodeRoute,
   verifyRegistrationDraftLinkRoute,
   resumeRegistrationDraftRoute,
   resendRegistrationDraftLinkRoute,
@@ -318,7 +319,7 @@ export function createApp(dependencies: AppDependencies = {}) {
   // the 200 says nothing about whether an email went out, and the only
   // condition allowed to change the answer is the campaign calendar.
   app.openapi(startRegistrationRoute, async (c) => {
-    const emails = c.req.valid("json");
+    const { email } = c.req.valid("json");
     const ip = ipOf(c.req.header("x-forwarded-for"));
     // A client-side limit on top of the per-address one inside the service,
     // so a single machine cannot walk a list of addresses to farm codes.
@@ -334,7 +335,7 @@ export function createApp(dependencies: AppDependencies = {}) {
     }
 
     try {
-      const { resendAfterSeconds } = await challengeService.start(emails);
+      const { resendAfterSeconds } = await challengeService.start(email);
       return c.json({ status: "ok" as const, resendAfterSeconds }, 200);
     } catch (error) {
       if (error instanceof RegistrationsClosedError) {
@@ -349,6 +350,50 @@ export function createApp(dependencies: AppDependencies = {}) {
       }
       throw error;
     }
+  });
+
+  app.openapi(verifyRegistrationCodeRoute, async (c) => {
+    const { email, code } = c.req.valid("json");
+    const ip = ipOf(c.req.header("x-forwarded-for"));
+    if (!allowRequest(`reg-code:${ip}`, 30, 60_000)) {
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "CONFLICT",
+          "Too many attempts. Try again soon.",
+        ),
+        429,
+      );
+    }
+
+    let session;
+    try {
+      session = await challengeService.verifyCode(email, code);
+    } catch (error) {
+      if (error instanceof EmailIdentityConflictError) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "CONFLICT",
+            "This address belongs to more than one member account.",
+          ),
+          409,
+        );
+      }
+      throw error;
+    }
+    if (!session) {
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "INVALID_TOKEN",
+          "This code is invalid, expired, or already used.",
+        ),
+        400,
+      );
+    }
+
+    return c.json(serialiseDraftSession(session), 200);
   });
 
   function serialiseDraftSession(
@@ -446,7 +491,7 @@ export function createApp(dependencies: AppDependencies = {}) {
 
   app.openapi(resendRegistrationDraftLinkRoute, async (c) => {
     const { token, kind } = c.req.valid("json");
-    await challengeService.resend(token, kind);
+    await challengeService.resendLink(token, kind);
     return c.json(
       {
         status: "ok" as const,

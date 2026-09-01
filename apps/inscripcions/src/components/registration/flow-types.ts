@@ -17,17 +17,18 @@ export type Stage =
   | { kind: "email" }
   | {
       kind: "verification";
-      emails: VerificationEmails;
-      session?: Session;
+      method: "code";
+      email: string;
     }
-  | { kind: "details"; context: DetailsContext }
+  | {
+      kind: "verification";
+      method: "link" | "complete";
+      emails: VerificationEmails;
+      session: Session;
+    }
+  | { kind: "membership"; session: Session }
+  | { kind: "details"; context: DetailsContext; session?: Session }
   | { kind: "accepted"; alreadyMember: boolean };
 
-/**
- * Both inputs start blank, and blank is a legitimate value for either one of
- * them now: the pair only has to carry one address between the two.
- */
-export const EMPTY_EMAILS: EmailStepValues = {
-  universityEmail: "",
-  personalEmail: "",
-};
+/** The single address starts blank and stays available when navigating back. */
+export const EMPTY_EMAIL: EmailStepValues = { email: "" };

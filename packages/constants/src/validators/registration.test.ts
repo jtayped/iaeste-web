@@ -18,6 +18,15 @@ describe("registrationSchema", () => {
     assert.equal(registrationSchema.safeParse(validRegistration).success, true);
   });
 
+  it("normalises phone numbers to their international display form", () => {
+    const result = registrationSchema.parse({
+      ...validRegistration,
+      phone: "623324234",
+    });
+
+    assert.equal(result.phone, "+34 623 32 42 34");
+  });
+
   it("rejects a number that libphonenumber considers invalid", () => {
     const result = registrationSchema.safeParse({
       ...validRegistration,

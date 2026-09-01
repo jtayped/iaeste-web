@@ -72,6 +72,7 @@ export const VerificationStep = ({
   });
   const single = entries.length < 2;
   const pending = entries.filter((entry) => !entry.verified).length;
+  const complete = pending === 0;
 
   return (
     <motion.div
@@ -85,14 +86,18 @@ export const VerificationStep = ({
           </div>
           <div className="min-w-0">
             <h2 className="text-base font-semibold tracking-tight">
-              {single
-                ? "obre l'enllaç que t'hem enviat"
-                : "obre els dos enllaços"}
+              {complete
+                ? "correu confirmat"
+                : single
+                  ? "obre l'enllaç que t'hem enviat"
+                  : "obre els dos enllaços"}
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {single
-                ? "l'enllaç caduca d'aquí a set dies."
-                : "cada correu confirma una adreça diferent. els enllaços caduquen en set dies."}
+              {complete
+                ? "ja pots continuar amb la inscripció."
+                : single
+                  ? "l'enllaç caduca d'aquí a set dies."
+                  : "cada correu confirma una adreça diferent. els enllaços caduquen en set dies."}
             </p>
           </div>
         </div>
@@ -167,9 +172,11 @@ export const VerificationStep = ({
             )}
             {busy
               ? "comprovant…"
-              : pending === 1
-                ? "ja l'he confirmat"
-                : "ja els he confirmat"}
+              : complete
+                ? "continua"
+                : pending === 1
+                  ? "ja l'he confirmat"
+                  : "ja els he confirmat"}
           </Button>
         ) : (
           <p className="text-center text-sm text-muted-foreground">

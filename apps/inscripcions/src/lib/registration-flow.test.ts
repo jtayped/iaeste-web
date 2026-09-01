@@ -6,6 +6,7 @@ import type { components } from "@repo/api-client";
 import {
   mapStartResult,
   mapSubmitResult,
+  mapVerifyCodeResult,
   mapVerifyDraftResult,
   mapVerifyResult,
   readRegistrationId,
@@ -147,6 +148,50 @@ describe("mapStartResult", () => {
         kind: "invalid",
         issues: [{ field: "email", message: "no és vàlida" }],
       },
+    );
+  });
+});
+
+describe("mapVerifyCodeResult", () => {
+  const session = {
+    token: "t",
+    expiresAt: "2026-09-01T00:00:00.000Z",
+    ready: true,
+    emails: {
+      personal: { maskedAddress: "jo••@example.com", verified: true },
+    },
+    known: false,
+    profile: null,
+    memberships: [],
+    openCampaignRegistrationStatus: null,
+    willAutoAccept: false,
+  };
+
+  it("hands a valid session through", () => {
+    assert.deepEqual(mapVerifyCodeResult({ data: session }), {
+      kind: "ok",
+      session,
+    });
+  });
+
+  it("separates a bad code, a rate limit, and an identity conflict", () => {
+    assert.deepEqual(
+      mapVerifyCodeResult({ error: apiError("INVALID_TOKEN") }),
+      { kind: "badCode" },
+    );
+    assert.deepEqual(
+      mapVerifyCodeResult({
+        error: apiError("CONFLICT"),
+        response: status(429),
+      }),
+      { kind: "rateLimited" },
+    );
+    assert.deepEqual(
+      mapVerifyCodeResult({
+        error: apiError("CONFLICT"),
+        response: status(409),
+      }),
+      { kind: "identityConflict" },
     );
   });
 });

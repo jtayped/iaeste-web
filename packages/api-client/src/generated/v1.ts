@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/registrations/verify-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verifyRegistrationCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/registrations/verify-link": {
         parameters: {
             query?: never;
@@ -653,12 +669,7 @@ export interface components {
              * Format: email
              * @example joan@alumnes.udl.cat
              */
-            universityEmail?: string;
-            /**
-             * Format: email
-             * @example joan@example.com
-             */
-            personalEmail?: string;
+            email: string;
         };
         RegistrationSession: {
             token: string;
@@ -693,6 +704,12 @@ export interface components {
             campaignLabel: string;
             /** @enum {string} */
             status: "active" | "left" | "kicked";
+        };
+        RegistrationVerifyCodeRequest: {
+            /** Format: email */
+            email: string;
+            /** @example 418502 */
+            code: string;
         };
         RegistrationDraftTokenRequest: {
             token: string;
@@ -1218,7 +1235,58 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description Too many link requests from either address or client. */
+            /** @description Too many code requests from this address or client. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    verifyRegistrationCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationVerifyCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description The code was right. Returns a short-lived registration session. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationSession"];
+                };
+            };
+            /** @description The code is wrong, expired, already used, or out of attempts. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The address is linked to more than one member account. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Too many attempts from this client. */
             429: {
                 headers: {
                     [name: string]: unknown;

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
-  AT_LEAST_ONE_EMAIL_MESSAGE,
+  codeStepSchema,
   emailStepFormSchema,
   emailStepSchema,
   profileFormSchema,
@@ -43,107 +43,72 @@ describe("profileFormSchema", () => {
       "el número de telèfon no és vàlid",
     );
   });
+
+  it("normalises a Spanish phone number before submission", () => {
+    const result = profileFormSchema.parse({
+      ...validProfile,
+      phone: "623324234",
+    });
+
+    assert.equal(result.phone, "+34 623 32 42 34");
+  });
+});
+
+describe("codeStepSchema", () => {
+  it("accepts exactly six digits", () => {
+    assert.deepEqual(codeStepSchema.parse({ code: "418502" }), {
+      code: "418502",
+    });
+    assert.equal(codeStepSchema.safeParse({ code: "41850" }).success, false);
+    assert.equal(codeStepSchema.safeParse({ code: "41850a" }).success, false);
+  });
 });
 
 describe("emailStepSchema", () => {
-  it("normalises both addresses before they are sent", () => {
+  it("normalises the address before it is classified", () => {
     const result = emailStepSchema.safeParse({
-      universityEmail: " JOAN@ALUMNES.UDL.CAT ",
-      personalEmail: " JOAN@EXAMPLE.COM ",
+      email: " JOAN@ALUMNES.UDL.CAT ",
     });
 
     assert.equal(result.success, true);
-    assert.equal(result.data?.universityEmail, "joan@alumnes.udl.cat");
-    assert.equal(result.data?.personalEmail, "joan@example.com");
+    assert.equal(result.data?.email, "joan@alumnes.udl.cat");
   });
 
   it("rejects anything that is not an address", () => {
+    assert.equal(emailStepSchema.safeParse({ email: "nope" }).success, false);
+  });
+
+  it("accepts university and personal addresses in the same field", () => {
     assert.equal(
-      emailStepSchema.safeParse({
-        universityEmail: "nope",
-        personalEmail: "joan@example.com",
-      }).success,
-      false,
+      emailStepSchema.safeParse({ email: "joan@alumnes.udl.cat" }).success,
+      true,
     );
-  });
-
-  it("accepts a university address on its own", () => {
-    const result = emailStepSchema.safeParse({
-      universityEmail: "joan@alumnes.udl.cat",
-      personalEmail: "",
-    });
-
-    assert.equal(result.success, true);
-    assert.equal(result.data?.universityEmail, "joan@alumnes.udl.cat");
-    assert.equal(result.data?.personalEmail, undefined);
-  });
-
-  it("accepts a personal address on its own", () => {
-    const result = emailStepSchema.safeParse({
-      universityEmail: "",
-      personalEmail: "joan@example.com",
-    });
-
-    assert.equal(result.success, true);
-    assert.equal(result.data?.universityEmail, undefined);
-    assert.equal(result.data?.personalEmail, "joan@example.com");
-  });
-
-  it("rejects neither address, which is the one combination there is no form for", () => {
-    const result = emailStepSchema.safeParse({
-      universityEmail: "",
-      personalEmail: "   ",
-    });
-
-    assert.equal(result.success, false);
+    assert.equal(
+      emailStepSchema.safeParse({ email: "joan@example.com" }).success,
+      true,
+    );
   });
 });
 
 describe("emailStepFormSchema", () => {
-  const both = {
-    universityEmail: "joan@alumnes.udl.cat",
-    personalEmail: "joan@example.com",
-  };
-
-  it("keeps the inputs as strings, so the two fields stay bindable", () => {
+  it("keeps the input as a string so the field stays bindable", () => {
     const result = emailStepFormSchema.safeParse({
-      universityEmail: "joan@alumnes.udl.cat",
-      personalEmail: "",
+      email: "joan@alumnes.udl.cat",
     });
 
     assert.equal(result.success, true);
-    assert.deepEqual(result.data, {
-      universityEmail: "joan@alumnes.udl.cat",
-      personalEmail: "",
-    });
+    assert.deepEqual(result.data, { email: "joan@alumnes.udl.cat" });
   });
 
-  it("delegates every rule to the shared schema, paths included", () => {
+  it("delegates validation to the shared schema, path included", () => {
     const result = emailStepFormSchema.safeParse({
-      ...both,
-      universityEmail: "joan@example.com",
+      email: "not-an-email",
     });
 
     assert.equal(result.success, false);
     assert.equal(
-      result.error?.issues.find((issue) => issue.path[0] === "universityEmail")
-        ?.message,
-      "fes servir el correu @udl.cat o @alumnes.udl.cat",
-    );
-  });
-
-  it("reports the empty pair with the message the form shows above both fields", () => {
-    const result = emailStepFormSchema.safeParse({
-      universityEmail: "",
-      personalEmail: "",
-    });
-
-    assert.equal(result.success, false);
-    assert.equal(
-      result.error?.issues.some(
-        (issue) => issue.message === AT_LEAST_ONE_EMAIL_MESSAGE,
-      ),
-      true,
+      result.error?.issues.find((issue) => issue.path[0] === "email")?.message,
+      "adreça de correu electrònic no vàlida",
     );
   });
 });

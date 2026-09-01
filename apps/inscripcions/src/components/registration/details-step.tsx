@@ -87,6 +87,8 @@ export const DetailsStepForm = ({
   submitting,
   error,
   fieldIssues,
+  draft,
+  onDraftChange,
   onSubmit,
 }: {
   context: DetailsContext;
@@ -94,22 +96,34 @@ export const DetailsStepForm = ({
   error?: string;
   /** Field-level complaints the API made about the last submission. */
   fieldIssues?: readonly { field: keyof ProfileForm; message: string }[];
+  draft?: ProfileForm;
+  onDraftChange?: (values: ProfileForm) => void;
   onSubmit: (values: ProfileForm) => void;
 }) => {
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileFormSchema),
     shouldFocusError: false,
-    defaultValues: context.profile
-      ? {
-          name: context.profile.name,
-          surnames: context.profile.surnames,
-          phone: context.profile.phone,
-          degree: context.profile.degree as ProfileForm["degree"],
-          year: context.profile.year,
-          note: "",
-        }
-      : emptyDefaults,
+    defaultValues:
+      draft ??
+      (context.profile
+        ? {
+            name: context.profile.name,
+            surnames: context.profile.surnames,
+            phone: context.profile.phone,
+            degree: context.profile.degree as ProfileForm["degree"],
+            year: context.profile.year,
+            note: "",
+          }
+        : emptyDefaults),
   });
+
+  React.useEffect(() => {
+    if (!onDraftChange) return;
+    const subscription = form.watch((values) =>
+      onDraftChange(values as ProfileForm),
+    );
+    return () => subscription.unsubscribe();
+  }, [form, onDraftChange]);
 
   // The API is the authority on its own validation, so its complaints are
   // pushed onto the fields rather than shown as one opaque banner.
@@ -133,6 +147,24 @@ export const DetailsStepForm = ({
   const alreadyApplied =
     !context.invited && Boolean(context.openCampaignRegistrationStatus);
 
+  if (alreadyApplied) {
+    return (
+      <div className="space-y-4">
+        {(context.memberships.length > 0 || context.profile) && (
+          <KnownPersonNotice
+            email={context.email}
+            memberships={context.memberships}
+            prefilled={Boolean(context.profile)}
+            invited={false}
+          />
+        )}
+        <AlreadyAppliedNotice
+          status={context.openCampaignRegistrationStatus ?? ""}
+        />
+      </div>
+    );
+  }
+
   return (
     <Form {...form}>
       <form
@@ -149,12 +181,6 @@ export const DetailsStepForm = ({
               memberships={context.memberships}
               prefilled={Boolean(context.profile)}
               invited={context.invited}
-            />
-          )}
-
-          {alreadyApplied && (
-            <AlreadyAppliedNotice
-              status={context.openCampaignRegistrationStatus ?? ""}
             />
           )}
 

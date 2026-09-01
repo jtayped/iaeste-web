@@ -40,6 +40,7 @@ describe("API", () => {
     assert.ok(document.paths["/v1/registrations"]);
     assert.ok(document.paths["/v1/registrations/status"]);
     assert.ok(document.paths["/v1/registrations/start"]);
+    assert.ok(document.paths["/v1/registrations/verify-code"]);
     assert.ok(document.paths["/v1/registrations/verify-link"]);
     assert.ok(document.paths["/v1/registrations/resume"]);
   });
@@ -108,7 +109,7 @@ describe("API", () => {
     });
   });
 
-  it("issues two links without saying anything about either address", async () => {
+  it("issues a code without revealing whether the address is known", async () => {
     const app = createTestApp(
       undefined,
       undefined,
@@ -124,8 +125,7 @@ describe("API", () => {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        universityEmail: validRegistration.universityEmail,
-        personalEmail: validRegistration.personalEmail,
+        email: validRegistration.universityEmail,
       }),
     });
 
@@ -134,6 +134,30 @@ describe("API", () => {
       status: "ok",
       resendAfterSeconds: 60,
     });
+  });
+
+  it("answers an invalid registration code generically", async () => {
+    const app = createTestApp(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      createChallengeServiceStub({ verifyCode: async () => undefined }),
+    );
+    const response = await app.request("/v1/registrations/verify-code", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        email: validRegistration.universityEmail,
+        code: "123456",
+      }),
+    });
+    const body = (await response.json()) as { error: { code: string } };
+
+    assert.equal(response.status, 400);
+    assert.equal(body.error.code, "INVALID_TOKEN");
   });
 
   it("answers an invalid verification link generically", async () => {

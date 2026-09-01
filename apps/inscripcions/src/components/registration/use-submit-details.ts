@@ -7,6 +7,7 @@ import { apiClient } from "@/lib/api";
 import type { ProfileForm } from "@/lib/form-schema";
 import { mapAcceptResult } from "@/lib/invitation-flow";
 import { mapSubmitResult } from "@/lib/registration-flow";
+import { clearRegistrationSession } from "@/lib/registration-storage";
 
 import {
   toMappedIssues,
@@ -16,7 +17,6 @@ import {
 } from "./context";
 import type { Stage } from "./flow-types";
 
-const DRAFT_SESSION_KEY = "iaeste-registration-draft-session";
 const NETWORK_FAILURE =
   "no hem pogut connectar amb el servidor. comprova la connexió i torna-ho a provar.";
 const GENERIC_FAILURE =
@@ -30,6 +30,7 @@ export function useSubmitDetails({
   setBusy,
   setError,
   setFieldIssues,
+  onSessionExpired,
 }: {
   invited: boolean;
   emailToken: React.RefObject<string | undefined>;
@@ -40,6 +41,7 @@ export function useSubmitDetails({
   setFieldIssues: React.Dispatch<
     React.SetStateAction<readonly MappedFieldIssue[]>
   >;
+  onSessionExpired: () => void;
 }) {
   const router = useRouter();
   const accepting = React.useRef(false);
@@ -48,7 +50,7 @@ export function useSubmitDetails({
     const token = emailToken.current;
     if (!token) {
       setStage({ kind: "email" });
-      setError("la sessió ha caducat. torna a començar pels correus.");
+      setError("la sessió ha caducat. torna a començar pel correu.");
       return;
     }
     setError(undefined);
@@ -68,15 +70,13 @@ export function useSubmitDetails({
     }
     setBusy(false);
     if (outcome.kind === "created") {
-      window.sessionStorage.removeItem(DRAFT_SESSION_KEY);
+      clearRegistrationSession();
       router.push(outcome.accepted ? "/acceptat?via=renewal" : "/en-revisio");
     } else if (outcome.kind === "closed") router.push("/inscripcions-tancades");
     else if (outcome.kind === "alreadyRegistered") router.push("/ja-inscrit");
     else if (outcome.kind === "expiredSession") {
-      emailToken.current = undefined;
-      window.sessionStorage.removeItem(DRAFT_SESSION_KEY);
-      setStage({ kind: "email" });
-      setError("la sessió ha caducat. torna a confirmar els dos correus.");
+      onSessionExpired();
+      setError("la sessió ha caducat. torna a confirmar el correu.");
     } else if (outcome.kind === "invalid") {
       setFieldIssues(toMappedIssues(outcome.issues));
       setError(unmappedMessage(outcome.issues));

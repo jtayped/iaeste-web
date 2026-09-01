@@ -54,6 +54,7 @@ import {
   registrationSessionSchema,
   registrationStartBodySchema,
   registrationStartResponseSchema,
+  registrationVerifyCodeBodySchema,
   registrationDraftTokenBodySchema,
   registrationDraftResendBodySchema,
   publicRegistrationStatusSchema,
@@ -95,12 +96,11 @@ export const registrationStatusRoute = createRoute({
 });
 
 /**
- * Step one of the public form: claim a university address, a personal
- * address, or both — never neither — and receive a link per address.
+ * Step one of the public form: claim one address and receive a six-digit code.
  *
  * Deliberately non-revealing, exactly like `resend-verification` below. The
- * response is the same "ok" whether links were sent or a send was suppressed
- * by a limiter, so this endpoint cannot answer whether either person exists.
+ * response is the same "ok" whether a code was sent or a send was suppressed
+ * by a limiter, so this endpoint cannot answer whether the person exists.
  */
 export const startRegistrationRoute = createRoute({
   method: "post",
@@ -133,14 +133,57 @@ export const startRegistrationRoute = createRoute({
       content: { "application/json": { schema: apiErrorSchema } },
     },
     429: {
-      description: "Too many link requests from either address or client.",
+      description: "Too many code requests from this address or client.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
   },
 });
 
 /**
- * Verify one address and return a resumable draft session. Personal data is
+ * Trade the six-digit code for the session that unlocks profile recovery.
+ * Five wrong guesses retire the challenge, and every invalid state returns
+ * the same response so the endpoint does not reveal account information.
+ */
+export const verifyRegistrationCodeRoute = createRoute({
+  method: "post",
+  path: "/v1/registrations/verify-code",
+  operationId: "verifyRegistrationCode",
+  tags: ["Registrations"],
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: registrationVerifyCodeBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description:
+        "The code was right. Returns a short-lived registration session.",
+      content: {
+        "application/json": { schema: registrationSessionSchema },
+      },
+    },
+    400: {
+      description:
+        "The code is wrong, expired, already used, or out of attempts.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description: "The address is linked to more than one member account.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    429: {
+      description: "Too many attempts from this client.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+  },
+});
+
+/**
+ * Legacy compatibility for links sent before registration moved to OTP.
+ * Personal data is
  * withheld until every supplied address's independently delivered link has
  * been opened.
  */

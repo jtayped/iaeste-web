@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { isUniversityEmail, memberEmailsSchema } from "./member-email";
+import {
+  isUniversityEmail,
+  memberEmailSchema,
+  memberEmailsSchema,
+  toMemberEmails,
+} from "./member-email";
 
 describe("member email validation", () => {
   it("recognises only the two university domains", () => {
@@ -54,5 +59,20 @@ describe("member email validation", () => {
       }).success,
       false,
     );
+  });
+
+  it("normalises and classifies the form's single address", () => {
+    assert.deepEqual(toMemberEmails(" NOM@ALUMNES.UDL.CAT "), {
+      universityEmail: "nom@alumnes.udl.cat",
+    });
+    assert.deepEqual(toMemberEmails(" NOM@EXAMPLE.COM "), {
+      personalEmail: "nom@example.com",
+    });
+  });
+
+  it("validates a single address without requiring its kind", () => {
+    assert.equal(memberEmailSchema.safeParse("nom@udl.cat").success, true);
+    assert.equal(memberEmailSchema.safeParse("nom@example.com").success, true);
+    assert.equal(memberEmailSchema.safeParse("not-an-email").success, false);
   });
 });

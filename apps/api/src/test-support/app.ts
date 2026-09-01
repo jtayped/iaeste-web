@@ -53,9 +53,10 @@ export function createChallengeServiceStub(
 
   return {
     start: async () => ({ resendAfterSeconds: 60 }),
+    verifyCode: async () => undefined,
     verifyLink: async () => undefined,
     resume: async () => undefined,
-    resend: async () => undefined,
+    resendLink: async () => undefined,
     resolveSession: async (token) => draftFor(token),
     consumeSession: async (token) => Boolean(draftFor(token)),
     ...overrides,

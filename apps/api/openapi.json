@@ -156,17 +156,15 @@
       "RegistrationStartRequest": {
         "type": "object",
         "properties": {
-          "universityEmail": {
+          "email": {
             "type": "string",
             "format": "email",
             "example": "joan@alumnes.udl.cat"
-          },
-          "personalEmail": {
-            "type": "string",
-            "format": "email",
-            "example": "joan@example.com"
           }
-        }
+        },
+        "required": [
+          "email"
+        ]
       },
       "RegistrationSession": {
         "type": "object",
@@ -305,6 +303,24 @@
         "required": [
           "campaignLabel",
           "status"
+        ]
+      },
+      "RegistrationVerifyCodeRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "example": "418502"
+          }
+        },
+        "required": [
+          "email",
+          "code"
         ]
       },
       "RegistrationDraftTokenRequest": {
@@ -2108,7 +2124,67 @@
             }
           },
           "429": {
-            "description": "Too many link requests from either address or client.",
+            "description": "Too many code requests from this address or client.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/registrations/verify-code": {
+      "post": {
+        "operationId": "verifyRegistrationCode",
+        "tags": [
+          "Registrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationVerifyCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The code was right. Returns a short-lived registration session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The code is wrong, expired, already used, or out of attempts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The address is linked to more than one member account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many attempts from this client.",
             "content": {
               "application/json": {
                 "schema": {

@@ -4,23 +4,42 @@ import type {
   MemberEmailKind,
   MemberEmails,
 } from "@repo/constants/validators/member-email";
+import { isUniversityEmail } from "@repo/constants/validators/member-email";
 import { getDb } from "@repo/db/client";
 import {
   createCampaignRepository,
+  createEmailChallengeRepository,
   createKnownPersonRepository,
   createRegistrationDraftRepository,
-  type KnownPerson,
+  MAX_CHALLENGE_ATTEMPTS,
 } from "@repo/db/repositories";
 import RegistrationVerificationLink from "@repo/email/registration-verification-link";
+import VerificationCode from "@repo/email/verification-code";
 import { createResendEmailer, type Emailer } from "@repo/email/resend";
 
-import { getEmailConfig, getInscripcionsPublicOrigin } from "../config";
+import {
+  getEmailConfig,
+  getInscripcionsPublicOrigin,
+  getRuntimeEnvironment,
+} from "../config";
 import { canSend, recordSend } from "../lib/rate-limit";
 import { RegistrationsClosedError } from "../repositories/registrations";
+import {
+  CODE_TTL_MS,
+  formatRegistrationCode,
+  generateRegistrationCode,
+  hashRegistrationCode,
+  maskRegistrationEmail,
+  SESSION_TTL_MS,
+} from "./registration-code";
+import {
+  isRegistrationDraftReady,
+  type RegistrationDraftSession,
+  toRegistrationDraftSession,
+} from "./registration-draft-session";
 import "../lib/react-global";
 
 export const VERIFICATION_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-export const DRAFT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const RESEND_COOLDOWN_SECONDS = 60;
 
 function hashToken(token: string): string {
@@ -31,31 +50,19 @@ function newToken(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
-function maskEmail(email: string): string {
-  const [local = "", domain = ""] = email.split("@");
-  const visible = local.slice(0, Math.min(2, local.length));
-  return `${visible}${"•".repeat(Math.max(3, local.length - visible.length))}@${domain}`;
-}
-
-export interface RegistrationDraftSession extends KnownPerson {
-  token: string;
-  expiresAt: Date;
-  ready: boolean;
-  /** Only the kind(s) actually supplied at `start` are keys here. */
-  emails: Partial<
-    Record<MemberEmailKind, { maskedAddress: string; verified: boolean }>
-  >;
-}
-
 export interface ResolvedRegistrationDraft extends MemberEmails {
   draftId: string;
 }
 
 export interface RegistrationChallengeService {
-  start(emails: MemberEmails): Promise<{ resendAfterSeconds: number }>;
+  start(email: string): Promise<{ resendAfterSeconds: number }>;
+  verifyCode(
+    email: string,
+    code: string,
+  ): Promise<RegistrationDraftSession | undefined>;
   verifyLink(token: string): Promise<RegistrationDraftSession | undefined>;
   resume(token: string): Promise<RegistrationDraftSession | undefined>;
-  resend(token: string, kind: MemberEmailKind): Promise<void>;
+  resendLink(token: string, kind: MemberEmailKind): Promise<void>;
   resolveSession(token: string): Promise<ResolvedRegistrationDraft | undefined>;
   consumeSession(token: string): Promise<boolean>;
 }
@@ -77,6 +84,27 @@ export function createRegistrationChallengeService(
   const emailer = () => dependencies.emailer ?? defaultEmailer();
   const resolveDb = () => dependencies.db ?? getDb();
 
+  async function sendCode(email: string, code: string) {
+    if (!dependencies.emailer && getRuntimeEnvironment() === "development") {
+      console.info(`[registration OTP] ${email}: ${code}`);
+      return;
+    }
+
+    try {
+      await emailer().send({
+        to: email,
+        subject: "el teu codi d'inscripció · iaeste lc lleida",
+        react: VerificationCode({
+          email,
+          code: formatRegistrationCode(code),
+          expiresInMinutes: CODE_TTL_MS / 60_000,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to send registration code", error);
+    }
+  }
+
   async function sendLink(email: string, kind: MemberEmailKind, token: string) {
     const link = `${getInscripcionsPublicOrigin()}/formulari#token=${token}`;
     try {
@@ -95,115 +123,82 @@ export function createRegistrationChallengeService(
     }
   }
 
-  type LoadedDraft = NonNullable<
-    Awaited<
-      ReturnType<
-        ReturnType<typeof createRegistrationDraftRepository>["resolveSession"]
-      >
-    >
-  >;
-
-  /** The row(s) actually present on this draft — one kind, or both. */
-  function presentRows(loaded: LoadedDraft) {
-    return ([loaded.university, loaded.personal] as const).filter(
-      (row): row is NonNullable<typeof row> => Boolean(row),
-    );
-  }
-
-  /** Ready once every address supplied at `start` — one or two — is verified. */
-  function isReady(loaded: LoadedDraft): boolean {
-    const rows = presentRows(loaded);
-    return rows.length > 0 && rows.every((row) => Boolean(row.verifiedAt));
-  }
-
-  async function toSession(
-    loaded: LoadedDraft,
+  async function toCodeSession(
+    email: string,
     token: string,
+    expiresAt: Date,
   ): Promise<RegistrationDraftSession> {
-    const ready = isReady(loaded);
-    const rows = presentRows(loaded);
-    const sessionHash = hashToken(token);
-    const sessionRow = rows.find((row) => row.sessionTokenHash === sessionHash);
-    const known = ready
-      ? await createKnownPersonRepository(resolveDb()).lookupEmails(
-          rows.map((row) => row.email),
-        )
-      : {
-          known: false,
-          profile: null,
-          memberships: [],
-          openCampaignRegistrationStatus: null,
-          willAutoAccept: false,
-        };
-
-    const emails: RegistrationDraftSession["emails"] = {};
-    if (loaded.university) {
-      emails.university = {
-        maskedAddress: maskEmail(loaded.university.email),
-        verified: Boolean(loaded.university.verifiedAt),
-      };
-    }
-    if (loaded.personal) {
-      emails.personal = {
-        maskedAddress: maskEmail(loaded.personal.email),
-        verified: Boolean(loaded.personal.verifiedAt),
-      };
-    }
-
+    const known = await createKnownPersonRepository(resolveDb()).lookup(email);
+    const verified = {
+      maskedAddress: maskRegistrationEmail(email),
+      verified: true,
+    };
     return {
       token,
-      expiresAt: sessionRow?.sessionExpiresAt ?? loaded.draft.expiresAt,
-      ready,
-      emails,
+      expiresAt,
+      ready: true,
+      emails: isUniversityEmail(email)
+        ? { university: verified }
+        : { personal: verified },
       ...known,
     };
   }
 
   return {
-    async start(rawEmails) {
-      // At least one is guaranteed by `memberEmailsSchema` upstream — this
-      // only trims/lowercases whichever kind(s) were actually supplied.
-      const kinds = (["university", "personal"] as const).flatMap((kind) => {
-        const raw =
-          kind === "university"
-            ? rawEmails.universityEmail
-            : rawEmails.personalEmail;
-        return raw ? [{ kind, email: raw.trim().toLowerCase() }] : [];
-      });
-
+    async start(rawEmail) {
+      const email = rawEmail.trim().toLowerCase();
       const db = resolveDb();
       const campaign =
         await createCampaignRepository(db).getOpenForRegistration();
       if (!campaign) throw new RegistrationsClosedError();
 
-      if (!kinds.every(({ email }) => canSend(`draft:${email}`))) {
+      if (!canSend(`registration-code:${email}`)) {
         return { resendAfterSeconds: RESEND_COOLDOWN_SECONDS };
       }
-      for (const { email } of kinds) recordSend(`draft:${email}`);
+      recordSend(`registration-code:${email}`);
 
-      const tokenExpiresAt = new Date(Date.now() + VERIFICATION_LINK_TTL_MS);
-      const withTokens = kinds.map(({ kind, email }) => ({
-        kind,
+      const code = generateRegistrationCode();
+      await createEmailChallengeRepository(db).create({
         email,
-        token: newToken(),
-      }));
-      await createRegistrationDraftRepository(db).create({
-        campaignId: campaign.id,
-        expiresAt: new Date(Date.now() + DRAFT_TTL_MS),
-        emails: Object.fromEntries(
-          withTokens.map(({ kind, email, token }) => [
-            kind,
-            { email, tokenHash: hashToken(token), tokenExpiresAt },
-          ]),
-        ),
+        codeHash: hashRegistrationCode(email, code),
+        expiresAt: new Date(Date.now() + CODE_TTL_MS),
       });
-
-      await Promise.all(
-        withTokens.map(({ email, kind, token }) =>
-          sendLink(email, kind, token),
-        ),
-      );
+      await sendCode(email, code);
       return { resendAfterSeconds: RESEND_COOLDOWN_SECONDS };
+    },
+
+    async verifyCode(rawEmail, code) {
+      const email = rawEmail.trim().toLowerCase();
+      const challenges = createEmailChallengeRepository(resolveDb());
+      const challenge = await challenges.getActive(email);
+      if (!challenge) return undefined;
+
+      if (challenge.attemptCount >= MAX_CHALLENGE_ATTEMPTS) {
+        await challenges.burn(challenge.id);
+        return undefined;
+      }
+
+      const expected = Buffer.from(challenge.codeHash, "hex");
+      const actual = Buffer.from(hashRegistrationCode(email, code), "hex");
+      const correct =
+        expected.length === actual.length &&
+        crypto.timingSafeEqual(expected, actual);
+
+      if (!correct) {
+        const updated = await challenges.recordAttempt(challenge.id);
+        if (updated && updated.attemptCount >= MAX_CHALLENGE_ATTEMPTS) {
+          await challenges.burn(challenge.id);
+        }
+        return undefined;
+      }
+
+      const token = newToken();
+      const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+      const consumed = await challenges.consume(challenge.id, {
+        sessionTokenHash: hashToken(token),
+        sessionExpiresAt: expiresAt,
+      });
+      return consumed ? toCodeSession(email, token, expiresAt) : undefined;
     },
 
     async verifyLink(token) {
@@ -215,17 +210,32 @@ export function createRegistrationChallengeService(
         tokenHash: hashToken(sessionToken),
         expiresAt,
       });
-      return loaded ? toSession(loaded, sessionToken) : undefined;
+      return loaded
+        ? toRegistrationDraftSession(resolveDb(), loaded, sessionToken)
+        : undefined;
     },
 
     async resume(token) {
+      const codeSession = await createEmailChallengeRepository(
+        resolveDb(),
+      ).getSession(hashToken(token));
+      if (codeSession?.sessionExpiresAt) {
+        return toCodeSession(
+          codeSession.email,
+          token,
+          codeSession.sessionExpiresAt,
+        );
+      }
+
       const loaded = await createRegistrationDraftRepository(
         resolveDb(),
       ).resolveSession(hashToken(token));
-      return loaded ? toSession(loaded, token) : undefined;
+      return loaded
+        ? toRegistrationDraftSession(resolveDb(), loaded, token)
+        : undefined;
     },
 
-    async resend(token, kind) {
+    async resendLink(token, kind) {
       const db = resolveDb();
       const drafts = createRegistrationDraftRepository(db);
       const loaded = await drafts.resolveSession(hashToken(token));
@@ -244,10 +254,22 @@ export function createRegistrationChallengeService(
     },
 
     async resolveSession(token) {
+      const codeSession = await createEmailChallengeRepository(
+        resolveDb(),
+      ).getSession(hashToken(token));
+      if (codeSession) {
+        return {
+          draftId: codeSession.id,
+          ...(isUniversityEmail(codeSession.email)
+            ? { universityEmail: codeSession.email }
+            : { personalEmail: codeSession.email }),
+        };
+      }
+
       const loaded = await createRegistrationDraftRepository(
         resolveDb(),
       ).resolveSession(hashToken(token));
-      if (!loaded || !isReady(loaded)) return undefined;
+      if (!loaded || !isRegistrationDraftReady(loaded)) return undefined;
       return {
         draftId: loaded.draft.id,
         universityEmail: loaded.university?.email,
@@ -256,6 +278,11 @@ export function createRegistrationChallengeService(
     },
 
     async consumeSession(token) {
+      const consumedCodeSession = await createEmailChallengeRepository(
+        resolveDb(),
+      ).consumeSession(hashToken(token));
+      if (consumedCodeSession) return true;
+
       const loaded = await createRegistrationDraftRepository(
         resolveDb(),
       ).resolveSession(hashToken(token));

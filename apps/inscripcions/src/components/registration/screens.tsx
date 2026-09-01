@@ -30,15 +30,19 @@ export const LoadingDraftScreen = () => (
   </StatusScreen>
 );
 
-export const InvalidDraftScreen = () => (
+export const InvalidDraftScreen = ({
+  onRestart,
+}: {
+  onRestart: () => void;
+}) => (
   <StatusScreen
     icon="link-off"
     tone="warning"
     title="aquest enllaç no és vàlid"
     actions={
-      <Link href="/formulari" className={buttonVariants()}>
+      <Button onClick={onRestart}>
         torna a començar
-      </Link>
+      </Button>
     }
   >
     <Paragraph>

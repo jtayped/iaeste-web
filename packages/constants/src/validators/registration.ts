@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { DEGREE_OPTIONS } from "../constants/studies";
 import { memberEmailsSchema } from "./member-email";
-import { isValidPhone } from "./phone";
+import { isValidPhone, parsePhone } from "./phone";
 
 const emailSchema = z
   .string()
@@ -29,7 +29,8 @@ export const registrationProfileSchema = z.object({
     .string()
     .trim()
     .min(1, "el número és obligatori")
-    .refine(isValidPhone, "el número de telèfon no és vàlid"),
+    .refine(isValidPhone, "el número de telèfon no és vàlid")
+    .transform((value) => parsePhone(value)?.display ?? value),
   degree: z.enum(DEGREE_OPTIONS, {
     error: "has de seleccionar un grau",
   }),

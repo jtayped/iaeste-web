@@ -2,12 +2,16 @@
 
 import React from "react";
 import { motion, MotionConfig } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 
-import { containerVariants } from "@/components/form/motion";
+import { Button } from "@repo/ui/button";
+import { childVariants, containerVariants } from "@/components/form/motion";
 import { FormHeader } from "@/components/form/notices";
 
 import { DetailsStepForm } from "./details-step";
+import { CodeStepForm } from "./code-step";
 import { EmailStepForm } from "./email-step";
+import { MembershipStep } from "./membership-step";
 import { Progress, type Step } from "./progress";
 import {
   AcceptedScreen,
@@ -25,8 +29,9 @@ import { VerificationStep } from "./verification-step";
 export type { Mode };
 
 const PUBLIC_STEPS: readonly Step[] = [
-  { key: "email", label: "correus" },
+  { key: "email", label: "correu" },
   { key: "verification", label: "confirmació" },
+  { key: "membership", label: "perfil" },
   { key: "details", label: "dades" },
 ];
 
@@ -43,15 +48,27 @@ const INVITED_STEPS: readonly Step[] = [
 const HEADINGS = {
   email: {
     title: "inscriu-te",
-    lead: "indica'ns una adreça de correu i t'hi enviarem un enllaç per confirmar-la.",
+    lead: "indica'ns una adreça i t'hi enviarem un codi per confirmar-la.",
   },
-  verificationSingle: {
+  verificationCode: {
+    title: "confirma el correu",
+    lead: "escriu el codi que trobaràs a la teva safata d'entrada.",
+  },
+  verificationLink: {
     title: "confirma el correu",
     lead: "t'hem enviat un enllaç a la teva safata d'entrada.",
+  },
+  verificationComplete: {
+    title: "correu confirmat",
+    lead: "aquest pas ja està fet. pots continuar quan vulguis.",
   },
   verificationBoth: {
     title: "confirma els correus",
     lead: "t'hem enviat un enllaç a cada safata d'entrada.",
+  },
+  membership: {
+    title: "recuperem el teu perfil",
+    lead: "una pregunta ràpida abans d'omplir les dades.",
   },
   detailsPublic: {
     title: "les teves dades",
@@ -87,7 +104,8 @@ export const RegistrationFlow = ({ mode }: { mode: Mode }) => {
   if (stage.kind === "loadingInvitation") return <LoadingInvitationScreen />;
   if (stage.kind === "loadingDraft") return <LoadingDraftScreen />;
   if (stage.kind === "invalidInvitation") return <InvalidInvitationScreen />;
-  if (stage.kind === "invalidDraft") return <InvalidDraftScreen />;
+  if (stage.kind === "invalidDraft")
+    return <InvalidDraftScreen onRestart={flow.restart} />;
   if (stage.kind === "identityConflict") return <IdentityConflictScreen />;
   if (stage.kind === "rateLimited")
     return <RateLimitedScreen onRetry={stage.retry} />;
@@ -103,21 +121,28 @@ export const RegistrationFlow = ({ mode }: { mode: Mode }) => {
       ? 0
       : stage.kind === "verification"
         ? 1
-        : 2;
+        : stage.kind === "membership"
+          ? 2
+          : 3;
 
   const heading =
     stage.kind === "email"
       ? HEADINGS.email
       : stage.kind === "verification"
-        ? // A draft started with one address must not promise two inboxes.
-          Object.keys(stage.emails).length < 2
-          ? HEADINGS.verificationSingle
-          : HEADINGS.verificationBoth
-        : invited
-          ? HEADINGS.detailsInvited
-          : stage.context.willAutoAccept
-            ? HEADINGS.detailsRenewal
-            : HEADINGS.detailsPublic;
+        ? stage.method === "code"
+          ? HEADINGS.verificationCode
+          : stage.method === "complete"
+            ? HEADINGS.verificationComplete
+            : Object.keys(stage.emails).length < 2
+              ? HEADINGS.verificationLink
+              : HEADINGS.verificationBoth
+        : stage.kind === "membership"
+          ? HEADINGS.membership
+          : invited
+            ? HEADINGS.detailsInvited
+            : stage.context.willAutoAccept
+              ? HEADINGS.detailsRenewal
+              : HEADINGS.detailsPublic;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -127,8 +152,25 @@ export const RegistrationFlow = ({ mode }: { mode: Mode }) => {
         animate="visible"
         variants={containerVariants}
       >
+        <motion.div variants={childVariants} className="mb-4">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="-ms-2 text-muted-foreground"
+            onClick={flow.goBack}
+          >
+            <ArrowLeft aria-hidden />
+            enrere
+          </Button>
+        </motion.div>
         <FormHeader title={heading.title} lead={heading.lead} />
-        <Progress steps={steps} current={currentStep} />
+        <Progress
+          steps={steps}
+          current={currentStep}
+          furthest={invited ? -1 : flow.furthestStep}
+          onSelect={flow.goToStep}
+        />
 
         {stage.kind === "email" && (
           <EmailStepForm
@@ -139,16 +181,36 @@ export const RegistrationFlow = ({ mode }: { mode: Mode }) => {
           />
         )}
 
-        {stage.kind === "verification" && (
-          <VerificationStep
-            emails={stage.emails}
-            canRefresh={Boolean(stage.session)}
-            busy={flow.busy}
-            {...(flow.error ? { error: flow.error } : {})}
-            resending={flow.resending}
-            onRefresh={() => void flow.refreshDraft()}
-            onResend={(kind) => void flow.resendLink(kind)}
-            onRestart={flow.restart}
+        {stage.kind === "verification" &&
+          (stage.method === "code" ? (
+            <CodeStepForm
+              email={stage.email}
+              submitting={flow.busy}
+              {...(flow.error ? { error: flow.error } : {})}
+              resendIn={flow.resendIn}
+              resending={flow.resendingCode}
+              onSubmit={(values) => void flow.submitCode(stage.email, values)}
+              onResend={() => void flow.resendCode(stage.email)}
+              onChangeEmail={flow.showEmail}
+            />
+          ) : (
+            <VerificationStep
+              emails={stage.emails}
+              canRefresh
+              busy={flow.busy}
+              {...(flow.error ? { error: flow.error } : {})}
+              resending={flow.resendingLink}
+              onRefresh={() => void flow.refreshDraft()}
+              onResend={(kind) => void flow.resendLink(kind)}
+              onRestart={flow.showEmail}
+            />
+          ))}
+
+        {stage.kind === "membership" && (
+          <MembershipStep
+            session={stage.session}
+            onContinue={flow.completeMembershipStep}
+            onTryAnotherEmail={flow.showEmail}
           />
         )}
 
@@ -156,6 +218,10 @@ export const RegistrationFlow = ({ mode }: { mode: Mode }) => {
           <DetailsStepForm
             context={stage.context}
             submitting={flow.busy}
+            {...(!invited && flow.profileDraft
+              ? { draft: flow.profileDraft }
+              : {})}
+            {...(!invited ? { onDraftChange: flow.saveProfileDraft } : {})}
             {...(flow.error ? { error: flow.error } : {})}
             fieldIssues={flow.fieldIssues}
             onSubmit={(values) => void flow.submitDetails(values)}

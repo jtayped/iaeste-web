@@ -73,8 +73,30 @@ export function mapStartResult(result: ApiResult<StartResponse>): StartOutcome {
   return { kind: "failed" };
 }
 
+export type VerifyCodeOutcome =
+  | { kind: "ok"; session: Session }
+  | { kind: "badCode" }
+  | { kind: "identityConflict" }
+  | { kind: "rateLimited" }
+  | { kind: "failed" };
+
+export function mapVerifyCodeResult(
+  result: ApiResult<RegistrationSession>,
+): VerifyCodeOutcome {
+  const { data, error, response } = result;
+
+  if (error) {
+    if (response?.status === 429) return { kind: "rateLimited" };
+    if (error.error.code === "INVALID_TOKEN") return { kind: "badCode" };
+    if (error.error.code === "CONFLICT") return { kind: "identityConflict" };
+    return { kind: "failed" };
+  }
+
+  return data ? { kind: "ok", session: data } : { kind: "failed" };
+}
+
 /**
- * What opening a registration verification link should do next.
+ * What resuming or opening a legacy registration link should do next.
  */
 export type VerifyDraftOutcome =
   | { kind: "ok"; session: Session }

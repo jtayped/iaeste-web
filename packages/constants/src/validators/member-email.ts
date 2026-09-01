@@ -11,18 +11,18 @@ export function isUniversityEmail(value: string): boolean {
   return UNIVERSITY_EMAIL_DOMAINS.some((allowed) => domain === allowed);
 }
 
-const email = z
+export const memberEmailSchema = z
   .string()
   .trim()
   .toLowerCase()
   .email("adreça de correu electrònic no vàlida");
 
-export const universityEmailSchema = email.refine(
+export const universityEmailSchema = memberEmailSchema.refine(
   isUniversityEmail,
   "fes servir el correu @udl.cat o @alumnes.udl.cat",
 );
 
-export const personalEmailSchema = email.refine(
+export const personalEmailSchema = memberEmailSchema.refine(
   (value) => !isUniversityEmail(value),
   "fes servir una adreça personal, no la de la udl",
 );
@@ -39,10 +39,9 @@ function optionalEmail(
 }
 
 /**
- * A member may register with a university address, a personal one, or both
- * — never neither, per the plan's "either address, not both" requirement.
- * Whichever one (or two) is supplied still goes through its own domain
- * check above.
+ * The stored domain shape supports either address and legacy drafts that hold
+ * both. The current public form supplies exactly one and classifies it with
+ * `toMemberEmails` below.
  */
 export const memberEmailsSchema = z
   .object({
@@ -68,3 +67,16 @@ export const memberEmailsSchema = z
 
 export type MemberEmails = z.infer<typeof memberEmailsSchema>;
 export type MemberEmailKind = "university" | "personal";
+
+/**
+ * Turn the form's single address into the existing domain shape.
+ *
+ * The API and database still distinguish university and personal addresses,
+ * but the person filling in the form should not have to make that choice.
+ */
+export function toMemberEmails(value: string): MemberEmails {
+  const email = memberEmailSchema.parse(value);
+  return isUniversityEmail(email)
+    ? { universityEmail: email }
+    : { personalEmail: email };
+}
