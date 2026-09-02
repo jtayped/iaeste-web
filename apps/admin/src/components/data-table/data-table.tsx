@@ -17,12 +17,16 @@ import type {
   DataTableColumn,
   DataTableEmpty,
   DataTablePagination,
+  DataTableSelectionConfig,
   DataTableState,
 } from "@/components/data-table/types";
+import { SelectionBar } from "@/components/data-table/selection-bar";
+import { SelectionCheckbox } from "@/components/data-table/selection-checkbox";
 import { TableSkeleton } from "@/components/data-table/table-skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { errorMessage } from "@/lib/api-error";
+import { useTableSelection } from "@/components/data-table/use-table-selection";
 
 export interface DataTableProps<Row> {
   /** Describes the table for a screen reader. Required — it is the caption. */
@@ -38,6 +42,8 @@ export interface DataTableProps<Row> {
   pagination?: DataTablePagination;
   /** Search and filter controls, rendered above the table. */
   toolbar?: React.ReactNode;
+  /** Optional multiselect. The table owns all checkbox/state mechanics. */
+  selection?: DataTableSelectionConfig<Row>;
 }
 
 /**
@@ -66,14 +72,31 @@ export function DataTable<Row>({
   empty,
   pagination,
   toolbar,
+  selection: selectionConfig,
 }: DataTableProps<Row>) {
   const ready = !state.isPending && !state.isError;
+  const selection = useTableSelection(
+    selectionConfig?.scope ?? "selection-disabled",
+    selectionConfig?.total ?? 0,
+  );
 
   return (
     <div className="space-y-4">
       {toolbar}
 
-      {state.isPending ? <TableSkeleton columns={columns.length} /> : null}
+      {selectionConfig && selection.count > 0 ? (
+        <SelectionBar count={selection.count} onClear={selection.clear}>
+          {selectionConfig.actions({
+            count: selection.count,
+            value: selection.value,
+            clear: selection.clear,
+          })}
+        </SelectionBar>
+      ) : null}
+
+      {state.isPending ? (
+        <TableSkeleton columns={columns.length + (selectionConfig ? 1 : 0)} />
+      ) : null}
 
       {state.isError ? <ErrorState detail={errorMessage(state.error)} /> : null}
 
@@ -97,6 +120,17 @@ export function DataTable<Row>({
             <caption className="sr-only">{label}</caption>
             <TableHeader>
               <TableRow>
+                {selectionConfig ? (
+                  <TableHead className="w-12 px-0 text-center">
+                    <SelectionCheckbox
+                      label={`selecciona els ${selectionConfig.total} resultats`}
+                      selected={selection.allSelected}
+                      indeterminate={selection.isIndeterminate}
+                      disabled={state.isFetching || selectionConfig.total === 0}
+                      onChange={selection.toggleAll}
+                    />
+                  </TableHead>
+                ) : null}
                 {columns.map((column) => (
                   <TableHead
                     key={column.id}
@@ -115,9 +149,29 @@ export function DataTable<Row>({
             <TableBody>
               {rows.map((row) => {
                 const href = rowHref?.(row);
+                const key = rowKey(row);
+                const selectable =
+                  selectionConfig?.isRowSelectable?.(row) ?? true;
+                const selected =
+                  selectionConfig && selectable
+                    ? selection.isSelected(key)
+                    : false;
 
                 return (
-                  <TableRow key={rowKey(row)}>
+                  <TableRow
+                    key={key}
+                    {...(selected ? { "data-state": "selected" } : {})}
+                  >
+                    {selectionConfig ? (
+                      <TableCell className="w-12 px-0 text-center">
+                        <SelectionCheckbox
+                          label={`selecciona ${selectionConfig.rowLabel?.(row) ?? key}`}
+                          selected={selected}
+                          disabled={!selectable || state.isFetching}
+                          onChange={(next) => selection.toggleRow(key, next)}
+                        />
+                      </TableCell>
+                    ) : null}
                     {columns.map((column) => (
                       <TableCell
                         key={column.id}

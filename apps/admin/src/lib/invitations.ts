@@ -10,11 +10,13 @@ import {
 import { toast } from "@repo/ui/toast";
 
 import type {
+  AdminBulkCreateInvitationsResponse,
   AdminInvitation,
   AdminInvitationList,
   InvitationRole,
   InvitationStatusFilter,
 } from "@/lib/admin-types";
+import type { DataTableSelectionValue } from "@/components/data-table/types";
 import { apiClient, NO_BODY_POST } from "@/lib/api";
 import {
   ApiRequestError,
@@ -156,6 +158,74 @@ export function useCreateInvitation(): UseMutationResult<
       void queryClient.invalidateQueries({
         queryKey: queryKeys.invitations.all,
       });
+    },
+    onError: (error) => {
+      const detail = errorDetail(error);
+      toast.error(errorMessage(error), {
+        ...(detail ? { description: detail } : {}),
+      });
+    },
+  });
+}
+
+export interface MemberSelectionQuery {
+  q?: string;
+  filter?: "all" | "current" | "past";
+  campaignId?: string;
+}
+
+export interface BulkCreateInvitationsInput {
+  campaignId: string;
+  query: MemberSelectionQuery;
+  selection: DataTableSelectionValue;
+}
+
+export function useBulkCreateInvitations(): UseMutationResult<
+  AdminBulkCreateInvitationsResponse,
+  Error,
+  BulkCreateInvitationsInput
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ campaignId, query, selection }) =>
+      unwrap(
+        await apiClient.POST("/v1/admin/invitations/bulk", {
+          body: {
+            campaignId,
+            selection:
+              selection.mode === "ids"
+                ? {
+                    mode: "ids",
+                    userIds: [...selection.rowIds],
+                  }
+                : {
+                    mode: "all",
+                    ...query,
+                    excludedUserIds: [...selection.excludedRowIds],
+                  },
+          },
+        }),
+      ),
+    onSuccess: (result) => {
+      const skipped =
+        result.skipped.member +
+        result.skipped.registered +
+        result.skipped.invited;
+      toast.success(
+        result.created === 1
+          ? "1 invitació enviada"
+          : `${result.created} invitacions enviades`,
+        skipped > 0
+          ? {
+              description: `${skipped} ${skipped === 1 ? "persona ha quedat fora" : "persones han quedat fora"} perquè ja tenien una alta, una inscripció o una invitació.`,
+            }
+          : undefined,
+      );
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.invitations.all,
+      });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.members.all });
     },
     onError: (error) => {
       const detail = errorDetail(error);

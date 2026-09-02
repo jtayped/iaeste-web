@@ -2,11 +2,16 @@ import assert from "node:assert/strict";
 import { after, afterEach, before, describe, it } from "node:test";
 
 import type { Database } from "@repo/db/client";
-import { createCampaignRepository } from "@repo/db/repositories";
+import {
+  createCampaignRepository,
+  createMembershipRepository,
+} from "@repo/db/repositories";
+import { memberProfile, registration } from "@repo/db/schema";
 import { closeTestDb, getTestDb, truncateAll } from "@repo/db/test-support";
 import {
   createTestCampaign,
   createTestUser,
+  testProfileSnapshot,
 } from "@repo/db/test-support/fixtures";
 
 import { createApp } from "../app";
@@ -38,6 +43,28 @@ function post(a: ReturnType<typeof makeApp>, path: string, body?: unknown) {
   });
 }
 
+async function makeMember(db: Database, campaignId: string, name: string) {
+  const user = await createTestUser(db, {
+    name,
+    email: `${name.toLowerCase()}@alumnes.udl.cat`,
+  });
+  await db.insert(memberProfile).values({
+    userId: user.id,
+    name,
+    surnames: "Prova",
+    phoneE164: "+34600111222",
+    phoneDisplay: "600 111 222",
+    degree: "grau en informàtica (lleida)",
+    studyYear: 3,
+  });
+  await createMembershipRepository(db).join({
+    userId: user.id,
+    campaignId,
+    source: "registration",
+  });
+  return user;
+}
+
 describe("admin + public invitations routes", () => {
   let db: Database;
 
@@ -58,6 +85,90 @@ describe("admin + public invitations routes", () => {
       403,
     );
     assert.equal((await post(a, "/v1/admin/invitations", {})).status, 403);
+    assert.equal((await post(a, "/v1/admin/invitations/bulk", {})).status, 403);
+  });
+
+  it("bulk-invites an all-except member selection and guards existing target activity", async () => {
+    const source = await createTestCampaign(db, { label: "2025-2026" });
+    const target = await createTestCampaign(db, { label: "2026-2027" });
+    const actor = await createTestUser(db);
+    const eligible = await makeMember(db, source.id, "Aina");
+    const excluded = await makeMember(db, source.id, "Berta");
+    const alreadyMember = await makeMember(db, source.id, "Carla");
+    const registered = await makeMember(db, source.id, "Diana");
+    const invited = await makeMember(db, source.id, "Elena");
+
+    await createMembershipRepository(db).join({
+      userId: alreadyMember.id,
+      campaignId: target.id,
+      source: "registration",
+    });
+    await db.insert(registration).values({
+      campaignId: target.id,
+      email: registered.email,
+      universityEmail: registered.email,
+      profileSnapshot: testProfileSnapshot({ name: "Diana" }),
+      source: "public_form",
+      status: "pending_review",
+    });
+    await createInvitationService({
+      db,
+      emailer: { async send() {} },
+    }).create({
+      campaignId: target.id,
+      email: invited.email,
+      inviterId: actor.id,
+      intendedRole: "member",
+      prefillName: "Elena",
+      prefillSurnames: "Prova",
+    });
+
+    const app = makeApp(db, "admin", actor.id);
+    const list = await app.request(
+      `/v1/admin/members?campaignId=${source.id}&targetCampaignId=${target.id}&limit=10`,
+    );
+    assert.equal(list.status, 200);
+    const page = (await list.json()) as {
+      rows: Array<{ userId: string; targetState: string }>;
+      total: number;
+      inviteEligibleTotal: number;
+    };
+    assert.equal(page.total, 5);
+    assert.equal(page.inviteEligibleTotal, 2);
+    assert.deepEqual(
+      Object.fromEntries(page.rows.map((row) => [row.userId, row.targetState])),
+      {
+        [eligible.id]: "eligible",
+        [excluded.id]: "eligible",
+        [alreadyMember.id]: "member",
+        [registered.id]: "registered",
+        [invited.id]: "invited",
+      },
+    );
+
+    const response = await post(app, "/v1/admin/invitations/bulk", {
+      campaignId: target.id,
+      selection: {
+        mode: "all",
+        campaignId: source.id,
+        excludedUserIds: [excluded.id],
+      },
+    });
+    assert.equal(response.status, 201);
+    assert.deepEqual(await response.json(), {
+      requested: 4,
+      created: 1,
+      skipped: { member: 1, registered: 1, invited: 1 },
+    });
+
+    const invitations = await createInvitationService({
+      db,
+      emailer: { async send() {} },
+    }).listByCampaign(target.id);
+    assert.deepEqual(
+      invitations.map((row) => row.email).sort(),
+      [eligible.email, invited.email].sort(),
+    );
   });
 
   it("creates, lists, resends and cancels an invitation", async () => {

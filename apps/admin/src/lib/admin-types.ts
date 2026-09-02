@@ -28,6 +28,9 @@ export type AdminCampaignWithCounts =
 
 export type AdminMemberListItem = components["schemas"]["AdminMemberListItem"];
 export type AdminMemberList = components["schemas"]["AdminMemberList"];
+export type MemberTargetState = NonNullable<
+  components["schemas"]["MemberTargetState"]
+>;
 export type AdminMemberDetail = components["schemas"]["AdminMemberDetail"];
 export type AdminMemberProfile = components["schemas"]["AdminMemberProfile"];
 export type AdminMemberEmails = components["schemas"]["AdminMemberEmails"];
@@ -45,6 +48,8 @@ export type AdminMemberTimelineEvent =
 
 export type AdminInvitation = components["schemas"]["AdminInvitation"];
 export type AdminInvitationList = components["schemas"]["AdminInvitationList"];
+export type AdminBulkCreateInvitationsResponse =
+  components["schemas"]["AdminBulkCreateInvitationsResponse"];
 export type InvitationRole = components["schemas"]["InvitationRole"];
 
 /** `GET /v1/admin/invitations`'s optional `status` query parameter. */

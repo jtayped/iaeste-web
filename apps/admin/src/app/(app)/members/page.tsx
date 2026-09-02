@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
 
 const BREADCRUMB: BreadcrumbEntry[] = [{ label: "membres" }];
 const TITLE = "membres";
-const DESCRIPTION = "qui forma part del comitè, ara i abans.";
+const DESCRIPTION =
+  "qui forma part del comitè, ara i abans, i qui renovarà la propera campanya.";
 
 export const metadata = adminMetadata(BREADCRUMB, TITLE, DESCRIPTION);
 
@@ -28,6 +29,27 @@ export default async function MembersPage() {
   const campaigns = await fetchCampaigns();
   const rows = campaigns.status === "ok" ? campaigns.data : [];
   const hasCurrent = rows.some((campaign) => campaign.isCurrent);
+  const target =
+    rows.find((campaign) => campaign.isRegistrationOpen) ??
+    rows.find((campaign) => campaign.isCurrent) ??
+    rows[0];
+  const source =
+    rows.find((campaign) => campaign.isCurrent && campaign.id !== target?.id) ??
+    rows.find(
+      (campaign) =>
+        target &&
+        campaign.id !== target.id &&
+        new Date(campaign.membershipStartsAt) <
+          new Date(target.membershipStartsAt),
+    ) ??
+    rows.find((campaign) => campaign.id !== target?.id) ??
+    target;
+  const options = rows.map((campaign) => ({
+    id: campaign.id,
+    label: campaign.label,
+    isCurrent: campaign.isCurrent,
+    isRegistrationOpen: campaign.isRegistrationOpen,
+  }));
 
   return (
     <PageShell
@@ -36,8 +58,12 @@ export default async function MembersPage() {
       description={DESCRIPTION}
       actions={<MembersExportMenu campaigns={rows} hasCurrent={hasCurrent} />}
     >
-      <Suspense fallback={<TableSkeleton columns={5} />}>
-        <MembersTable />
+      <Suspense fallback={<TableSkeleton columns={6} />}>
+        <MembersTable
+          campaigns={options}
+          initialSource={source ? `campaign:${source.id}` : "all"}
+          initialTarget={target?.id ?? ""}
+        />
       </Suspense>
     </PageShell>
   );

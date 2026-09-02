@@ -430,7 +430,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past. Requires `members.read`. */
+        /** @description Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past; `campaignId` selects active members of one exact campaign. `targetCampaignId` adds invitation readiness and an eligible count. Requires `members.read`. */
         get: operations["adminListMembers"];
         put?: never;
         post?: never;
@@ -555,6 +555,23 @@ export interface paths {
         put?: never;
         /** @description Invite someone to a campaign. Requires `invitations.write`, and `invitations.grant_admin` as well when intendedRole is admin. A non-udl.cat email needs allowExternalDomain: true. */
         post: operations["adminCreateInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/invitations/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Invite a member-table selection to one campaign. The selection is either explicit user ids or all rows matching a server-side member query except named exclusions. Existing memberships, registrations and pending invitations are skipped. Requires `invitations.write`. */
+        post: operations["adminBulkCreateInvitations"];
         delete?: never;
         options?: never;
         head?: never;
@@ -994,6 +1011,7 @@ export interface components {
         AdminMemberList: {
             rows: components["schemas"]["AdminMemberListItem"][];
             total: number;
+            inviteEligibleTotal: number;
             limit: number;
             offset: number;
         };
@@ -1007,7 +1025,10 @@ export interface components {
             role: string | null;
             currentStatus: string | null;
             totalMemberships: number;
+            targetState: components["schemas"]["MemberTargetState"];
         };
+        /** @enum {string|null} */
+        MemberTargetState: "eligible" | "member" | "registered" | "invited" | null;
         AdminMemberDetail: {
             profile: components["schemas"]["AdminMemberProfile"];
             emails: components["schemas"]["AdminMemberEmails"];
@@ -1106,6 +1127,32 @@ export interface components {
             prefillName?: string;
             prefillSurnames?: string;
             allowExternalDomain?: boolean;
+        };
+        AdminBulkCreateInvitationsResponse: {
+            requested: number;
+            created: number;
+            skipped: {
+                member: number;
+                registered: number;
+                invited: number;
+            };
+        };
+        AdminBulkCreateInvitationsRequest: {
+            campaignId: string;
+            selection: {
+                /** @enum {string} */
+                mode: "ids";
+                userIds: string[];
+            } | {
+                /** @enum {string} */
+                mode: "all";
+                q?: string;
+                /** @enum {string} */
+                filter?: "all" | "current" | "past";
+                campaignId?: string;
+                /** @default [] */
+                excludedUserIds: string[];
+            };
         };
         AdminInvitationActionResponse: {
             /** @enum {string} */
@@ -2441,6 +2488,8 @@ export interface operations {
             query?: {
                 q?: string;
                 filter?: "all" | "current" | "past";
+                campaignId?: string;
+                targetCampaignId?: string;
                 limit?: number;
                 offset?: number | null;
             };
@@ -2968,6 +3017,66 @@ export interface operations {
                 };
             };
             /** @description An invitation for this email + campaign already exists, or the email domain needs confirmation, or admin was requested without the capability. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminBulkCreateInvitations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminBulkCreateInvitationsRequest"];
+            };
+        };
+        responses: {
+            /** @description The bulk invitation result, including guarded skips. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBulkCreateInvitationsResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No target campaign with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The resolved selection is larger than 200 members. */
             409: {
                 headers: {
                     [name: string]: unknown;

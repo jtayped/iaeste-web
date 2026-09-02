@@ -48,3 +48,34 @@ export interface DataTablePagination {
   offset: number;
   onOffsetChange: (offset: number) => void;
 }
+
+/**
+ * A selection can name individual rows or the whole server-side result set.
+ *
+ * The second form is what keeps "select all" honest on a paginated table:
+ * the caller sends its current query plus the exclusions to the server
+ * instead of pretending the twenty rows in memory are the whole list.
+ */
+export type DataTableSelectionValue =
+  | { mode: "ids"; rowIds: readonly string[] }
+  | { mode: "all"; excludedRowIds: readonly string[] };
+
+export interface DataTableSelectionHandle {
+  count: number;
+  value: DataTableSelectionValue;
+  clear: () => void;
+}
+
+/** Optional, reusable row selection for a `<DataTable>`. */
+export interface DataTableSelectionConfig<Row> {
+  /** Changes whenever the server-side result set changes. */
+  scope: string;
+  /** Number of selectable rows across every page in this scope. */
+  total: number;
+  /** Rows such as already-invited members can remain visible but disabled. */
+  isRowSelectable?: (row: Row) => boolean;
+  /** Human label announced by each row checkbox. Defaults to the row id. */
+  rowLabel?: (row: Row) => string;
+  /** Rendered once in the shared selection bar. */
+  actions: (selection: DataTableSelectionHandle) => React.ReactNode;
+}

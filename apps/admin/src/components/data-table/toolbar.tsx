@@ -5,6 +5,13 @@ import { Search } from "lucide-react";
 
 import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@repo/ui/tabs";
 
 import { useDebouncedValue } from "@/lib/use-debounced-value";
@@ -84,6 +91,41 @@ export function TableSearch({
 export interface FilterOption {
   value: string;
   label: string;
+}
+
+/** A compact server-side filter for lists with more than a few options. */
+export function TableSelectFilter({
+  id,
+  value,
+  options,
+  onChange,
+  label,
+}: {
+  id: string;
+  value: string;
+  options: readonly FilterOption[];
+  onChange: (next: string) => void;
+  label: string;
+}) {
+  return (
+    <div className="min-w-0 space-y-1.5">
+      <Label htmlFor={id} className="text-xs text-muted-foreground">
+        {label}
+      </Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger id={id} className="h-11 w-full sm:h-9 sm:w-56">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 }
 
 /**

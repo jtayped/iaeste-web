@@ -26,6 +26,8 @@ export const MEMBERS_PAGE_SIZE = 20;
 export interface MembersQuery {
   q: string;
   filter: MemberFilter;
+  campaignId?: string;
+  targetCampaignId?: string;
   limit: number;
   offset: number;
 }
@@ -43,6 +45,10 @@ export function useMembers(params: MembersQuery) {
             query: {
               ...(params.q ? { q: params.q } : {}),
               filter: params.filter,
+              ...(params.campaignId ? { campaignId: params.campaignId } : {}),
+              ...(params.targetCampaignId
+                ? { targetCampaignId: params.targetCampaignId }
+                : {}),
               limit: params.limit,
               offset: params.offset,
             },

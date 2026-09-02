@@ -9,6 +9,7 @@
     "start": "next start --port 3005",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
+    "test": "tsx --test \"src/**/*.test.ts\"",
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
@@ -36,6 +37,7 @@
     "eslint": "^9.22.0",
     "postcss": "^8.5.26",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.20.0",
     "typescript": "5.8.2"
   }
 }

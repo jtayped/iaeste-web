@@ -1412,6 +1412,9 @@
           "total": {
             "type": "integer"
           },
+          "inviteEligibleTotal": {
+            "type": "integer"
+          },
           "limit": {
             "type": "integer"
           },
@@ -1422,6 +1425,7 @@
         "required": [
           "rows",
           "total",
+          "inviteEligibleTotal",
           "limit",
           "offset"
         ]
@@ -1461,6 +1465,9 @@
           },
           "totalMemberships": {
             "type": "integer"
+          },
+          "targetState": {
+            "$ref": "#/components/schemas/MemberTargetState"
           }
         },
         "required": [
@@ -1472,7 +1479,21 @@
           "studyYear",
           "role",
           "currentStatus",
-          "totalMemberships"
+          "totalMemberships",
+          "targetState"
+        ]
+      },
+      "MemberTargetState": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "eligible",
+          "member",
+          "registered",
+          "invited",
+          null
         ]
       },
       "AdminMemberDetail": {
@@ -1877,6 +1898,121 @@
         "required": [
           "campaignId",
           "email"
+        ]
+      },
+      "AdminBulkCreateInvitationsResponse": {
+        "type": "object",
+        "properties": {
+          "requested": {
+            "type": "integer"
+          },
+          "created": {
+            "type": "integer"
+          },
+          "skipped": {
+            "type": "object",
+            "properties": {
+              "member": {
+                "type": "integer"
+              },
+              "registered": {
+                "type": "integer"
+              },
+              "invited": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "member",
+              "registered",
+              "invited"
+            ]
+          }
+        },
+        "required": [
+          "requested",
+          "created",
+          "skipped"
+        ]
+      },
+      "AdminBulkCreateInvitationsRequest": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selection": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "ids"
+                    ]
+                  },
+                  "userIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 200
+                  }
+                },
+                "required": [
+                  "mode",
+                  "userIds"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "all"
+                    ]
+                  },
+                  "q": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "filter": {
+                    "type": "string",
+                    "enum": [
+                      "all",
+                      "current",
+                      "past"
+                    ]
+                  },
+                  "campaignId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "excludedUserIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "maxItems": 200,
+                    "default": []
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "campaignId",
+          "selection"
         ]
       },
       "AdminInvitationActionResponse": {
@@ -3681,7 +3817,7 @@
         "tags": [
           "Admin"
         ],
-        "description": "Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past. Requires `members.read`.",
+        "description": "Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past; `campaignId` selects active members of one exact campaign. `targetCampaignId` adds invitation readiness and an eligible count. Requires `members.read`.",
         "parameters": [
           {
             "schema": {
@@ -3703,6 +3839,24 @@
             },
             "required": false,
             "name": "filter",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "campaignId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "targetCampaignId",
             "in": "query"
           },
           {
@@ -4438,6 +4592,77 @@
           },
           "409": {
             "description": "An invitation for this email + campaign already exists, or the email domain needs confirmation, or admin was requested without the capability.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/invitations/bulk": {
+      "post": {
+        "operationId": "adminBulkCreateInvitations",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Invite a member-table selection to one campaign. The selection is either explicit user ids or all rows matching a server-side member query except named exclusions. Existing memberships, registrations and pending invitations are skipped. Requires `invitations.write`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminBulkCreateInvitationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The bulk invitation result, including guarded skips.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBulkCreateInvitationsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No target campaign with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The resolved selection is larger than 200 members.",
             "content": {
               "application/json": {
                 "schema": {

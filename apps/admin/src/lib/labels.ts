@@ -2,6 +2,7 @@ import type {
   CampaignState,
   InvitationStatusFilter,
   InvitationRole,
+  MemberTargetState,
   RegistrationStatus,
 } from "@/lib/admin-types";
 
@@ -64,6 +65,17 @@ const MEMBERSHIP_LABELS: Record<string, Labelled> = {
 
 export function membershipStatus(status: string): Labelled {
   return MEMBERSHIP_LABELS[status] ?? { label: status, tone: "outline" };
+}
+
+const MEMBER_TARGET_LABELS: Record<MemberTargetState, Labelled> = {
+  eligible: { label: "per convidar", tone: "outline" },
+  member: { label: "ja és membre", tone: "secondary" },
+  registered: { label: "inscripció enviada", tone: "default" },
+  invited: { label: "ja convidat", tone: "default" },
+};
+
+export function memberTargetState(status: MemberTargetState): Labelled {
+  return MEMBER_TARGET_LABELS[status];
 }
 
 /** `membership_event.event_type`, the audit log's verbs. */

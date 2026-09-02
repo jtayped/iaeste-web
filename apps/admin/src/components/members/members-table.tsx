@@ -3,35 +3,31 @@
 import * as React from "react";
 import { Users } from "lucide-react";
 
+import { StatusBadge } from "@/components/admin/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
-import type { DataTableColumn } from "@/components/data-table/types";
+import type {
+  DataTableColumn,
+  DataTableSelectionHandle,
+} from "@/components/data-table/types";
 import {
-  TableFilter,
   TableSearch,
+  TableSelectFilter,
   TableToolbar,
 } from "@/components/data-table/toolbar";
-import { StatusBadge } from "@/components/admin/status-badge";
+import { BulkInviteAction } from "@/components/members/bulk-invite-action";
 import type { AdminMemberListItem, MemberFilter } from "@/lib/admin-types";
-import { membershipStatus, roleLabel } from "@/lib/labels";
+import { memberTargetState, membershipStatus, roleLabel } from "@/lib/labels";
 import { MEMBERS_PAGE_SIZE, useMembers } from "@/lib/members";
 import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
 
-/** Module scope: `useTableParams` keeps this in its callback dependencies. */
-const DEFAULTS = { q: "", filter: "current", page: "1" } as const;
+export interface MemberCampaignOption {
+  id: string;
+  label: string;
+  isCurrent: boolean;
+  isRegistrationOpen: boolean;
+}
 
-const FILTERS = [
-  { value: "current", label: "actuals" },
-  { value: "past", label: "antics" },
-  { value: "all", label: "tots" },
-] as const;
-
-const EMPTY_COPY: Record<MemberFilter, string> = {
-  current: "ningú té una alta activa a la campanya actual.",
-  past: "encara no hi ha ningú que hagi deixat el comitè.",
-  all: "no hi ha cap membre registrat.",
-};
-
-const COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
+const BASE_COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
   { id: "name", header: "nom", primary: true, cell: (row) => row.name },
   { id: "surnames", header: "cognoms", cell: (row) => row.surnames },
   {
@@ -60,7 +56,7 @@ const COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
   },
   {
     id: "status",
-    header: "estat",
+    header: "estat actual",
     cell: (row) =>
       row.currentStatus ? (
         <StatusBadge status={membershipStatus(row.currentStatus)} />
@@ -76,38 +72,116 @@ const COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
   },
 ];
 
-function isFilter(value: string): value is MemberFilter {
-  return value === "all" || value === "current" || value === "past";
+function sourceCampaignId(source: string): string | undefined {
+  return source.startsWith("campaign:") ? source.slice(9) : undefined;
+}
+
+function sourceFilter(source: string): MemberFilter {
+  if (source === "past") return "past";
+  if (source === "all" || sourceCampaignId(source)) return "all";
+  return "current";
 }
 
 /**
- * The members table.
- *
- * `q`, `filter` and `page` are read from the URL and sent straight to
- * `GET /v1/admin/members`, which does the searching, the filtering and the
- * paging. Nothing is narrowed here — the rows on screen are the rows the API
- * returned for the parameters currently in the address bar.
+ * Members stay server-filtered while selection spans every matching page.
+ * A source campaign identifies who to renew; the target campaign adds a
+ * readiness state, so existing registrations, memberships and invitations
+ * remain visible but cannot be selected again.
  */
-export function MembersTable() {
-  const { get, setParams } = useTableParams(DEFAULTS);
+export function MembersTable({
+  campaigns,
+  initialSource,
+  initialTarget,
+}: {
+  campaigns: readonly MemberCampaignOption[];
+  initialSource: string;
+  initialTarget: string;
+}) {
+  const defaults = React.useMemo(
+    () => ({ q: "", source: initialSource, target: initialTarget, page: "1" }),
+    [initialSource, initialTarget],
+  );
+  const { get, setParams } = useTableParams(defaults);
 
   const q = get("q");
-  const rawFilter = get("filter");
-  const filter: MemberFilter = isFilter(rawFilter) ? rawFilter : "current";
+  const rawSource = get("source");
+  const source =
+    rawSource === "past" ||
+    rawSource === "all" ||
+    campaigns.some((campaign) => `campaign:${campaign.id}` === rawSource)
+      ? rawSource
+      : initialSource;
+  const rawTarget = get("target");
+  const target =
+    campaigns.find((campaign) => campaign.id === rawTarget) ??
+    campaigns.find((campaign) => campaign.id === initialTarget);
+  const filter = sourceFilter(source);
+  const campaignId = sourceCampaignId(source);
   const offset = pageToOffset(get("page"), MEMBERS_PAGE_SIZE);
 
-  const query = useMembers({ q, filter, limit: MEMBERS_PAGE_SIZE, offset });
+  const query = useMembers({
+    q,
+    filter,
+    ...(campaignId ? { campaignId } : {}),
+    ...(target ? { targetCampaignId: target.id } : {}),
+    limit: MEMBERS_PAGE_SIZE,
+    offset,
+  });
   const rows = query.data?.rows ?? [];
+
+  const columns = React.useMemo<DataTableColumn<AdminMemberListItem>[]>(
+    () => [
+      ...BASE_COLUMNS,
+      {
+        id: "targetState",
+        header: "destí",
+        cell: (row) =>
+          row.targetState ? (
+            <StatusBadge status={memberTargetState(row.targetState)} />
+          ) : (
+            "—"
+          ),
+      },
+    ],
+    [],
+  );
 
   const handleSearch = React.useCallback(
     (next: string) => setParams({ q: next, page: "1" }),
     [setParams],
   );
 
+  const selectionQuery = {
+    ...(q ? { q } : {}),
+    ...(campaignId ? { campaignId } : { filter }),
+  };
+  const sourceOptions = [
+    ...campaigns.map((campaign) => ({
+      value: `campaign:${campaign.id}`,
+      label: `${campaign.label}${campaign.isCurrent ? " · actual" : ""}`,
+    })),
+    { value: "past", label: "sense alta actual" },
+    { value: "all", label: "tothom" },
+  ];
+  const targetOptions = campaigns.map((campaign) => ({
+    value: campaign.id,
+    label: `${campaign.label}${campaign.isRegistrationOpen ? " · inscripcions obertes" : ""}`,
+  }));
+
+  const emptyDescription = q
+    ? `no hi ha ningú que encaixi amb «${q}» en aquest filtre.`
+    : campaignId
+      ? "ningú té una alta activa en aquesta campanya."
+      : filter === "past"
+        ? "encara no hi ha ningú que hagi deixat el comitè."
+        : filter === "current"
+          ? "ningú té una alta activa a la campanya actual."
+          : "no hi ha cap membre registrat.";
+
   return (
     <DataTable
       label="llista de membres del comitè"
-      columns={COLUMNS}
+      columns={columns}
       rows={rows}
       rowKey={(row) => row.userId}
       rowHref={(row) => `/members/${row.userId}`}
@@ -120,9 +194,7 @@ export function MembersTable() {
       empty={{
         icon: Users,
         title: q ? "cap coincidència" : "cap membre",
-        description: q
-          ? `no hi ha ningú que encaixi amb «${q}» en aquest filtre.`
-          : EMPTY_COPY[filter],
+        description: emptyDescription,
       }}
       {...(query.data
         ? {
@@ -137,6 +209,26 @@ export function MembersTable() {
             },
           }
         : {})}
+      {...(target && query.data
+        ? {
+            selection: {
+              scope: JSON.stringify({ q, source, target: target.id }),
+              total: query.data.inviteEligibleTotal,
+              isRowSelectable: (row: AdminMemberListItem) =>
+                row.targetState === "eligible",
+              rowLabel: (row: AdminMemberListItem) =>
+                `${row.name} ${row.surnames}`.trim(),
+              actions: (selection: DataTableSelectionHandle) => (
+                <BulkInviteAction
+                  campaignId={target.id}
+                  campaignLabel={target.label}
+                  query={selectionQuery}
+                  selection={selection}
+                />
+              ),
+            },
+          }
+        : {})}
       toolbar={
         <TableToolbar>
           <TableSearch
@@ -145,11 +237,24 @@ export function MembersTable() {
             placeholder="nom, cognoms o correu"
             onCommit={handleSearch}
           />
-          <TableFilter
-            value={filter}
-            options={FILTERS}
-            onChange={(next) => setParams({ filter: next, page: "1" })}
-          />
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+            <TableSelectFilter
+              id="members-source"
+              label="membres de"
+              value={source}
+              options={sourceOptions}
+              onChange={(next) => setParams({ source: next, page: "1" })}
+            />
+            {target ? (
+              <TableSelectFilter
+                id="members-target"
+                label="convida a"
+                value={target.id}
+                options={targetOptions}
+                onChange={(next) => setParams({ target: next, page: "1" })}
+              />
+            ) : null}
+          </div>
         </TableToolbar>
       }
     />

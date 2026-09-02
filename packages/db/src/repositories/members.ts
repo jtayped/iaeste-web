@@ -1,4 +1,4 @@
-import { and, eq, ilike, or, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import type { MemberProfile } from "@repo/constants/validators/registration";
 
@@ -6,29 +6,20 @@ import type { Db } from "../client";
 import { user } from "../schema/auth";
 import { memberProfile } from "../schema/member-profile";
 import { membership } from "../schema/membership";
-import { membershipCampaign } from "../schema/membership-campaign";
+import {
+  createMemberListQueries,
+  type MemberListParams,
+  type MemberSelection,
+} from "./member-list";
 
-export type MemberListFilter = "all" | "current" | "past";
-
-export interface MemberListParams {
-  q?: string;
-  filter?: MemberListFilter;
-  limit: number;
-  offset: number;
-}
-
-export interface MemberListRow {
-  userId: string;
-  name: string;
-  surnames: string;
-  email: string;
-  degree: string;
-  studyYear: number;
-  role: string | null;
-  /** Their membership status in the current campaign, or null if none. */
-  currentStatus: string | null;
-  totalMemberships: number;
-}
+export type {
+  MemberInvitationCandidate,
+  MemberListFilter,
+  MemberListParams,
+  MemberListRow,
+  MemberSelection,
+  MemberTargetState,
+} from "./member-list";
 
 /** One membership row for a campaign, flattened for the CSV export. */
 export interface MemberExportRow {
@@ -53,15 +44,7 @@ export interface MemberExportRow {
  * "Member" means anyone with a `member_profile` row.
  */
 export function createMemberRepository(db: Db) {
-  const currentStatusExpr = sql<string | null>`(
-    select m.status from ${membership} m
-    join ${membershipCampaign} c on c.id = m.campaign_id
-    where m.user_id = ${memberProfile.userId} and c.is_current
-    limit 1
-  )`;
-  const totalExpr = sql<number>`(
-    select count(*) from ${membership} m2 where m2.user_id = ${memberProfile.userId}
-  )`;
+  const listQueries = createMemberListQueries(db);
 
   async function getProfile(userId: string) {
     const [row] = await db
@@ -83,67 +66,16 @@ export function createMemberRepository(db: Db) {
     return row;
   }
 
-  function whereClause(params: MemberListParams) {
-    const clauses = [];
-    if (params.q && params.q.trim()) {
-      const needle = `%${params.q.trim()}%`;
-      clauses.push(
-        or(
-          ilike(memberProfile.name, needle),
-          ilike(memberProfile.surnames, needle),
-          ilike(user.email, needle),
-        ),
-      );
-    }
-    if (params.filter === "current") {
-      clauses.push(sql`${currentStatusExpr} = 'active'`);
-    } else if (params.filter === "past") {
-      clauses.push(
-        sql`(${currentStatusExpr} is null or ${currentStatusExpr} <> 'active')`,
-      );
-    }
-    return clauses.length ? and(...clauses) : undefined;
-  }
-
   return {
-    async list(
-      params: MemberListParams,
-    ): Promise<{ rows: MemberListRow[]; total: number }> {
-      const where = whereClause(params);
+    list: (params: MemberListParams) => listQueries.list(params),
 
-      const rows = await db
-        .select({
-          userId: memberProfile.userId,
-          name: memberProfile.name,
-          surnames: memberProfile.surnames,
-          email: user.email,
-          degree: memberProfile.degree,
-          studyYear: memberProfile.studyYear,
-          role: user.role,
-          currentStatus: currentStatusExpr,
-          totalMemberships: totalExpr,
-        })
-        .from(memberProfile)
-        .innerJoin(user, eq(user.id, memberProfile.userId))
-        .where(where)
-        .orderBy(memberProfile.surnames, memberProfile.name)
-        .limit(params.limit)
-        .offset(params.offset);
-
-      const [countRow] = await db
-        .select({ value: sql<number>`count(*)` })
-        .from(memberProfile)
-        .innerJoin(user, eq(user.id, memberProfile.userId))
-        .where(where);
-
-      return {
-        rows: rows.map((row) => ({
-          ...row,
-          currentStatus: row.currentStatus ?? null,
-          totalMemberships: Number(row.totalMemberships),
-        })),
-        total: Number(countRow?.value ?? 0),
-      };
+    /** Resolve a bulk-selection descriptor without loading page by page. */
+    listInvitationSelection(
+      selection: MemberSelection,
+      targetCampaignId: string,
+      limit: number,
+    ) {
+      return listQueries.selection(selection, targetCampaignId, limit);
     },
 
     /** The profile + account role for one member, or undefined. */

@@ -34,6 +34,8 @@ export const queryKeys = {
     list: (params: {
       q: string;
       filter: MemberFilter;
+      campaignId?: string;
+      targetCampaignId?: string;
       limit: number;
       offset: number;
     }) => ["members", "list", params] as const,

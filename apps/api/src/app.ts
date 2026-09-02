@@ -60,6 +60,7 @@ import {
 import {
   adminAcceptRegistrationRoute,
   adminArchiveCampaignRoute,
+  adminBulkCreateInvitationsRoute,
   adminCreateCampaignRoute,
   adminCancelInvitationRoute,
   adminCreateInvitationRoute,
@@ -723,6 +724,7 @@ export function createApp(dependencies: AppDependencies = {}) {
     requireCapability("members.email.write"),
   );
   app.use("/v1/admin/invitations", requireCapability("invitations.write"));
+  app.use("/v1/admin/invitations/bulk", requireCapability("invitations.write"));
   app.use(
     "/v1/admin/invitations/:id/resend",
     requireCapability("invitations.write"),
@@ -1199,16 +1201,30 @@ export function createApp(dependencies: AppDependencies = {}) {
   });
 
   app.openapi(adminListMembersRoute, async (c) => {
-    const { q, filter, limit, offset } = c.req.valid("query");
+    const { q, filter, campaignId, targetCampaignId, limit, offset } =
+      c.req.valid("query");
     const pageLimit = limit ?? 25;
     const pageOffset = offset ?? 0;
-    const { rows, total } = await createMemberRepository(adminDb()).list({
+    const { rows, total, inviteEligibleTotal } = await createMemberRepository(
+      adminDb(),
+    ).list({
       q,
       filter,
+      campaignId,
+      targetCampaignId,
       limit: pageLimit,
       offset: pageOffset,
     });
-    return c.json({ rows, total, limit: pageLimit, offset: pageOffset }, 200);
+    return c.json(
+      {
+        rows,
+        total,
+        inviteEligibleTotal,
+        limit: pageLimit,
+        offset: pageOffset,
+      },
+      200,
+    );
   });
 
   app.openapi(adminGetMemberRoute, async (c) => {
@@ -1573,6 +1589,57 @@ export function createApp(dependencies: AppDependencies = {}) {
       prefillSurnames: body.prefillSurnames,
     });
     return c.json(created, 201);
+  });
+
+  app.openapi(adminBulkCreateInvitationsRoute, async (c) => {
+    const { campaignId, selection } = c.req.valid("json");
+    const requestId = c.get("requestId");
+    const db = adminDb();
+
+    if (!(await createCampaignRepository(db).getById(campaignId))) {
+      return c.json(
+        errorBody(requestId, "NOT_FOUND", "No campaign with that id."),
+        404,
+      );
+    }
+
+    const members = await createMemberRepository(db).listInvitationSelection(
+      selection,
+      campaignId,
+      201,
+    );
+    if (members.length > 200) {
+      return c.json(
+        errorBody(
+          requestId,
+          "CONFLICT",
+          "A bulk invitation can contain at most 200 members. Narrow the table filters and try again.",
+        ),
+        409,
+      );
+    }
+
+    const skipped = { member: 0, registered: 0, invited: 0 };
+    let created = 0;
+
+    for (const member of members) {
+      if (member.targetState !== "eligible") {
+        skipped[member.targetState] += 1;
+        continue;
+      }
+
+      await invitationService.create({
+        campaignId,
+        email: member.email,
+        inviterId: c.get("authUser").id,
+        intendedRole: "member",
+        prefillName: member.name,
+        prefillSurnames: member.surnames,
+      });
+      created += 1;
+    }
+
+    return c.json({ requested: members.length, created, skipped }, 201);
   });
 
   app.openapi(adminResendInvitationRoute, async (c) => {

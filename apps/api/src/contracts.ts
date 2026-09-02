@@ -540,9 +540,17 @@ export const userIdParamSchema = z.object({
 export const adminMemberListQuerySchema = z.object({
   q: z.string().trim().max(120).optional(),
   filter: z.enum(["all", "current", "past"]).optional(),
+  /** Exact active membership source; replaces current/past when present. */
+  campaignId: z.string().min(1).optional(),
+  /** Adds invitation readiness relative to this campaign. */
+  targetCampaignId: z.string().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 });
+
+export const memberTargetStateSchema = z
+  .enum(["eligible", "member", "registered", "invited"])
+  .openapi("MemberTargetState");
 
 export const adminMemberListItemSchema = z
   .object({
@@ -555,6 +563,7 @@ export const adminMemberListItemSchema = z
     role: z.string().nullable(),
     currentStatus: z.string().nullable(),
     totalMemberships: z.number().int(),
+    targetState: memberTargetStateSchema.nullable(),
   })
   .openapi("AdminMemberListItem");
 
@@ -562,6 +571,7 @@ export const adminMemberListSchema = z
   .object({
     rows: z.array(adminMemberListItemSchema),
     total: z.number().int(),
+    inviteEligibleTotal: z.number().int(),
     limit: z.number().int(),
     offset: z.number().int(),
   })
@@ -798,6 +808,39 @@ export const adminCreateInvitationBodySchema = z
     allowExternalDomain: z.boolean().optional(),
   })
   .openapi("AdminCreateInvitationRequest");
+
+const adminBulkInvitationSelectionSchema = z.discriminatedUnion("mode", [
+  z.object({
+    mode: z.literal("ids"),
+    userIds: z.array(z.string().min(1)).min(1).max(200),
+  }),
+  z.object({
+    mode: z.literal("all"),
+    q: z.string().trim().max(120).optional(),
+    filter: z.enum(["all", "current", "past"]).optional(),
+    campaignId: z.string().min(1).optional(),
+    excludedUserIds: z.array(z.string().min(1)).max(200).default([]),
+  }),
+]);
+
+export const adminBulkCreateInvitationsBodySchema = z
+  .object({
+    campaignId: z.string().min(1),
+    selection: adminBulkInvitationSelectionSchema,
+  })
+  .openapi("AdminBulkCreateInvitationsRequest");
+
+export const adminBulkCreateInvitationsResponseSchema = z
+  .object({
+    requested: z.number().int(),
+    created: z.number().int(),
+    skipped: z.object({
+      member: z.number().int(),
+      registered: z.number().int(),
+      invited: z.number().int(),
+    }),
+  })
+  .openapi("AdminBulkCreateInvitationsResponse");
 
 export const adminInvitationActionResponseSchema = z
   .object({ status: z.literal("ok") })

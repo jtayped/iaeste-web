@@ -15,6 +15,8 @@ import {
   pushUnsubscribeBodySchema,
   pushUnsubscribeResponseSchema,
   adminCreateInvitationBodySchema,
+  adminBulkCreateInvitationsBodySchema,
+  adminBulkCreateInvitationsResponseSchema,
   adminInvitationActionResponseSchema,
   adminInvitationListQuerySchema,
   adminInvitationListSchema,
@@ -935,7 +937,9 @@ export const adminListMembersRoute = createRoute({
   tags: ["Admin"],
   description:
     "Paginated, searchable member list. `q` matches name / surnames / " +
-    "email; `filter` is all | current | past. Requires `members.read`.",
+    "email; `filter` is all | current | past; `campaignId` selects active " +
+    "members of one exact campaign. `targetCampaignId` adds invitation " +
+    "readiness and an eligible count. Requires `members.read`.",
   request: { query: adminMemberListQuerySchema },
   responses: {
     200: {
@@ -1240,6 +1244,45 @@ export const adminCreateInvitationRoute = createRoute({
         "An invitation for this email + campaign already exists, or the " +
         "email domain needs confirmation, or admin was requested without " +
         "the capability.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminBulkCreateInvitationsRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/invitations/bulk",
+  operationId: "adminBulkCreateInvitations",
+  tags: ["Admin"],
+  description:
+    "Invite a member-table selection to one campaign. The selection is " +
+    "either explicit user ids or all rows matching a server-side member " +
+    "query except named exclusions. Existing memberships, registrations " +
+    "and pending invitations are skipped. Requires `invitations.write`.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: adminBulkCreateInvitationsBodySchema },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "The bulk invitation result, including guarded skips.",
+      content: {
+        "application/json": {
+          schema: adminBulkCreateInvitationsResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: "No target campaign with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description: "The resolved selection is larger than 200 members.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
     ...adminAuthResponses,
