@@ -39,11 +39,7 @@ export const InvalidDraftScreen = ({
     icon="link-off"
     tone="warning"
     title="aquest enllaç no és vàlid"
-    actions={
-      <Button onClick={onRestart}>
-        torna a començar
-      </Button>
-    }
+    actions={<Button onClick={onRestart}>torna a començar</Button>}
   >
     <Paragraph>
       pot haver caducat, ja s&apos;ha fet servir o haver estat substituït per un
