@@ -7,7 +7,6 @@ import {
   CampaignPicker,
   type CampaignOption,
 } from "@/components/admin/campaign-picker";
-import { StatusBadge } from "@/components/admin/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
 import {
   TableFilter,
@@ -15,13 +14,17 @@ import {
   TableToolbar,
 } from "@/components/data-table/toolbar";
 import type { DataTableColumn } from "@/components/data-table/types";
-import { QueueRowActions } from "@/components/registrations/queue-actions";
-import type { AdminRegistration, RegistrationStatus } from "@/lib/admin-types";
-import { formatRelative } from "@/lib/format";
 import {
+  hasQueueRowActions,
+  QueueRowActions,
+} from "@/components/registrations/queue-actions";
+import type { AdminRegistration, RegistrationStatus } from "@/lib/admin-types";
+import { fullName } from "@/lib/admin-types";
+import { formatDate, formatRelative } from "@/lib/format";
+import {
+  personName,
   REGISTRATION_STATUSES,
   REGISTRATION_TAB_LABELS,
-  registrationStatus,
 } from "@/lib/labels";
 import { REGISTRATIONS_PAGE_SIZE, useRegistrations } from "@/lib/registrations";
 import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
@@ -45,48 +48,73 @@ const EMPTY_COPY: Record<RegistrationStatus, string> = {
   rejected: "no s'ha rebutjat cap sol·licitud d'aquesta campanya.",
 };
 
+/**
+ * The queue is always looking at exactly one status — there is no `tots` tab —
+ * so a status column would put the name of the active filter on every row and
+ * nothing else. The filter is the status; the rows are the applicants.
+ */
 const COLUMNS: DataTableColumn<AdminRegistration>[] = [
   {
     id: "name",
     header: "nom",
     primary: true,
-    cell: (row) => row.profileSnapshot.name,
+    card: "title",
+    cell: (row) => personName(row.profileSnapshot.name),
   },
   {
     id: "surnames",
     header: "cognoms",
-    cell: (row) => row.profileSnapshot.surnames,
+    card: "title",
+    cell: (row) => personName(row.profileSnapshot.surnames),
   },
   {
     id: "email",
     header: "correu personal",
+    card: "subtitle",
     cell: (row) => row.personalEmail ?? row.email,
     className: "hidden lg:table-cell",
   },
   {
     id: "degree",
     header: "estudis",
-    cell: (row) => row.profileSnapshot.degree,
+    card: "meta",
+    cell: (row) => (
+      <span
+        className="block max-w-[22ch] truncate"
+        title={row.profileSnapshot.degree}
+      >
+        {row.profileSnapshot.degree}
+      </span>
+    ),
     className: "hidden xl:table-cell",
   },
   {
+    // `curs` is the academic year in the campaign picker above this table.
     id: "studyYear",
-    header: "curs",
+    header: "any de carrera",
     cell: (row) => row.profileSnapshot.studyYear,
     className: "hidden sm:table-cell tabular-nums",
   },
   {
-    id: "status",
-    header: "estat",
-    cell: (row) => <StatusBadge status={registrationStatus(row.status)} />,
-  },
-  {
     id: "createdAt",
     header: "enviada",
-    cell: (row) => formatRelative(row.createdAt),
+    card: "meta",
+    cell: (row) => (
+      <time dateTime={row.createdAt} title={formatDate(row.createdAt)}>
+        {formatRelative(row.createdAt)}
+      </time>
+    ),
     className: "hidden md:table-cell whitespace-nowrap",
   },
 ];
+
+const ACTIONS_COLUMN: DataTableColumn<AdminRegistration> = {
+  id: "actions",
+  header: "accions",
+  card: "action",
+  cell: (row) => <QueueRowActions registration={row} />,
+  className: "text-right",
+};
 
 function isStatus(value: string): value is RegistrationStatus {
   return (REGISTRATION_STATUSES as readonly string[]).includes(value);
@@ -124,6 +152,10 @@ export function RegistrationsQueue({
     offset,
   });
 
+  const columns = React.useMemo(
+    () => (hasQueueRowActions(status) ? [...COLUMNS, ACTIONS_COLUMN] : COLUMNS),
+    [status],
+  );
   const handleSearch = React.useCallback(
     (next: string) => setParams({ q: next, page: "1" }),
     [setParams],
@@ -132,11 +164,11 @@ export function RegistrationsQueue({
   return (
     <DataTable
       label="cua de revisió de sol·licituds"
-      columns={COLUMNS}
+      columns={columns}
       rows={query.data?.rows ?? []}
       rowKey={(row) => row.id}
       rowHref={(row) => `/registrations/${row.id}`}
-      rowActions={(row) => <QueueRowActions registration={row} />}
+      rowLabel={(row) => personName(fullName(row.profileSnapshot))}
       state={{
         isPending: query.isPending,
         isError: query.isError,
