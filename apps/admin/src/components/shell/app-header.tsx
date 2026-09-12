@@ -1,21 +1,23 @@
-import Link from "next/link";
-
 import { Separator } from "@repo/ui/separator";
 
 import { NotificationsToggle } from "@/components/pwa/notifications-toggle";
-import { CampaignContext } from "@/components/shell/campaign-context";
+import {
+  CampaignContext,
+  campaignContextText,
+} from "@/components/shell/campaign-context";
+import { HeaderTitle } from "@/components/shell/header-title";
 import { SidebarToggle } from "@/components/shell/sidebar-toggle";
 import type { AdminOverview } from "@/lib/overview";
 
 /**
  * Sticky, one hairline, no shadow. On desktop the page-owned breadcrumb mounts
- * into the reserved slot beside the sidebar toggle. Mobile keeps the trail in
- * the content column, where a long name has room to wrap without crowding the
- * notifications control.
+ * into the reserved slot beside the sidebar toggle; below `md` the page offers
+ * a back link in the content column instead.
  *
- * At 360px this is a hamburger, the app's name, and the notifications toggle —
- * the campaign context needs more room than that and is held back to `md`,
- * where it has somewhere to sit without shoving the toggle off the edge.
+ * At 360px the middle of the bar is two stacked lines rather than one: which
+ * page you are on, and which campaign everything on it is scoped to. Both are
+ * things you lose as soon as you scroll, and side by side neither would fit
+ * between the hamburger and the notifications toggle.
  */
 export function AppHeader({
   overview,
@@ -36,12 +38,17 @@ export function AppHeader({
 
       {/* The sidebar carries the wordmark on `md+`; under it the sidebar is a
           closed drawer, so the header has to say where you are. */}
-      <Link
-        href="/"
-        className="truncate rounded-md px-1 text-sm font-semibold tracking-tight ring-ring outline-none focus-visible:ring-2 md:hidden"
-      >
-        iaeste lleida
-      </Link>
+      <div className="flex min-w-0 flex-1 flex-col justify-center leading-tight md:hidden">
+        <HeaderTitle fallback="iaeste lleida" />
+        {overview ? (
+          <span
+            title={campaignContextText(overview)}
+            className="truncate px-1 text-[0.6875rem] text-muted-foreground"
+          >
+            {campaignContextText(overview)}
+          </span>
+        ) : null}
+      </div>
 
       <div className="ml-auto flex shrink-0 items-center gap-1 md:gap-2">
         {overview ? (

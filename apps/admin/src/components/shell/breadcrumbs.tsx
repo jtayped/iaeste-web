@@ -15,11 +15,12 @@ import { TITLE_ROOT, type BreadcrumbEntry } from "@/lib/page-title";
  * The same rule is why a trailing `entry.href` is harmless: the last crumb is
  * the page you are on, and React Aria never links it.
  *
- * At 360px the trail wraps and the leaf truncates rather than pushing the
- * header sideways: a long leaf like a full name ellipsizes instead of
- * overflowing the viewport. See `.breadcrumbs__item[data-current]` in
- * `globals.css` — the item is `shrink-0` by default, which would otherwise
- * defeat the truncation.
+ * The leaf truncates rather than pushing the header sideways. It takes both
+ * halves: `.breadcrumbs__item[data-current]` in `globals.css` lets the item
+ * shrink (every crumb is `shrink-0` otherwise), and the label is wrapped in a
+ * block of its own here — the crumb's link is a flex container, and an
+ * ellipsis is never drawn for the anonymous box a bare text child becomes
+ * inside one, which is why a long name used to clip mid-letter.
  */
 export function Breadcrumbs({
   entries,
@@ -33,7 +34,9 @@ export function Breadcrumbs({
       <BreadcrumbItem href="/">{TITLE_ROOT}</BreadcrumbItem>
       {entries.map((entry, index) => (
         <BreadcrumbItem key={`${entry.label}-${index}`} href={entry.href}>
-          {entry.label}
+          <span className="block truncate" title={entry.label}>
+            {entry.label}
+          </span>
         </BreadcrumbItem>
       ))}
     </Breadcrumb>
