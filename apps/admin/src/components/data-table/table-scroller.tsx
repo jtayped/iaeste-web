@@ -17,6 +17,9 @@ import * as React from "react";
  * whichever side has content out of view, and disappears when you reach it.
  * The region is focusable because a scroll container that only a pointer can
  * reach is not reachable at all.
+ *
+ * The border and the rounding belong to the region `<DataTable>` draws around
+ * every state of a list, not here: this one only ever holds the full one.
  */
 export function TableScroller({
   label,
@@ -69,7 +72,7 @@ export function TableScroller({
         role="region"
         aria-label={label}
         aria-busy={busy}
-        className="w-full min-w-0 overflow-x-auto rounded-lg border border-border ring-ring outline-none focus-visible:ring-2"
+        className="w-full min-w-0 overflow-x-auto ring-ring outline-none ring-inset focus-visible:ring-2"
       >
         {children}
       </div>
@@ -77,13 +80,13 @@ export function TableScroller({
       {edges.start ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-px left-px w-6 rounded-l-lg bg-gradient-to-r from-background to-transparent"
+          className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-background to-transparent"
         />
       ) : null}
       {edges.end ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-px right-px w-6 rounded-r-lg bg-gradient-to-l from-background to-transparent"
+          className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-background to-transparent"
         />
       ) : null}
     </div>

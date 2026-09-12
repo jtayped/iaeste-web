@@ -5,7 +5,10 @@ import { Skeleton } from "@repo/ui/skeleton";
  *
  * It draws a header band and evenly spaced row bands at the same height the
  * real rows land at, so the table does not jump when the data arrives — the
- * same contract `(app)/loading.tsx` has with `<PageShell>`.
+ * same contract `(app)/loading.tsx` has with `<PageShell>`. It draws its own
+ * frame — the same one `<DataTable>` draws around every other state of a list
+ * — because the route files hand it to `<Suspense>` on its own, before any
+ * table exists to hold it.
  */
 export function TableSkeleton({
   columns = 4,
