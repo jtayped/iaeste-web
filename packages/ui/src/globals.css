@@ -19,6 +19,7 @@
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary-hover: var(--secondary-hover);
+  --color-link: var(--link);
   --color-destructive: var(--danger);
   --color-destructive-foreground: var(--danger-foreground);
   --color-muted-foreground: var(--muted);
@@ -75,6 +76,32 @@
 }
 
 @layer base {
+  /* One job per colour. The admin panel had three blues doing four jobs —
+     the same brand blue was a link, a status, an action and a decoration in
+     one viewport — so the roles are fixed here rather than per component:
+
+     --accent (navy)  Actions, and nothing else. Primary buttons, the one
+                      "do this" callout, the sidebar's active row. If it is
+                      not something you click, it is not navy.
+     --link           Navigation. A word painted in it goes somewhere.
+                      Never a status, never a fill behind text.
+     --secondary      The IAESTE blue as a surface: the brand button fill and
+                      the small role dots in the header. Same hue as --link
+                      so the family holds together, and light-on-dark rather
+                      than the old dark-on-blue pairing.
+     --status-*       Status labels (see `Badge`), and the one place a colour
+                      is allowed to mean "this record is in state X". Neutral
+                      on purpose: a status is information, not an action, and
+                      informational statuses should not compete with either
+                      of the two colours above. `strong` for the state that
+                      wants the eye, `soft` for the settled one.
+     --danger         Critical: destructive actions, failures, expiries.
+     --success /      Semantic good/warning. HeroUI's own values; kept apart
+     --warning        from the brand accent so "brand" never reads as "ok".
+
+     Every one of these has a light and a dark value: a token that is the
+     same in both themes is a token that only ever suited one of them. */
+
   /* HeroUI also writes its light palette to `.light`, `.default`, and
      `[data-theme]`. Match each of those scopes, rather than only `:root`, so
      its stock #0485F7 accent cannot leak back into an app that marks its
@@ -95,15 +122,21 @@
     --surface-tertiary-foreground: var(--foreground);
     --overlay: hsl(0 0% 100%);
     --overlay-foreground: var(--foreground);
-    /* 6.1:1 on --background, 5.6:1 on --default. The previous 46.9% sat at
-       4.75:1 on white and dropped below 4.5:1 over any tinted surface. */
-    --muted: hsl(215.4 16.3% 40%);
+    /* #475569 — 7.6:1 on --background, 7.0:1 on --default. It carries the
+       12px header chrome and the breadcrumb trail, which is small text that
+       people read at a glance, so it is kept well clear of the 4.5:1 floor
+       rather than sitting on it. */
+    --muted: hsl(215 19% 35%);
     --default: hsl(210 40% 96.1%);
     --default-foreground: hsl(222.2 47.4% 11.2%);
     --accent: hsl(202 78% 20%) !important;
     --accent-foreground: hsl(210 40% 98%) !important;
-    --secondary: hsl(206 78% 47%);
-    --secondary-foreground: hsl(222.2 47.4% 11.2%);
+    /* #0F5E8C — 7.0:1 on white. The brand blue at its old 47% lightness was
+       3.96:1 at the 14px links run at, and its near-black foreground made
+       every fill a 4.5:1 coin-flip; a light foreground on the darker blue is
+       6.7:1 instead. */
+    --secondary: hsl(202 81% 30%);
+    --secondary-foreground: hsl(210 40% 98%);
     --secondary-hover: color-mix(
       in oklab,
       var(--secondary) 88%,
@@ -126,9 +159,17 @@
     /* 5.6:1 at rest and 4.5:1 after HeroUI's light-theme hover mix. */
     --danger: hsl(0 84.2% 43%);
     --danger-foreground: hsl(210 40% 98%);
+    /* Status labels. Slate rather than a brand tint, so a row's state never
+       reads as a link or a button. 9.8:1 and 9.1:1. */
+    --status-strong: hsl(215 25% 27%);
+    --status-strong-foreground: hsl(210 40% 98%);
+    --status-soft: hsl(210 40% 92%);
+    --status-soft-foreground: hsl(215 30% 25%);
     --border: hsl(214.3 31.8% 91.4%);
     --separator: var(--border);
     --focus: hsl(221.2 83.2% 53.3%);
+    /* The same blue as the brand fill: links and that fill are the only two
+       things allowed to wear it. */
     --link: var(--secondary);
     --primary: var(--accent);
     --primary-foreground: var(--accent-foreground);
@@ -177,9 +218,11 @@
        navy foreground (6.4:1 on the lifted primary). */
     --accent: hsl(202 78% 60%);
     --accent-foreground: hsl(202 80% 12%);
-    /* Kept vivid: it carries links and focus in both themes. */
-    --secondary: hsl(206 78% 47%);
-    --secondary-foreground: hsl(222.2 47.4% 11.2%);
+    /* Lifted, not the light theme's value: the darkened link blue that reads
+       at 7:1 on white disappears against this background. 8.2:1 here, and the
+       dark foreground it pairs with is 6.7:1 on the fill. */
+    --secondary: hsl(202 78% 62%);
+    --secondary-foreground: hsl(202 80% 12%);
     /* 7.9:1 on --background, 5.7:1 on --default. */
     --muted: hsl(215 16% 65%);
     --default: hsl(217.2 32.6% 17.5%);
@@ -195,6 +238,13 @@
     --segment-foreground: var(--foreground);
     --danger: hsl(0 62.8% 30.6%);
     --danger-foreground: hsl(210 40% 98%);
+    /* Inverted, not reused: on a dark surface the label that wants the eye
+       has to be the lighter of the two, and the settled one the darker.
+       11.1:1 and 9.7:1. */
+    --status-strong: hsl(210 35% 82%);
+    --status-strong-foreground: hsl(222.2 47.4% 11.2%);
+    --status-soft: hsl(217 33% 24%);
+    --status-soft-foreground: hsl(210 40% 92%);
     --border: hsl(217.2 32.6% 17.5%);
     --separator: var(--border);
     --focus: hsl(206 78% 60%);
@@ -265,13 +315,15 @@
     --button-fg: var(--secondary-foreground);
   }
 
-  /* A button that reads as a link; HeroUI has no such variant. The press
-     transform is dropped — text that shrinks when clicked looks broken. */
+  /* A button that reads as a link; HeroUI has no such variant. It wears the
+     link colour rather than the navy that means "button", since reading as a
+     link is the entire point of it. The press transform is dropped — text
+     that shrinks when clicked looks broken. */
   .button.button--link {
     --button-bg: transparent;
     --button-bg-hover: transparent;
     --button-bg-pressed: transparent;
-    --button-fg: var(--primary);
+    --button-fg: var(--link);
     @apply underline-offset-4;
   }
 
@@ -293,11 +345,17 @@
     @apply rounded-md;
   }
 
-  /* IAESTE blue, and the outlined status label. Neither exists in HeroUI's
-     chip palette. The doubled class outranks the neutral pairing carrying it. */
-  .chip.chip--brand {
-    --chip-bg: var(--secondary);
-    --chip-fg: var(--secondary-foreground);
+  /* The status palette, and the outlined status label. None of the three
+     exists in HeroUI's chip palette. The doubled class outranks the neutral
+     pairing carrying it. */
+  .chip.chip--status-strong {
+    --chip-bg: var(--status-strong);
+    --chip-fg: var(--status-strong-foreground);
+  }
+
+  .chip.chip--status-soft {
+    --chip-bg: var(--status-soft);
+    --chip-fg: var(--status-soft-foreground);
   }
 
   .chip.chip--outline {
