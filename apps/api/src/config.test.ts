@@ -5,6 +5,7 @@ import {
   getAuthBaseUrl,
   getAuthSecret,
   getAuthTrustedOrigins,
+  getOdooConfig,
   getRuntimeEnvironment,
 } from "./config";
 
@@ -81,6 +82,48 @@ describe("auth configuration", () => {
     assert.throws(
       () => getAuthSecret("too-short"),
       /must be at least 32 characters long/,
+    );
+  });
+});
+
+describe("Odoo configuration", () => {
+  // Every case passes all three arguments explicitly. Leaving one
+  // `undefined` falls through to the default parameter and reads the real
+  // `.env`, so the test would pass or fail depending on whether the machine
+  // running it happens to have Odoo configured.
+  it("returns null when nothing is set, so the API boots without Odoo", () => {
+    assert.equal(getOdooConfig("", "", ""), null);
+    assert.equal(getOdooConfig("", "  ", ""), null);
+  });
+
+  it("throws naming the missing keys when only part of the group is set", () => {
+    // Partially configured is a mistake, not a "disabled" state — failing
+    // quietly here would surface as a confusing 503 much later.
+    assert.throws(
+      () => getOdooConfig("https://iaestelleida.odoo.com", "", ""),
+      /partially configured; also set: database, apiKey/,
+    );
+    assert.throws(
+      () => getOdooConfig("", "", "key"),
+      /partially configured; also set: baseUrl, database/,
+    );
+  });
+
+  it("requires https, because the api key travels in a header", () => {
+    assert.throws(
+      () => getOdooConfig("http://iaestelleida.odoo.com", "db", "key"),
+      /must be an https: URL/,
+    );
+  });
+
+  it("trims the values and strips a trailing slash from the base URL", () => {
+    assert.deepEqual(
+      getOdooConfig("https://iaestelleida.odoo.com/", " iaestelleida ", " k "),
+      {
+        apiKey: "k",
+        baseUrl: "https://iaestelleida.odoo.com",
+        database: "iaestelleida",
+      },
     );
   });
 });

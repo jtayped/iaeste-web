@@ -192,3 +192,51 @@ export function getWebPushConfig(
     subject: trimmedSubject,
   };
 }
+
+export interface OdooConfig {
+  /** Origin of the Odoo instance, no trailing slash. */
+  baseUrl: string;
+  /** Odoo database name — the subdomain for an Odoo Online instance. */
+  database: string;
+  /** API key from Odoo's Preferences → Security → API Keys. */
+  apiKey: string;
+}
+
+/**
+ * Credentials for the read-only Odoo CRM pull behind `/v1/admin/analytics`.
+ * Returns `null` when unconfigured so the API still boots without it — the
+ * analytics endpoint then reports the integration as unavailable instead of
+ * the process refusing to start. Configuring only some of the three is a
+ * mistake, not a "disabled" state, so that throws.
+ *
+ * The key inherits the permissions of the Odoo user who issued it; use a
+ * dedicated read-only bot account, not a person's login.
+ */
+export function getOdooConfig(
+  baseUrl = process.env.ODOO_BASE_URL,
+  database = process.env.ODOO_DATABASE,
+  apiKey = process.env.ODOO_API_KEY,
+): OdooConfig | null {
+  const values = { baseUrl, database, apiKey };
+  const present = Object.entries(values).filter(([, v]) => v?.trim());
+  if (present.length === 0) return null;
+  if (present.length < 3) {
+    const missing = Object.entries(values)
+      .filter(([, v]) => !v?.trim())
+      .map(([k]) => k);
+    throw new Error(
+      `Odoo is partially configured; also set: ${missing.join(", ")}`,
+    );
+  }
+
+  const trimmedBaseUrl = baseUrl!.trim().replace(/\/$/, "");
+  if (!trimmedBaseUrl.startsWith("https://")) {
+    throw new Error("ODOO_BASE_URL must be an https: URL");
+  }
+
+  return {
+    baseUrl: trimmedBaseUrl,
+    database: database!.trim(),
+    apiKey: apiKey!.trim(),
+  };
+}

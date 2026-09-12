@@ -228,6 +228,7 @@ export const apiErrorSchema = z
         "ALREADY_REGISTERED",
         "INVALID_TOKEN",
         "INTERNAL_ERROR",
+        "UPSTREAM_UNAVAILABLE",
       ]),
       message: z.string(),
       details: z.array(validationIssueSchema).optional(),
@@ -915,3 +916,118 @@ export const pushUnsubscribeBodySchema = z
 export const pushUnsubscribeResponseSchema = z
   .object({ status: z.literal("unsubscribed") })
   .openapi("PushUnsubscribeResponse");
+
+// --- Admin: CRM analytics --------------------------------------------------
+
+export const crmStageBucketSchema = z
+  .object({
+    stageId: z.number().int(),
+    /** Odoo's own label, e.g. "Prospectes". */
+    name: z.string(),
+    /** Active (non-archived) leads currently sitting here. */
+    active: z.number().int(),
+    /** Archived leads currently sitting here. */
+    archived: z.number().int(),
+    total: z.number().int(),
+  })
+  .openapi("CrmStageBucket");
+
+export const crmFunnelStepSchema = z
+  .object({
+    stageId: z.number().int(),
+    name: z.string(),
+    /**
+     * Leads whose *current* stage is this one or further along, across active
+     * and archived. An approximation: Odoo will not let this API key read
+     * `mail.tracking.value`, so there is no stage-transition history and a
+     * lead that advanced then moved back reads as never having advanced.
+     */
+    reached: z.number().int(),
+    /**
+     * `reached` over the previous step's `reached`, or null when that base is
+     * too small for the ratio to mean anything.
+     */
+    stepRate: z.number().nullable(),
+  })
+  .openapi("CrmFunnelStep");
+
+export const crmOwnerRowSchema = z
+  .object({
+    /** null for leads with no salesperson in Odoo. */
+    ownerId: z.number().int().nullable(),
+    /** null when unassigned; the UI supplies the label. */
+    ownerName: z.string().nullable(),
+    openLeads: z.number().int(),
+    staleLeads: z.number().int(),
+    oldestTouchDays: z.number().int().nullable(),
+    medianTouchDays: z.number().nullable(),
+    /** Open-lead counts per ladder stage, in ladder order. */
+    byStage: z.array(z.number().int()),
+  })
+  .openapi("CrmOwnerRow");
+
+export const crmColdLeadSchema = z
+  .object({
+    id: z.number().int(),
+    name: z.string(),
+    company: z.string().nullable(),
+    stageName: z.string(),
+    ownerName: z.string().nullable(),
+    daysSinceTouch: z.number().int(),
+  })
+  .openapi("CrmColdLead");
+
+export const crmAnalyticsSchema = z
+  .object({
+    /** When this snapshot was read from Odoo. May be up to the TTL old. */
+    fetchedAt: z.string(),
+    /** The snapshot is past its TTL and Odoo could not be re-read. */
+    stale: z.boolean(),
+    /** The active-lead read hit its row cap, so totals under-report. */
+    truncated: z.boolean(),
+
+    activity: z.object({
+      /** Most recent `write_date` across the active leads. */
+      lastActivityAt: z.string().nullable(),
+      daysSinceLastActivity: z.number().int().nullable(),
+      touchedLast7Days: z.number().int(),
+      touchedLast30Days: z.number().int(),
+    }),
+
+    totals: z.object({
+      /** Scope: every lead, archived included. */
+      allLeads: z.number().int(),
+      activeLeads: z.number().int(),
+      archivedLeads: z.number().int(),
+      wonLeads: z.number().int(),
+      droppedLeads: z.number().int(),
+      /** Scope: active, on a ladder stage, not won — the follow-up queue. */
+      openLeads: z.number().int(),
+      unassignedLeads: z.number().int(),
+      staleLeads: z.number().int(),
+    }),
+
+    stages: z.array(crmStageBucketSchema),
+    funnel: z.array(crmFunnelStepSchema),
+    /** Stages in neither the ladder nor the drop-out set. Surfaced, never dropped. */
+    unclassifiedStages: z.array(crmStageBucketSchema),
+
+    /** Open leads by days since last touch. */
+    staleBuckets: z.object({
+      upTo6: z.number().int(),
+      from7To29: z.number().int(),
+      from30To89: z.number().int(),
+      from90: z.number().int(),
+    }),
+
+    owners: z.array(crmOwnerRowSchema),
+    coldLeads: z.array(crmColdLeadSchema),
+
+    won: z.object({
+      count: z.number().int(),
+      medianDaysToClose: z.number().nullable(),
+      /** How many won leads carry a usable `day_close`. Small: print it. */
+      sampleSize: z.number().int(),
+    }),
+  })
+  .openapi("CrmAnalytics");

@@ -16,7 +16,8 @@ export type ApiErrorCode =
   | "CONFLICT"
   | "ALREADY_REGISTERED"
   | "INVALID_TOKEN"
-  | "INTERNAL_ERROR";
+  | "INTERNAL_ERROR"
+  | "UPSTREAM_UNAVAILABLE";
 
 export function errorBody(
   requestIdValue: string,

@@ -235,6 +235,23 @@ export interface paths {
         patch: operations["adminUpdateOwnProfile"];
         trace?: never;
     };
+    "/v1/admin/analytics/crm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description A read-only snapshot of the Odoo CRM pipeline: how dormant it is, who owes follow-ups, which companies have gone cold, and what the outreach converted at. Served from a short in-process cache — `fetchedAt` says how old it is and `stale` says whether Odoo could not be re-read. Requires the `dashboard.read` capability. */
+        get: operations["adminCrmAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/overview": {
         parameters: {
             query?: never;
@@ -671,7 +688,7 @@ export interface components {
         ApiError: {
             error: {
                 /** @enum {string} */
-                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "ALREADY_REGISTERED" | "INVALID_TOKEN" | "INTERNAL_ERROR";
+                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "ALREADY_REGISTERED" | "INVALID_TOKEN" | "INTERNAL_ERROR" | "UPSTREAM_UNAVAILABLE";
                 message: string;
                 details?: components["schemas"]["ValidationIssue"][];
             };
@@ -841,6 +858,73 @@ export interface components {
             degree: "grau en informàtica (lleida)" | "grau en informàtica (igualada)" | "grau en tècniques d'interacció digital" | "grau en disseny digital" | "doble grau en informàtica i ADE" | "grau en enginyeria mecànica" | "grau en enginyeria química" | "grau en enginyeria de l'energia" | "grau en eng. electrònica industrial" | "grau en organització industrial" | "doble grau en organització industrial i ADE" | "doble grau en mecànica i energia" | "grau en arquitectura tècnica" | "altre";
             /** @example 2 */
             year: number;
+        };
+        CrmAnalytics: {
+            fetchedAt: string;
+            stale: boolean;
+            truncated: boolean;
+            activity: {
+                lastActivityAt: string | null;
+                daysSinceLastActivity: number | null;
+                touchedLast7Days: number;
+                touchedLast30Days: number;
+            };
+            totals: {
+                allLeads: number;
+                activeLeads: number;
+                archivedLeads: number;
+                wonLeads: number;
+                droppedLeads: number;
+                openLeads: number;
+                unassignedLeads: number;
+                staleLeads: number;
+            };
+            stages: components["schemas"]["CrmStageBucket"][];
+            funnel: components["schemas"]["CrmFunnelStep"][];
+            unclassifiedStages: components["schemas"]["CrmStageBucket"][];
+            staleBuckets: {
+                upTo6: number;
+                from7To29: number;
+                from30To89: number;
+                from90: number;
+            };
+            owners: components["schemas"]["CrmOwnerRow"][];
+            coldLeads: components["schemas"]["CrmColdLead"][];
+            won: {
+                count: number;
+                medianDaysToClose: number | null;
+                sampleSize: number;
+            };
+        };
+        CrmStageBucket: {
+            stageId: number;
+            name: string;
+            active: number;
+            archived: number;
+            total: number;
+        };
+        CrmFunnelStep: {
+            stageId: number;
+            name: string;
+            reached: number;
+            stepRate: number | null;
+        };
+        CrmOwnerRow: {
+            ownerId: number | null;
+            ownerName: string | null;
+            openLeads: number;
+            staleLeads: number;
+            oldestTouchDays: number | null;
+            medianTouchDays: number | null;
+            byStage: number[];
+        };
+        CrmColdLead: {
+            id: number;
+            name: string;
+            company: string | null;
+            stageName: string;
+            ownerName: string | null;
+            daysSinceTouch: number;
         };
         AdminOverview: {
             currentCampaign: components["schemas"]["AdminCampaignRef"];
@@ -1845,6 +1929,53 @@ export interface operations {
             };
             /** @description One or more profile fields are invalid. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminCrmAnalytics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The CRM snapshot. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrmAnalytics"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Odoo is unconfigured or unreachable and no cached snapshot exists. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

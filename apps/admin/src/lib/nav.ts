@@ -1,5 +1,6 @@
 import {
   Building2,
+  ChartNoAxesColumn,
   Globe,
   Inbox,
   LayoutDashboard,
@@ -54,6 +55,12 @@ export const navGroups: NavGroup[] = [
         icon: LayoutDashboard,
         capability: "admin.access",
         exact: true,
+      },
+      {
+        href: "/analytics",
+        label: "analítiques",
+        icon: ChartNoAxesColumn,
+        capability: "dashboard.read",
       },
     ],
   },
