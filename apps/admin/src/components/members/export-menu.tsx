@@ -43,10 +43,19 @@ export function MembersExportMenu({
   return (
     <DropdownMenu>
       {/* The button is the trigger: React Aria hands it the trigger props
-          through context, so it needs no wrapper of its own. */}
-      <Button variant="outline" size="sm" className="w-full sm:w-auto">
+          through context, so it needs no wrapper of its own.
+
+          Icon-only on a phone. Exporting a spreadsheet is the least likely
+          thing anyone does from a phone, and as a full-width control it was
+          taking the most prominent row on the screen to say so. */}
+      <Button
+        variant="outline"
+        size="sm"
+        aria-label="exporta csv"
+        className="w-auto"
+      >
         <Download className="size-4" aria-hidden />
-        exporta csv
+        <span className="sr-only md:not-sr-only">exporta csv</span>
       </Button>
       <DropdownMenuContent placement="bottom end" className="w-56">
         <DropdownMenuLabel>membres d&apos;una campanya</DropdownMenuLabel>

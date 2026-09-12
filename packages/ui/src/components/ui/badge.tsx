@@ -14,17 +14,20 @@ type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
  * so they have to stay exactly as they are.
  */
 const HEROUI_CHIP = {
-  default: { variant: "primary", color: "accent" },
   destructive: { variant: "primary", color: "danger" },
-  // IAESTE blue and the outlined badge have no HeroUI colour. They ride on a
-  // neutral combination and are repainted by `.chip--brand` / `.chip--outline`
-  // in globals.css, which set the same `--chip-*` properties HeroUI uses.
+  // Three of the four have no HeroUI colour: a status is drawn from the
+  // `--status-*` palette, which is neither the navy that means "action" nor
+  // the blue that means "link". They ride on a neutral combination and are
+  // repainted by the `.chip--status-*` / `.chip--outline` rules in
+  // globals.css, which set the same `--chip-*` properties HeroUI uses.
+  default: { variant: "primary", color: "default" },
   secondary: { variant: "primary", color: "default" },
   outline: { variant: "tertiary", color: "default" },
 } as const satisfies Record<BadgeVariant, { variant: string; color: string }>;
 
-const BRAND_VARIANT_CLASS = {
-  secondary: "chip--brand",
+const STATUS_VARIANT_CLASS = {
+  default: "chip--status-strong",
+  secondary: "chip--status-soft",
   outline: "chip--outline",
 } as const satisfies Partial<Record<BadgeVariant, string>>;
 
@@ -43,7 +46,7 @@ function badgeVariants({ variant, className }: BadgeVariantOptions = {}) {
     `chip--${chipVariant}`,
     `chip--${color}`,
     "chip--md",
-    BRAND_VARIANT_CLASS[resolved as keyof typeof BRAND_VARIANT_CLASS],
+    STATUS_VARIANT_CLASS[resolved as keyof typeof STATUS_VARIANT_CLASS],
     className,
   );
 }
@@ -64,7 +67,7 @@ function Badge({ className, variant, children, ...props }: BadgeProps) {
       variant={chipVariant}
       color={color}
       className={cn(
-        BRAND_VARIANT_CLASS[resolved as keyof typeof BRAND_VARIANT_CLASS],
+        STATUS_VARIANT_CLASS[resolved as keyof typeof STATUS_VARIANT_CLASS],
         className,
       )}
       {...props}

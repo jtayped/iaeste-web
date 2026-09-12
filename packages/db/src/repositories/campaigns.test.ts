@@ -3,10 +3,13 @@ import { after, before, beforeEach, describe, it } from "node:test";
 
 import type { Database } from "../client";
 import { closeTestDb, getTestDb, truncateAll } from "../test-support/db";
+import { createTestUser, testProfileSnapshot } from "../test-support/fixtures";
 import {
   createCampaignRepository,
   type CreateCampaignInput,
 } from "./campaigns";
+import { createMembershipRepository } from "./memberships";
+import { createRegistrationRepository } from "./registrations";
 
 function campaignInput(
   overrides: Partial<CreateCampaignInput> = {},
@@ -235,6 +238,64 @@ describe("campaigns repository", () => {
       assert.equal(firstPage.rows.length, 2);
       const secondPage = await repo.listWithCounts({ limit: 2, offset: 2 });
       assert.equal(secondPage.rows.length, 1);
+    });
+
+    /**
+     * The counters are per campaign, so each row has to be counted against
+     * its own id. They were not: the correlated subquery compared the
+     * membership's `campaign_id` with the membership's own `id`, which is
+     * never true, and every row came back zero.
+     */
+    it("counts each campaign's own active members and pending reviews", async () => {
+      const repo = createCampaignRepository(db);
+      const counted = await repo.create(campaignInput({ slug: "counted" }));
+      const other = await repo.create(campaignInput({ slug: "other" }));
+
+      const memberships = createMembershipRepository(db);
+      for (let i = 0; i < 2; i += 1) {
+        const member = await createTestUser(db);
+        await memberships.join({
+          userId: member.id,
+          campaignId: counted.id,
+          source: "admin",
+        });
+      }
+      const departing = await createTestUser(db);
+      const ended = await memberships.join({
+        userId: departing.id,
+        campaignId: counted.id,
+        source: "admin",
+      });
+      await memberships.leave(ended.id);
+
+      const otherMember = await createTestUser(db);
+      await memberships.join({
+        userId: otherMember.id,
+        campaignId: other.id,
+        source: "admin",
+      });
+
+      const registrations = createRegistrationRepository(db);
+      await registrations.create({
+        campaignId: counted.id,
+        email: "pending@alumnes.udl.cat",
+        profileSnapshot: testProfileSnapshot(),
+        status: "pending_review",
+      });
+      await registrations.create({
+        campaignId: counted.id,
+        email: "unverified@alumnes.udl.cat",
+        profileSnapshot: testProfileSnapshot(),
+      });
+
+      const { rows } = await repo.listWithCounts({ limit: 50, offset: 0 });
+      const countedRow = rows.find((row) => row.id === counted.id);
+      const otherRow = rows.find((row) => row.id === other.id);
+
+      assert.equal(countedRow?.activeMembers, 2);
+      assert.equal(countedRow?.pendingReview, 1);
+      assert.equal(otherRow?.activeMembers, 1);
+      assert.equal(otherRow?.pendingReview, 0);
     });
   });
 });
