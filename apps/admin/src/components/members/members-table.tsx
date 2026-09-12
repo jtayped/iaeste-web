@@ -9,12 +9,8 @@ import type {
   DataTableColumn,
   DataTableSelectionHandle,
 } from "@/components/data-table/types";
-import {
-  TableSearch,
-  TableSelectFilter,
-  TableToolbar,
-} from "@/components/data-table/toolbar";
 import { BulkInviteAction } from "@/components/members/bulk-invite-action";
+import { MembersFilters } from "@/components/members/members-filters";
 import type { AdminMemberListItem, MemberFilter } from "@/lib/admin-types";
 import { fullName } from "@/lib/admin-types";
 import { memberRowStatus, personName, roleLabel } from "@/lib/labels";
@@ -157,6 +153,12 @@ export function MembersTable({
     ...(q ? { q } : {}),
     ...(campaignId ? { campaignId } : { filter }),
   };
+  // What the collapsed `filtres` button has to admit to on a phone: anything
+  // the operator moved off the default the page opened on.
+  const activeCount =
+    (q ? 1 : 0) +
+    (source === initialSource ? 0 : 1) +
+    (target === undefined || target.id === initialTarget ? 0 : 1);
   const sourceOptions = [
     ...campaigns.map((campaign) => ({
       value: `campaign:${campaign.id}`,
@@ -237,32 +239,17 @@ export function MembersTable({
           }
         : {})}
       toolbar={
-        <TableToolbar>
-          <TableSearch
-            id="members-search"
-            value={q}
-            placeholder="nom, cognoms o correu"
-            onCommit={handleSearch}
-          />
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-            <TableSelectFilter
-              id="members-source"
-              label="membres de"
-              value={source}
-              options={sourceOptions}
-              onChange={(next) => setParams({ source: next, page: "1" })}
-            />
-            {target ? (
-              <TableSelectFilter
-                id="members-target"
-                label="convida a"
-                value={target.id}
-                options={targetOptions}
-                onChange={(next) => setParams({ target: next, page: "1" })}
-              />
-            ) : null}
-          </div>
-        </TableToolbar>
+        <MembersFilters
+          q={q}
+          onSearch={handleSearch}
+          source={source}
+          sourceOptions={sourceOptions}
+          onSourceChange={(next) => setParams({ source: next, page: "1" })}
+          {...(target ? { targetId: target.id } : {})}
+          targetOptions={targetOptions}
+          onTargetChange={(next) => setParams({ target: next, page: "1" })}
+          activeCount={activeCount}
+        />
       }
     />
   );

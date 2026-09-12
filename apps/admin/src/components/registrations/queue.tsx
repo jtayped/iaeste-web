@@ -7,6 +7,7 @@ import {
   CampaignPicker,
   type CampaignOption,
 } from "@/components/admin/campaign-picker";
+import { StatusBadge } from "@/components/admin/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
 import { DateCell } from "@/components/data-table/date-cell";
 import {
@@ -25,6 +26,7 @@ import {
   personName,
   REGISTRATION_STATUSES,
   REGISTRATION_TAB_LABELS,
+  registrationStatus,
 } from "@/lib/labels";
 import { REGISTRATIONS_PAGE_SIZE, useRegistrations } from "@/lib/registrations";
 import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
@@ -36,23 +38,31 @@ const DEFAULTS = {
   page: "1",
 } as const;
 
-const FILTERS = REGISTRATION_STATUSES.map((value) => ({
-  value,
-  label: REGISTRATION_TAB_LABELS[value],
-}));
+/** The queue's `?status=`, where `tots` is the absence of the API parameter. */
+type RegistrationStatusFilter = RegistrationStatus | "all";
 
-const EMPTY_COPY: Record<RegistrationStatus, string> = {
+/**
+ * `tots` first, as on invitacions and campanyes. Without it this was the one
+ * list in the app you could not see whole; the API's `status` parameter is
+ * optional and omitting it lists every status for the campaign, so the filter
+ * stays server-side like all the others.
+ */
+const FILTERS = [
+  { value: "all", label: "tots" },
+  ...REGISTRATION_STATUSES.map((value) => ({
+    value,
+    label: REGISTRATION_TAB_LABELS[value],
+  })),
+];
+
+const EMPTY_COPY: Record<RegistrationStatusFilter, string> = {
+  all: "aquesta campanya no ha rebut cap sol·licitud.",
   pending_email: "ningú està pendent de verificar el correu ara mateix.",
   pending_review: "cap sol·licitud espera revisió. tot al dia.",
   accepted: "encara no s'ha acceptat cap sol·licitud d'aquesta campanya.",
   rejected: "no s'ha rebutjat cap sol·licitud d'aquesta campanya.",
 };
 
-/**
- * The queue is always looking at exactly one status — there is no `tots` tab —
- * so a status column would put the name of the active filter on every row and
- * nothing else. The filter is the status; the rows are the applicants.
- */
 const COLUMNS: DataTableColumn<AdminRegistration>[] = [
   {
     id: "name",
@@ -91,16 +101,41 @@ const COLUMNS: DataTableColumn<AdminRegistration>[] = [
     cell: (row) => row.profileSnapshot.studyYear,
     className: "hidden sm:table-cell tabular-nums",
   },
-  {
-    id: "createdAt",
-    header: "enviada",
-    cell: (row) => <DateCell value={row.createdAt} />,
-    className: "hidden md:table-cell",
-  },
 ];
 
-function isStatus(value: string): value is RegistrationStatus {
-  return (REGISTRATION_STATUSES as readonly string[]).includes(value);
+const STATUS_COLUMN: DataTableColumn<AdminRegistration> = {
+  id: "status",
+  header: "estat",
+  cell: (row) => <StatusBadge status={registrationStatus(row.status)} />,
+  className: "whitespace-nowrap",
+};
+
+const SENT_COLUMN: DataTableColumn<AdminRegistration> = {
+  id: "createdAt",
+  header: "enviada",
+  cell: (row) => <DateCell value={row.createdAt} />,
+  className: "hidden md:table-cell",
+};
+
+/**
+ * On any filter but `tots` every row would carry the name of the filter you
+ * are already on — the widest thing in the row and the least informative.
+ */
+function registrationColumns(
+  status: RegistrationStatusFilter,
+): DataTableColumn<AdminRegistration>[] {
+  return [
+    ...COLUMNS,
+    ...(status === "all" ? [STATUS_COLUMN] : []),
+    SENT_COLUMN,
+  ];
+}
+
+function isStatus(value: string): value is RegistrationStatusFilter {
+  return (
+    value === "all" ||
+    (REGISTRATION_STATUSES as readonly string[]).includes(value)
+  );
 }
 
 /**
@@ -120,7 +155,7 @@ export function RegistrationsQueue({
   const { get, setParams } = useTableParams(DEFAULTS);
 
   const rawStatus = get("status");
-  const status: RegistrationStatus = isStatus(rawStatus)
+  const status: RegistrationStatusFilter = isStatus(rawStatus)
     ? rawStatus
     : "pending_review";
   const campaignId = get("campaign") || initialCampaignId;
@@ -135,6 +170,7 @@ export function RegistrationsQueue({
     offset,
   });
 
+  const columns = React.useMemo(() => registrationColumns(status), [status]);
   const handleSearch = React.useCallback(
     (next: string) => setParams({ q: next, page: "1" }),
     [setParams],
@@ -143,14 +179,13 @@ export function RegistrationsQueue({
   return (
     <DataTable
       label="cua de revisió de sol·licituds"
-      columns={COLUMNS}
+      columns={columns}
       rows={query.data?.rows ?? []}
       rowKey={(row) => row.id}
       rowHref={(row) => `/registrations/${row.id}`}
       rowLabel={(row) => personName(fullName(row.profileSnapshot))}
-      // No status in this queue has both an accept and a restore, and two of
-      // the four have neither: without this the `accions` header sits over a
-      // column of empty cells.
+      // Two of the four statuses offer nothing to do from the list, and
+      // without this the `accions` header sits over a column of empty cells.
       {...(hasQueueRowActions(status)
         ? {
             rowActions: (row: AdminRegistration) => (

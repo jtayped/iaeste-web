@@ -251,7 +251,7 @@ export function InvitationsTable({
           <TableSearch
             id="invitations-search"
             value={q}
-            placeholder="correu o nom"
+            placeholder="nom, cognoms o correu"
             onCommit={handleSearch}
           />
           <TableFilter
