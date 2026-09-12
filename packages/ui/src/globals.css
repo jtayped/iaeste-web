@@ -248,7 +248,9 @@
     --border: hsl(217.2 32.6% 17.5%);
     --separator: var(--border);
     --focus: hsl(206 78% 60%);
-    --link: var(--focus);
+    /* The brand fill, as in the light theme — not the focus ring it used to
+       borrow, which is a different role that happens to be a similar blue. */
+    --link: var(--secondary);
     --radius: 0.5rem;
     --chart-1: hsl(220 70% 50%);
     --chart-2: hsl(160 60% 45%);
