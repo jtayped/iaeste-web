@@ -87,8 +87,10 @@ same wording so a route is never labelled two different ways. The breadcrumb
 itself no longer reads it: crumbs are page-declared, because only the page has
 the record a dynamic leaf names.
 
-`navGroups` has three groups. **principal** is a single item, the `dashboard`
-(`/`, `exact`), which is also the breadcrumb/title root. **inscripcions** holds
+`navGroups` has three groups. **principal** holds the `dashboard` (`/`,
+`exact`), which is also the breadcrumb/title root, and `analítiques`
+(`/analytics`, the Odoo CRM snapshot); both are gated on reading the
+dashboard. **inscripcions** holds
 `sol·licituds` (carries the pending badge) and `invitacions`; the shell hides
 this whole group when no campaign is open for registration. **organització**
 holds `membres` and `campanyes`. Anything that leaves the app is not a nav group

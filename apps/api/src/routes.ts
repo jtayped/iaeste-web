@@ -8,6 +8,7 @@ import {
   adminCampaignSchema,
   adminCreateCampaignBodySchema,
   adminOverviewSchema,
+  crmAnalyticsSchema,
   adminOwnProfileSchema,
   pushPublicKeySchema,
   pushSubscribeBodySchema,
@@ -1417,5 +1418,30 @@ export const invitationAcceptRoute = createRoute({
       description: "Too many attempts from this address.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
+  },
+});
+
+export const adminCrmAnalyticsRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/analytics/crm",
+  operationId: "adminCrmAnalytics",
+  tags: ["Admin"],
+  description:
+    "A read-only snapshot of the Odoo CRM pipeline: how dormant it is, who " +
+    "owes follow-ups, which companies have gone cold, and what the outreach " +
+    "converted at. Served from a short in-process cache — `fetchedAt` says " +
+    "how old it is and `stale` says whether Odoo could not be re-read. " +
+    "Requires the `dashboard.read` capability.",
+  responses: {
+    200: {
+      description: "The CRM snapshot.",
+      content: { "application/json": { schema: crmAnalyticsSchema } },
+    },
+    503: {
+      description:
+        "Odoo is unconfigured or unreachable and no cached snapshot exists.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
   },
 });

@@ -128,6 +128,20 @@ OpenAPI document. Set the real values on the Coolify resource:
 - `INSCRIPCIONS_PUBLIC_ORIGIN`
 - `ADMIN_PUBLIC_ORIGIN`
 
+Optional, for the Odoo CRM analytics behind `/v1/admin/analytics/crm`:
+
+- `ODOO_BASE_URL` — e.g. `https://iaestelleida.odoo.com`, https only
+- `ODOO_DATABASE` — the Odoo Online subdomain, e.g. `iaestelleida`
+- `ODOO_API_KEY` — from a **dedicated read-only bot user**, not a person's
+  login; a key inherits the permissions of whoever issued it
+
+Leave all three unset and the API still boots: the analytics endpoint reports
+`UPSTREAM_UNAVAILABLE` (503) and the admin page renders a "not configured"
+state. Setting only some of the three is treated as a mistake and throws at
+first use, so configure all three or none. No database migration is involved —
+the snapshot is read from Odoo on demand and cached in process for five
+minutes.
+
 The image fixes `API_PORT=3004`. The dormant Google Sheets projection reads
 the `SHEETS_*` variables only when called; it is not part of registration or
 container startup.

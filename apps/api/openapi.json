@@ -101,7 +101,8 @@
                   "CONFLICT",
                   "ALREADY_REGISTERED",
                   "INVALID_TOKEN",
-                  "INTERNAL_ERROR"
+                  "INTERNAL_ERROR",
+                  "UPSTREAM_UNAVAILABLE"
                 ]
               },
               "message": {
@@ -733,6 +734,317 @@
           "phone",
           "degree",
           "year"
+        ]
+      },
+      "CrmAnalytics": {
+        "type": "object",
+        "properties": {
+          "fetchedAt": {
+            "type": "string"
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "activity": {
+            "type": "object",
+            "properties": {
+              "lastActivityAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "daysSinceLastActivity": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "touchedLast7Days": {
+                "type": "integer"
+              },
+              "touchedLast30Days": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "lastActivityAt",
+              "daysSinceLastActivity",
+              "touchedLast7Days",
+              "touchedLast30Days"
+            ]
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "allLeads": {
+                "type": "integer"
+              },
+              "activeLeads": {
+                "type": "integer"
+              },
+              "archivedLeads": {
+                "type": "integer"
+              },
+              "wonLeads": {
+                "type": "integer"
+              },
+              "droppedLeads": {
+                "type": "integer"
+              },
+              "openLeads": {
+                "type": "integer"
+              },
+              "unassignedLeads": {
+                "type": "integer"
+              },
+              "staleLeads": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "allLeads",
+              "activeLeads",
+              "archivedLeads",
+              "wonLeads",
+              "droppedLeads",
+              "openLeads",
+              "unassignedLeads",
+              "staleLeads"
+            ]
+          },
+          "stages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrmStageBucket"
+            }
+          },
+          "funnel": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrmFunnelStep"
+            }
+          },
+          "unclassifiedStages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrmStageBucket"
+            }
+          },
+          "staleBuckets": {
+            "type": "object",
+            "properties": {
+              "upTo6": {
+                "type": "integer"
+              },
+              "from7To29": {
+                "type": "integer"
+              },
+              "from30To89": {
+                "type": "integer"
+              },
+              "from90": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "upTo6",
+              "from7To29",
+              "from30To89",
+              "from90"
+            ]
+          },
+          "owners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrmOwnerRow"
+            }
+          },
+          "coldLeads": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrmColdLead"
+            }
+          },
+          "won": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer"
+              },
+              "medianDaysToClose": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "sampleSize": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "count",
+              "medianDaysToClose",
+              "sampleSize"
+            ]
+          }
+        },
+        "required": [
+          "fetchedAt",
+          "stale",
+          "truncated",
+          "activity",
+          "totals",
+          "stages",
+          "funnel",
+          "unclassifiedStages",
+          "staleBuckets",
+          "owners",
+          "coldLeads",
+          "won"
+        ]
+      },
+      "CrmStageBucket": {
+        "type": "object",
+        "properties": {
+          "stageId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "active": {
+            "type": "integer"
+          },
+          "archived": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "stageId",
+          "name",
+          "active",
+          "archived",
+          "total"
+        ]
+      },
+      "CrmFunnelStep": {
+        "type": "object",
+        "properties": {
+          "stageId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "reached": {
+            "type": "integer"
+          },
+          "stepRate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "stageId",
+          "name",
+          "reached",
+          "stepRate"
+        ]
+      },
+      "CrmOwnerRow": {
+        "type": "object",
+        "properties": {
+          "ownerId": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ownerName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "openLeads": {
+            "type": "integer"
+          },
+          "staleLeads": {
+            "type": "integer"
+          },
+          "oldestTouchDays": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "medianTouchDays": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "byStage": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        "required": [
+          "ownerId",
+          "ownerName",
+          "openLeads",
+          "staleLeads",
+          "oldestTouchDays",
+          "medianTouchDays",
+          "byStage"
+        ]
+      },
+      "CrmColdLead": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "company": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stageName": {
+            "type": "string"
+          },
+          "ownerName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "daysSinceTouch": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "company",
+          "stageName",
+          "ownerName",
+          "daysSinceTouch"
         ]
       },
       "AdminOverview": {
@@ -2928,6 +3240,57 @@
           },
           "422": {
             "description": "One or more profile fields are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/analytics/crm": {
+      "get": {
+        "operationId": "adminCrmAnalytics",
+        "tags": [
+          "Admin"
+        ],
+        "description": "A read-only snapshot of the Odoo CRM pipeline: how dormant it is, who owes follow-ups, which companies have gone cold, and what the outreach converted at. Served from a short in-process cache — `fetchedAt` says how old it is and `stale` says whether Odoo could not be re-read. Requires the `dashboard.read` capability.",
+        "responses": {
+          "200": {
+            "description": "The CRM snapshot.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmAnalytics"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Odoo is unconfigured or unreachable and no cached snapshot exists.",
             "content": {
               "application/json": {
                 "schema": {
