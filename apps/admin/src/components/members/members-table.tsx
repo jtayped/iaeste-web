@@ -216,7 +216,12 @@ export function MembersTable({
         ? {
             selection: {
               scope: JSON.stringify({ q, source, target: target.id }),
+              // What can be ticked is only the eligible rows, but what the
+              // operator is looking at is everyone the filter matched — so the
+              // count is out of the second number, not the first.
               total: query.data.inviteEligibleTotal,
+              matchedTotal: query.data.total,
+              unit: { singular: "membre", plural: "membres" },
               isRowSelectable: (row: AdminMemberListItem) =>
                 row.targetState === "eligible",
               rowLabel: memberName,

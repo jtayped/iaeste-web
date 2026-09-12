@@ -12,6 +12,7 @@ import {
 import { ConfirmAction } from "@/components/admin/confirm-action";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
+import { DateCell } from "@/components/data-table/date-cell";
 import {
   TableFilter,
   TableSearch,
@@ -22,7 +23,6 @@ import type {
   AdminInvitation,
   InvitationStatusFilter,
 } from "@/lib/admin-types";
-import { formatDate, formatRelative } from "@/lib/format";
 import {
   invitationStatus,
   INVITATION_FILTER_LABELS,
@@ -102,15 +102,6 @@ function InvitationRowActions({ row }: { row: AdminInvitation }) {
   );
 }
 
-/** `fa 9 dies`, with the date it stands for one hover away. */
-function RelativeDate({ iso }: { iso: string }) {
-  return (
-    <time dateTime={iso} title={formatDate(iso)}>
-      {formatRelative(iso)}
-    </time>
-  );
-}
-
 const STATUS_COLUMN: DataTableColumn<AdminInvitation> = {
   id: "status",
   header: "estat",
@@ -161,17 +152,18 @@ function invitationColumns(
     {
       id: "createdAt",
       header: "enviat",
-      cell: (row) => <RelativeDate iso={row.createdAt} />,
-      className: "hidden md:table-cell whitespace-nowrap",
+      cell: (row) => <DateCell value={row.createdAt} />,
+      className: "hidden md:table-cell",
     },
     {
       id: "expiresAt",
       header: "caduca",
-      // Both dates read the same way, so «enviat fa 9 dies» and «caduca d'aquí
-      // a 5» can be compared without doing the arithmetic.
-      cell: (row) =>
-        row.status === "accepted" ? "—" : <RelativeDate iso={row.expiresAt} />,
-      className: "hidden lg:table-cell whitespace-nowrap",
+      // An accepted invitation has no expiry left to speak of; `<DateCell>`
+      // draws the same «—» every other missing date in the app gets.
+      cell: (row) => (
+        <DateCell value={row.status === "accepted" ? null : row.expiresAt} />
+      ),
+      className: "hidden lg:table-cell",
     },
   ];
 }

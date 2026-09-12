@@ -8,6 +8,7 @@ import {
   type CampaignOption,
 } from "@/components/admin/campaign-picker";
 import { DataTable } from "@/components/data-table/data-table";
+import { DateCell } from "@/components/data-table/date-cell";
 import {
   TableFilter,
   TableSearch,
@@ -20,7 +21,6 @@ import {
 } from "@/components/registrations/queue-actions";
 import type { AdminRegistration, RegistrationStatus } from "@/lib/admin-types";
 import { fullName } from "@/lib/admin-types";
-import { formatDate, formatRelative } from "@/lib/format";
 import {
   personName,
   REGISTRATION_STATUSES,
@@ -94,12 +94,8 @@ const COLUMNS: DataTableColumn<AdminRegistration>[] = [
   {
     id: "createdAt",
     header: "enviada",
-    cell: (row) => (
-      <time dateTime={row.createdAt} title={formatDate(row.createdAt)}>
-        {formatRelative(row.createdAt)}
-      </time>
-    ),
-    className: "hidden md:table-cell whitespace-nowrap",
+    cell: (row) => <DateCell value={row.createdAt} />,
+    className: "hidden md:table-cell",
   },
 ];
 
