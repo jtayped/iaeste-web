@@ -253,7 +253,6 @@ export function createCampaignRepository(db: Database) {
       return row;
     },
 
-    /** Every campaign plus its active-member and pending-review counts. */
     /**
      * Campaigns with their active-member and pending-review counts, newest
      * membership start first. Paginated and `q`/`state`-filterable in SQL so
@@ -282,20 +281,31 @@ export function createCampaignRepository(db: Database) {
       }
       const where = clauses.length ? and(...clauses) : undefined;
 
+      // `db.$count`, not a hand-written `sql` subquery: inside a select field
+      // drizzle renders an interpolated column *unqualified*, so
+      // `${membership.campaignId} = ${membershipCampaign.id}` came out as
+      // `"campaign_id" = "id"` and both names resolved to the subquery's own
+      // table — `membership.campaign_id = membership.id` is never true, and
+      // every campaign reported zero. `$count` builds the condition through
+      // the query builder, which qualifies both sides.
       const [rows, [countRow]] = await Promise.all([
         db
           .select({
             campaign: membershipCampaign,
-            activeMembers: sql<number>`(
-              select count(*) from ${membership}
-              where ${membership.campaignId} = ${membershipCampaign.id}
-                and ${membership.status} = 'active'
-            )`,
-            pendingReview: sql<number>`(
-              select count(*) from ${registration}
-              where ${registration.campaignId} = ${membershipCampaign.id}
-                and ${registration.status} = 'pending_review'
-            )`,
+            activeMembers: db.$count(
+              membership,
+              and(
+                eq(membership.campaignId, membershipCampaign.id),
+                eq(membership.status, "active"),
+              ),
+            ),
+            pendingReview: db.$count(
+              registration,
+              and(
+                eq(registration.campaignId, membershipCampaign.id),
+                eq(registration.status, "pending_review"),
+              ),
+            ),
           })
           .from(membershipCampaign)
           .where(where)

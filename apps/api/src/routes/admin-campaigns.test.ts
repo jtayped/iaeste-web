@@ -2,8 +2,17 @@ import assert from "node:assert/strict";
 import { after, afterEach, before, describe, it } from "node:test";
 
 import type { Database } from "@repo/db/client";
-import { createCampaignRepository } from "@repo/db/repositories";
+import {
+  createCampaignRepository,
+  createMembershipRepository,
+  createRegistrationRepository,
+} from "@repo/db/repositories";
 import { closeTestDb, getTestDb, truncateAll } from "@repo/db/test-support";
+import {
+  createTestCampaign,
+  createTestUser,
+  testProfileSnapshot,
+} from "@repo/db/test-support/fixtures";
 
 import { createApp } from "../app";
 import {
@@ -207,6 +216,79 @@ describe("admin campaigns routes", () => {
     assert.equal(view.state, "archived");
     assert.equal(view.isCurrent, false);
     assert.ok(await createCampaignRepository(db).getById(id));
+  });
+
+  /**
+   * The counters the list hands `/campaigns` and `/campaigns/[id]` are the
+   * same two numbers the dashboard shows for the current campaign, and the
+   * two screens read them through different queries. They used to disagree:
+   * the list said 0 for every campaign while the dashboard counted correctly.
+   */
+  it("counts a campaign's active members and pending reviews, and agrees with the dashboard", async () => {
+    const a = app(db);
+    const campaign = await createTestCampaign(db, { slug: "counted" });
+    const quiet = await createTestCampaign(db, { slug: "empty" });
+    await createCampaignRepository(db).setCurrent(campaign.id);
+
+    const memberships = createMembershipRepository(db);
+    for (let i = 0; i < 3; i += 1) {
+      const member = await createTestUser(db);
+      await memberships.join({
+        userId: member.id,
+        campaignId: campaign.id,
+        source: "admin",
+      });
+    }
+    // A membership that ended must not be counted as active.
+    const departed = await createTestUser(db);
+    const ended = await memberships.join({
+      userId: departed.id,
+      campaignId: campaign.id,
+      source: "admin",
+    });
+    await memberships.leave(ended.id);
+
+    const registrations = createRegistrationRepository(db);
+    for (const email of ["one@alumnes.udl.cat", "two@alumnes.udl.cat"]) {
+      await registrations.create({
+        campaignId: campaign.id,
+        email,
+        profileSnapshot: testProfileSnapshot(),
+        status: "pending_review",
+      });
+    }
+    // Still waiting on its email: pending verification, not pending review.
+    await registrations.create({
+      campaignId: campaign.id,
+      email: "three@alumnes.udl.cat",
+      profileSnapshot: testProfileSnapshot(),
+    });
+
+    const list = await a.request("/v1/admin/campaigns");
+    assert.equal(list.status, 200);
+    const page = (await list.json()) as {
+      rows: Array<{ id: string; activeMembers: number; pendingReview: number }>;
+    };
+
+    const counted = page.rows.find((row) => row.id === campaign.id);
+    assert.equal(counted?.activeMembers, 3);
+    assert.equal(counted?.pendingReview, 2);
+
+    // A campaign nobody joined still reports zero, rather than borrowing the
+    // other campaign's rows.
+    const empty = page.rows.find((row) => row.id === quiet.id);
+    assert.equal(empty?.activeMembers, 0);
+    assert.equal(empty?.pendingReview, 0);
+
+    const overview = await a.request("/v1/admin/overview");
+    assert.equal(overview.status, 200);
+    const counts = (
+      (await overview.json()) as {
+        counts: { activeMembers: number; pendingReview: number };
+      }
+    ).counts;
+    assert.equal(counted?.activeMembers, counts.activeMembers);
+    assert.equal(counted?.pendingReview, counts.pendingReview);
   });
 
   it("404s an unknown campaign id", async () => {
