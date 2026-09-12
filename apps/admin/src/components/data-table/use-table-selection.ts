@@ -2,7 +2,16 @@
 
 import * as React from "react";
 
-import type { DataTableSelectionValue } from "@/components/data-table/types";
+import type {
+  DataTableSelectionUnit,
+  DataTableSelectionValue,
+} from "@/components/data-table/types";
+
+/** What each table calls the things in it, when it does not say. */
+export const DEFAULT_SELECTION_UNIT: DataTableSelectionUnit = {
+  singular: "resultat",
+  plural: "resultats",
+};
 
 export interface StoredTableSelection {
   scope: string;
@@ -120,4 +129,30 @@ export function tableSelectionValue(
   return selection.all
     ? { mode: "all", excludedRowIds: [...selection.rowIds] }
     : { mode: "ids", rowIds: [...selection.rowIds] };
+}
+
+/**
+ * What the selection bar says, and the one place the count is explained.
+ *
+ * "24 files seleccionades" over twenty visible rows, sixteen of them with a
+ * checkbox, reads as a broken counter. The count was right — it spans every
+ * page of the result set and skips the rows the table disabled — so the label
+ * states the denominator and, when the selection is the whole result set, that
+ * it reaches past this page.
+ */
+export function selectionSummary({
+  count,
+  total,
+  allPages,
+  unit,
+}: {
+  count: number;
+  total: number;
+  allPages: boolean;
+  unit: DataTableSelectionUnit;
+}): string {
+  const noun = count === 1 ? unit.singular : unit.plural;
+  const of = total > count ? ` de ${total}` : "";
+  const scope = allPages ? " · totes les pàgines" : "";
+  return `${count}${of} ${noun}${scope}`;
 }

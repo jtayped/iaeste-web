@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  selectionSummary,
   tableSelectionCount,
   tableSelectionValue,
   toggleTableRow,
   type StoredTableSelection,
 } from "./use-table-selection";
+
+const MEMBERS = { singular: "membre", plural: "membres" };
 
 describe("table selection", () => {
   it("keeps explicit ids selected across pages", () => {
@@ -39,5 +42,33 @@ describe("table selection", () => {
       mode: "all",
       excludedRowIds: ["already-registered"],
     });
+  });
+});
+
+describe("selection summary", () => {
+  it("says what a select-all across pages actually selected", () => {
+    assert.equal(
+      selectionSummary({
+        count: 24,
+        total: 35,
+        allPages: true,
+        unit: MEMBERS,
+      }),
+      "24 de 35 membres · totes les pàgines",
+    );
+  });
+
+  it("counts hand-picked rows against the same denominator", () => {
+    assert.equal(
+      selectionSummary({ count: 3, total: 35, allPages: false, unit: MEMBERS }),
+      "3 de 35 membres",
+    );
+  });
+
+  it("drops the denominator and the plural when there is one of each", () => {
+    assert.equal(
+      selectionSummary({ count: 1, total: 1, allPages: false, unit: MEMBERS }),
+      "1 membre",
+    );
   });
 });
