@@ -16,7 +16,8 @@ import {
 } from "@/components/data-table/toolbar";
 import { BulkInviteAction } from "@/components/members/bulk-invite-action";
 import type { AdminMemberListItem, MemberFilter } from "@/lib/admin-types";
-import { memberTargetState, membershipStatus, roleLabel } from "@/lib/labels";
+import { fullName } from "@/lib/admin-types";
+import { memberRowStatus, personName, roleLabel } from "@/lib/labels";
 import { MEMBERS_PAGE_SIZE, useMembers } from "@/lib/members";
 import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
 
@@ -27,9 +28,18 @@ export interface MemberCampaignOption {
   isRegistrationOpen: boolean;
 }
 
-const BASE_COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
-  { id: "name", header: "nom", primary: true, cell: (row) => row.name },
-  { id: "surnames", header: "cognoms", cell: (row) => row.surnames },
+const COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
+  {
+    id: "name",
+    header: "nom",
+    primary: true,
+    cell: (row) => personName(row.name),
+  },
+  {
+    id: "surnames",
+    header: "cognoms",
+    cell: (row) => personName(row.surnames),
+  },
   {
     id: "email",
     header: "correu",
@@ -39,12 +49,20 @@ const BASE_COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
   {
     id: "degree",
     header: "estudis",
-    cell: (row) => row.degree,
+    // A three-line degree name is what makes one row twice the height of the
+    // one above it; the whole string stays reachable on the tooltip.
+    cell: (row) => (
+      <span className="block max-w-[22ch] truncate" title={row.degree}>
+        {row.degree}
+      </span>
+    ),
     className: "hidden xl:table-cell",
   },
   {
+    // `curs` is the academic year everywhere else in this app — in the campaign
+    // selector two filters to the left of here, among others.
     id: "studyYear",
-    header: "curs",
+    header: "any de carrera",
     cell: (row) => row.studyYear,
     className: "hidden sm:table-cell tabular-nums",
   },
@@ -56,13 +74,9 @@ const BASE_COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
   },
   {
     id: "status",
-    header: "estat actual",
-    cell: (row) =>
-      row.currentStatus ? (
-        <StatusBadge status={membershipStatus(row.currentStatus)} />
-      ) : (
-        <StatusBadge status={{ label: "sense alta activa", tone: "outline" }} />
-      ),
+    header: "estat",
+    cell: (row) => <StatusBadge status={memberRowStatus(row)} />,
+    className: "whitespace-nowrap",
   },
   {
     id: "totalMemberships",
@@ -71,6 +85,11 @@ const BASE_COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
     className: "hidden xl:table-cell tabular-nums",
   },
 ];
+
+/** Announced by the row link and by the row's checkbox, so they cannot differ. */
+function memberName(row: AdminMemberListItem): string {
+  return personName(fullName(row));
+}
 
 function sourceCampaignId(source: string): string | undefined {
   return source.startsWith("campaign:") ? source.slice(9) : undefined;
@@ -129,23 +148,6 @@ export function MembersTable({
   });
   const rows = query.data?.rows ?? [];
 
-  const columns = React.useMemo<DataTableColumn<AdminMemberListItem>[]>(
-    () => [
-      ...BASE_COLUMNS,
-      {
-        id: "targetState",
-        header: "destí",
-        cell: (row) =>
-          row.targetState ? (
-            <StatusBadge status={memberTargetState(row.targetState)} />
-          ) : (
-            "—"
-          ),
-      },
-    ],
-    [],
-  );
-
   const handleSearch = React.useCallback(
     (next: string) => setParams({ q: next, page: "1" }),
     [setParams],
@@ -181,10 +183,11 @@ export function MembersTable({
   return (
     <DataTable
       label="llista de membres del comitè"
-      columns={columns}
+      columns={COLUMNS}
       rows={rows}
       rowKey={(row) => row.userId}
       rowHref={(row) => `/members/${row.userId}`}
+      rowLabel={memberName}
       state={{
         isPending: query.isPending,
         isError: query.isError,
@@ -213,11 +216,15 @@ export function MembersTable({
         ? {
             selection: {
               scope: JSON.stringify({ q, source, target: target.id }),
+              // What can be ticked is only the eligible rows, but what the
+              // operator is looking at is everyone the filter matched — so the
+              // count is out of the second number, not the first.
               total: query.data.inviteEligibleTotal,
+              matchedTotal: query.data.total,
+              unit: { singular: "membre", plural: "membres" },
               isRowSelectable: (row: AdminMemberListItem) =>
                 row.targetState === "eligible",
-              rowLabel: (row: AdminMemberListItem) =>
-                `${row.name} ${row.surnames}`.trim(),
+              rowLabel: memberName,
               actions: (selection: DataTableSelectionHandle) => (
                 <BulkInviteAction
                   campaignId={target.id}

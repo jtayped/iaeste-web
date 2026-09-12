@@ -7,21 +7,24 @@ import {
   CampaignPicker,
   type CampaignOption,
 } from "@/components/admin/campaign-picker";
-import { StatusBadge } from "@/components/admin/status-badge";
 import { DataTable } from "@/components/data-table/data-table";
+import { DateCell } from "@/components/data-table/date-cell";
 import {
   TableFilter,
   TableSearch,
   TableToolbar,
 } from "@/components/data-table/toolbar";
 import type { DataTableColumn } from "@/components/data-table/types";
-import { QueueRowActions } from "@/components/registrations/queue-actions";
-import type { AdminRegistration, RegistrationStatus } from "@/lib/admin-types";
-import { formatRelative } from "@/lib/format";
 import {
+  hasQueueRowActions,
+  QueueRowActions,
+} from "@/components/registrations/queue-actions";
+import type { AdminRegistration, RegistrationStatus } from "@/lib/admin-types";
+import { fullName } from "@/lib/admin-types";
+import {
+  personName,
   REGISTRATION_STATUSES,
   REGISTRATION_TAB_LABELS,
-  registrationStatus,
 } from "@/lib/labels";
 import { REGISTRATIONS_PAGE_SIZE, useRegistrations } from "@/lib/registrations";
 import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
@@ -45,17 +48,22 @@ const EMPTY_COPY: Record<RegistrationStatus, string> = {
   rejected: "no s'ha rebutjat cap sol·licitud d'aquesta campanya.",
 };
 
+/**
+ * The queue is always looking at exactly one status — there is no `tots` tab —
+ * so a status column would put the name of the active filter on every row and
+ * nothing else. The filter is the status; the rows are the applicants.
+ */
 const COLUMNS: DataTableColumn<AdminRegistration>[] = [
   {
     id: "name",
     header: "nom",
     primary: true,
-    cell: (row) => row.profileSnapshot.name,
+    cell: (row) => personName(row.profileSnapshot.name),
   },
   {
     id: "surnames",
     header: "cognoms",
-    cell: (row) => row.profileSnapshot.surnames,
+    cell: (row) => personName(row.profileSnapshot.surnames),
   },
   {
     id: "email",
@@ -66,25 +74,28 @@ const COLUMNS: DataTableColumn<AdminRegistration>[] = [
   {
     id: "degree",
     header: "estudis",
-    cell: (row) => row.profileSnapshot.degree,
+    cell: (row) => (
+      <span
+        className="block max-w-[22ch] truncate"
+        title={row.profileSnapshot.degree}
+      >
+        {row.profileSnapshot.degree}
+      </span>
+    ),
     className: "hidden xl:table-cell",
   },
   {
+    // `curs` is the academic year in the campaign picker above this table.
     id: "studyYear",
-    header: "curs",
+    header: "any de carrera",
     cell: (row) => row.profileSnapshot.studyYear,
     className: "hidden sm:table-cell tabular-nums",
   },
   {
-    id: "status",
-    header: "estat",
-    cell: (row) => <StatusBadge status={registrationStatus(row.status)} />,
-  },
-  {
     id: "createdAt",
     header: "enviada",
-    cell: (row) => formatRelative(row.createdAt),
-    className: "hidden md:table-cell whitespace-nowrap",
+    cell: (row) => <DateCell value={row.createdAt} />,
+    className: "hidden md:table-cell",
   },
 ];
 
@@ -136,7 +147,17 @@ export function RegistrationsQueue({
       rows={query.data?.rows ?? []}
       rowKey={(row) => row.id}
       rowHref={(row) => `/registrations/${row.id}`}
-      rowActions={(row) => <QueueRowActions registration={row} />}
+      rowLabel={(row) => personName(fullName(row.profileSnapshot))}
+      // No status in this queue has both an accept and a restore, and two of
+      // the four have neither: without this the `accions` header sits over a
+      // column of empty cells.
+      {...(hasQueueRowActions(status)
+        ? {
+            rowActions: (row: AdminRegistration) => (
+              <QueueRowActions registration={row} />
+            ),
+          }
+        : {})}
       state={{
         isPending: query.isPending,
         isError: query.isError,

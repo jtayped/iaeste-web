@@ -39,7 +39,12 @@ function isState(value: string): value is CampaignState {
 }
 
 const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
-  { id: "label", header: "campanya", primary: true, cell: (row) => row.label },
+  {
+    id: "label",
+    header: "campanya",
+    primary: true,
+    cell: (row) => row.label,
+  },
   {
     id: "slug",
     header: "identificador",
@@ -50,6 +55,7 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
     id: "state",
     header: "estat",
     cell: (row) => <StatusBadge status={campaignState(row.state)} />,
+    className: "whitespace-nowrap",
   },
   {
     id: "flags",
@@ -57,14 +63,19 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
     cell: (row) => (
       <div className="flex flex-wrap gap-1">
         {row.isCurrent ? <Badge variant="default">actual</Badge> : null}
+        {/* Both of these are read, not pressed: brand blue in a row would
+            outrank the buttons above the table. */}
         {row.isRegistrationOpen ? (
-          <Badge variant="secondary">inscripcions obertes</Badge>
+          <Badge variant="default">inscripcions obertes</Badge>
         ) : null}
         {!row.isCurrent && !row.isRegistrationOpen ? (
           <span className="text-muted-foreground">—</span>
         ) : null}
       </div>
     ),
+    // Two chips wide, and on a phone the three columns that survive are the
+    // campaign, the state it is in and how many people are in it.
+    className: "hidden md:table-cell",
   },
   {
     id: "activeMembers",
@@ -81,6 +92,8 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
   {
     id: "membership",
     header: "durada de l'equip",
+    // A span, not an instant: «fa 9 dies – d'aquí a 8 mesos» is not a duration
+    // anyone can read, so this one stays absolute on both ends.
     cell: (row) =>
       formatDateRange(row.membershipStartsAt, row.membershipEndsAt),
     className: "hidden xl:table-cell whitespace-nowrap",
@@ -122,6 +135,7 @@ export function CampaignsTable({
       rows={query.data?.rows ?? []}
       rowKey={(row) => row.id}
       rowHref={(row) => `/campaigns/${row.id}`}
+      rowLabel={(row) => row.label}
       state={{
         isPending: query.isPending,
         isError: query.isError,
