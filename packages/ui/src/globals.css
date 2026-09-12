@@ -434,7 +434,8 @@
   /* Same radius-and-border pin as the popovers above: HeroUI's dialogs are
      32px-cornered and carried on their shadow alone, which on a white page is
      a white panel with no edge. */
-  .alert-dialog__dialog {
+  .alert-dialog__dialog,
+  .modal__dialog {
     @apply rounded-lg border;
   }
 
