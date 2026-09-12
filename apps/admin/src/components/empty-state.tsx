@@ -4,9 +4,10 @@ import { cn } from "@repo/ui/lib/utils";
 
 /**
  * The one empty/idle surface the whole app uses — "nothing here yet", "not
- * built yet", "nothing matched". A dashed hairline rather than a card: it
- * reads as an absence of content instead of as content that happens to be
- * blank.
+ * built yet", "nothing matched". Centred content and no frame of its own: an
+ * empty result is a normal answer to a query, so it belongs inside whatever
+ * container the answer would have filled, and it was the dashed hairline that
+ * made it read as a drop target or an unbuilt slot instead.
  */
 export function EmptyState({
   icon: Icon,
@@ -24,7 +25,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border px-6 py-14 text-center",
+        "flex flex-col items-center justify-center gap-3 px-6 py-14 text-center",
         className,
       )}
     >

@@ -99,119 +99,134 @@ export function DataTable<Row>({
       {toolbar}
 
       {state.isPending ? (
+        // The skeleton draws the same frame itself: the route files hand it
+        // straight to `<Suspense>`, with no table around it to draw one.
         <TableSkeleton columns={columns.length + (selectionConfig ? 1 : 0)} />
-      ) : null}
+      ) : (
+        // One framed region for every answer to the same query. Failed, empty
+        // and full used to be differently shaped boxes — a dashed panel one
+        // moment and a bordered table the next — so the page reflowed around a
+        // region whose meaning had not changed. Only the full one scrolls; an
+        // empty result has nothing to scroll.
+        <div className="w-full overflow-hidden rounded-lg border border-border">
+          {state.isError ? (
+            <ErrorState detail={errorMessage(state.error)} />
+          ) : null}
 
-      {state.isError ? <ErrorState detail={errorMessage(state.error)} /> : null}
+          {ready && rows.length === 0 ? (
+            <EmptyState
+              icon={empty.icon}
+              title={empty.title}
+              description={empty.description}
+            />
+          ) : null}
 
-      {ready && rows.length === 0 ? (
-        <EmptyState
-          icon={empty.icon}
-          title={empty.title}
-          description={empty.description}
-        />
-      ) : null}
-
-      {ready && rows.length > 0 ? (
-        <TableScroller label={label} busy={state.isFetching}>
-          {/* A bare `<table>` rather than `@repo/ui`'s `<Table>`: that one
+          {ready && rows.length > 0 ? (
+            <TableScroller label={label} busy={state.isFetching}>
+              {/* A bare `<table>` rather than `@repo/ui`'s `<Table>`: that one
               wraps itself in a second `overflow-auto` box, and a scroller
               inside a scroller means the outer one never scrolls — so it can
               neither be reached by keyboard nor show where the row continues. */}
-          <table className="w-full caption-bottom text-sm">
-            <caption className="sr-only">{label}</caption>
-            <TableHeader>
-              <TableRow>
-                {selectionConfig ? (
-                  <TableHead className="w-12 px-0 text-center">
-                    <SelectionCheckbox
-                      label={`selecciona els ${selectionConfig.total} resultats`}
-                      selected={selection.allSelected}
-                      indeterminate={selection.isIndeterminate}
-                      disabled={state.isFetching || selectionConfig.total === 0}
-                      onChange={selection.toggleAll}
-                    />
-                  </TableHead>
-                ) : null}
-                {columns.map((column) => (
-                  <TableHead
-                    key={column.id}
-                    className={cn("whitespace-nowrap", column.className)}
-                  >
-                    {column.header}
-                  </TableHead>
-                ))}
-                {rowActions ? (
-                  <TableHead className="text-right whitespace-nowrap">
-                    accions
-                  </TableHead>
-                ) : null}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => {
-                const href = rowHref?.(row);
-                const key = rowKey(row);
-                const selectable =
-                  selectionConfig?.isRowSelectable?.(row) ?? true;
-                const selected =
-                  selectionConfig && selectable
-                    ? selection.isSelected(key)
-                    : false;
-
-                return (
-                  <TableRow
-                    key={key}
-                    className={cn(href === undefined ? null : "relative")}
-                    {...(selected ? { "data-state": "selected" } : {})}
-                  >
+              <table className="w-full caption-bottom text-sm">
+                <caption className="sr-only">{label}</caption>
+                <TableHeader>
+                  <TableRow>
                     {selectionConfig ? (
-                      // Above the stretched link, or ticking a checkbox would
-                      // open the record instead.
-                      <TableCell className="relative z-10 w-12 px-0 text-center">
+                      <TableHead className="w-12 px-0 text-center">
                         <SelectionCheckbox
-                          label={`selecciona ${selectionConfig.rowLabel?.(row) ?? key}`}
-                          selected={selected}
-                          disabled={!selectable || state.isFetching}
-                          onChange={(next) => selection.toggleRow(key, next)}
+                          label={`selecciona els ${selectionConfig.total} resultats`}
+                          selected={selection.allSelected}
+                          indeterminate={selection.isIndeterminate}
+                          disabled={
+                            state.isFetching || selectionConfig.total === 0
+                          }
+                          onChange={selection.toggleAll}
                         />
-                      </TableCell>
+                      </TableHead>
                     ) : null}
-                    {columns.map((column, index) => (
-                      <TableCell
+                    {columns.map((column) => (
+                      <TableHead
                         key={column.id}
-                        className={cn(
-                          column.primary === true ? "font-medium" : null,
-                          column.className,
-                        )}
+                        className={cn("whitespace-nowrap", column.className)}
                       >
-                        {/* The stretched link lives in the first cell because
-                            it is positioned against the `<tr>`, and a `<tr>`
-                            cannot hold anything but cells. */}
-                        {index === 0 && href !== undefined ? (
-                          <Link
-                            href={href}
-                            aria-label={rowLabel?.(row) ?? `obre ${key}`}
-                            className="absolute inset-0 rounded ring-ring outline-none ring-inset focus-visible:ring-2"
-                          />
-                        ) : null}
-                        {column.cell(row)}
-                      </TableCell>
+                        {column.header}
+                      </TableHead>
                     ))}
                     {rowActions ? (
-                      <TableCell className="relative z-10 text-right">
-                        <div className="flex flex-wrap justify-end gap-2">
-                          {rowActions(row)}
-                        </div>
-                      </TableCell>
+                      <TableHead className="text-right whitespace-nowrap">
+                        accions
+                      </TableHead>
                     ) : null}
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </table>
-        </TableScroller>
-      ) : null}
+                </TableHeader>
+                <TableBody>
+                  {rows.map((row) => {
+                    const href = rowHref?.(row);
+                    const key = rowKey(row);
+                    const selectable =
+                      selectionConfig?.isRowSelectable?.(row) ?? true;
+                    const selected =
+                      selectionConfig && selectable
+                        ? selection.isSelected(key)
+                        : false;
+
+                    return (
+                      <TableRow
+                        key={key}
+                        className={cn(href === undefined ? null : "relative")}
+                        {...(selected ? { "data-state": "selected" } : {})}
+                      >
+                        {selectionConfig ? (
+                          // Above the stretched link, or ticking a checkbox would
+                          // open the record instead.
+                          <TableCell className="relative z-10 w-12 px-0 text-center">
+                            <SelectionCheckbox
+                              label={`selecciona ${selectionConfig.rowLabel?.(row) ?? key}`}
+                              selected={selected}
+                              disabled={!selectable || state.isFetching}
+                              onChange={(next) =>
+                                selection.toggleRow(key, next)
+                              }
+                            />
+                          </TableCell>
+                        ) : null}
+                        {columns.map((column, index) => (
+                          <TableCell
+                            key={column.id}
+                            className={cn(
+                              column.primary === true ? "font-medium" : null,
+                              column.className,
+                            )}
+                          >
+                            {/* The stretched link lives in the first cell because
+                            it is positioned against the `<tr>`, and a `<tr>`
+                            cannot hold anything but cells. */}
+                            {index === 0 && href !== undefined ? (
+                              <Link
+                                href={href}
+                                aria-label={rowLabel?.(row) ?? `obre ${key}`}
+                                className="absolute inset-0 rounded ring-ring outline-none ring-inset focus-visible:ring-2"
+                              />
+                            ) : null}
+                            {column.cell(row)}
+                          </TableCell>
+                        ))}
+                        {rowActions ? (
+                          <TableCell className="relative z-10 text-right">
+                            <div className="flex flex-wrap justify-end gap-2">
+                              {rowActions(row)}
+                            </div>
+                          </TableCell>
+                        ) : null}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </table>
+            </TableScroller>
+          ) : null}
+        </div>
+      )}
 
       {selectionConfig && selection.count > 0 ? (
         <SelectionBar
