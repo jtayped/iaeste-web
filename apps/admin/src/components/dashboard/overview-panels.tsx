@@ -10,11 +10,18 @@ interface Metric {
   label: string;
   value: number;
   hint: string;
-  href?: string;
+  href: string;
   emphasis?: boolean;
 }
 
-function MetricBody({
+/**
+ * Every card on this page goes somewhere, and every card says so the same
+ * way: the arrow sits in the corner of the card it belongs to, the whole
+ * card is the hit area, and it lifts on hover and rings on focus. A card
+ * that carried no affordance used to read as a dead statistic sitting next
+ * to four live ones.
+ */
+function MetricCard({
   metric,
   featured = false,
 }: {
@@ -22,50 +29,37 @@ function MetricBody({
   featured?: boolean;
 }) {
   return (
-    <div className={cn("h-full", featured ? "p-5" : "p-4")}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">{metric.label}</p>
-          <p
-            className={cn(
-              "mt-2 font-semibold tracking-tight tabular-nums",
-              featured ? "text-4xl" : "text-2xl",
-              metric.emphasis && metric.value > 0 ? "text-primary" : null,
-            )}
-          >
-            {metric.value}
+    <Card className="rounded-lg border-border p-0 shadow-none transition-colors focus-within:border-secondary/40 hover:border-secondary/40 hover:bg-default/40">
+      <Link
+        href={metric.href}
+        className={cn(
+          "group flex h-full flex-col rounded-lg ring-ring outline-none focus-visible:ring-2",
+          featured ? "p-5 sm:p-6" : "p-4 sm:p-5",
+        )}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <p className="min-w-0 text-sm text-muted-foreground">
+            {metric.label}
           </p>
-        </div>
-        {metric.href ? (
           <ArrowUpRight
-            className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-secondary"
+            className="size-4 shrink-0 text-muted-foreground transition-[color,transform] group-hover:-translate-y-0.5 group-hover:text-link group-focus-visible:text-link"
             aria-hidden
           />
-        ) : null}
-      </div>
-      <p className="mt-1 max-w-[36ch] text-xs text-muted-foreground">
-        {metric.hint}
-      </p>
-    </div>
-  );
-}
-
-function MetricCell({
-  metric,
-  featured,
-}: {
-  metric: Metric;
-  featured?: boolean;
-}) {
-  if (!metric.href) return <MetricBody metric={metric} featured={featured} />;
-
-  return (
-    <Link
-      href={metric.href}
-      className="group block h-full rounded-md ring-ring outline-none hover:bg-default/50 focus-visible:ring-2"
-    >
-      <MetricBody metric={metric} featured={featured} />
-    </Link>
+        </div>
+        <p
+          className={cn(
+            "mt-2 font-semibold tracking-tight tabular-nums",
+            featured ? "text-4xl" : "text-3xl",
+            metric.emphasis && metric.value > 0 ? "text-primary" : null,
+          )}
+        >
+          {metric.value}
+        </p>
+        <p className="mt-1 max-w-[36ch] text-xs text-muted-foreground">
+          {metric.hint}
+        </p>
+      </Link>
+    </Card>
   );
 }
 
@@ -77,7 +71,13 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function TeamOverview({ counts }: { counts: AdminOverviewCounts }) {
+export function TeamOverview({
+  counts,
+  className,
+}: {
+  counts: AdminOverviewCounts;
+  className?: string;
+}) {
   const breakdown: Metric[] = [
     {
       label: "nous",
@@ -100,63 +100,59 @@ export function TeamOverview({ counts }: { counts: AdminOverviewCounts }) {
   ];
 
   return (
-    <section className="space-y-3">
+    <section className={cn("space-y-3", className)}>
       <SectionTitle>equip</SectionTitle>
-      <Card className="overflow-hidden rounded-lg border-border p-0 shadow-none">
-        <div className="border-b border-border">
-          <MetricCell
-            featured
-            metric={{
-              label: "membres actius",
-              value: counts.activeMembers,
-              hint: "amb l'alta vigent a la campanya actual",
-              href: "/members",
-            }}
-          />
-        </div>
-        <div className="grid divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-          {breakdown.map((metric) => (
-            <MetricCell key={metric.label} metric={metric} />
-          ))}
-        </div>
-      </Card>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <MetricCard
+          featured
+          metric={{
+            label: "membres actius",
+            value: counts.activeMembers,
+            hint: "amb l'alta vigent a la campanya actual",
+            href: "/members",
+          }}
+        />
+        {breakdown.map((metric) => (
+          <MetricCard key={metric.label} metric={metric} />
+        ))}
+      </div>
     </section>
   );
 }
 
 export function RegistrationOverview({
   counts,
+  className,
 }: {
   counts: AdminOverviewCounts;
+  className?: string;
 }) {
   const metrics: Metric[] = [
     {
       label: "pendents de verificar",
       value: counts.pendingVerification,
       hint: "encara no han confirmat el correu",
+      href: "/registrations?status=pending_email",
     },
     {
       label: "pendents de revisar",
       value: counts.pendingReview,
       hint: "esperen la decisió del comitè",
-      href: "/registrations",
+      href: "/registrations?status=pending_review",
       emphasis: true,
     },
   ];
 
   return (
-    <section className="space-y-3">
+    <section className={cn("space-y-3", className)}>
       <SectionTitle>sol·licituds</SectionTitle>
-      <Card className="grid overflow-hidden rounded-lg border-border p-0 shadow-none sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+      {/* Side by side until the section is sharing a wide screen with the
+          team panel, where it holds a single column track. */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
         {metrics.map((metric) => (
-          <div
-            key={metric.label}
-            className="border-b border-border last:border-b-0 sm:border-b-0"
-          >
-            <MetricCell metric={metric} />
-          </div>
+          <MetricCard key={metric.label} metric={metric} />
         ))}
-      </Card>
+      </div>
     </section>
   );
 }

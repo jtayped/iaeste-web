@@ -97,17 +97,20 @@ export default async function DashboardPage() {
         <PendingWork pendingReview={counts.pendingReview} />
       ) : null}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.85fr)] lg:gap-8">
-        <TeamOverview counts={counts} />
-        <div className="space-y-6 md:space-y-8">
-          {registrationsActive ? (
-            <RegistrationOverview counts={counts} />
-          ) : null}
-          <CampaignSummary
-            currentCampaign={currentCampaign}
-            registrationOpenCampaign={registrationOpenCampaign}
-          />
-        </div>
+      {/* Three column tracks on a wide screen, and every section claims the
+          whole row it is on: the panels used to sit in a 60%-wide column with
+          the rest of a 1512px desktop left blank. */}
+      <div className="grid items-start gap-6 md:gap-8 xl:grid-cols-3">
+        <TeamOverview
+          counts={counts}
+          className={registrationsActive ? "xl:col-span-2" : "xl:col-span-3"}
+        />
+        {registrationsActive ? <RegistrationOverview counts={counts} /> : null}
+        <CampaignSummary
+          currentCampaign={currentCampaign}
+          registrationOpenCampaign={registrationOpenCampaign}
+          className="xl:col-span-3"
+        />
       </div>
     </PageShell>
   );
