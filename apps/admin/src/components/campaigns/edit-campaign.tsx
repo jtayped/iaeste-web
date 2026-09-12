@@ -5,7 +5,7 @@ import * as React from "react";
 import { Button } from "@repo/ui/button";
 
 import { CampaignFields } from "@/components/campaigns/campaign-fields";
-import { Section } from "@/components/admin/detail-panel";
+import { Panel, Section } from "@/components/admin/detail-panel";
 import type { AdminCampaignWithCounts } from "@/lib/admin-types";
 import { useCampaignAction } from "@/lib/campaigns";
 import {
@@ -76,22 +76,27 @@ export function EditCampaign({
   if (campaign.state === "archived") return null;
 
   return (
-    <Section title="dades">
-      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-        <CampaignFields
-          state={state}
-          errors={errors}
-          slugEditable={slugEditable}
-          onChange={(patch) =>
-            setState((current) => ({ ...current, ...patch }))
-          }
-        />
-        <div className="flex [&>*]:min-h-11 [&>*]:w-full sm:[&>*]:min-h-9 sm:[&>*]:w-auto">
-          <Button type="submit" disabled={action.isPending}>
-            {action.isPending ? "desant…" : "desa els canvis"}
-          </Button>
-        </div>
-      </form>
+    <Section
+      title="dades"
+      description="el nom i les quatre dates de la campanya. cap canvi s'aplica fins que no el deses."
+    >
+      <Panel className="p-4">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          <CampaignFields
+            state={state}
+            errors={errors}
+            slugEditable={slugEditable}
+            onChange={(patch) =>
+              setState((current) => ({ ...current, ...patch }))
+            }
+          />
+          <div className="flex [&>*]:min-h-11 [&>*]:w-full sm:[&>*]:min-h-9 sm:[&>*]:w-auto">
+            <Button type="submit" disabled={action.isPending}>
+              {action.isPending ? "desant…" : "desa els canvis"}
+            </Button>
+          </div>
+        </form>
+      </Panel>
     </Section>
   );
 }
