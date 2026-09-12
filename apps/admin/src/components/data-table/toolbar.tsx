@@ -107,14 +107,26 @@ export function TableSelectFilter({
   onChange: (next: string) => void;
   label: string;
 }) {
+  const selected = options.find((option) => option.value === value);
+
   return (
-    <div className="min-w-0 space-y-1.5">
+    // The tooltip sits on the field, not the trigger, which takes no `title`
+    // of its own; hovering the control still picks this one up.
+    <div className="min-w-0 space-y-1.5" title={selected?.label}>
       <Label htmlFor={id} className="text-xs text-muted-foreground">
         {label}
       </Label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger id={id} className="h-11 w-full sm:h-9 sm:w-56">
-          <SelectValue />
+        {/* A campaign label runs to `curs 2026-2027 · inscripcions obertes`,
+            which no fixed track width holds. The trigger keeps a floor so the
+            control never shrinks to a stub, and the label ellipsizes inside it
+            rather than spilling over the page — the whole of it stays on
+            `title`. */}
+        <SelectTrigger
+          id={id}
+          className="h-11 w-full min-w-0 sm:h-9 sm:w-auto sm:max-w-72 sm:min-w-56"
+        >
+          <SelectValue className="truncate" />
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (
@@ -148,12 +160,20 @@ export function TableFilter({
       {label ? (
         <span className="block text-xs text-muted-foreground">{label}</span>
       ) : null}
-      {/* Four options do not fit 360px. `TabsList` scrolls sideways in its own
-          container rather than wrapping or shrinking the labels. */}
+      {/* Four options do not fit 360px, and a two-word label such as `sense
+          verificar` does not fit a track that is sized for one. Both are the
+          same fix: the labels never wrap — a wrapped tab is taller than the
+          track and its pill bleeds past the edges — and `TabsList` scrolls
+          sideways in its own container, with the chevrons it already draws,
+          at every width rather than only on a phone. */}
       <Tabs value={value} onValueChange={onChange}>
-        <TabsList aria-label={label}>
+        <TabsList aria-label={label} className="max-w-full">
           {options.map((option) => (
-            <TabsTrigger key={option.value} value={option.value}>
+            <TabsTrigger
+              key={option.value}
+              value={option.value}
+              className="whitespace-nowrap"
+            >
               {option.label}
             </TabsTrigger>
           ))}
