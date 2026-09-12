@@ -5,6 +5,8 @@ import type { Database } from "@repo/db/client";
 import { createApp } from "../app";
 import type { PublicRegistrationStatus } from "../contracts";
 import type { RegistrationRepository } from "../repositories/registrations";
+import type { CrmAnalytics } from "../lib/crm-metrics";
+import type { CrmAnalyticsService } from "../services/crm-analytics-service";
 import type { RegistrationChallengeService } from "../services/registration-challenge-service";
 import type { RegistrationService } from "../services/registration-service";
 
@@ -149,4 +151,43 @@ export function createTestApp(
     hasMemberProfile,
     db,
   });
+}
+
+/** A snapshot with every field present and nothing interesting in it. */
+export const emptyCrmAnalytics: CrmAnalytics = {
+  activity: {
+    daysSinceLastActivity: null,
+    lastActivityAt: null,
+    touchedLast7Days: 0,
+    touchedLast30Days: 0,
+  },
+  coldLeads: [],
+  fetchedAt: "2026-09-12T00:00:00.000Z",
+  funnel: [],
+  owners: [],
+  stages: [],
+  stale: false,
+  staleBuckets: { from7To29: 0, from30To89: 0, from90: 0, upTo6: 0 },
+  totals: {
+    activeLeads: 0,
+    allLeads: 0,
+    archivedLeads: 0,
+    droppedLeads: 0,
+    openLeads: 0,
+    staleLeads: 0,
+    unassignedLeads: 0,
+    wonLeads: 0,
+  },
+  truncated: false,
+  unclassifiedStages: [],
+  won: { count: 0, medianDaysToClose: null, sampleSize: 0 },
+};
+
+export function createCrmAnalyticsStub(
+  overrides: Partial<CrmAnalyticsService> = {},
+): CrmAnalyticsService {
+  return {
+    snapshot: async () => emptyCrmAnalytics,
+    ...overrides,
+  };
 }

@@ -31,6 +31,11 @@ import {
 
 import { getAllowedOrigins, getWebPushConfig } from "./config";
 import { errorBody } from "./lib/api-error";
+import { OdooError, OdooNotConfiguredError } from "./lib/odoo";
+import {
+  createCrmAnalyticsService,
+  type CrmAnalyticsService,
+} from "./services/crm-analytics-service";
 import { membersCsv, membersCsvFilename } from "./lib/member-export";
 import {
   createNoopPushNotifier,
@@ -77,6 +82,7 @@ import {
   adminMemberSetRoleRoute,
   adminSetMemberEmailsRoute,
   adminListRegistrationsRoute,
+  adminCrmAnalyticsRoute,
   adminOverviewRoute,
   adminPushPublicKeyRoute,
   adminPushSubscribeRoute,
@@ -122,6 +128,8 @@ type AppDependencies = {
   invitationService?: InvitationService;
   /** IA: overridable so tests inject a recording push notifier. */
   pushNotifier?: PushNotifier;
+  /** Injected in tests; the real one reaches Odoo over HTTP. */
+  crmAnalytics?: CrmAnalyticsService;
   /**
    * The database the admin domain handlers (overview, campaigns, members,
    * invitations) use. Defaults to the app-wide `getDb()`; overridable so
@@ -665,6 +673,7 @@ export function createApp(dependencies: AppDependencies = {}) {
 
   app.use("/v1/admin/profile", requireCapability("admin.access"));
   app.use("/v1/admin/overview", requireCapability("dashboard.read"));
+  app.use("/v1/admin/analytics/crm", requireCapability("dashboard.read"));
   app.use(
     "/v1/admin/push/public-key",
     requireCapability("notifications.manage"),
@@ -830,6 +839,38 @@ export function createApp(dependencies: AppDependencies = {}) {
 
     const emails = await createUserEmailRepository(db).listForUser(userId);
     return c.json(toOwnProfile(profile, emails), 200);
+  });
+
+  const crmAnalytics =
+    dependencies.crmAnalytics ?? createCrmAnalyticsService({ logger });
+
+  app.openapi(adminCrmAnalyticsRoute, async (c) => {
+    try {
+      return c.json(await crmAnalytics.snapshot(), 200);
+    } catch (error) {
+      // Odoo being unset or unreachable is not a bug in this API, and the
+      // admin page renders a different screen for it than for a 500.
+      if (
+        error instanceof OdooNotConfiguredError ||
+        error instanceof OdooError
+      ) {
+        logger.error(
+          `[${c.get("requestId")}] odoo analytics read failed`,
+          error,
+        );
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "UPSTREAM_UNAVAILABLE",
+            error instanceof OdooNotConfiguredError
+              ? "The Odoo integration is not configured."
+              : "Could not read the CRM from Odoo.",
+          ),
+          503,
+        );
+      }
+      throw error;
+    }
   });
 
   app.openapi(adminOverviewRoute, async (c) => {
