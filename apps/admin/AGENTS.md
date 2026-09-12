@@ -166,9 +166,15 @@ bar.
   `src/components/members/members-table.tsx` as the reference implementation.
 
 **Columns are declared once** as `DataTableColumn<Row>[]`, usually at module
-scope. `primary: true` marks the one cell that links to the record. Responsive
-display classes go in `className`, which is applied to the `<th>` and every
-`<td>` together so a header can never drift away from its column.
+scope. `primary: true` marks the cell that identifies the record, and carries
+the emphasis — it no longer draws the link itself. Navigation is the whole row:
+a table that passes `rowHref` gets one overlay `<Link>` covering the row, named
+by `rowLabel`, with the selection checkbox and `rowActions` cells raised above
+it. A per-cell anchor in a `primary` column would nest inside that overlay, so
+there must not be one. Responsive display classes go in `className`, which is
+applied to the `<th>` and every `<td>` together so a header can never drift
+away from its column — this is also how a column that is not worth a sideways
+scroll is dropped below `md`.
 
 ## PWA
 
