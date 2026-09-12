@@ -43,20 +43,17 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
     id: "label",
     header: "campanya",
     primary: true,
-    card: "title",
     cell: (row) => row.label,
   },
   {
     id: "slug",
     header: "identificador",
-    card: "subtitle",
     cell: (row) => <span className="font-mono text-xs">{row.slug}</span>,
     className: "hidden lg:table-cell",
   },
   {
     id: "state",
     header: "estat",
-    card: "status",
     cell: (row) => <StatusBadge status={campaignState(row.state)} />,
     className: "whitespace-nowrap",
   },
@@ -76,6 +73,9 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
         ) : null}
       </div>
     ),
+    // Two chips wide, and on a phone the three columns that survive are the
+    // campaign, the state it is in and how many people are in it.
+    className: "hidden md:table-cell",
   },
   {
     id: "activeMembers",
@@ -92,7 +92,6 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
   {
     id: "membership",
     header: "durada de l'equip",
-    card: "meta",
     // A span, not an instant: «fa 9 dies – d'aquí a 8 mesos» is not a duration
     // anyone can read, so this one stays absolute on both ends.
     cell: (row) =>

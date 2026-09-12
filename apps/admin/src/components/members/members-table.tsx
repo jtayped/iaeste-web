@@ -33,26 +33,22 @@ const COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
     id: "name",
     header: "nom",
     primary: true,
-    card: "title",
     cell: (row) => personName(row.name),
   },
   {
     id: "surnames",
     header: "cognoms",
-    card: "title",
     cell: (row) => personName(row.surnames),
   },
   {
     id: "email",
     header: "correu",
-    card: "subtitle",
     cell: (row) => row.email,
     className: "hidden lg:table-cell",
   },
   {
     id: "degree",
     header: "estudis",
-    card: "meta",
     // A three-line degree name is what makes one row twice the height of the
     // one above it; the whole string stays reachable on the tooltip.
     cell: (row) => (
@@ -67,7 +63,6 @@ const COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
     // selector two filters to the left of here, among others.
     id: "studyYear",
     header: "any de carrera",
-    card: "meta",
     cell: (row) => row.studyYear,
     className: "hidden sm:table-cell tabular-nums",
   },
@@ -80,7 +75,6 @@ const COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
   {
     id: "status",
     header: "estat",
-    card: "status",
     cell: (row) => <StatusBadge status={memberRowStatus(row)} />,
     className: "whitespace-nowrap",
   },

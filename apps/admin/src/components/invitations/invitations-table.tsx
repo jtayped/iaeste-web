@@ -67,7 +67,7 @@ function InvitationRowActions({ row }: { row: AdminInvitation }) {
   if (row.status !== "pending") return null;
 
   return (
-    <div className="flex flex-wrap justify-end gap-2">
+    <>
       <Button
         size="sm"
         variant="outline"
@@ -98,7 +98,7 @@ function InvitationRowActions({ row }: { row: AdminInvitation }) {
         pending={pending}
         onConfirm={() => action.mutate({ kind: "cancel", id: row.id })}
       />
-    </div>
+    </>
   );
 }
 
@@ -114,26 +114,26 @@ function RelativeDate({ iso }: { iso: string }) {
 const STATUS_COLUMN: DataTableColumn<AdminInvitation> = {
   id: "status",
   header: "estat",
-  card: "status",
   cell: (row) => (
     <StatusBadge status={invitationStatus(row.status, row.expired)} />
   ),
-  className: "whitespace-nowrap",
+  // At phone width the buttons are worth more than the badge: a row that has
+  // them is pending, which is the distinction the badge was drawing.
+  className: "hidden sm:table-cell whitespace-nowrap",
 };
 
-const ACTIONS_COLUMN: DataTableColumn<AdminInvitation> = {
-  id: "actions",
-  header: "accions",
-  card: "action",
-  cell: (row) => <InvitationRowActions row={row} />,
-  className: "text-right",
-};
+/** Only a pending invitation can be resent or cancelled. */
+function hasInvitationActions(status: InvitationStatusFilter): boolean {
+  return status === "all" || status === "pending";
+}
 
 /**
  * A status filter other than `tots` puts the same badge on every row, which
- * says nothing the toolbar has not already said; and only a pending invitation
- * can be resent or cancelled, so on the three dead-end filters the actions
- * column would be a header over fourteen empty cells.
+ * says nothing the toolbar has not already said.
+ *
+ * What is left at 390px is the address and, beside it, the two buttons: the
+ * name, both dates and the badge come back as the viewport grows, and the
+ * record they belong to is the row itself, not a detail page.
  */
 function invitationColumns(
   status: InvitationStatusFilter,
@@ -143,13 +143,17 @@ function invitationColumns(
       id: "email",
       header: "correu",
       primary: true,
-      card: "title",
-      cell: (row) => row.email,
+      // The widest cell in the row, and on a phone it is the cell competing
+      // with the buttons for the width.
+      cell: (row) => (
+        <span className="block max-w-[22ch] truncate" title={row.email}>
+          {row.email}
+        </span>
+      ),
     },
     {
       id: "prefill",
       header: "nom",
-      card: "subtitle",
       cell: prefillName,
       className: "hidden lg:table-cell",
     },
@@ -163,14 +167,12 @@ function invitationColumns(
     {
       id: "expiresAt",
       header: "caduca",
-      card: "meta",
       // Both dates read the same way, so «enviat fa 9 dies» and «caduca d'aquí
       // a 5» can be compared without doing the arithmetic.
       cell: (row) =>
         row.status === "accepted" ? "—" : <RelativeDate iso={row.expiresAt} />,
       className: "hidden lg:table-cell whitespace-nowrap",
     },
-    ...(status === "all" || status === "pending" ? [ACTIONS_COLUMN] : []),
   ];
 }
 
@@ -219,6 +221,13 @@ export function InvitationsTable({
       columns={columns}
       rows={query.data?.rows ?? []}
       rowKey={(row) => row.id}
+      {...(hasInvitationActions(status)
+        ? {
+            rowActions: (row: AdminInvitation) => (
+              <InvitationRowActions row={row} />
+            ),
+          }
+        : {})}
       state={{
         isPending: query.isPending,
         isError: query.isError,

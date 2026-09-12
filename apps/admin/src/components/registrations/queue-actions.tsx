@@ -37,7 +37,7 @@ export function QueueRowActions({
 
   if (status === "pending_review") {
     return (
-      <div className="flex flex-wrap justify-end gap-2">
+      <>
         <ConfirmAction
           trigger={
             <Button
@@ -77,23 +77,21 @@ export function QueueRowActions({
           pending={pending}
           onConfirm={(reason) => action.mutate({ kind: "reject", id, reason })}
         />
-      </div>
+      </>
     );
   }
 
   if (status === "rejected") {
     return (
-      <div className="flex justify-end">
-        <Button
-          size="sm"
-          variant="outline"
-          className="min-h-11 sm:min-h-9"
-          disabled={pending}
-          onClick={() => action.mutate({ kind: "restore", id })}
-        >
-          torna a la cua
-        </Button>
-      </div>
+      <Button
+        size="sm"
+        variant="outline"
+        className="min-h-11 sm:min-h-9"
+        disabled={pending}
+        onClick={() => action.mutate({ kind: "restore", id })}
+      >
+        torna a la cua
+      </Button>
     );
   }
 

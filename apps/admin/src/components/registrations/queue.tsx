@@ -58,26 +58,22 @@ const COLUMNS: DataTableColumn<AdminRegistration>[] = [
     id: "name",
     header: "nom",
     primary: true,
-    card: "title",
     cell: (row) => personName(row.profileSnapshot.name),
   },
   {
     id: "surnames",
     header: "cognoms",
-    card: "title",
     cell: (row) => personName(row.profileSnapshot.surnames),
   },
   {
     id: "email",
     header: "correu personal",
-    card: "subtitle",
     cell: (row) => row.personalEmail ?? row.email,
     className: "hidden lg:table-cell",
   },
   {
     id: "degree",
     header: "estudis",
-    card: "meta",
     cell: (row) => (
       <span
         className="block max-w-[22ch] truncate"
@@ -98,7 +94,6 @@ const COLUMNS: DataTableColumn<AdminRegistration>[] = [
   {
     id: "createdAt",
     header: "enviada",
-    card: "meta",
     cell: (row) => (
       <time dateTime={row.createdAt} title={formatDate(row.createdAt)}>
         {formatRelative(row.createdAt)}
@@ -107,14 +102,6 @@ const COLUMNS: DataTableColumn<AdminRegistration>[] = [
     className: "hidden md:table-cell whitespace-nowrap",
   },
 ];
-
-const ACTIONS_COLUMN: DataTableColumn<AdminRegistration> = {
-  id: "actions",
-  header: "accions",
-  card: "action",
-  cell: (row) => <QueueRowActions registration={row} />,
-  className: "text-right",
-};
 
 function isStatus(value: string): value is RegistrationStatus {
   return (REGISTRATION_STATUSES as readonly string[]).includes(value);
@@ -152,10 +139,6 @@ export function RegistrationsQueue({
     offset,
   });
 
-  const columns = React.useMemo(
-    () => (hasQueueRowActions(status) ? [...COLUMNS, ACTIONS_COLUMN] : COLUMNS),
-    [status],
-  );
   const handleSearch = React.useCallback(
     (next: string) => setParams({ q: next, page: "1" }),
     [setParams],
@@ -164,11 +147,21 @@ export function RegistrationsQueue({
   return (
     <DataTable
       label="cua de revisió de sol·licituds"
-      columns={columns}
+      columns={COLUMNS}
       rows={query.data?.rows ?? []}
       rowKey={(row) => row.id}
       rowHref={(row) => `/registrations/${row.id}`}
       rowLabel={(row) => personName(fullName(row.profileSnapshot))}
+      // No status in this queue has both an accept and a restore, and two of
+      // the four have neither: without this the `accions` header sits over a
+      // column of empty cells.
+      {...(hasQueueRowActions(status)
+        ? {
+            rowActions: (row: AdminRegistration) => (
+              <QueueRowActions registration={row} />
+            ),
+          }
+        : {})}
       state={{
         isPending: query.isPending,
         isError: query.isError,
