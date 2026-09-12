@@ -9,12 +9,17 @@ import { personName } from "@/lib/labels";
 import { useReviewAction } from "@/lib/registrations";
 
 /**
- * Whether a row in this state has anything to offer, so the queue can leave
- * the whole actions column out rather than heading a column of empty cells.
- * The one place that decides is here, next to the buttons themselves.
+ * Whether the filter in force can contain a row with something to offer, so
+ * the queue can leave the whole actions column out rather than heading a
+ * column of empty cells. The one place that decides is here, next to the
+ * buttons themselves.
  */
-export function hasQueueRowActions(status: RegistrationStatus): boolean {
-  return status === "pending_review" || status === "rejected";
+export function hasQueueRowActions(
+  status: RegistrationStatus | "all",
+): boolean {
+  return (
+    status === "all" || status === "pending_review" || status === "rejected"
+  );
 }
 
 /**
