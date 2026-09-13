@@ -11,6 +11,14 @@ import { renderOgImage } from "@repo/ui/lib/og-image";
  */
 const SITE_ORIGIN = "https://iaestelleida.cat";
 
+/** Route for a `pageKey`, so canonicals and alternates point at the real page. */
+const PAGE_PATHS: Record<string, string> = {
+  HomePage: "",
+  StudentsPage: "/student",
+  CompanyPage: "/company",
+  IncommingPage: "/incommings",
+};
+
 export async function generatePageMetadata({
   params,
   pageKey,
@@ -19,6 +27,10 @@ export async function generatePageMetadata({
   pageKey: string;
 }): Promise<Metadata> {
   const { locale } = await params;
+  // Every page used to declare `canonical: "/ca"` and `og:url` of the site
+  // root, so /student, /company and /incommings each told Google they were
+  // duplicates of the home page.
+  const path = PAGE_PATHS[pageKey] ?? "";
 
   // Load localized metadata from the "Metadata" namespace
   const t = await getTranslations({
@@ -34,17 +46,17 @@ export async function generatePageMetadata({
     manifest: "/manifest.webmanifest",
     icons: brandIcons,
     alternates: {
-      canonical: "/ca",
+      canonical: `/${locale}${path}`,
       languages: {
-        ca: "/ca",
-        es: "/es",
-        en: "/en",
+        ca: `/ca${path}`,
+        es: `/es${path}`,
+        en: `/en${path}`,
       },
     },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
-      url: `${SITE_ORIGIN}/`,
+      url: `${SITE_ORIGIN}/${locale}${path}`,
       type: "website",
       // No `images` here on purpose. Each segment ships an `opengraph-image.tsx`
       // that renders its own card, and Next only picks those up if nothing

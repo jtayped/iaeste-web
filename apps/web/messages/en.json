@@ -24,20 +24,21 @@
     "stats": {
       "countries": {
         "title": "countries",
-        "subtitle": "served with iaeste internships."
+        "subtitle": "with iaeste internships."
       },
       "students": {
         "title": "students",
-        "subtitle": "sent on internships."
+        "subtitle": "sent on internships since 1948."
       },
       "organisations": {
         "title": "organisations",
-        "subtitle": "that host interns."
+        "subtitle": "hosting students."
       },
       "volunteers": {
         "title": "volunteers",
-        "subtitle": "that help make iaeste great."
-      }
+        "subtitle": "who make iaeste possible."
+      },
+      "scope": "iaeste worldwide, 2026."
     },
     "steps": {
       "title": "how does it work?",
@@ -97,7 +98,7 @@
       "reasons": {
         "oportunities": {
           "title": "global opportunities",
-          "description": "access internships in 80+ countries, build an international network, boost global career."
+          "description": "access internships in over 100 countries and build an international network."
         },
         "growth": {
           "title": "professional growth",
@@ -138,7 +139,8 @@
           "name": "events",
           "description": "organize engaging activities and professional events."
         }
-      }
+      },
+      "photoAlt": "iaeste lc lleida members at a committee dinner."
     },
     "contact": {
       "title": "start your iaeste journey",
@@ -154,7 +156,68 @@
       "ogDescription": "prepare your exchange experience in lleida with all the information and support provided by iaeste for incoming international students.",
       "twitterTitle": "iaeste lleida - incoming international students",
       "twitterDescription": "discover the details and support you need for your arrival in lleida with iaeste."
-    }
+    },
+    "hero": {
+      "title": "welcome to lleida",
+      "subtitle": "a small city where everything is walkable, in the middle of catalonia.",
+      "description": "if you have an iaeste placement in lleida, or you are considering one, this is what the city is like, what there is to do, and what we help you with once you arrive.",
+      "alt": "lleida's rambla ferran with the old cathedral crowning the hill behind it.",
+      "credit": "photo:"
+    },
+    "city": {
+      "title": "what lleida is like",
+      "description": "lleida has around 140,000 people and you can walk across it end to end. barcelona is a little over an hour away by high-speed train and the pyrenees are half an hour by car, so it works for a weekend in the city as easily as one in the mountains. the universitat de lleida has its campuses in the centre and in cappont, across the river segre."
+    },
+    "todo": {
+      "title": "what there is to do",
+      "items": {
+        "old-town": {
+          "title": "la seu vella and the old town",
+          "description": "the old cathedral crowns the hill you can see from anywhere in the city. below it, the shopping street and the old town.",
+          "alt": "lleida's old cathedral on its hilltop, with the walls in front of it."
+        },
+        "river": {
+          "title": "the banks of the segre",
+          "description": "the park along the river runs the whole length of the city — it is where people run, cycle and walk.",
+          "alt": "a path among trees in la mitjana park, beside the river segre."
+        },
+        "mountains": {
+          "title": "the pyrenees nearby",
+          "description": "skiing in winter and hiking in summer, a little over an hour away.",
+          "alt": "lake sant maurici in the lleida pyrenees, ringed by peaks and pines."
+        },
+        "food": {
+          "title": "food and festivals",
+          "description": "snails, olive oil from les garrigues and fruit from the plain. the aplec del cargol in may is the city's biggest festival.",
+          "alt": "a tin of grilled snails, the dish lleida is known for."
+        }
+      }
+    },
+    "support": {
+      "title": "what we help with",
+      "description": "iaeste lc lleida is a committee of student volunteers. we are not an agency — we help with the things we have been through ourselves.",
+      "items": {
+        "arrival": {
+          "title": "arrival and paperwork",
+          "description": "we point you through the paperwork you need to do when you arrive and what the university needs from you."
+        },
+        "housing": {
+          "title": "housing",
+          "description": "we help you look for somewhere to live and pass on the contacts we know."
+        },
+        "social": {
+          "title": "activities",
+          "description": "when we can, we organise trips and meet-ups with the committee and other exchange students. not all year round."
+        }
+      }
+    },
+    "apply": {
+      "title": "how to get a placement",
+      "description": "iaeste placements are not applied for in lleida. you apply through the iaeste committee in your own country, which handles applications and the exchange itself. find your committee on iaeste.org and write to them.",
+      "button": "find your committee",
+      "contactNote": "already placed in lleida, or have a specific question? write to us."
+    },
+    "photoCredits": "photographs:"
   },
   "CompanyPage": {
     "Metadata": {
@@ -187,11 +250,14 @@
         "growth": {
           "title": "business growth",
           "description": "expand your company’s reach while contributing to international mobility."
+        },
+        "support": {
+          "title": "full support",
+          "description": "iaeste handles the logistics — visas and housing — so the placement is straightforward."
         }
       }
     },
     "testimonial": {
-      "tag": "featured",
       "title": "factory data's experience with jonathan.",
       "text": "excellent experience with jonathan gruss during his iaeste internship in summer 2021. he contributed to a demand-analysis project using apache spark, worked independently, solved problems creatively, and integrated perfectly with the team. we highly recommend him.",
       "author": "joan cabós",
@@ -217,14 +283,6 @@
     "fallbackNotice": "this article is not available in the selected language yet. here is the original in catalan.",
     "translationsLabel": "other languages",
     "paginationLabel": "blog pages"
-  },
-  "UnderConstructionPage": {
-    "title": "this page is under construction!",
-    "description": "our it people are on it! it will be finished shortly.",
-    "buttons": {
-      "home": "home",
-      "back": "go back"
-    }
   },
   "header": {
     "pages": {
@@ -258,7 +316,8 @@
       "students": "students",
       "companies": "companies"
     },
-    "contact-btn": "contact us"
+    "contact-btn": "contact us",
+    "skip-to-content": "skip to content"
   },
   "contact": {
     "title": "contact us",
@@ -310,35 +369,21 @@
       "error": "something went wrong. please try again."
     }
   },
-  "outgoings": {
-    "jaume": {
-      "quote": "iaeste opened doors i never knew existed.",
-      "title": "engineering innovation in germany",
-      "description": "during my internship at a leading automotive company in munich, i gained hands-on experience with cutting-edge technologies while developing my professional network. the experience enhanced both my technical skills and cultural understanding.",
-      "location": "germany"
-    },
-    "jordi": {
-      "quote": "the perfect blend of professional and personal growth.",
-      "title": "research excellence",
-      "description": "working at the technical university of berlin allowed me to contribute to groundbreaking research while experiencing life in one of europe's most dynamic cities. iaeste made the entire process smooth and supported me throughout.",
-      "location": "germany"
-    },
-    "pepito": {
-      "quote": "an experience that shaped my career path.",
-      "title": "industrial innovation",
-      "description": "my internship at a german manufacturing plant gave me practical insights into industry 4.0 technologies. the international environment and professional challenges helped me grow both technically and personally.",
-      "location": "germany"
-    },
-    "pep": {
-      "quote": "more than just an internship - a life-changing experience.",
-      "title": "technology leadership",
-      "description": "participating in a software development project at a leading tech company in hamburg taught me valuable lessons in international collaboration and professional communication while advancing my technical expertise.",
-      "location": "germany"
-    }
-  },
   "buttons": {
     "send-email": "send an email",
     "contact-form": "contact us now",
-    "learn-more": "learn more"
+    "learn-more": "learn more",
+    "opens-new-tab": "opens in a new tab"
+  },
+  "footer": {
+    "links": "navigation",
+    "tagline": "iaeste's local committee at the universitat de lleida.",
+    "rights": "all rights reserved.",
+    "madeBy": "made by",
+    "contactHeading": "contact",
+    "followHeading": "follow us"
+  },
+  "collaborators": {
+    "title": "supported by"
   }
 }

@@ -1,22 +1,8 @@
-import SendEmailBtn from "@/components/common/buttons/send-email";
-import ContactForm from "@/components/common/contact-form";
-import DivideSection from "@/components/common/sections/divide";
-import { Paragraph, H2 } from "@repo/ui/typography";
-import { useTranslations } from "next-intl";
+import ContactSection from "@/components/common/sections/contact-section";
 import React from "react";
 
-const ContactSection = () => {
-  const t = useTranslations("CompanyPage.contact");
-  return (
-    <DivideSection>
-      <article>
-        <H2>{t("title")}</H2>
-        <Paragraph>{t("description")}</Paragraph>
-        <SendEmailBtn icon />
-      </article>
-      <ContactForm />
-    </DivideSection>
-  );
-};
+const CompaniesContactSection = () => (
+  <ContactSection namespace="CompanyPage.contact" />
+);
 
-export default ContactSection;
+export default CompaniesContactSection;

@@ -112,7 +112,8 @@ const ContactForm = () => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 w-full text-base"
+          size="xl"
+          className="w-full"
         >
           {isSubmitting ? (
             <>

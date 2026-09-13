@@ -8,7 +8,10 @@ type Props = {
 
 export const H1: React.FC<Props> = ({ children, className = "", ...props }) => (
   <h1
-    className={`scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl ${className}`}
+    className={cn(
+      "scroll-m-20 text-4xl font-extrabold tracking-tight text-balance lg:text-5xl",
+      className,
+    )}
     {...props}
   >
     {children}
@@ -17,7 +20,10 @@ export const H1: React.FC<Props> = ({ children, className = "", ...props }) => (
 
 export const H2: React.FC<Props> = ({ children, className = "", ...props }) => (
   <h2
-    className={`mt-10 scroll-m-20 text-3xl font-semibold tracking-tight transition-colors first:mt-0 ${className}`}
+    className={cn(
+      "scroll-m-20 text-3xl font-semibold tracking-tight text-balance",
+      className,
+    )}
     {...props}
   >
     {children}
@@ -27,7 +33,7 @@ export const H2: React.FC<Props> = ({ children, className = "", ...props }) => (
 export const H3: React.FC<Props> = ({ children, className = "", ...props }) => (
   <h3
     className={cn(
-      "mt-8 scroll-m-20 text-2xl font-semibold tracking-tight",
+      "scroll-m-20 text-2xl font-semibold tracking-tight text-balance",
       className,
     )}
     {...props}
@@ -42,7 +48,10 @@ export const Subheader: React.FC<Props> = ({
   ...props
 }) => (
   <p
-    className={`mt-2 scroll-m-20 text-lg tracking-tight text-muted-foreground ${className}`}
+    className={cn(
+      "scroll-m-20 text-lg tracking-tight text-muted-foreground",
+      className,
+    )}
     {...props}
   >
     {children}

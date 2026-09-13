@@ -7,27 +7,32 @@ import { useTranslations } from "next-intl";
 
 const About = () => {
   const t = useTranslations("HomePage.about");
+  const ts = useTranslations("HomePage.stats");
+
   return (
-    <DivideSection>
+    <DivideSection innerClassName="md:items-center">
       <article>
         <H2>{t("title")}</H2>
-        <Subheader>{t("subtitle")}</Subheader>
-        <Paragraph className="max-w-[65ch] leading-relaxed">
+        <Subheader className="mt-3">{t("subtitle")}</Subheader>
+        <Paragraph className="mt-5 max-w-[60ch] leading-relaxed">
           {t("description")}
         </Paragraph>
-        <LearnMoreBtn />
+        <div className="mt-8">
+          <LearnMoreBtn />
+        </div>
       </article>
-      <ul className="grid grid-cols-2 gap-3 md:gap-4">
-        {allStatistics.map((s, i) => (
-          <li key={i} className="list-none">
-            <Statistic
-              translationKey={s.key}
-              stat={s.stat}
-              className="h-full"
-            />
-          </li>
-        ))}
-      </ul>
+      <div>
+        <ul className="grid grid-cols-2 gap-3 md:gap-4">
+          {allStatistics.map((s) => (
+            <li key={s.key}>
+              <Statistic translationKey={s.key} stat={s.stat} />
+            </li>
+          ))}
+        </ul>
+        {/* PRODUCT.md: a public figure has to say which IAESTE it describes and
+            carry a date. These four are the international ones. */}
+        <p className="mt-4 text-sm text-muted-foreground">{ts("scope")}</p>
+      </div>
     </DivideSection>
   );
 };

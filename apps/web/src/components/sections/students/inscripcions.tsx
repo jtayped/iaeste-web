@@ -1,4 +1,4 @@
-import Section from "@/components/common/sections/section";
+import Band from "@/components/common/sections/band";
 import Countdown from "@/components/sections/students/countdown";
 import type { RegistrationWindow } from "@/lib/registration-status";
 import { buttonVariants } from "@repo/ui/button";
@@ -28,45 +28,40 @@ const Inscripcions = ({ status }: { status: RegistrationWindow | null }) => {
   const target = status.open ? status.closesAt : status.opensAt;
 
   return (
-    <Section className="bg-primary py-14 text-primary-foreground md:py-16">
-      {/* The countdown and the CTA share a column so the band stays balanced
-          in both states: before registrations open there is no button, and a
-          lone left-hand block would leave the right half empty. Two columns
-          only from `lg` — below that the tiles and a 54ch paragraph do not
-          fit side by side. */}
-      <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-14">
-        <div>
-          <H2 className="mt-0 text-3xl md:text-4xl">
-            {status.open ? t("title") : t("upcoming.title")}
-          </H2>
-          <p className="mt-4 max-w-[54ch] leading-relaxed text-primary-foreground/80">
-            {status.open ? t("description") : t("upcoming.description")}
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-col gap-5">
-          {target && (
-            <Countdown
-              target={target}
-              label={
-                status.open ? t("countdown.closesIn") : t("countdown.opensIn")
-              }
-            />
-          )}
-          {status.open && (
-            <Link
-              href={INSCRIPCIONS_URL}
-              className={buttonVariants({
-                className:
-                  "h-12 w-full bg-white px-7 text-base text-primary shadow-sm hover:bg-white/90",
-              })}
-            >
-              {t("button")}
-              <ArrowRight aria-hidden />
-            </Link>
-          )}
-        </div>
+    <Band innerClassName="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-14">
+      <div>
+        <H2 className="md:text-4xl">
+          {status.open ? t("title") : t("upcoming.title")}
+        </H2>
+        <p className="mt-4 max-w-[54ch] leading-relaxed text-primary-foreground/80">
+          {status.open ? t("description") : t("upcoming.description")}
+        </p>
       </div>
-    </Section>
+      <div className="flex shrink-0 flex-col gap-5">
+        {target && (
+          <Countdown
+            target={target}
+            label={
+              status.open ? t("countdown.closesIn") : t("countdown.opensIn")
+            }
+          />
+        )}
+        {status.open && (
+          <Link
+            href={INSCRIPCIONS_URL}
+            className={buttonVariants({
+              variant: "onDark",
+              size: "xl",
+              className: "w-full",
+            })}
+          >
+            {t("button")}
+            {/* Trailing arrow: the action leaves this view. */}
+            <ArrowRight aria-hidden />
+          </Link>
+        )}
+      </div>
+    </Band>
   );
 };
 

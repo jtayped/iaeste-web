@@ -6,27 +6,26 @@ import { motion } from "framer-motion";
 import ButtonGroup from "@repo/ui/button-group";
 import { Logo } from "@repo/ui/logo";
 import { Link } from "@/i18n/routing";
-import { Building } from "lucide-react";
+import { Building, GraduationCap } from "lucide-react";
 
 const Hero = () => {
   const t = useTranslations("HomePage.hero");
 
   return (
-    <div className="relative">
+    <div className="relative isolate">
       <Image
-        src={"/hero.jpg"}
-        width={768}
-        height={1200}
-        alt="hero background"
+        src={"/hero.webp"}
+        alt=""
+        fill
         sizes="100vw"
         quality={85}
-        className="fixed -z-10 h-full w-full object-cover"
+        className="-z-10 object-cover"
         priority
       />
       {/* Same navy as the brand, graded so the type always has ground under it
           and the band hands off cleanly to the white section below. `pt-20`
           offsets the fixed header so the block sits on the optical centre. */}
-      <div className="section-padding flex h-svh min-h-[34rem] items-center justify-center bg-gradient-to-b from-primary/75 via-primary/65 to-primary/80 pt-20 text-white">
+      <div className="section-padding flex h-svh min-h-[34rem] items-center justify-center bg-gradient-to-b from-primary/75 via-primary/65 to-primary/80 pt-20 text-primary-foreground">
         <div className="flex max-w-3xl flex-col items-center text-center">
           <div className="flex items-center gap-2 lg:gap-3">
             <h1 className="text-6xl leading-none font-extrabold tracking-[-0.035em] lg:text-8xl">
@@ -76,7 +75,7 @@ const Hero = () => {
             initial={{ y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
-            className="mt-7 max-w-2xl text-lg leading-relaxed text-pretty text-white/90"
+            className="mt-7 max-w-2xl text-lg leading-relaxed text-pretty text-primary-foreground/90"
           >
             {t("description")}
           </motion.p>
@@ -91,21 +90,16 @@ const Hero = () => {
                   action gets a white plate instead. */}
               <Link
                 href="/company"
-                className={buttonVariants({
-                  className:
-                    "h-11 bg-white px-6 text-base text-primary shadow-sm hover:bg-white/90 md:h-12 md:px-8",
-                })}
+                className={buttonVariants({ variant: "onDark", size: "xl" })}
               >
-                <Building />
+                <Building aria-hidden />
                 {t("buttons.company")}
               </Link>
               <Link
                 href="/student"
-                className={buttonVariants({
-                  variant: "secondary",
-                  className: "h-11 px-6 text-base md:h-12 md:px-8",
-                })}
+                className={buttonVariants({ variant: "secondary", size: "xl" })}
               >
+                <GraduationCap aria-hidden />
                 {t("buttons.student")}
               </Link>
             </ButtonGroup>

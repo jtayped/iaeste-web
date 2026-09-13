@@ -4,7 +4,7 @@ import { CmsUnavailableError, fetchBlogSitemap } from "@/lib/cms-blog-client";
 import { blogLocales } from "@/lib/blog";
 
 const host = "https://iaestelleida.cat";
-const paths = ["", "/student", "/incommings", "/blog"];
+const paths = ["", "/student", "/company", "/incommings", "/blog"];
 
 function staticEntries(): MetadataRoute.Sitemap {
   return paths.flatMap((path) =>

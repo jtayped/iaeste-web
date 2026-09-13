@@ -15,13 +15,16 @@ const StudentsPage = async () => {
   const registrationWindow = await getRegistrationWindow();
 
   return (
-    <main>
+    /* No `<main>` here: the locale layout already opens one, and a second
+       inside it is invalid and puts two "main" landmarks in the rotor. */
+    <>
       <HeroSection
         title={t("title")}
+        subtitle={t("subtitle")}
         description={t("description")}
         backgroundImage="/team/subhasta-zaragoza.webp"
         component={
-          <ButtonGroup className="justify-center">
+          <ButtonGroup className="flex-wrap justify-center">
             <ContactFormBtn />
             <SendEmailBtn />
           </ButtonGroup>
@@ -35,7 +38,7 @@ const StudentsPage = async () => {
         <Team />
         <ContactSection />
       </Content>
-    </main>
+    </>
   );
 };
 

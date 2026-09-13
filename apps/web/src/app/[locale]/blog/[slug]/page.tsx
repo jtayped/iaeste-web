@@ -98,8 +98,8 @@ export default async function BlogPostPage({
 
   return (
     <article>
-      <header className="bg-primary pt-40 pb-20 text-primary-foreground sm:pt-48">
-        <div className="section-padding mx-auto max-w-5xl">
+      <header className="section-padding bg-primary pt-36 pb-20 text-primary-foreground sm:pt-44">
+        <div className="mx-auto max-w-5xl">
           <Link
             href="/blog"
             className="inline-flex items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-primary-foreground focus-visible:ring-offset-4 focus-visible:ring-offset-primary focus-visible:outline-none"
@@ -107,7 +107,7 @@ export default async function BlogPostPage({
             <ArrowLeft aria-hidden="true" size={17} />
             {t("back")}
           </Link>
-          <h1 className="mt-10 max-w-4xl text-4xl leading-[1.02] font-bold tracking-[-0.04em] text-balance sm:text-6xl">
+          <h1 className="mt-10 max-w-4xl text-4xl leading-[1.05] font-extrabold tracking-[-0.03em] text-balance sm:text-5xl lg:text-6xl">
             {post.title}
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-primary-foreground/80">
@@ -119,7 +119,7 @@ export default async function BlogPostPage({
         </div>
       </header>
 
-      <div className="section-padding mx-auto max-w-6xl pb-20 sm:pb-28">
+      <div className="section-padding mx-auto max-w-7xl pb-20 sm:pb-28">
         <div className="relative -mt-10 aspect-[16/9] overflow-hidden rounded-2xl shadow-[0_24px_70px_-36px_color-mix(in_oklab,var(--foreground)_65%,transparent)] sm:-mt-12">
           <Image
             src={post.coverImage}

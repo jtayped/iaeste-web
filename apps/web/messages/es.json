@@ -28,7 +28,7 @@
       },
       "students": {
         "title": "estudiantes",
-        "subtitle": "enviados a prácticas."
+        "subtitle": "enviados a prácticas desde 1948."
       },
       "organisations": {
         "title": "organizaciones",
@@ -37,7 +37,8 @@
       "volunteers": {
         "title": "voluntarios",
         "subtitle": "que hacen iaeste posible."
-      }
+      },
+      "scope": "iaeste en todo el mundo, 2026."
     },
     "steps": {
       "title": "¿cómo funciona?",
@@ -97,7 +98,7 @@
       "reasons": {
         "oportunities": {
           "title": "oportunidades globales",
-          "description": "accede a prácticas en 80+ países y construye una red internacional."
+          "description": "accede a prácticas en más de 100 países y construye una red internacional."
         },
         "growth": {
           "title": "crecimiento profesional",
@@ -138,7 +139,8 @@
           "name": "eventos",
           "description": "organiza actividades y eventos profesionales atractivos."
         }
-      }
+      },
+      "photoAlt": "miembros de iaeste lc lleida en una cena del comité."
     },
     "contact": {
       "title": "inicia tu viaje iaeste",
@@ -154,7 +156,68 @@
       "ogDescription": "prepara tu experiencia de intercambio en lleida con toda la información y el soporte que ofrece iaeste para estudiantes internacionales entrantes.",
       "twitterTitle": "iaeste lleida - estudiantes internacionales entrantes",
       "twitterDescription": "descubre los detalles y el apoyo necesario para tu llegada a lleida con iaeste."
-    }
+    },
+    "hero": {
+      "title": "bienvenido/a a lleida",
+      "subtitle": "una ciudad pequeña donde todo queda cerca, en medio de cataluña.",
+      "description": "si has conseguido una plaza iaeste en lleida, o te lo estás planteando, aquí encontrarás cómo es la ciudad, qué puedes hacer y en qué te ayudamos cuando llegues.",
+      "alt": "la rambla ferran de lleida con la seu vella coronando el cerro al fondo.",
+      "credit": "foto:"
+    },
+    "city": {
+      "title": "cómo es lleida",
+      "description": "lleida tiene unos 140.000 habitantes y se cruza a pie de una punta a otra. está a poco más de una hora de barcelona en tren de alta velocidad y a media hora del pirineo en coche, así que sirve igual para un fin de semana de ciudad que para uno de montaña. la universitat de lleida tiene sus campus repartidos por el centro y en cappont, al otro lado del río segre."
+    },
+    "todo": {
+      "title": "qué puedes hacer",
+      "items": {
+        "old-town": {
+          "title": "la seu vella y el centro",
+          "description": "la catedral vieja corona el cerro que se ve desde toda la ciudad. debajo, el eje comercial y las calles del casco histórico.",
+          "alt": "la seu vella de lleida en lo alto de su cerro, con la muralla delante."
+        },
+        "river": {
+          "title": "la orilla del segre",
+          "description": "el parque que sigue el río atraviesa la ciudad entera: es por donde la gente corre, va en bici y pasea.",
+          "alt": "un camino entre árboles en el parque de la mitjana, junto al río segre."
+        },
+        "mountains": {
+          "title": "el pirineo cerca",
+          "description": "esquí en invierno y senderismo en verano, a poco más de una hora de trayecto.",
+          "alt": "el lago de sant maurici, en el pirineo de lleida, rodeado de picos y pinos."
+        },
+        "food": {
+          "title": "comida y fiestas",
+          "description": "caracoles, aceite de les garrigues y fruta de la llanura. el aplec del cargol en mayo es la fiesta grande de la ciudad.",
+          "alt": "una lata de caracoles a la brasa, el plato típico de lleida."
+        }
+      }
+    },
+    "support": {
+      "title": "en qué te ayudamos",
+      "description": "iaeste lc lleida es un comité de estudiantes voluntarios. no somos una agencia: lo que hacemos lo hacemos porque hemos pasado por ello.",
+      "items": {
+        "arrival": {
+          "title": "llegada y papeleo",
+          "description": "te orientamos con los trámites que tienes que hacer al llegar y con lo que necesitas de la universidad."
+        },
+        "housing": {
+          "title": "alojamiento",
+          "description": "te ayudamos a buscar dónde vivir y te pasamos los contactos que conocemos."
+        },
+        "social": {
+          "title": "actividades",
+          "description": "cuando podemos, organizamos salidas y encuentros con el comité y con otros estudiantes de intercambio. no las hacemos todo el año."
+        }
+      }
+    },
+    "apply": {
+      "title": "cómo se consigue una plaza",
+      "description": "las plazas iaeste no se piden en lleida. cada estudiante se presenta al comité iaeste de su propio país, que es quien gestiona las candidaturas y el intercambio. busca tu comité en iaeste.org y escríbeles a ellos.",
+      "button": "busca tu comité",
+      "contactNote": "¿ya tienes plaza en lleida o tienes una duda concreta? escríbenos."
+    },
+    "photoCredits": "fotografías:"
   },
   "CompanyPage": {
     "Metadata": {
@@ -189,13 +252,12 @@
           "description": "expande el alcance de tu empresa mientras contribuyes a la movilidad internacional."
         },
         "support": {
-          "title": "apoyo completo",
+          "title": "soporte completo",
           "description": "iaeste se encarga de la logística como visados y alojamiento para facilitar el proceso."
         }
       }
     },
     "testimonial": {
-      "tag": "destacado",
       "title": "la experiencia de factory data con jonathan.",
       "text": "excelente experiencia con jonathan gruss durante sus prácticas iaeste en el verano de 2021. contribuyó a un proyecto de análisis de demanda utilizando apache spark, trabajó de forma independiente, resolvió problemas con creatividad y se integró perfectamente en el equipo. le recomendamos encarecidamente.",
       "author": "joan cabós",
@@ -221,14 +283,6 @@
     "fallbackNotice": "este artículo aún no tiene versión en el idioma seleccionado. te mostramos el original en catalán.",
     "translationsLabel": "otros idiomas",
     "paginationLabel": "páginas del blog"
-  },
-  "UnderConstructionPage": {
-    "title": "¡esta página está en construcción!",
-    "description": "¡nuestro equipo de it está trabajando en ello! estará lista pronto.",
-    "buttons": {
-      "home": "inicio",
-      "back": "volver"
-    }
   },
   "header": {
     "pages": {
@@ -260,9 +314,10 @@
     },
     "groups": {
       "students": "estudiantes",
-      "companies": "compañias"
+      "companies": "empresas"
     },
-    "contact-btn": "contáctanos"
+    "contact-btn": "contáctanos",
+    "skip-to-content": "ir al contenido"
   },
   "contact": {
     "title": "contáctanos",
@@ -314,35 +369,21 @@
       "error": "algo ha ido mal. inténtalo de nuevo."
     }
   },
-  "outgoings": {
-    "jaume": {
-      "quote": "iaeste me abrió puertas que ni sabía que existían.",
-      "title": "innovación en ingeniería en alemania",
-      "description": "durante mis prácticas en una empresa líder del sector automotriz en múnich, obtuve experiencia práctica con tecnologías de vanguardia mientras desarrollaba mi red profesional. la experiencia mejoró tanto mis habilidades técnicas como mi comprensión cultural.",
-      "location": "alemania"
-    },
-    "jordi": {
-      "quote": "la combinación perfecta de crecimiento profesional y personal.",
-      "title": "excelencia en investigación",
-      "description": "trabajar en la universidad técnica de berlín me permitió contribuir a investigaciones pioneras mientras experimentaba la vida en una de las ciudades más dinámicas de europa. iaeste hizo que todo el proceso fuera fluido y me apoyó en todo momento.",
-      "location": "alemania"
-    },
-    "pepito": {
-      "quote": "una experiencia que definió mi trayectoria profesional.",
-      "title": "innovación industrial",
-      "description": "mis prácticas en una planta manufacturera alemana me dieron conocimientos prácticos sobre tecnologías de la industria 4.0. el entorno internacional y los desafíos profesionales me ayudaron a crecer tanto técnica como personalmente.",
-      "location": "alemania"
-    },
-    "pep": {
-      "quote": "más que unas prácticas - una experiencia que cambió mi vida.",
-      "title": "liderazgo tecnológico",
-      "description": "participar en un proyecto de desarrollo de software en una empresa tecnológica líder en hamburgo me enseñó valiosas lecciones sobre colaboración internacional y comunicación profesional mientras avanzaba en mi experiencia técnica.",
-      "location": "alemania"
-    }
-  },
   "buttons": {
     "send-email": "enviar email",
     "contact-form": "contacta con nosotros",
-    "learn-more": "saber más"
+    "learn-more": "saber más",
+    "opens-new-tab": "se abre en una pestaña nueva"
+  },
+  "footer": {
+    "links": "navegación",
+    "tagline": "comité local de iaeste en la universitat de lleida.",
+    "rights": "todos los derechos reservados.",
+    "madeBy": "hecho por",
+    "contactHeading": "contacto",
+    "followHeading": "síguenos"
+  },
+  "collaborators": {
+    "title": "con el apoyo de"
   }
 }
