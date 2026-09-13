@@ -1,5 +1,9 @@
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
@@ -41,14 +45,23 @@ export default async function LocaleLayout({
   // Providing all messages to the client
   // side is the easiest way to get started
   const messages = await getMessages({ locale });
+  const t = await getTranslations({ locale, namespace: "header" });
 
   return (
     <html lang={locale}>
       <body className={`${inter.className}`}>
         <NextIntlClientProvider messages={messages}>
           <NavigationProvider>
+            <a
+              href="#main"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:ring-2 focus:ring-ring"
+            >
+              {t("skip-to-content")}
+            </a>
             <Header />
-            <main className="min-h-screen">{children}</main>
+            <main id="main" className="min-h-screen">
+              {children}
+            </main>
             <Footer />
           </NavigationProvider>
         </NextIntlClientProvider>

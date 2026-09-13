@@ -1,58 +1,57 @@
-import DivideSection from "@/components/common/sections/divide";
+import Band from "@/components/common/sections/band";
 import { H2 } from "@repo/ui/typography";
-import { Quote } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import React from "react";
 
+/**
+ * The one named reference the committee has, so it gets a band of its own.
+ *
+ * What came off it: a `from-primary/95 to-primary` gradient, a 384px
+ * `bg-white/5 blur-3xl` orb, a rotated `Quote` watermark at `text-white/5`, a
+ * `border-l-4` down the quote, and two raw palette colours (`text-blue-50/90`,
+ * `text-blue-200/70` — the latter measured about 4.2:1 on navy). None of that
+ * appears anywhere else on the site, which is what made this page read as a
+ * different product.
+ */
 const Testimonial = () => {
   const t = useTranslations("CompanyPage.testimonial");
 
   return (
-    <DivideSection className="relative overflow-hidden bg-gradient-to-b from-primary/95 to-primary py-16 text-primary-foreground">
-      <div className="absolute -top-20 -right-20 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
-      <div className="flex items-center justify-center p-8">
+    <Band innerClassName="grid items-center gap-12 md:grid-cols-[0.8fr_1.2fr] md:gap-16">
+      <div className="flex justify-center md:justify-start">
         <Image
-          src={"/factory-data/logo.png"}
+          src="/factory-data/logo.png"
           width={500}
           height={800}
-          className="w-full max-w-[280px] object-contain opacity-90 brightness-0 drop-shadow-lg invert md:max-w-md"
+          className="w-full max-w-[240px] object-contain brightness-0 invert md:max-w-xs"
           alt="factory data"
         />
       </div>
-      <article className="relative pr-4">
-        <Quote className="absolute -top-10 -left-6 z-0 h-32 w-32 rotate-12 text-white/5" />
-        <p className="mb-4 text-xs font-bold tracking-[0.2em] text-primary-foreground/60">
-          {t("tag")}
-        </p>
-        <H2 className="mb-8 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          {t("title")}
-        </H2>
-        <blockquote className="relative border-l-4 border-white/20 pl-6">
-          <p className="text-lg leading-relaxed text-blue-50/90 italic md:text-xl">
-            &quot;{t("text")}&quot;
-          </p>
-          <footer className="mt-8 flex items-center gap-4">
-            <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full border-2 border-white/10 bg-white/5">
-              <Image
-                src="/factory-data/joan.jpeg"
-                fill
-                className="object-cover"
-                alt={t("author")}
-              />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg leading-tight font-bold text-white">
-                {t("author")}
-              </span>
-              <span className="text-sm font-medium text-blue-200/70">
-                {t("role")}
-              </span>
-            </div>
-          </footer>
+      <figure>
+        <H2 className="text-2xl sm:text-3xl">{t("title")}</H2>
+        <blockquote className="mt-6 text-lg leading-relaxed text-pretty text-primary-foreground/85 md:text-xl">
+          {t("text")}
         </blockquote>
-      </article>
-    </DivideSection>
+        <figcaption className="mt-8 flex items-center gap-4">
+          <span className="relative size-12 shrink-0 overflow-hidden rounded-full bg-white/10">
+            <Image
+              src="/factory-data/joan.jpeg"
+              fill
+              sizes="48px"
+              className="object-cover"
+              alt=""
+            />
+          </span>
+          <span className="flex flex-col">
+            <span className="leading-tight font-semibold">{t("author")}</span>
+            <span className="text-sm text-primary-foreground/70">
+              {t("role")}
+            </span>
+          </span>
+        </figcaption>
+      </figure>
+    </Band>
   );
 };
 

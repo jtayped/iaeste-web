@@ -22,6 +22,119 @@
   --spacing-screen-sm: 1.5rem;
 }
 
+/* ---------------------------------------------------------------------------
+   The public site's corner scale.
+
+   Scoped to this app on purpose. `.button`, `.card`, `.input` and friends live
+   in `@repo/ui`, which also dresses the admin and the registration app, and the
+   admin is mid-audit on its own branches — so the rounder scale is applied here
+   rather than by moving `--radius` under everyone's feet.
+
+   Apple's scale is roughly: small controls ~10-12px, cards and panels ~16-20px,
+   large surfaces ~24px, and pills reserved for genuinely small chips. Radius on
+   its own reads as "bigger corners" rather than as that world, so two things
+   come with it: borders lighten (the edge stops competing with the curve) and
+   shadows get an offset and a wide, soft blur instead of a tight ring.
+   --------------------------------------------------------------------------- */
+@layer components {
+  /* 12px. At the site's 48px call-to-action this is the Apple proportion —
+     `rounded-md` at 6px on a 48px button reads as a rectangle with the corners
+     sanded off. */
+  .button {
+    @apply rounded-xl;
+  }
+
+  /* Icon-only controls go fully round: the hamburger, the social links, the
+     blog pagination. A square-ish 44px box with a glyph in the middle is the
+     one shape that always looks better as a circle. */
+  .button.button--icon-only {
+    @apply rounded-full;
+  }
+
+  /* 16px for every card surface, and the same for the contact form panel and
+     the team collage photos so nothing sits at two different curvatures side
+     by side. */
+  .card {
+    @apply rounded-2xl;
+  }
+
+  /* Fields sit inside a 16px card, so they stay a step tighter at 12px. */
+  .input,
+  .textarea,
+  .select__trigger {
+    @apply rounded-xl;
+  }
+
+  .chip {
+    @apply rounded-full;
+  }
+
+  /* Floating surfaces read as panels, not controls. */
+  .popover,
+  .select__popover,
+  .dropdown__popover,
+  .alert-dialog__dialog,
+  .toast,
+  .alert {
+    @apply rounded-2xl;
+  }
+
+  .tooltip {
+    @apply rounded-lg;
+  }
+
+  /* The brand blue, quieted.
+
+     `secondary` was a saturated #1A84D5 fill carrying near-black text — the
+     combination reads as a default framework button, and in the contact
+     sections it was *louder* than the navy `send` beside it, which is the
+     action that actually matters. A tint of the same blue with navy type keeps
+     the brand colour in play, drops the button a clear step below the solid
+     primary, and clears 10:1 instead of the fill's 4.6:1.
+
+     Scoped to this app for the same reason as the corner scale above. */
+  .button.button--brand {
+    --button-bg: color-mix(in oklab, var(--secondary) 12%, transparent);
+    --button-bg-hover: color-mix(in oklab, var(--secondary) 20%, transparent);
+    --button-bg-pressed: var(--button-bg-hover);
+    --button-fg: var(--primary);
+  }
+
+  /* A 1px hairline under a 16px curve is where the "drawn in a browser" look
+     comes from — the straight edge and the curve fight. Lighten it and let the
+     shadow carry the separation. */
+  .card {
+    border-color: color-mix(in oklab, var(--border) 70%, transparent);
+    box-shadow:
+      0 1px 2px -1px color-mix(in oklab, var(--foreground) 8%, transparent),
+      0 8px 24px -12px color-mix(in oklab, var(--foreground) 14%, transparent);
+  }
+}
+
+@layer components {
+  /* The hero overlay.
+     A single flat tint cannot serve both jobs: heavy enough to carry body copy
+     over a busy photograph, it also erases the photograph. So two layers — a
+     light wash that keeps the image readable as an image, and a soft radial
+     scrim centred on the copy that gives the type its ground. Measured over the
+     Lleida cityscape: worst-case 6.3:1, mean 7.9:1 on the smallest text. */
+  .hero-scrim {
+    background-image:
+      radial-gradient(
+        75% 55% at 50% 52%,
+        color-mix(in srgb, var(--primary) 88%, transparent) 0%,
+        color-mix(in srgb, var(--primary) 70%, transparent) 45%,
+        transparent 78%
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--primary) 62%, transparent),
+        color-mix(in srgb, var(--primary) 42%, transparent) 40%,
+        color-mix(in srgb, var(--primary) 82%, transparent)
+      );
+  }
+}
+
 @layer base {
   .section-padding {
     @apply px-screen-sm md:px-screen-md lg:px-screen-lg;

@@ -1,11 +1,13 @@
 import { type Reason } from "@/types/why-iaeste";
-import { Briefcase, Earth, PersonStanding, User } from "lucide-react";
+import { Briefcase, Earth, TrendingUp, Users } from "lucide-react";
 
 const reasons: Reason[] = [
   { key: "internship", icon: Briefcase },
-  { key: "growth", icon: User },
+  /* Was `User` — a single silhouette for "professional growth". */
+  { key: "growth", icon: TrendingUp },
   { key: "oportunities", icon: Earth },
-  { key: "exchange", icon: PersonStanding },
+  /* Was `PersonStanding`, the accessibility glyph, for "cultural exchange". */
+  { key: "exchange", icon: Users },
 ];
 
 export default reasons;

@@ -13,15 +13,16 @@ const CompaniesPage = () => {
   const t = useTranslations("CompanyPage.hero");
 
   return (
-    <main>
+    <>
       <HeroSection
         title={t("title")}
+        subtitle={t("subtitle")}
         description={t("description")}
         backgroundImage="/team/ago-2024.webp"
         component={
-          <ButtonGroup className="justify-center">
+          <ButtonGroup className="flex-wrap justify-center">
             <ContactFormBtn />
-            <SendEmailBtn />
+            <SendEmailBtn variant="onDarkSoft" />
           </ButtonGroup>
         }
       />
@@ -31,7 +32,7 @@ const CompaniesPage = () => {
         <Testimonial />
         <ContactSection />
       </Content>
-    </main>
+    </>
   );
 };
 

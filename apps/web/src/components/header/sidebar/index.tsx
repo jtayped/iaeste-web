@@ -64,7 +64,7 @@ const SidebarComponent = () => {
         <button
           onClick={toggleSidebar}
           aria-label="close menu"
-          className="-mr-2 grid size-11 place-items-center rounded-lg transition-colors outline-none hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-white/40"
+          className="-mr-2 grid size-11 place-items-center rounded-full transition-colors outline-none hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-white/40"
         >
           <X size={24} />
         </button>
@@ -76,21 +76,23 @@ const SidebarComponent = () => {
         animate="visible"
         className="section-padding flex-1 overflow-y-auto py-2"
       >
+        {/* Same order as the desktop nav. */}
         <Item href="/">{t("pages.home.name")}</Item>
         <Item href="/student">{t("pages.student.name")}</Item>
-        <Item href="/incommings">{t("pages.incomming.name")}</Item>
         <Item href="/company">{t("pages.company.name")}</Item>
+        <Item href="/incommings">{t("pages.incomming.name")}</Item>
         <Item href="/blog">{t("pages.blog.name")}</Item>
       </motion.nav>
 
       <div className="section-padding shrink-0 space-y-3 border-t border-white/10 pt-5 pb-8">
         <ChangeTranslation />
         <Link
-          href="#contact-form"
+          href="/student#contact-form"
           onClick={toggleSidebar}
           className={buttonVariants({
-            className:
-              "h-12 w-full bg-white text-base text-primary hover:bg-white/90",
+            variant: "onDark",
+            size: "xl",
+            className: "w-full",
           })}
         >
           {t("contact-btn")}
@@ -140,7 +142,9 @@ const Sidebar = ({ className = "" }: { className?: string }) => {
         aria-label="open menu"
         aria-expanded={isSidebarOpen}
         className={cn(
-          "hover:bg-white/10 hover:text-primary-foreground [&_svg]:size-6",
+          /* HeroUI's icon size is `h-10 md:h-9`; this is the only control on
+             the mobile layout and it has to clear 44px. */
+          "size-11 hover:bg-white/10 hover:text-primary-foreground [&_svg]:size-6",
           className,
         )}
       >

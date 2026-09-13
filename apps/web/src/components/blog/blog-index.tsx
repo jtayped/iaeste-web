@@ -4,6 +4,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import { Link } from "@/i18n/routing";
+import PageHeader from "@/components/common/sections/page-header";
+import Section from "@/components/common/sections/section";
 import {
   getBlogPosts,
   postsPerPage,
@@ -35,7 +37,9 @@ function StatusLabels({
         </span>
       )}
       {post.draft && (
-        <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-900">
+        /* Was `bg-amber-100 text-amber-900` — the only raw palette colour left
+           on the site now that the testimonial's blues are gone. */
+        <span className="rounded-full bg-[var(--warning-soft)] px-3 py-1 text-[var(--warning-soft-foreground)]">
           {draftLabel}
         </span>
       )}
@@ -97,17 +101,15 @@ function FeaturedPost({
 
 function PostRow({
   post,
-  readLabel,
   draftLabel,
   fallbackLabel,
 }: {
   post: BlogPost;
-  readLabel: string;
   draftLabel: string;
   fallbackLabel: string;
 }) {
   return (
-    <article className="grid gap-6 border-t py-9 md:grid-cols-[12rem_1fr_auto] md:items-center">
+    <article className="relative grid gap-6 border-t py-9 md:grid-cols-[12rem_1fr_auto] md:items-center">
       <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
         <Image
           src={post.coverImage}
@@ -129,19 +131,26 @@ function PostRow({
           />
         </div>
         <h2 className="mt-3 text-2xl font-bold tracking-[-0.025em] text-balance">
-          {post.title}
+          {/* `after:absolute inset-0` stretches the hit area over the whole
+              row, so the thumbnail, the headline and the arrow are all one
+              target — and the arrow stays a decorative affordance. */}
+          <Link
+            href={`/blog/${post.slug}`}
+            className="underline-offset-4 after:absolute after:inset-0 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {post.title}
+          </Link>
         </h2>
         <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">
           {post.excerpt}
         </p>
       </div>
-      <Link
-        href={`/blog/${post.slug}`}
-        aria-label={`${readLabel}: ${post.title}`}
-        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:outline-none"
+      <span
+        aria-hidden
+        className="inline-flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground"
       >
-        <ArrowRight aria-hidden="true" size={18} />
-      </Link>
+        <ArrowRight size={18} />
+      </span>
     </article>
   );
 }
@@ -165,28 +174,20 @@ export default async function BlogIndex({
 
   return (
     <>
-      <section className="bg-primary pt-40 pb-16 text-primary-foreground sm:pt-48 sm:pb-24">
-        <div className="section-padding mx-auto max-w-7xl">
-          <h1 className="max-w-4xl text-5xl leading-[0.98] font-bold tracking-[-0.04em] text-balance sm:text-6xl lg:text-7xl">
-            {t("title")}
-          </h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-primary-foreground/80">
-            {t("description")}
-          </p>
-          {featuredPost && (
-            <div className="mt-12 sm:mt-16">
-              <FeaturedPost
-                post={featuredPost}
-                readLabel={t("readArticle")}
-                draftLabel={t("draftLabel")}
-                fallbackLabel={t("fallbackLabel")}
-              />
-            </div>
-          )}
-        </div>
-      </section>
+      <PageHeader title={t("title")} description={t("description")}>
+        {featuredPost && (
+          <div className="mt-12 sm:mt-16">
+            <FeaturedPost
+              post={featuredPost}
+              readLabel={t("readArticle")}
+              draftLabel={t("draftLabel")}
+              fallbackLabel={t("fallbackLabel")}
+            />
+          </div>
+        )}
+      </PageHeader>
 
-      <section className="section-padding mx-auto max-w-7xl py-16 sm:py-24">
+      <Section className="py-16 sm:py-24">
         {posts.length === 0 ? (
           <p className="max-w-xl text-lg leading-8 text-muted-foreground">
             {t("empty")}
@@ -197,7 +198,6 @@ export default async function BlogIndex({
               <PostRow
                 key={`${post.locale}:${post.slug}`}
                 post={post}
-                readLabel={t("readArticle")}
                 draftLabel={t("draftLabel")}
                 fallbackLabel={t("fallbackLabel")}
               />
@@ -227,7 +227,7 @@ export default async function BlogIndex({
             })}
           </nav>
         )}
-      </section>
+      </Section>
     </>
   );
 }

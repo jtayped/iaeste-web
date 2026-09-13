@@ -83,12 +83,14 @@ const ContactField = ({
             {multiline ? (
               <Textarea
                 ref={field.ref}
+                required
                 placeholder={t("placeholder")}
                 className="min-h-32 resize-y px-3.5 py-2.5"
               />
             ) : (
               <Input
                 ref={field.ref}
+                required
                 type={type}
                 placeholder={t("placeholder")}
                 autoComplete={autoComplete}

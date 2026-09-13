@@ -60,7 +60,7 @@ const ContactForm = () => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-5 rounded-xl border bg-card p-6 shadow-sm md:p-8"
+        className="space-y-5 rounded-2xl border bg-card p-6 shadow-sm md:p-8"
         id="contact-form"
       >
         <div className="grid gap-5 sm:grid-cols-2">
@@ -112,7 +112,8 @@ const ContactForm = () => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 w-full text-base"
+          size="xl"
+          className="w-full"
         >
           {isSubmitting ? (
             <>

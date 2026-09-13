@@ -128,7 +128,9 @@
     --danger-foreground: hsl(210 40% 98%);
     --border: hsl(214.3 31.8% 91.4%);
     --separator: var(--border);
-    --focus: hsl(221.2 83.2% 53.3%);
+    /* Was a generic hsl(221.2 83.2% 53.3%) blue — the one interactive state
+       on the site that did not belong to the brand. */
+    --focus: var(--secondary);
     --link: var(--secondary);
     --primary: var(--accent);
     --primary-foreground: var(--accent-foreground);
@@ -263,6 +265,57 @@
     --button-bg-hover: var(--secondary-hover);
     --button-bg-pressed: var(--secondary-hover);
     --button-fg: var(--secondary-foreground);
+  }
+
+  /* The white plate the public site puts on its navy bands, where `default`
+     would be the same navy as the ground behind it. Six call sites were
+     hand-rolling `bg-white text-primary hover:bg-white/90` before this. */
+  .button.button--on-dark {
+    --button-bg: var(--background);
+    --button-bg-hover: color-mix(
+      in oklab,
+      var(--background) 90%,
+      var(--accent) 10%
+    );
+    --button-bg-pressed: var(--button-bg-hover);
+    --button-fg: var(--accent);
+    @apply shadow-sm;
+  }
+
+  /* The second action in a pair on a navy band. A saturated fill beside the
+     white plate reads as two competing primaries, so this one is the ground
+     itself, lifted. */
+  .button.button--on-dark-soft {
+    --button-bg: color-mix(in oklab, var(--background) 14%, transparent);
+    --button-bg-hover: color-mix(in oklab, var(--background) 24%, transparent);
+    --button-bg-pressed: var(--button-bg-hover);
+    --button-fg: var(--background);
+    border: 1px solid color-mix(in oklab, var(--background) 28%, transparent);
+  }
+
+  .button.button--on-dark-soft:focus-visible:not(:focus),
+  .button.button--on-dark-soft[data-focus-visible="true"] {
+    outline: 2px solid var(--background);
+    outline-offset: 2px;
+  }
+
+  /* The marketing call-to-action size. HeroUI's scale shrinks on desktop
+     (`h-10 md:h-9` base, `h-11 md:h-10` at `lg`), which is right for dense app
+     UI and wrong for a hero. This one grows, and matches what the home hero,
+     the registration band, the mobile menu and the contact form were each
+     spelling out by hand. The doubled class outranks `.button--lg`, which it
+     rides on. */
+  .button.button--xl {
+    @apply h-11 px-6 text-base md:h-12 md:px-8;
+  }
+
+  /* A focus ring on a navy band has to be visible against navy. `--focus` is
+     the page-level ring and stays as it is; this is the on-dark counterpart,
+     scoped to the variant that only ever sits on a band. */
+  .button.button--on-dark:focus-visible:not(:focus),
+  .button.button--on-dark[data-focus-visible="true"] {
+    outline: 2px solid var(--background);
+    outline-offset: 2px;
   }
 
   /* A button that reads as a link; HeroUI has no such variant. The press
