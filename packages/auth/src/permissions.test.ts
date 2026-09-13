@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { can, capabilities } from "./permissions";
+import { can, capabilities, type Capability } from "./permissions";
 
 describe("can", () => {
   const admin = { user: { role: "admin" } };
@@ -13,11 +13,30 @@ describe("can", () => {
     }
   });
 
-  it("only grants a member access to the app shell", () => {
-    assert.equal(can(member, "admin.access"), true);
+  it("grants a member the app shell and the overview, and nothing else", () => {
+    const granted: Capability[] = ["admin.access", "dashboard.read"];
 
+    for (const capability of granted) {
+      assert.equal(can(member, capability), true, capability);
+    }
     for (const capability of capabilities) {
-      if (capability === "admin.access") continue;
+      if (granted.includes(capability)) continue;
+      assert.equal(can(member, capability), false, capability);
+    }
+  });
+
+  // Spelled out rather than left to the loop above: these are the capabilities
+  // that gate every route serving somebody else's name, email or phone number,
+  // plus the CRM. A grant slipping into `byRole` is the one mistake here that
+  // leaks data, so it fails by name.
+  it("never lets a member reach personal data or the crm", () => {
+    for (const capability of [
+      "members.read",
+      "registrations.review",
+      "invitations.write",
+      "broadcasts.send",
+      "analytics.read",
+    ] as const) {
       assert.equal(can(member, capability), false, capability);
     }
   });

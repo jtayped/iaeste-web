@@ -5,6 +5,7 @@ import { buttonVariants } from "@repo/ui/button";
 import { cn } from "@repo/ui/lib/utils";
 
 import { CampaignSummary } from "@/components/dashboard/campaign-summary";
+import { MemberWelcome } from "@/components/dashboard/member-welcome";
 import {
   RegistrationOverview,
   TeamOverview,
@@ -15,7 +16,7 @@ import { ErrorState } from "@/components/error-state";
 import { PageShell } from "@/components/shell/page-shell";
 import { adminMetadata } from "@/lib/page-title";
 import { fetchOverview } from "@/lib/overview.server";
-import { can } from "@/lib/permissions";
+import { can, type Capability } from "@/lib/permissions";
 import { getServerSession } from "@/lib/session.server";
 
 export const dynamic = "force-dynamic";
@@ -34,11 +35,38 @@ export const metadata = adminMetadata([], TITLE);
  *
  * The layout resolved the same call, and `fetchOverview` is `cache()`d, so
  * this is one HTTP request, not two.
+ *
+ * One page, two audiences. An admin gets the review queue, the links into
+ * `/members` and `/campaigns`, and the registration funnel. A member gets the
+ * team counts, the current campaign and a welcome — the same numbers, none of
+ * the doors. The split is by capability rather than by role, so a narrower
+ * tier added to `byRole` later lands somewhere sensible without touching this
+ * file.
  */
 export default async function DashboardPage() {
   const session = await getServerSession();
 
-  if (session.status === "ok" && !can(session.session, "dashboard.read")) {
+  // A session that did not resolve is the layout's problem — it has already
+  // redirected or rendered its error screen. Assuming "allowed" here keeps
+  // this page from second-guessing it with a misleading empty state.
+  const holds = (capability: Capability) =>
+    session.status !== "ok" || can(session.session, capability);
+
+  const canReadDashboard = holds("dashboard.read");
+  const canReviewRegistrations = holds("registrations.review");
+  const canReadMembers = holds("members.read");
+  const canWriteCampaigns = holds("campaigns.write");
+
+  // Whoever cannot read the members table is not on the organising side of the
+  // committee, and this is their landing page rather than a stop on the way to
+  // the queue.
+  const welcome = canReadMembers ? null : (
+    <MemberWelcome
+      name={session.status === "ok" ? session.session.user.name : null}
+    />
+  );
+
+  if (!canReadDashboard) {
     return (
       <PageShell title={TITLE} description="el teu espai dins del comitè.">
         <EmptyState
@@ -66,22 +94,26 @@ export default async function DashboardPage() {
   }
 
   const { currentCampaign, registrationOpenCampaign, counts } = result.overview;
-  const registrationsActive = registrationOpenCampaign !== null;
+  const registrationsActive =
+    registrationOpenCampaign !== null && canReviewRegistrations;
 
   if (currentCampaign === null) {
     return (
       <PageShell title={TITLE} description="encara no hi ha res a mostrar.">
+        {welcome}
         <EmptyState
           icon={CalendarRange}
           title="cap campanya activa"
           description="els comptadors es calculen sobre la campanya actual. quan n'hi hagi una de marcada com a actual, aquest dashboard s'omplirà tot sol."
           action={
-            <Link
-              href="/campaigns"
-              className={cn(buttonVariants({ size: "sm" }))}
-            >
-              ves a campanyes
-            </Link>
+            canWriteCampaigns ? (
+              <Link
+                href="/campaigns"
+                className={cn(buttonVariants({ size: "sm" }))}
+              >
+                ves a campanyes
+              </Link>
+            ) : undefined
           }
         />
       </PageShell>
@@ -93,12 +125,13 @@ export default async function DashboardPage() {
       title={TITLE}
       description={`resum de la campanya ${currentCampaign.label}.`}
     >
+      {welcome}
       {registrationsActive ? (
         <PendingWork pendingReview={counts.pendingReview} />
       ) : null}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.85fr)] lg:gap-8">
-        <TeamOverview counts={counts} />
+        <TeamOverview counts={counts} linked={canReadMembers} />
         <div className="space-y-6 md:space-y-8">
           {registrationsActive ? (
             <RegistrationOverview counts={counts} />
@@ -106,6 +139,8 @@ export default async function DashboardPage() {
           <CampaignSummary
             currentCampaign={currentCampaign}
             registrationOpenCampaign={registrationOpenCampaign}
+            linked={canWriteCampaigns}
+            showRegistration={canReviewRegistrations}
           />
         </div>
       </div>

@@ -16,15 +16,14 @@ import {
 } from "@repo/ui/sidebar";
 
 import {
-  externalNavItems,
   externalNavLabel,
   isActive,
-  navGroups,
+  visibleExternalNavItems,
+  visibleNavGroups,
   type ExternalNavHrefs,
   type ExternalNavItem,
   type NavItem,
 } from "@/lib/nav";
-import { can } from "@/lib/permissions";
 
 /** 44px rows inside the mobile sheet, back to the compact 32px on `md+`. */
 const ROW_CLASS = "h-11 md:h-8";
@@ -37,7 +36,9 @@ const ROW_CLASS = "h-11 md:h-8";
  * `externalHrefs` carries the links that leave the app (the marketing site,
  * the blog CMS, Odoo). They arrive as a prop because two of the three origins
  * are server-only config; they render in their own section pinned to the
- * bottom, never interleaved with a nav group.
+ * bottom, never interleaved with a nav group. The two that are separate
+ * products with their own accounts are filtered by capability like any other
+ * row — see `ExternalNavItem.capability`.
  *
  * Tapping any row closes the mobile sheet. Client navigation swaps the page
  * underneath without unmounting the sidebar, so the drawer would otherwise sit
@@ -66,48 +67,36 @@ export function SidebarNav({
 
   return (
     <>
-      {navGroups
-        .map((group) => ({
-          ...group,
-          items: group.items.filter((item) =>
-            can({ user: { role } }, item.capability),
-          ),
-        }))
-        .filter(
-          (group) =>
-            group.items.length > 0 &&
-            (group.id !== "inscripcions" || registrationsActive),
-        )
-        .map((group) => (
-          <SidebarGroup key={group.id}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const badge = badgeFor(item);
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        className={ROW_CLASS}
-                        isActive={isActive(item, pathname)}
-                        tooltip={item.label}
-                      >
-                        <Link href={item.href} onClick={dismiss}>
-                          <item.icon className="size-4" aria-hidden />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                      {badge === null ? null : (
-                        <SidebarMenuBadge>{badge}</SidebarMenuBadge>
-                      )}
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+      {visibleNavGroups(role, registrationsActive).map((group) => (
+        <SidebarGroup key={group.id}>
+          <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {group.items.map((item) => {
+                const badge = badgeFor(item);
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      className={ROW_CLASS}
+                      isActive={isActive(item, pathname)}
+                      tooltip={item.label}
+                    >
+                      <Link href={item.href} onClick={dismiss}>
+                        <item.icon className="size-4" aria-hidden />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    {badge === null ? null : (
+                      <SidebarMenuBadge>{badge}</SidebarMenuBadge>
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      ))}
 
       {/* Pinned to the bottom: links out of the admin app. Not a nav group —
           no route matching, no breadcrumb, no `<Link>` prefetch. */}
@@ -115,7 +104,7 @@ export function SidebarNav({
         <SidebarGroupLabel>{externalNavLabel}</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {externalNavItems.map((item) => (
+            {visibleExternalNavItems(role).map((item) => (
               <ExternalNavRow
                 key={item.key}
                 item={item}

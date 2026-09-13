@@ -5,6 +5,6 @@ export default async function AnalyticsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requirePageCapability("dashboard.read");
+  await requirePageCapability("analytics.read");
   return children;
 }

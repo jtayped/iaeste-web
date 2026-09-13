@@ -9,11 +9,13 @@ function Row({
   explanation,
   campaign,
   emptyText,
+  linked,
 }: {
   role: string;
   explanation: string;
   campaign: AdminCampaignRef | null;
   emptyText: string;
+  linked: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
@@ -21,7 +23,9 @@ function Row({
         <p className="text-sm font-medium">{role}</p>
         <p className="text-xs text-muted-foreground">{explanation}</p>
       </div>
-      {campaign ? (
+      {campaign === null ? (
+        <span className="text-sm text-muted-foreground">{emptyText}</span>
+      ) : linked ? (
         <Link
           href="/campaigns"
           className="text-sm font-medium text-secondary underline-offset-4 outline-none hover:underline focus-visible:underline"
@@ -29,7 +33,7 @@ function Row({
           {campaign.label}
         </Link>
       ) : (
-        <span className="text-sm text-muted-foreground">{emptyText}</span>
+        <span className="text-sm font-medium">{campaign.label}</span>
       )}
     </div>
   );
@@ -44,9 +48,15 @@ function Row({
 export function CampaignSummary({
   currentCampaign,
   registrationOpenCampaign,
+  linked = true,
+  showRegistration = true,
 }: {
   currentCampaign: AdminCampaignRef | null;
   registrationOpenCampaign: AdminCampaignRef | null;
+  /** Off without `campaigns.write`: the campaigns page would redirect back. */
+  linked?: boolean;
+  /** Off without `registrations.review` — the intake queue is not their work. */
+  showRegistration?: boolean;
 }) {
   return (
     <section className="space-y-3">
@@ -59,13 +69,17 @@ export function CampaignSummary({
           explanation="on viuen les altes i les baixes d'aquest curs"
           campaign={currentCampaign}
           emptyText="cap"
+          linked={linked}
         />
-        <Row
-          role="inscripcions obertes"
-          explanation="on aterren les sol·licituds del formulari públic"
-          campaign={registrationOpenCampaign}
-          emptyText="tancades"
-        />
+        {showRegistration ? (
+          <Row
+            role="inscripcions obertes"
+            explanation="on aterren les sol·licituds del formulari públic"
+            campaign={registrationOpenCampaign}
+            emptyText="tancades"
+            linked={linked}
+          />
+        ) : null}
       </Card>
     </section>
   );

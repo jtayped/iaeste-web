@@ -422,7 +422,10 @@ export function createApp(dependencies: AppDependencies = {}) {
         // about our mail provider, not about them. See the class's doc
         // comment — a silent 200 here strands someone waiting for an email
         // that is never coming.
-        logger.error(`[${c.get("requestId")}] registration code send failed`, error);
+        logger.error(
+          `[${c.get("requestId")}] registration code send failed`,
+          error,
+        );
         return c.json(
           errorBody(
             c.get("requestId"),
@@ -742,7 +745,7 @@ export function createApp(dependencies: AppDependencies = {}) {
 
   app.use("/v1/admin/profile", requireCapability("admin.access"));
   app.use("/v1/admin/overview", requireCapability("dashboard.read"));
-  app.use("/v1/admin/analytics/crm", requireCapability("dashboard.read"));
+  app.use("/v1/admin/analytics/crm", requireCapability("analytics.read"));
   app.use(
     "/v1/admin/push/public-key",
     requireCapability("notifications.manage"),

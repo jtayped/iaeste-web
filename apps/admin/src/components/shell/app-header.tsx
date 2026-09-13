@@ -20,9 +20,12 @@ import type { AdminOverview } from "@/lib/overview";
 export function AppHeader({
   overview,
   showNotifications,
+  showRegistrationCampaign,
 }: {
   overview: AdminOverview | null;
   showNotifications: boolean;
+  /** Passed through to the campaign chips — see `CampaignContext`. */
+  showRegistrationCampaign: boolean;
 }) {
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-1 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:gap-2 md:px-4">
@@ -46,7 +49,10 @@ export function AppHeader({
       <div className="ml-auto flex shrink-0 items-center gap-1 md:gap-2">
         {overview ? (
           <div className="hidden pl-2 md:block">
-            <CampaignContext overview={overview} />
+            <CampaignContext
+              overview={overview}
+              showRegistration={showRegistrationCampaign}
+            />
           </div>
         ) : null}
         {showNotifications ? <NotificationsToggle /> : null}

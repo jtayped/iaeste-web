@@ -242,7 +242,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description A read-only snapshot of the Odoo CRM pipeline: how dormant it is, who owes follow-ups, which companies have gone cold, and what the outreach converted at. Served from a short in-process cache — `fetchedAt` says how old it is and `stale` says whether Odoo could not be re-read. Requires the `dashboard.read` capability. */
+        /** @description A read-only snapshot of the Odoo CRM pipeline: how dormant it is, who owes follow-ups, which companies have gone cold, and what the outreach converted at. Served from a short in-process cache — `fetchedAt` says how old it is and `stale` says whether Odoo could not be re-read. Requires the `analytics.read` capability. */
         get: operations["adminCrmAnalytics"];
         put?: never;
         post?: never;

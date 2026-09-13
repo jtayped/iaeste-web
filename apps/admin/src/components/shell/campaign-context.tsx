@@ -36,12 +36,37 @@ function Chip({
   );
 }
 
-export function CampaignContext({ overview }: { overview: AdminOverview }) {
+export function CampaignContext({
+  overview,
+  showRegistration = true,
+}: {
+  overview: AdminOverview;
+  /**
+   * Off without `registrations.review`. The intake queue is not a member's
+   * work, and the dashboard hides the same fact one panel down — saying it in
+   * the header anyway would just be an inconsistency they have to resolve.
+   */
+  showRegistration?: boolean;
+}) {
   const { currentCampaign, registrationOpenCampaign } = overview;
   const isSame =
     currentCampaign !== null &&
     registrationOpenCampaign !== null &&
     currentCampaign.id === registrationOpenCampaign.id;
+
+  if (!showRegistration) {
+    return (
+      <div className="flex items-center text-xs">
+        {currentCampaign ? (
+          <Chip tone="current" label={currentCampaign.label} role="actual" />
+        ) : (
+          <span className="whitespace-nowrap text-muted-foreground">
+            cap campanya actual
+          </span>
+        )}
+      </div>
+    );
+  }
 
   if (currentCampaign === null && registrationOpenCampaign === null) {
     return (
