@@ -33,7 +33,12 @@ async function queueDeployment(webhook, token, rollback, imageTag) {
   const headers = { Authorization: `Bearer ${token}` };
 
   if (!rollback) {
-    const response = await fetch(webhook, { headers });
+    // `POST`, not `GET`: Coolify's `/api/v1/deploy` is a POST route, and a GET
+    // is answered with a 405 that the unauthenticated probe cannot see —
+    // its auth middleware short-circuits every method with a 401 before
+    // routing ever decides. The webhook URL carries `uuid` and `force` as
+    // query parameters, so there is no body to send.
+    const response = await fetch(webhook, { method: "POST", headers });
     const body = await readJson(response, "Coolify deploy webhook");
     const deploymentUuid = body.deployments?.[0]?.deployment_uuid;
     if (!deploymentUuid) {
