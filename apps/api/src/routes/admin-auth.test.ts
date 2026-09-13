@@ -45,6 +45,9 @@ function harness(db: Database) {
     async send(message) {
       magicLink = findHref(message.react);
     },
+    async sendBatch() {
+      throw new Error("auth never sends a batch");
+    },
   };
   const auth = createAuth({
     db,

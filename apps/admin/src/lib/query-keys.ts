@@ -1,4 +1,6 @@
 import type {
+  BroadcastAudience,
+  BroadcastContent,
   CampaignState,
   InvitationStatusFilter,
   MemberFilter,
@@ -61,5 +63,20 @@ export const queryKeys = {
       limit: number;
       offset: number;
     }) => ["invitations", "list", params] as const,
+  },
+
+  /**
+   * Both broadcast reads are POSTs — a selection can carry hundreds of row ids
+   * and does not fit a query string — so the request body *is* the key. They
+   * are reads all the same: neither endpoint sends anything.
+   */
+  broadcasts: {
+    all: ["broadcasts"] as const,
+    recipients: (audience: BroadcastAudience) =>
+      ["broadcasts", "recipients", audience] as const,
+    preview: (params: {
+      content: BroadcastContent;
+      audience?: BroadcastAudience;
+    }) => ["broadcasts", "preview", params] as const,
   },
 } as const;

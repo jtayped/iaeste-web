@@ -77,25 +77,38 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function TeamOverview({ counts }: { counts: AdminOverviewCounts }) {
+/**
+ * `linked` is off for anyone without `members.read`. The numbers themselves are
+ * aggregates and safe to show a member; the cards behind them are not, and a
+ * card that quietly redirects you back to the page you are already on is worse
+ * than a card that was never clickable.
+ */
+export function TeamOverview({
+  counts,
+  linked = true,
+}: {
+  counts: AdminOverviewCounts;
+  linked?: boolean;
+}) {
+  const members = linked ? "/members" : undefined;
   const breakdown: Metric[] = [
     {
       label: "nous",
       value: counts.newMembers,
       hint: "primera campanya amb nosaltres",
-      href: "/members",
+      href: members,
     },
     {
       label: "ogs",
       value: counts.returningMembers,
       hint: "ja havien estat membres abans",
-      href: "/members",
+      href: members,
     },
     {
       label: "sense renovar",
       value: counts.unrenewedPastMembers,
       hint: "encara no s'han donat d'alta aquest curs",
-      href: "/members",
+      href: members,
     },
   ];
 
@@ -110,7 +123,7 @@ export function TeamOverview({ counts }: { counts: AdminOverviewCounts }) {
               label: "membres actius",
               value: counts.activeMembers,
               hint: "amb l'alta vigent a la campanya actual",
-              href: "/members",
+              href: members,
             }}
           />
         </div>

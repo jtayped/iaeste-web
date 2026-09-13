@@ -6,6 +6,7 @@ import { MembersTable } from "@/components/members/members-table";
 import { PageShell, type BreadcrumbEntry } from "@/components/shell/page-shell";
 import { fetchCampaigns } from "@/lib/admin.server";
 import { adminMetadata } from "@/lib/page-title";
+import { hasPageCapability } from "@/lib/permissions.server";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,10 @@ export const metadata = adminMetadata(BREADCRUMB, TITLE, DESCRIPTION);
  * own first fetch, so there is only ever one loading shape on this page.
  */
 export default async function MembersPage() {
-  const campaigns = await fetchCampaigns();
+  const [campaigns, canBroadcast] = await Promise.all([
+    fetchCampaigns(),
+    hasPageCapability("broadcasts.send"),
+  ]);
   const rows = campaigns.status === "ok" ? campaigns.data : [];
   const hasCurrent = rows.some((campaign) => campaign.isCurrent);
   const target =
@@ -63,6 +67,7 @@ export default async function MembersPage() {
           campaigns={options}
           initialSource={source ? `campaign:${source.id}` : "all"}
           initialTarget={target?.id ?? ""}
+          canBroadcast={canBroadcast}
         />
       </Suspense>
     </PageShell>

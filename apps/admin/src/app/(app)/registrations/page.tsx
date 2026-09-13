@@ -9,6 +9,7 @@ import { PageShell, type BreadcrumbEntry } from "@/components/shell/page-shell";
 import { fetchCampaigns } from "@/lib/admin.server";
 import { adminMetadata } from "@/lib/page-title";
 import { fetchOverview } from "@/lib/overview.server";
+import { hasPageCapability } from "@/lib/permissions.server";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +30,10 @@ export const metadata = adminMetadata(BREADCRUMB, TITLE, DESCRIPTION);
  * sol·licituds arriving today belong to the open one.
  */
 export default async function RegistrationsPage() {
-  const [overview, campaigns] = await Promise.all([
+  const [overview, campaigns, canBroadcast] = await Promise.all([
     fetchOverview(),
     fetchCampaigns(),
+    hasPageCapability("broadcasts.send"),
   ]);
 
   if (campaigns.status === "error") {
@@ -85,6 +87,10 @@ export default async function RegistrationsPage() {
             isCurrent: row.isCurrent,
           }))}
           initialCampaignId={initialCampaignId}
+          canBroadcast={canBroadcast}
+          // The route subtree already redirects anyone without it; passing it
+          // explicitly keeps the queue readable about what gates the action.
+          canReview
         />
       </Suspense>
     </PageShell>

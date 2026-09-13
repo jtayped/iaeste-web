@@ -38,7 +38,7 @@ const PendingReviewPage = () => (
     </Paragraph>
     <Paragraph>
       t&apos;escriurem a aquest mateix correu amb la resposta, sigui quina
-      sigui. no cal que facis res més.
+      sigui, i amb els propers passos.
     </Paragraph>
   </StatusScreen>
 );

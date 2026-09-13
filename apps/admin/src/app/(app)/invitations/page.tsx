@@ -10,6 +10,7 @@ import { PageShell, type BreadcrumbEntry } from "@/components/shell/page-shell";
 import { fetchCampaigns } from "@/lib/admin.server";
 import { adminMetadata } from "@/lib/page-title";
 import { fetchOverview } from "@/lib/overview.server";
+import { hasPageCapability } from "@/lib/permissions.server";
 
 export const dynamic = "force-dynamic";
 
@@ -27,9 +28,10 @@ export const metadata = adminMetadata(BREADCRUMB, TITLE, DESCRIPTION);
  * running now, not into the one still taking public registrations.
  */
 export default async function InvitationsPage() {
-  const [overview, campaigns] = await Promise.all([
+  const [overview, campaigns, canBroadcast] = await Promise.all([
     fetchOverview(),
     fetchCampaigns(),
+    hasPageCapability("broadcasts.send"),
   ]);
 
   if (campaigns.status === "error") {
@@ -88,6 +90,7 @@ export default async function InvitationsPage() {
         <InvitationsTable
           campaigns={options}
           initialCampaignId={initialCampaignId}
+          canBroadcast={canBroadcast}
         />
       </Suspense>
     </PageShell>

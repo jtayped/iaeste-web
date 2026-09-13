@@ -67,6 +67,7 @@ export default async function AppLayout({
 
   const canReadDashboard = can(result.session, "dashboard.read");
   const canManageNotifications = can(result.session, "notifications.manage");
+  const canReviewRegistrations = can(result.session, "registrations.review");
   const overview = canReadDashboard ? await fetchOverview() : null;
 
   // The API disagreeing about this admin-only capability outranks the local
@@ -102,7 +103,11 @@ export default async function AppLayout({
         externalHrefs={externalHrefs}
       />
       <SidebarInset className="min-w-0">
-        <AppHeader overview={data} showNotifications={canManageNotifications} />
+        <AppHeader
+          overview={data}
+          showNotifications={canManageNotifications}
+          showRegistrationCampaign={canReviewRegistrations}
+        />
         {/* The content column belongs to `<PageShell>` — it is shared with
             `loading.tsx`, so the skeleton and the page it becomes line up. */}
         <div className="min-w-0 flex-1">{children}</div>

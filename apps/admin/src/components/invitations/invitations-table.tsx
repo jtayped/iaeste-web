@@ -11,17 +11,22 @@ import {
 } from "@/components/admin/campaign-picker";
 import { ConfirmAction } from "@/components/admin/confirm-action";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { BroadcastAction } from "@/components/broadcasts/broadcast-action";
 import { DataTable } from "@/components/data-table/data-table";
 import {
   TableFilter,
   TableSearch,
   TableToolbar,
 } from "@/components/data-table/toolbar";
-import type { DataTableColumn } from "@/components/data-table/types";
+import type {
+  DataTableColumn,
+  DataTableSelectionHandle,
+} from "@/components/data-table/types";
 import type {
   AdminInvitation,
   InvitationStatusFilter,
 } from "@/lib/admin-types";
+import { invitationsAudience } from "@/lib/broadcasts";
 import { formatDate, formatRelative } from "@/lib/format";
 import {
   invitationStatus,
@@ -100,9 +105,12 @@ const COLUMNS: DataTableColumn<AdminInvitation>[] = [
 export function InvitationsTable({
   campaigns,
   initialCampaignId,
+  canBroadcast,
 }: {
   campaigns: readonly CampaignOption[];
   initialCampaignId: string;
+  /** `broadcasts.send` — resolved on the server, re-checked by the API. */
+  canBroadcast: boolean;
 }) {
   const { get, setParams } = useTableParams(DEFAULTS);
   const campaignId = get("campaign") || initialCampaignId;
@@ -182,6 +190,28 @@ export function InvitationsTable({
                 setParams({
                   page: offsetToPage(next, query.data.limit),
                 }),
+            },
+          }
+        : {})}
+      {...(canBroadcast && query.data
+        ? {
+            selection: {
+              // The scope is the server-side query: change the campaign, the
+              // status or the search and the old ticks stop meaning anything.
+              scope: JSON.stringify({ campaignId, status, q }),
+              total: query.data.total,
+              rowLabel: (row: AdminInvitation) => row.email,
+              actions: (handle: DataTableSelectionHandle) => (
+                <BroadcastAction
+                  audience={invitationsAudience(handle.value, {
+                    campaignId,
+                    status,
+                    ...(q ? { q } : {}),
+                  })}
+                  selection={handle}
+                  unit="invitacions"
+                />
+              ),
             },
           }
         : {})}

@@ -90,7 +90,9 @@ describe("GET /v1/admin/analytics/crm", () => {
     assert.equal(body.error.code, "UNAUTHENTICATED");
   });
 
-  it("requires the dashboard.read capability", async () => {
+  // A member holds `dashboard.read` (the overview counts) and still must not
+  // reach this route: the CRM is about the companies we negotiate with.
+  it("requires the analytics.read capability", async () => {
     const response = await app({ role: "member" }).request(PATH);
     const body = (await response.json()) as { error: { code: string } };
 

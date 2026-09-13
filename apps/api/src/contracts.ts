@@ -1,9 +1,35 @@
 import { z } from "@hono/zod-openapi";
 
 import { DEGREE_OPTIONS } from "@repo/constants/studies";
+import {
+  broadcastBodySchema,
+  broadcastCallToActionSchema,
+  broadcastHeadingSchema,
+  broadcastSubjectSchema,
+} from "@repo/constants/validators/broadcast";
 import { isValidPhone } from "@repo/constants/validators/phone";
 
 import { API_VERSION } from "./version";
+
+/**
+ * How many people one broadcast may reach.
+ *
+ * Chosen against the organisation rather than against the provider: the whole
+ * committee plus a bumper year's applicants is comfortably under this, so a
+ * request that exceeds it is a mis-set filter, not a legitimate send. Resend's
+ * own batching is handled inside `@repo/email` and is not the constraint here.
+ */
+export const BROADCAST_MAX_RECIPIENTS = 500;
+
+/** How many recipients the confirm step lists before saying "and N more". */
+export const BROADCAST_RECIPIENT_SAMPLE = 25;
+
+/**
+ * How many registrations one bulk accept may cover. Each one is its own
+ * transaction (a membership, possibly a user account), so this bounds the
+ * request's wall time as much as its blast radius.
+ */
+export const BULK_ACCEPT_MAX = 200;
 
 /**
  * The profile half of a registration, shared by the public form and the
@@ -225,6 +251,11 @@ export const apiErrorSchema = z
         "FORBIDDEN",
         "NOT_FOUND",
         "CONFLICT",
+        // A broadcast's audience no longer holds the number of people the
+        // composer confirmed. Distinct from a plain CONFLICT because the
+        // client's response differs: re-resolve the recipients and ask again,
+        // rather than tell the operator to narrow their filters.
+        "AUDIENCE_CHANGED",
         "ALREADY_REGISTERED",
         "INVALID_TOKEN",
         "INTERNAL_ERROR",
@@ -1031,3 +1062,219 @@ export const crmAnalyticsSchema = z
     }),
   })
   .openapi("CrmAnalytics");
+
+// --- Broadcasts (the admin email composer) --------------------------------
+
+/**
+ * The cross-page selection shape every selectable admin table sends: the rows
+ * an operator ticked, or everything the filters match minus the rows they
+ * un-ticked. Defined once and reused per audience below so the three tables
+ * cannot drift into three slightly different selection semantics.
+ */
+const broadcastSelectionShape = {
+  ids: z.object({
+    mode: z.literal("ids"),
+    rowIds: z.array(z.string().min(1)).min(1).max(BROADCAST_MAX_RECIPIENTS),
+  }),
+  all: {
+    mode: z.literal("all"),
+    excludedRowIds: z
+      .array(z.string().min(1))
+      .max(BROADCAST_MAX_RECIPIENTS)
+      .default([]),
+  },
+};
+
+const broadcastRegistrationsAudienceSchema = z.object({
+  kind: z.literal("registrations"),
+  selection: z.discriminatedUnion("mode", [
+    broadcastSelectionShape.ids,
+    z.object({
+      ...broadcastSelectionShape.all,
+      campaignId: z.string().min(1),
+      status: registrationStatusSchema.optional(),
+      q: z.string().trim().max(200).optional(),
+    }),
+  ]),
+});
+
+const broadcastMembersAudienceSchema = z.object({
+  kind: z.literal("members"),
+  selection: z.discriminatedUnion("mode", [
+    broadcastSelectionShape.ids,
+    z.object({
+      ...broadcastSelectionShape.all,
+      q: z.string().trim().max(120).optional(),
+      filter: z.enum(["all", "current", "past"]).optional(),
+      campaignId: z.string().min(1).optional(),
+    }),
+  ]),
+});
+
+const broadcastInvitationsAudienceSchema = z.object({
+  kind: z.literal("invitations"),
+  selection: z.discriminatedUnion("mode", [
+    broadcastSelectionShape.ids,
+    z.object({
+      ...broadcastSelectionShape.all,
+      campaignId: z.string().min(1),
+      status: z
+        .enum(["pending", "accepted", "cancelled", "expired"])
+        .optional(),
+      q: z.string().trim().max(200).optional(),
+    }),
+  ]),
+});
+
+export const broadcastAudienceSchema = z
+  .discriminatedUnion("kind", [
+    broadcastRegistrationsAudienceSchema,
+    broadcastMembersAudienceSchema,
+    broadcastInvitationsAudienceSchema,
+  ])
+  .openapi("BroadcastAudience");
+
+/**
+ * The message itself. `@repo/constants` owns the field rules — including
+ * which `{{placeholders}}` exist — so the composer's client-side validation
+ * and this boundary cannot disagree about what is sendable.
+ */
+export const broadcastContentRequestSchema = z
+  .object({
+    // No `.openapi({ example })` on these three: they come from
+    // `@repo/constants` via `superRefine`, and the OpenAPI extension only
+    // patches the classes it knows about — the examples live on the parent
+    // object's registration below instead.
+    subject: broadcastSubjectSchema,
+    heading: broadcastHeadingSchema.optional(),
+    body: broadcastBodySchema,
+    callToAction: broadcastCallToActionSchema.optional(),
+  })
+  .openapi("BroadcastContent", {
+    example: {
+      subject: "assemblea general · 3 d'octubre",
+      body: "hola {{nom}},\n\nens veiem **dijous** a les 18:00.",
+    },
+  });
+
+export const broadcastRecipientsBodySchema = z
+  .object({ audience: broadcastAudienceSchema })
+  .openapi("BroadcastRecipientsRequest");
+
+export const broadcastRecipientSchema = z.object({
+  rowId: z.string(),
+  email: z.string(),
+  name: z.string(),
+  surnames: z.string(),
+});
+
+export const broadcastRecipientsResponseSchema = z
+  .object({
+    /** Distinct addresses the audience resolves to, after de-duplication. */
+    total: z.number().int(),
+    /** The first few, so the confirm step can show who rather than a number. */
+    sample: z.array(broadcastRecipientSchema),
+    /** True when `sample` is shorter than `total`. */
+    truncated: z.boolean(),
+  })
+  .openapi("BroadcastRecipients");
+
+export const broadcastPreviewBodySchema = z
+  .object({
+    content: broadcastContentRequestSchema,
+    /**
+     * Optional. When given, the preview resolves the first real recipient and
+     * fills the placeholders with their details, so what the operator reviews
+     * is a message someone will actually receive rather than a mock-up.
+     */
+    audience: broadcastAudienceSchema.optional(),
+  })
+  .openapi("BroadcastPreviewRequest");
+
+export const broadcastPreviewResponseSchema = z
+  .object({
+    /** The exact bytes a recipient's mail client will get. */
+    html: z.string(),
+    /** The subject line after placeholder substitution. */
+    subject: z.string(),
+    /** Who the preview was personalised for, or null when it used stand-ins. */
+    sampleRecipient: broadcastRecipientSchema.nullable(),
+  })
+  .openapi("BroadcastPreview");
+
+export const broadcastSendBodySchema = z
+  .object({
+    audience: broadcastAudienceSchema,
+    content: broadcastContentRequestSchema,
+    /**
+     * The count the composer showed the operator when they pressed send. The
+     * route refuses when the audience has since grown or shrunk, so a
+     * broadcast can never quietly reach a different set of people than the
+     * one that was confirmed.
+     */
+    expectedRecipients: z.number().int().min(1).max(BROADCAST_MAX_RECIPIENTS),
+  })
+  .openapi("BroadcastSendRequest");
+
+export const broadcastSendResponseSchema = z
+  .object({
+    requested: z.number().int(),
+    sent: z.number().int(),
+    /** Every address the provider refused, named so it can be chased. */
+    failed: z.array(z.object({ email: z.string(), reason: z.string() })),
+  })
+  .openapi("BroadcastSendResponse");
+
+export const broadcastTestBodySchema = z
+  .object({ content: broadcastContentRequestSchema })
+  .openapi("BroadcastTestRequest");
+
+export const broadcastTestResponseSchema = z
+  .object({
+    /** Where it went: always the signed-in admin's own address. */
+    sentTo: z.string(),
+  })
+  .openapi("BroadcastTestResponse");
+
+// --- Bulk registration review ---------------------------------------------
+
+export const adminBulkAcceptRegistrationsBodySchema = z
+  .object({
+    campaignId: z.string().min(1),
+    selection: z.discriminatedUnion("mode", [
+      z.object({
+        mode: z.literal("ids"),
+        registrationIds: z.array(z.string().min(1)).min(1).max(BULK_ACCEPT_MAX),
+      }),
+      z.object({
+        mode: z.literal("all"),
+        q: z.string().trim().max(200).optional(),
+        excludedRegistrationIds: z
+          .array(z.string().min(1))
+          .max(BULK_ACCEPT_MAX)
+          .default([]),
+      }),
+    ]),
+  })
+  .openapi("AdminBulkAcceptRegistrationsRequest");
+
+export const adminBulkAcceptRegistrationsResponseSchema = z
+  .object({
+    /** Rows the selection resolved to. */
+    requested: z.number().int(),
+    accepted: z.number().int(),
+    /**
+     * Rows that were not in `pending_review` by the time the batch reached
+     * them — already accepted, already rejected, or still unverified.
+     */
+    skipped: z.number().int(),
+    /** Rows whose acceptance itself failed, named so they can be retried. */
+    failed: z.array(z.object({ email: z.string(), reason: z.string() })),
+    /** Acceptance emails the provider took. */
+    notificationsSent: z.number().int(),
+    /** Members accepted but not emailed, named so they can be told by hand. */
+    notificationsFailed: z.array(
+      z.object({ email: z.string(), reason: z.string() }),
+    ),
+  })
+  .openapi("AdminBulkAcceptRegistrationsResponse");

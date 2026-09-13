@@ -204,6 +204,38 @@ export function createMemberListQueries(db: Db) {
       };
     },
 
+    /**
+     * The same cross-page selection as `selection`, without the
+     * invitation-readiness join: a broadcast goes to whoever the operator
+     * picked, whether or not they could be invited to some campaign.
+     */
+    async broadcastSelection(
+      selection: MemberSelection,
+      limit: number,
+    ): Promise<Omit<MemberInvitationCandidate, "targetState">[]> {
+      const selected =
+        selection.mode === "ids"
+          ? inArray(memberProfile.userId, selection.userIds)
+          : whereClause(selection);
+      const exclusions =
+        selection.mode === "all" && selection.excludedUserIds.length > 0
+          ? notInArray(memberProfile.userId, selection.excludedUserIds)
+          : undefined;
+
+      return db
+        .select({
+          userId: memberProfile.userId,
+          name: memberProfile.name,
+          surnames: memberProfile.surnames,
+          email: user.email,
+        })
+        .from(memberProfile)
+        .innerJoin(user, eq(user.id, memberProfile.userId))
+        .where(and(selected, exclusions))
+        .orderBy(memberProfile.surnames, memberProfile.name)
+        .limit(limit);
+    },
+
     async selection(
       selection: MemberSelection,
       targetCampaignId: string,

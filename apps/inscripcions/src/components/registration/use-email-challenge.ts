@@ -33,8 +33,24 @@ const GENERIC_FAILURE =
   "no hem pogut continuar. torna-ho a provar d'aquí a un moment.";
 const RATE_LIMITED =
   "hem rebut massa peticions. torna-ho a provar d'aquí una estona.";
+const DELIVERY_FAILED =
+  "no hem pogut enviar-te el codi. no és cosa de la teva adreça: torna-ho a provar ara mateix.";
 const BAD_CODE =
   "aquest codi no és correcte, ha caducat o ja s'ha utilitzat. demana'n un altre si et cal.";
+
+/**
+ * The API now names the wait in `Retry-After`. Say it when it is there; the
+ * vague version stays for the responses that arrive without the header.
+ */
+function rateLimitedMessage(retryAfterSeconds?: number) {
+  if (!retryAfterSeconds) return RATE_LIMITED;
+  const minutes = Math.ceil(retryAfterSeconds / 60);
+  const wait =
+    retryAfterSeconds < 60
+      ? `${retryAfterSeconds} segon${retryAfterSeconds === 1 ? "" : "s"}`
+      : `${minutes} minut${minutes === 1 ? "" : "s"}`;
+  return `hem rebut massa peticions. torna-ho a provar d'aquí a ${wait}.`;
+}
 
 export function useEmailChallenge({
   emailToken,
@@ -130,8 +146,14 @@ export function useEmailChallenge({
       setStage({ kind: "verification", method: "code", email });
     } else if (outcome.kind === "closed") {
       router.push("/inscripcions-tancades");
+    } else if (outcome.kind === "deliveryFailed") {
+      // No code left the building, so no cooldown: the stage stays on the
+      // email step with the address still typed in, and the button is live
+      // again straight away. The API hands the per-address cooldown back on
+      // this failure, so pressing it really does send a new code.
+      setError(DELIVERY_FAILED);
     } else if (outcome.kind === "rateLimited") {
-      setError(RATE_LIMITED);
+      setError(rateLimitedMessage(outcome.retryAfterSeconds));
     } else if (outcome.kind === "invalid") {
       setError(unmappedMessage(outcome.issues));
     } else {
@@ -162,7 +184,7 @@ export function useEmailChallenge({
     } else if (outcome.kind === "badCode") {
       setError(BAD_CODE);
     } else if (outcome.kind === "rateLimited") {
-      setError(RATE_LIMITED);
+      setError(rateLimitedMessage(outcome.retryAfterSeconds));
     } else if (outcome.kind === "identityConflict") {
       setStage({ kind: "identityConflict" });
     } else {

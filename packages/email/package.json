@@ -12,7 +12,8 @@
   },
   "exports": {
     "./*": "./src/emails/*.tsx",
-    "./resend": "./src/lib/resend.ts"
+    "./resend": "./src/lib/resend.ts",
+    "./render": "./src/lib/render.ts"
   },
   "dependencies": {
     "@react-email/components": "^0.5.3",

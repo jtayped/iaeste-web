@@ -12,6 +12,7 @@ import { createTestCampaign } from "@repo/db/test-support/fixtures";
 import type { Emailer, SendEmailOptions } from "@repo/email/resend";
 
 import {
+  CodeDeliveryError,
   createRegistrationChallengeService,
   RegistrationsClosedError,
 } from "./registration-challenge-service";
@@ -22,6 +23,9 @@ function createRecordingEmailer(): Emailer & { sent: SendEmailOptions[] } {
     sent,
     async send(options) {
       sent.push(options);
+    },
+    async sendBatch() {
+      throw new Error("the challenge service never sends a batch");
     },
   };
 }
@@ -190,7 +194,7 @@ describe("registration challenge service", () => {
     assert.equal(await service.verifyLink(token), undefined);
   });
 
-  it("does not expose mail-provider failures", async () => {
+  it("reports a mail-provider failure instead of claiming the code was sent", async () => {
     await openCampaign();
     const service = createRegistrationChallengeService({
       db,
@@ -198,8 +202,44 @@ describe("registration challenge service", () => {
         async send() {
           throw new Error("Resend is down");
         },
+        async sendBatch() {
+          throw new Error("Resend is down");
+        },
       },
     });
-    await assert.doesNotReject(() => service.start(freshAddress()));
+
+    // The one step-one failure the applicant is told about: it is a fact
+    // about our provider, not about them, and a silent success leaves someone
+    // waiting for an email that is never coming.
+    await assert.rejects(
+      () => service.start(freshAddress()),
+      CodeDeliveryError,
+    );
+  });
+
+  it("does not charge a cooldown for a code that was never delivered", async () => {
+    await openCampaign();
+    const email = freshAddress();
+    let attempt = 0;
+    const sent: SendEmailOptions[] = [];
+    const service = createRegistrationChallengeService({
+      db,
+      emailer: {
+        async send(options) {
+          attempt += 1;
+          if (attempt === 1) throw new Error("Resend is down");
+          sent.push(options);
+        },
+        async sendBatch() {
+          throw new Error("never batched here");
+        },
+      },
+    });
+
+    await assert.rejects(() => service.start(email), CodeDeliveryError);
+    // Without the cooldown being given back, this second call would return
+    // the "already sent" shape and no email would go out for another minute.
+    await service.start(email);
+    assert.equal(sent.length, 1);
   });
 });

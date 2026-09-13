@@ -29,6 +29,9 @@ function createRecordingEmailer(): Emailer & { sent: SendEmailOptions[] } {
     async send(options) {
       sent.push(options);
     },
+    async sendBatch() {
+      throw new Error("this repository never sends a batch");
+    },
   };
 }
 
@@ -255,6 +258,9 @@ describe("createDrizzleRegistrationRepository", () => {
     await openCampaignForRegistration(db);
     const failingEmailer = {
       async send() {
+        throw new Error("Resend is down");
+      },
+      async sendBatch() {
         throw new Error("Resend is down");
       },
     };

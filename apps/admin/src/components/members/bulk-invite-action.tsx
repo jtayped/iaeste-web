@@ -12,11 +12,18 @@ import { useBulkCreateInvitations } from "@/lib/invitations";
 export function BulkInviteAction({
   campaignId,
   campaignLabel,
+  eligibleTotal,
   query,
   selection,
 }: {
   campaignId: string;
   campaignLabel: string;
+  /**
+   * How many of the whole filtered list can still be invited. The selection
+   * spans everyone — it also feeds the broadcast composer — so this is what
+   * keeps the confirmation honest about who will actually receive one.
+   */
+  eligibleTotal: number;
   query: MemberSelectionQuery;
   selection: DataTableSelectionHandle;
 }) {
@@ -34,9 +41,9 @@ export function BulkInviteAction({
       title={`convida ${count} ${count === 1 ? "persona" : "persones"}`}
       description={
         <>
-          enviarem una invitació per entrar a la campanya {campaignLabel} a les
-          adreces que consten a les fitxes seleccionades. les inscripcions i
-          invitacions que hagin aparegut mentrestant quedaran fora.
+          enviarem una invitació per entrar a la campanya {campaignLabel} a qui
+          encara no hi tingui alta, inscripció ni invitació — ara mateix,{" "}
+          {eligibleTotal} de la llista. la resta quedarà fora.
         </>
       }
       confirmLabel={invite.isPending ? "enviant…" : "envia les invitacions"}

@@ -4,6 +4,7 @@ import * as React from "react";
 import { Users } from "lucide-react";
 
 import { StatusBadge } from "@/components/admin/status-badge";
+import { BroadcastAction } from "@/components/broadcasts/broadcast-action";
 import { DataTable } from "@/components/data-table/data-table";
 import type {
   DataTableColumn,
@@ -16,6 +17,7 @@ import {
 } from "@/components/data-table/toolbar";
 import { BulkInviteAction } from "@/components/members/bulk-invite-action";
 import type { AdminMemberListItem, MemberFilter } from "@/lib/admin-types";
+import { membersAudience } from "@/lib/broadcasts";
 import { memberTargetState, membershipStatus, roleLabel } from "@/lib/labels";
 import { MEMBERS_PAGE_SIZE, useMembers } from "@/lib/members";
 import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
@@ -92,10 +94,13 @@ export function MembersTable({
   campaigns,
   initialSource,
   initialTarget,
+  canBroadcast,
 }: {
   campaigns: readonly MemberCampaignOption[];
   initialSource: string;
   initialTarget: string;
+  /** `broadcasts.send` — resolved on the server, re-checked by the API. */
+  canBroadcast: boolean;
 }) {
   const defaults = React.useMemo(
     () => ({ q: "", source: initialSource, target: initialTarget, page: "1" }),
@@ -209,22 +214,40 @@ export function MembersTable({
             },
           }
         : {})}
-      {...(target && query.data
+      {...((canBroadcast || target) && query.data
         ? {
+            // Every row is selectable, not only the invite-eligible ones: the
+            // selection now feeds two actions, and a broadcast has to be able
+            // to reach someone who is already a member of the target campaign.
+            // Ineligible rows stay visible in "destí" and the bulk invite
+            // route skips them, reporting how many it left out.
             selection: {
-              scope: JSON.stringify({ q, source, target: target.id }),
-              total: query.data.inviteEligibleTotal,
-              isRowSelectable: (row: AdminMemberListItem) =>
-                row.targetState === "eligible",
+              scope: JSON.stringify({ q, source, target: target?.id ?? "" }),
+              total: query.data.total,
               rowLabel: (row: AdminMemberListItem) =>
                 `${row.name} ${row.surnames}`.trim(),
               actions: (selection: DataTableSelectionHandle) => (
-                <BulkInviteAction
-                  campaignId={target.id}
-                  campaignLabel={target.label}
-                  query={selectionQuery}
-                  selection={selection}
-                />
+                <>
+                  {canBroadcast ? (
+                    <BroadcastAction
+                      audience={membersAudience(
+                        selection.value,
+                        selectionQuery,
+                      )}
+                      selection={selection}
+                      unit="membres"
+                    />
+                  ) : null}
+                  {target ? (
+                    <BulkInviteAction
+                      campaignId={target.id}
+                      campaignLabel={target.label}
+                      eligibleTotal={query.data.inviteEligibleTotal}
+                      query={selectionQuery}
+                      selection={selection}
+                    />
+                  ) : null}
+                </>
               ),
             },
           }

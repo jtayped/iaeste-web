@@ -46,6 +46,27 @@ export type AdminMemberTimelineMembership =
 export type AdminMemberTimelineEvent =
   components["schemas"]["AdminMemberTimelineEvent"];
 
+/**
+ * The broadcast composer's shapes. `BroadcastContent` is the wire type; the
+ * rules it must satisfy live in `@repo/constants/validators/broadcast`, which
+ * is what the composer validates against before it posts anything.
+ */
+export type BroadcastAudience = components["schemas"]["BroadcastAudience"];
+export type BroadcastContent = components["schemas"]["BroadcastContent"];
+export type BroadcastRecipients = components["schemas"]["BroadcastRecipients"];
+/** One resolved person: the row id plus the placeholder inputs. */
+export type BroadcastRecipient = BroadcastRecipients["sample"][number];
+export type BroadcastPreview = components["schemas"]["BroadcastPreview"];
+export type BroadcastSendResponse =
+  components["schemas"]["BroadcastSendResponse"];
+export type BroadcastTestResponse =
+  components["schemas"]["BroadcastTestResponse"];
+/** `{ email, reason }` — what a partially failed send or accept reports. */
+export type BroadcastFailure = BroadcastSendResponse["failed"][number];
+
+export type AdminBulkAcceptRegistrationsResponse =
+  components["schemas"]["AdminBulkAcceptRegistrationsResponse"];
+
 export type AdminInvitation = components["schemas"]["AdminInvitation"];
 export type AdminInvitationList = components["schemas"]["AdminInvitationList"];
 export type AdminBulkCreateInvitationsResponse =

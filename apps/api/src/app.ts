@@ -1,4 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import type { Context } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
@@ -45,12 +46,20 @@ import {
 import { createRequireCapability } from "./lib/admin-auth";
 import { toCampaignView } from "./lib/campaign-view";
 import { toMemberDetail, toOwnProfile } from "./lib/member-detail";
-import { allowRequest } from "./lib/rate-limit";
+import { checkRequest } from "./lib/rate-limit";
+import {
+  createBroadcastService,
+  RecipientCountChangedError,
+  TooManyRecipientsError,
+  type BroadcastService,
+} from "./services/broadcast-service";
+import { toBroadcastAudience } from "./lib/broadcast-audience";
 import {
   createInvitationService,
   type InvitationService,
 } from "./services/invitation-service";
 import {
+  CodeDeliveryError,
   createRegistrationChallengeService,
   type RegistrationChallengeService,
 } from "./services/registration-challenge-service";
@@ -65,6 +74,11 @@ import {
 import {
   adminAcceptRegistrationRoute,
   adminArchiveCampaignRoute,
+  adminBroadcastPreviewRoute,
+  adminBroadcastRecipientsRoute,
+  adminBroadcastSendRoute,
+  adminBroadcastTestRoute,
+  adminBulkAcceptRegistrationsRoute,
   adminBulkCreateInvitationsRoute,
   adminCreateCampaignRoute,
   adminCancelInvitationRoute,
@@ -108,9 +122,15 @@ import {
   verifyRegistrationGetRoute,
   verifyRegistrationPostRoute,
 } from "./routes";
-import type { PublicRegistrationStatus } from "./contracts";
+import {
+  BROADCAST_MAX_RECIPIENTS,
+  BROADCAST_RECIPIENT_SAMPLE,
+  BULK_ACCEPT_MAX,
+  type PublicRegistrationStatus,
+} from "./contracts";
 import {
   createDrizzleRegistrationService,
+  TooManyRegistrationsError,
   type RegistrationService,
 } from "./services/registration-service";
 import { API_VERSION } from "./version";
@@ -126,6 +146,8 @@ type AppDependencies = {
   /** IA-31: overridable so unit tests skip the real `member_profile` lookup. */
   hasMemberProfile?: (userId: string) => Promise<boolean>;
   invitationService?: InvitationService;
+  /** Overridable so tests never need a real `RESEND_API_KEY` to broadcast. */
+  broadcastService?: BroadcastService;
   /** IA: overridable so tests inject a recording push notifier. */
   pushNotifier?: PushNotifier;
   /** Injected in tests; the real one reaches Odoo over HTTP. */
@@ -169,6 +191,9 @@ export function createApp(dependencies: AppDependencies = {}) {
   const invitationService =
     dependencies.invitationService ??
     createInvitationService({ db: dependencies.db });
+  const broadcastService =
+    dependencies.broadcastService ??
+    createBroadcastService({ db: dependencies.db });
   const authInstance = () => dependencies.auth ?? getAuth();
   const pushSubscriptions = () => createPushSubscriptionRepository(adminDb());
   const pushNotifier =
@@ -253,8 +278,46 @@ export function createApp(dependencies: AppDependencies = {}) {
   );
 
   /** First hop only — everything after it is client-supplied and unusable. */
-  function ipOf(header: string | undefined): string {
-    return header?.split(",")[0]?.trim() || "unknown";
+  function ipOf(c: Context): string {
+    // Traefik terminates TLS in front of this container and always sets
+    // `x-forwarded-for`; `x-real-ip` is the fallback for any other proxy, and
+    // "unknown" only happens when the API is reached directly.
+    const forwarded = c.req.header("x-forwarded-for")?.split(",")[0]?.trim();
+    return forwarded || c.req.header("x-real-ip")?.trim() || "unknown";
+  }
+
+  /**
+   * The window every public endpoint's per-IP limit runs on.
+   *
+   * Five minutes rather than one, because the traffic that must not be
+   * blocked is bursty by nature — a room of students filling in the form
+   * during a presentation, all behind one university address — while the
+   * traffic worth blocking is sustained. See the doc comment on
+   * `checkRequest` for the full argument, and note that the limits protecting
+   * an individual inbox are per-address and live in the challenge service,
+   * not here.
+   */
+  const IP_WINDOW_MS = 5 * 60_000;
+
+  /**
+   * Applies a per-IP limit, answering 429 with `Retry-After` when it bites.
+   * Returns `undefined` when the request may proceed.
+   */
+  function rateLimit(
+    c: Context,
+    scope: string,
+    maxPerWindow: number,
+    message: string,
+  ) {
+    const verdict = checkRequest(
+      `${scope}:${ipOf(c)}`,
+      maxPerWindow,
+      IP_WINDOW_MS,
+    );
+    if (verdict.allowed) return undefined;
+
+    c.header("Retry-After", String(verdict.retryAfterSeconds));
+    return c.json(errorBody(c.get("requestId"), "CONFLICT", message), 429);
   }
 
   app.openapi(healthRoute, (c) =>
@@ -329,19 +392,16 @@ export function createApp(dependencies: AppDependencies = {}) {
   // condition allowed to change the answer is the campaign calendar.
   app.openapi(startRegistrationRoute, async (c) => {
     const { email } = c.req.valid("json");
-    const ip = ipOf(c.req.header("x-forwarded-for"));
-    // A client-side limit on top of the per-address one inside the service,
-    // so a single machine cannot walk a list of addresses to farm codes.
-    if (!allowRequest(`reg-start:${ip}`, 20, 60_000)) {
-      return c.json(
-        errorBody(
-          c.get("requestId"),
-          "CONFLICT",
-          "Too many requests. Try again soon.",
-        ),
-        429,
-      );
-    }
+    // A per-IP limit on top of the per-address one inside the service, so a
+    // single machine cannot walk a list of addresses to farm codes. Sized for
+    // a presentation room rather than for one person — see `rateLimit`.
+    const limited = rateLimit(
+      c,
+      "reg-start",
+      300,
+      "Too many requests. Try again soon.",
+    );
+    if (limited) return limited;
 
     try {
       const { resendAfterSeconds } = await challengeService.start(email);
@@ -357,23 +417,39 @@ export function createApp(dependencies: AppDependencies = {}) {
           409,
         );
       }
+      if (error instanceof CodeDeliveryError) {
+        // The one step-one failure the applicant is told about: it is a fact
+        // about our mail provider, not about them. See the class's doc
+        // comment — a silent 200 here strands someone waiting for an email
+        // that is never coming.
+        logger.error(
+          `[${c.get("requestId")}] registration code send failed`,
+          error,
+        );
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "UPSTREAM_UNAVAILABLE",
+            "The code could not be sent right now. Try again in a moment.",
+          ),
+          502,
+        );
+      }
       throw error;
     }
   });
 
   app.openapi(verifyRegistrationCodeRoute, async (c) => {
     const { email, code } = c.req.valid("json");
-    const ip = ipOf(c.req.header("x-forwarded-for"));
-    if (!allowRequest(`reg-code:${ip}`, 30, 60_000)) {
-      return c.json(
-        errorBody(
-          c.get("requestId"),
-          "CONFLICT",
-          "Too many attempts. Try again soon.",
-        ),
-        429,
-      );
-    }
+    // Generous: guessing a code is bounded by the per-challenge attempt
+    // counter, not by this, and a shared address must not lock a room out.
+    const limited = rateLimit(
+      c,
+      "reg-code",
+      600,
+      "Too many attempts. Try again soon.",
+    );
+    if (limited) return limited;
 
     let session;
     try {
@@ -428,17 +504,13 @@ export function createApp(dependencies: AppDependencies = {}) {
 
   app.openapi(verifyRegistrationDraftLinkRoute, async (c) => {
     const { token } = c.req.valid("json");
-    const ip = ipOf(c.req.header("x-forwarded-for"));
-    if (!allowRequest(`reg-link:${ip}`, 30, 60_000)) {
-      return c.json(
-        errorBody(
-          c.get("requestId"),
-          "CONFLICT",
-          "Too many attempts. Try again soon.",
-        ),
-        429,
-      );
-    }
+    const limited = rateLimit(
+      c,
+      "reg-link",
+      300,
+      "Too many attempts. Try again soon.",
+    );
+    if (limited) return limited;
 
     let session;
     try {
@@ -673,7 +745,7 @@ export function createApp(dependencies: AppDependencies = {}) {
 
   app.use("/v1/admin/profile", requireCapability("admin.access"));
   app.use("/v1/admin/overview", requireCapability("dashboard.read"));
-  app.use("/v1/admin/analytics/crm", requireCapability("dashboard.read"));
+  app.use("/v1/admin/analytics/crm", requireCapability("analytics.read"));
   app.use(
     "/v1/admin/push/public-key",
     requireCapability("notifications.manage"),
@@ -742,7 +814,19 @@ export function createApp(dependencies: AppDependencies = {}) {
     "/v1/admin/invitations/:id/cancel",
     requireCapability("invitations.write"),
   );
+  app.use("/v1/admin/broadcasts", requireCapability("broadcasts.send"));
+  app.use(
+    "/v1/admin/broadcasts/recipients",
+    requireCapability("broadcasts.send"),
+  );
+  app.use("/v1/admin/broadcasts/preview", requireCapability("broadcasts.send"));
+  app.use("/v1/admin/broadcasts/test", requireCapability("broadcasts.send"));
   app.use("/v1/admin/registrations", requireCapability("registrations.review"));
+  // Before the `:id` matcher below, so "bulk-accept" is never read as an id.
+  app.use(
+    "/v1/admin/registrations/bulk-accept",
+    requireCapability("registrations.review"),
+  );
   app.use(
     "/v1/admin/registrations/:id",
     requireCapability("registrations.review"),
@@ -1746,17 +1830,13 @@ export function createApp(dependencies: AppDependencies = {}) {
   // --- Public: invitation onboarding --------------------------------
 
   app.openapi(invitationLookupRoute, async (c) => {
-    const ip = ipOf(c.req.header("x-forwarded-for"));
-    if (!allowRequest(`inv-lookup:${ip}`, 30, 60_000)) {
-      return c.json(
-        errorBody(
-          c.get("requestId"),
-          "CONFLICT",
-          "Too many requests. Try again soon.",
-        ),
-        429,
-      );
-    }
+    const limited = rateLimit(
+      c,
+      "inv-lookup",
+      300,
+      "Too many requests. Try again soon.",
+    );
+    if (limited) return limited;
     const { token } = c.req.valid("json");
     const result = await invitationService.lookup(token);
     if (!result) {
@@ -1787,17 +1867,15 @@ export function createApp(dependencies: AppDependencies = {}) {
   });
 
   app.openapi(invitationAcceptRoute, async (c) => {
-    const ip = ipOf(c.req.header("x-forwarded-for"));
-    if (!allowRequest(`inv-accept:${ip}`, 10, 60_000)) {
-      return c.json(
-        errorBody(
-          c.get("requestId"),
-          "CONFLICT",
-          "Too many attempts. Try again soon.",
-        ),
-        429,
-      );
-    }
+    // Lower than the others: accepting an invitation writes a membership and
+    // possibly a user account, so the cost of each request is real.
+    const limited = rateLimit(
+      c,
+      "inv-accept",
+      60,
+      "Too many attempts. Try again soon.",
+    );
+    if (limited) return limited;
     const body = c.req.valid("json");
     // `invitationAcceptBodySchema.phone` already `.refine(isValidPhone)`d,
     // so this parse cannot realistically fail — defensive only.
@@ -1855,6 +1933,165 @@ export function createApp(dependencies: AppDependencies = {}) {
   </body>
 </html>`),
   );
+
+  // --- Admin: broadcasts (the email composer) -----------------------
+
+  /**
+   * Maps the two ways an audience can be refused onto 409, which is the only
+   * status that fits either: the request is well-formed and authorised, and
+   * the reason it cannot proceed is a fact about the data that the operator
+   * can go and change.
+   */
+  function broadcastConflict(c: Context, error: unknown) {
+    if (error instanceof TooManyRecipientsError) {
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "CONFLICT",
+          `A broadcast can reach at most ${error.max} people. Narrow the table filters and try again.`,
+        ),
+        409,
+      );
+    }
+    if (error instanceof RecipientCountChangedError) {
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "AUDIENCE_CHANGED",
+          `This selection now holds ${error.actual} people, not the ${error.expected} you confirmed. Review it and send again.`,
+        ),
+        409,
+      );
+    }
+    return undefined;
+  }
+
+  app.openapi(adminBroadcastRecipientsRoute, async (c) => {
+    const { audience } = c.req.valid("json");
+    try {
+      const result = await broadcastService.recipients(
+        toBroadcastAudience(audience),
+        {
+          max: BROADCAST_MAX_RECIPIENTS,
+          sampleSize: BROADCAST_RECIPIENT_SAMPLE,
+        },
+      );
+      return c.json(result, 200);
+    } catch (error) {
+      const conflict = broadcastConflict(c, error);
+      if (conflict) return conflict;
+      throw error;
+    }
+  });
+
+  app.openapi(adminBroadcastPreviewRoute, async (c) => {
+    const { content, audience } = c.req.valid("json");
+    try {
+      const result = await broadcastService.preview(content, {
+        ...(audience ? { audience: toBroadcastAudience(audience) } : {}),
+        max: BROADCAST_MAX_RECIPIENTS,
+      });
+      return c.json(result, 200);
+    } catch (error) {
+      const conflict = broadcastConflict(c, error);
+      if (conflict) return conflict;
+      throw error;
+    }
+  });
+
+  app.openapi(adminBroadcastTestRoute, async (c) => {
+    const { content } = c.req.valid("json");
+    // Always the session's own address. A caller-supplied one would turn this
+    // into an open relay for arbitrary text over our verified sending domain.
+    const author = c.get("authUser");
+    const [name = author.name, ...rest] = author.name.split(" ");
+
+    try {
+      await broadcastService.sendTest(content, {
+        email: author.email,
+        name,
+        surnames: rest.join(" "),
+      });
+    } catch (error) {
+      logger.error(`[${c.get("requestId")}] broadcast test send failed`, error);
+      return c.json(
+        errorBody(
+          c.get("requestId"),
+          "UPSTREAM_UNAVAILABLE",
+          "The mail provider refused the test email. Nothing was sent to anyone else.",
+        ),
+        502,
+      );
+    }
+
+    return c.json({ sentTo: author.email }, 200);
+  });
+
+  app.openapi(adminBroadcastSendRoute, async (c) => {
+    const { audience, content, expectedRecipients } = c.req.valid("json");
+    try {
+      const result = await broadcastService.send(
+        toBroadcastAudience(audience),
+        content,
+        { max: BROADCAST_MAX_RECIPIENTS, expectedRecipients },
+      );
+      if (result.failed.length > 0) {
+        logger.error(
+          `[${c.get("requestId")}] broadcast partially failed`,
+          result.failed,
+        );
+      }
+      return c.json(result, 200);
+    } catch (error) {
+      const conflict = broadcastConflict(c, error);
+      if (conflict) return conflict;
+      throw error;
+    }
+  });
+
+  // --- Admin: bulk registration review ------------------------------
+
+  app.openapi(adminBulkAcceptRegistrationsRoute, async (c) => {
+    const { campaignId, selection } = c.req.valid("json");
+    const requestId = c.get("requestId");
+
+    if (!(await createCampaignRepository(adminDb()).getById(campaignId))) {
+      return c.json(
+        errorBody(requestId, "NOT_FOUND", "No campaign with that id."),
+        404,
+      );
+    }
+
+    try {
+      const result = await registrationService.acceptMany({
+        campaignId,
+        selection,
+        reviewerId: c.get("authUser").id,
+        max: BULK_ACCEPT_MAX,
+      });
+
+      if (result.failed.length > 0 || result.notificationsFailed.length > 0) {
+        logger.error(`[${requestId}] bulk accept did not fully succeed`, {
+          failed: result.failed,
+          notificationsFailed: result.notificationsFailed,
+        });
+      }
+
+      return c.json(result, 200);
+    } catch (error) {
+      if (error instanceof TooManyRegistrationsError) {
+        return c.json(
+          errorBody(
+            requestId,
+            "CONFLICT",
+            `A bulk accept can cover at most ${error.max} registrations. Narrow the table filters and try again.`,
+          ),
+          409,
+        );
+      }
+      throw error;
+    }
+  });
 
   app.notFound((c) =>
     c.json(errorBody(c.get("requestId"), "NOT_FOUND", "Route not found."), 404),

@@ -13,9 +13,12 @@ import {
   readToken,
 } from "./registration-flow";
 
-/** `openapi-fetch` hands back the raw Response; only its status is read. */
-function status(code: number) {
-  return { status: code } as Response;
+/**
+ * `openapi-fetch` hands back the raw Response; only its status and its
+ * `Retry-After` header are read.
+ */
+function status(code: number, headers: Record<string, string> = {}) {
+  return { status: code, headers: new Headers(headers) } as Response;
 }
 
 type ApiError = components["schemas"]["ApiError"];
@@ -136,6 +139,37 @@ describe("mapStartResult", () => {
     );
   });
 
+  it("names the wait when the rate limit carries Retry-After, and only then", () => {
+    assert.deepEqual(
+      mapStartResult({
+        error: apiError("CONFLICT"),
+        response: status(429, { "retry-after": "45" }),
+      }),
+      { kind: "rateLimited", retryAfterSeconds: 45 },
+    );
+    // Anything that is not a positive whole number of seconds is dropped.
+    for (const header of ["", "soon", "0", "-5", "1.5", "Wed, 21 Oct 2026"]) {
+      assert.deepEqual(
+        mapStartResult({
+          error: apiError("CONFLICT"),
+          response: status(429, { "retry-after": header }),
+        }),
+        { kind: "rateLimited" },
+      );
+    }
+  });
+
+  it("keeps a refused send apart from anything the applicant can fix", () => {
+    // Either half identifies it: the status alone, the code alone, or both.
+    for (const result of [
+      { error: apiError("UPSTREAM_UNAVAILABLE"), response: status(502) },
+      { error: apiError("INTERNAL_ERROR"), response: status(502) },
+      { error: apiError("UPSTREAM_UNAVAILABLE") },
+    ]) {
+      assert.deepEqual(mapStartResult(result), { kind: "deliveryFailed" });
+    }
+  });
+
   it("surfaces a malformed address as a field issue", () => {
     assert.deepEqual(
       mapStartResult({
@@ -182,9 +216,9 @@ describe("mapVerifyCodeResult", () => {
     assert.deepEqual(
       mapVerifyCodeResult({
         error: apiError("CONFLICT"),
-        response: status(429),
+        response: status(429, { "retry-after": "120" }),
       }),
-      { kind: "rateLimited" },
+      { kind: "rateLimited", retryAfterSeconds: 120 },
     );
     assert.deepEqual(
       mapVerifyCodeResult({

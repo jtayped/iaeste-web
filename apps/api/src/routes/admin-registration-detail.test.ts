@@ -28,7 +28,12 @@ function app(
     hasMemberProfile: async () => true,
     logger: quietLogger,
     registrationService: createDrizzleRegistrationService({
-      emailer: { async send() {} },
+      emailer: {
+        async send() {},
+        async sendBatch() {
+          return { sent: 0, failed: [] };
+        },
+      },
       db,
     }),
   });

@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 
 import { isUniversityEmail } from "@repo/constants/validators/member-email";
 
@@ -83,9 +83,29 @@ export async function acceptRegistrationTx(
           name: `${snapshot.name} ${snapshot.surnames}`.trim(),
           email: accepted.personalEmail ?? accepted.email,
           emailVerified: true,
+          // Set here and not left to Better Auth's `defaultRole: "member"`:
+          // that default only applies to accounts Better Auth itself creates,
+          // and this row is inserted directly. Without it the account holds a
+          // null role, `can()` rejects every capability including
+          // `admin.access`, and the person we just accepted is bounced off
+          // the dashboard the moment they follow the link in their
+          // acceptance email. The invitation path has always set this (see
+          // `invitations-accept.ts`); this path is why the two agree now.
+          role: "member",
         })
         .returning(),
     );
+
+  // An account that predates this membership — a past applicant, or someone
+  // an admin created — may still carry a null role. Fill it in, but never
+  // overwrite one that is already set: accepting an admin's registration
+  // must not quietly demote them.
+  if (existingUser && existingUser.role === null) {
+    await tx
+      .update(user)
+      .set({ role: "member" })
+      .where(and(eq(user.id, existingUser.id), isNull(user.role)));
+  }
 
   const verifiedAt = accepted.verifiedAt ?? new Date();
   const emailRows = [

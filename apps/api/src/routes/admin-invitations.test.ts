@@ -18,6 +18,16 @@ import { createApp } from "../app";
 import { createStubAuth, quietLogger } from "../test-support/app";
 import { createInvitationService } from "../services/invitation-service";
 
+/** Takes every message and remembers none: these tests assert on rows. */
+function silentEmailer() {
+  return {
+    async send() {},
+    async sendBatch() {
+      return { sent: 0, failed: [] };
+    },
+  };
+}
+
 function makeApp(
   db: Database,
   role: "member" | "admin" = "admin",
@@ -30,7 +40,7 @@ function makeApp(
     logger: quietLogger,
     invitationService: createInvitationService({
       db,
-      emailer: { async send() {} },
+      emailer: silentEmailer(),
     }),
   });
 }
@@ -113,7 +123,7 @@ describe("admin + public invitations routes", () => {
     });
     await createInvitationService({
       db,
-      emailer: { async send() {} },
+      emailer: silentEmailer(),
     }).create({
       campaignId: target.id,
       email: invited.email,
@@ -163,7 +173,7 @@ describe("admin + public invitations routes", () => {
 
     const invitations = await createInvitationService({
       db,
-      emailer: { async send() {} },
+      emailer: silentEmailer(),
     }).listByCampaign(target.id);
     assert.deepEqual(
       invitations.map((row) => row.email).sort(),
@@ -249,7 +259,7 @@ describe("admin + public invitations routes", () => {
     // read the row, then forge the lookup like the email link would.
     const service = createInvitationService({
       db,
-      emailer: { async send() {} },
+      emailer: silentEmailer(),
     });
     // Capture the link the email would carry.
     let sentLink = "";
@@ -260,6 +270,9 @@ describe("admin + public invitations routes", () => {
           const html = JSON.stringify(message.react);
           const match = html.match(/convit#token=([a-f0-9]+)/);
           if (match) sentLink = match[1] ?? "";
+        },
+        async sendBatch() {
+          return { sent: 0, failed: [] };
         },
       },
     });

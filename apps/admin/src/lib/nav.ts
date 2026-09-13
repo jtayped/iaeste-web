@@ -10,7 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import type { Capability } from "@/lib/permissions";
+import { can, type Capability } from "@/lib/permissions";
 
 /**
  * The single catalogue of admin routes: the sidebar, the breadcrumb, and every
@@ -60,7 +60,7 @@ export const navGroups: NavGroup[] = [
         href: "/analytics",
         label: "analítiques",
         icon: ChartNoAxesColumn,
-        capability: "dashboard.read",
+        capability: "analytics.read",
       },
     ],
   },
@@ -120,6 +120,14 @@ export interface ExternalNavItem {
   key: ExternalNavKey;
   label: string;
   icon: LucideIcon;
+  /**
+   * Capability required to be shown this link, when it needs one. The blog CMS
+   * and Odoo are separate products with their own accounts and no SSO, so a
+   * member who follows either lands on a sign-in they cannot pass — a dead end
+   * dressed as part of the app. The public site is left ungated: it is the
+   * site, and anyone can open it.
+   */
+  capability?: Capability;
 }
 
 /** Lowercase Catalan heading for the bottom-pinned external-links section. */
@@ -130,14 +138,51 @@ export const ODOO_URL = "https://iaestelleida.odoo.com";
 
 export const externalNavItems: ExternalNavItem[] = [
   { key: "web", label: "web", icon: Globe },
-  { key: "blog", label: "blog", icon: Newspaper },
-  { key: "odoo", label: "odoo", icon: Building2 },
+  { key: "blog", label: "blog", icon: Newspaper, capability: "tools.open" },
+  { key: "odoo", label: "odoo", icon: Building2, capability: "tools.open" },
 ];
 
 /** Resolved at render time by the server layout, one href per external item. */
 export type ExternalNavHrefs = Record<ExternalNavKey, string>;
 
 const allItems = navGroups.flatMap((group) => group.items);
+
+/**
+ * The groups a given role may actually see, with the items it may not reach
+ * removed and any group that empties out dropped entirely.
+ *
+ * The sidebar is the only consumer, but the filter lives here, next to the
+ * catalogue it filters and away from JSX, so what a member is shown is a
+ * testable fact rather than a rendering detail. `registrationsActive` hides
+ * the intake group out of season even from the people who own it — an empty
+ * queue nobody can fill is noise, not a section.
+ */
+export function visibleNavGroups(
+  role: string | null,
+  registrationsActive: boolean,
+): NavGroup[] {
+  return navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) =>
+        can({ user: { role } }, item.capability),
+      ),
+    }))
+    .filter(
+      (group) =>
+        group.items.length > 0 &&
+        (group.id !== "inscripcions" || registrationsActive),
+    );
+}
+
+/** The out-of-app links a given role may see — see `ExternalNavItem`. */
+export function visibleExternalNavItems(
+  role: string | null,
+): ExternalNavItem[] {
+  return externalNavItems.filter(
+    (item) => !item.capability || can({ user: { role } }, item.capability),
+  );
+}
 
 /** True when `href` is the nav entry that owns `pathname`. */
 export function isActive(item: NavItem, pathname: string): boolean {

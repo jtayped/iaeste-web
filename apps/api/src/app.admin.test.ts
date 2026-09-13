@@ -260,7 +260,11 @@ describe("admin registrations", () => {
 describe("admin authorization (IA-31)", () => {
   const listUrl = "/v1/admin/registrations?campaignId=campaign_1";
 
-  it("keeps admin dashboard data hidden from a member", async () => {
+  // A member holds `dashboard.read`, so the gate has to let them through to
+  // the handler. What the handler then answers needs a database and belongs to
+  // the repository tests; all this pins is that authorization no longer
+  // refuses — the overview is six aggregate counts with nobody's name in them.
+  it("lets a member through to the overview counts", async () => {
     const app = createTestApp(
       undefined,
       createRegistrationServiceStub(),
@@ -268,10 +272,8 @@ describe("admin authorization (IA-31)", () => {
       createStubAuth({ role: "member" }),
     );
     const response = await app.request("/v1/admin/overview");
-    const body = (await response.json()) as { error: { code: string } };
 
-    assert.equal(response.status, 403);
-    assert.equal(body.error.code, "FORBIDDEN");
+    assert.notEqual(response.status, 403);
   });
 
   it("401s when there is no session", async () => {
