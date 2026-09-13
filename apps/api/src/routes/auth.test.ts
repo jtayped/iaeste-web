@@ -49,6 +49,9 @@ function createAuthHarness(
       magicLink = findHref(message.react);
       assert.ok(magicLink, "the email must contain the sign-in link");
     },
+    async sendBatch() {
+      throw new Error("auth never sends a batch");
+    },
   };
   const auth = createAuth({
     db,

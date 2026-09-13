@@ -6,7 +6,11 @@ import {
   createRegistrationRepository,
 } from "@repo/db/repositories";
 import { user } from "@repo/db/schema";
-import type { Emailer, SendEmailOptions } from "@repo/email/resend";
+import type {
+  BatchEmail,
+  Emailer,
+  SendEmailOptions,
+} from "@repo/email/resend";
 
 /** Shared fixtures/helpers for registration-service.test.ts and registration-service.admin.test.ts. */
 
@@ -16,12 +20,19 @@ export function hashToken(rawToken: string): string {
 
 export function createRecordingEmailer(): Emailer & {
   sent: SendEmailOptions[];
+  batched: BatchEmail[];
 } {
   const sent: SendEmailOptions[] = [];
+  const batched: BatchEmail[] = [];
   return {
     sent,
+    batched,
     async send(options) {
       sent.push(options);
+    },
+    async sendBatch(emails) {
+      batched.push(...emails);
+      return { sent: emails.length, failed: [] };
     },
   };
 }
@@ -30,6 +41,15 @@ export function createFailingEmailer(): Emailer {
   return {
     async send() {
       throw new Error("Resend is down");
+    },
+    async sendBatch(emails) {
+      return {
+        sent: 0,
+        failed: emails.map((email) => ({
+          to: email.to,
+          reason: "Resend is down",
+        })),
+      };
     },
   };
 }

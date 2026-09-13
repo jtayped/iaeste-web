@@ -23,6 +23,9 @@ function fakeEmailer(): Emailer {
     async send() {
       // Never called in these tests.
     },
+    async sendBatch() {
+      throw new Error("auth never sends a batch");
+    },
   };
 }
 

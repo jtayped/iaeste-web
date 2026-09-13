@@ -52,24 +52,85 @@ export function recordSend(key: string, now: number = Date.now()): void {
 }
 
 /**
- * Generic fixed-window limiter for the invitation onboarding endpoints
- * (IA-32), keyed by client IP. Same rationale as above: one API container,
+ * Generic fixed-window limiter for the public registration and invitation
+ * endpoints, keyed by client IP. Same rationale as above: one API container,
  * a `Map` is enough, a restart only ever loosens the limit.
+ *
+ * The windows are deliberately long and wide rather than short and tight, and
+ * that is the whole design. The people this protects against are spread over
+ * time; the people it must not block arrive all at once. A lecture hall of
+ * newcomers filling the form during a presentation shares a single NAT'd
+ * university address, so sixty sign-ups land on one key inside a minute — a
+ * per-minute ceiling low enough to be meaningful against abuse would reject
+ * most of that room. A five-minute window sized for the room passes the burst
+ * whole while still capping a sustained attacker, and the limits that actually
+ * protect an inbox live elsewhere and are per-address, not per-IP: the
+ * sixty-second resend cooldown and the five-sends-a-day ceiling above, plus
+ * the per-challenge attempt counter behind the code check.
  */
 const windows = new Map<string, number[]>();
 
+export interface RateLimitVerdict {
+  allowed: boolean;
+  /**
+   * Whole seconds until the oldest hit in the window falls out of it, i.e.
+   * when a retry can succeed. Zero when the request was allowed. Surfaced to
+   * the caller as `Retry-After` so a rejected client can say "try again in
+   * twenty seconds" rather than presenting a dead end.
+   */
+  retryAfterSeconds: number;
+}
+
+export function checkRequest(
+  key: string,
+  maxPerWindow: number,
+  windowMs: number,
+  now: number = Date.now(),
+): RateLimitVerdict {
+  const hits = (windows.get(key) ?? []).filter((at) => now - at < windowMs);
+
+  if (hits.length >= maxPerWindow) {
+    windows.set(key, hits);
+    const oldest = hits[0] ?? now;
+    return {
+      allowed: false,
+      retryAfterSeconds: Math.max(
+        1,
+        Math.ceil((windowMs - (now - oldest)) / 1000),
+      ),
+    };
+  }
+
+  hits.push(now);
+  windows.set(key, hits);
+  return { allowed: true, retryAfterSeconds: 0 };
+}
+
+/** `checkRequest` for callers that only need the yes/no. */
 export function allowRequest(
   key: string,
   maxPerWindow: number,
   windowMs: number,
   now: number = Date.now(),
 ): boolean {
-  const hits = (windows.get(key) ?? []).filter((at) => now - at < windowMs);
-  if (hits.length >= maxPerWindow) {
-    windows.set(key, hits);
-    return false;
-  }
-  hits.push(now);
-  windows.set(key, hits);
-  return true;
+  return checkRequest(key, maxPerWindow, windowMs, now).allowed;
+}
+
+/**
+ * Forgets one key's cooldown and window history.
+ *
+ * Used when a send the limiter has already accounted for turns out not to
+ * have happened — a mail provider outage, say. Charging someone a
+ * sixty-second cooldown for an email they never received is the limiter
+ * punishing our failure rather than their behaviour.
+ */
+export function clearLimit(key: string): void {
+  buckets.delete(key);
+  windows.delete(key);
+}
+
+/** Test-only: drops every recorded send and window. */
+export function resetLimits(): void {
+  buckets.clear();
+  windows.clear();
 }

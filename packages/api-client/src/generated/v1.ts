@@ -663,6 +663,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/broadcasts/recipients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Resolve a table selection to the distinct addresses it reaches, with a sample of who they belong to. POST rather than GET because the selection can name hundreds of row ids, which do not fit a query string. Reads only. Requires `broadcasts.send`. */
+        post: operations["adminBroadcastRecipients"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/broadcasts/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Render the message exactly as it will be sent. With an audience, the placeholders are filled from the first real recipient. Sends nothing. Requires `broadcasts.send`. */
+        post: operations["adminBroadcastPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/broadcasts/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Send the message to the signed-in admin's own address, with stand-in placeholder values. The address is taken from the session and can never be chosen by the caller. Requires `broadcasts.send`. */
+        post: operations["adminBroadcastTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/broadcasts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Send the message to everyone the selection names — one separate email per person, never one email addressed to all of them. Refuses when the audience no longer holds `expectedRecipients` people, so a broadcast cannot quietly reach a different set than the one confirmed. Requires `broadcasts.send`. */
+        post: operations["adminSendBroadcast"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/registrations/bulk-accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Accept every registration a review-queue selection names. Rows that are no longer `pending_review` are skipped rather than failing the batch. The acceptance emails go out in one batch after the memberships exist, so a mail-provider failure can never undo an accepted member. Requires `registrations.review`. */
+        post: operations["adminBulkAcceptRegistrations"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -688,7 +773,7 @@ export interface components {
         ApiError: {
             error: {
                 /** @enum {string} */
-                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "ALREADY_REGISTERED" | "INVALID_TOKEN" | "INTERNAL_ERROR" | "UPSTREAM_UNAVAILABLE";
+                code: "VALIDATION_ERROR" | "UNSUPPORTED_MEDIA_TYPE" | "PAYLOAD_TOO_LARGE" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "AUDIENCE_CHANGED" | "ALREADY_REGISTERED" | "INVALID_TOKEN" | "INTERNAL_ERROR" | "UPSTREAM_UNAVAILABLE";
                 message: string;
                 details?: components["schemas"]["ValidationIssue"][];
             };
@@ -1277,6 +1362,147 @@ export interface components {
             /** @example M'interessen els intercanvis internacionals. */
             note?: string;
         };
+        BroadcastRecipients: {
+            total: number;
+            sample: {
+                rowId: string;
+                email: string;
+                name: string;
+                surnames: string;
+            }[];
+            truncated: boolean;
+        };
+        BroadcastRecipientsRequest: {
+            audience: components["schemas"]["BroadcastAudience"];
+        };
+        BroadcastAudience: {
+            /** @enum {string} */
+            kind: "registrations";
+            selection: {
+                /** @enum {string} */
+                mode: "ids";
+                rowIds: string[];
+            } | {
+                /** @enum {string} */
+                mode: "all";
+                /** @default [] */
+                excludedRowIds: string[];
+                campaignId: string;
+                status?: components["schemas"]["RegistrationStatus"];
+                q?: string;
+            };
+        } | {
+            /** @enum {string} */
+            kind: "members";
+            selection: {
+                /** @enum {string} */
+                mode: "ids";
+                rowIds: string[];
+            } | {
+                /** @enum {string} */
+                mode: "all";
+                /** @default [] */
+                excludedRowIds: string[];
+                q?: string;
+                /** @enum {string} */
+                filter?: "all" | "current" | "past";
+                campaignId?: string;
+            };
+        } | {
+            /** @enum {string} */
+            kind: "invitations";
+            selection: {
+                /** @enum {string} */
+                mode: "ids";
+                rowIds: string[];
+            } | {
+                /** @enum {string} */
+                mode: "all";
+                /** @default [] */
+                excludedRowIds: string[];
+                campaignId: string;
+                /** @enum {string} */
+                status?: "pending" | "accepted" | "cancelled" | "expired";
+                q?: string;
+            };
+        };
+        BroadcastPreview: {
+            html: string;
+            subject: string;
+            sampleRecipient: {
+                rowId: string;
+                email: string;
+                name: string;
+                surnames: string;
+            } | null;
+        };
+        BroadcastPreviewRequest: {
+            content: components["schemas"]["BroadcastContent"];
+            audience?: components["schemas"]["BroadcastAudience"];
+        };
+        /**
+         * @example {
+         *       "subject": "assemblea general · 3 d'octubre",
+         *       "body": "hola {{nom}},\n\nens veiem **dijous** a les 18:00."
+         *     }
+         */
+        BroadcastContent: {
+            subject: string;
+            heading?: string;
+            body: string;
+            callToAction?: {
+                label: string;
+                /** Format: uri */
+                href: string;
+            };
+        };
+        BroadcastTestResponse: {
+            sentTo: string;
+        };
+        BroadcastTestRequest: {
+            content: components["schemas"]["BroadcastContent"];
+        };
+        BroadcastSendResponse: {
+            requested: number;
+            sent: number;
+            failed: {
+                email: string;
+                reason: string;
+            }[];
+        };
+        BroadcastSendRequest: {
+            audience: components["schemas"]["BroadcastAudience"];
+            content: components["schemas"]["BroadcastContent"];
+            expectedRecipients: number;
+        };
+        AdminBulkAcceptRegistrationsResponse: {
+            requested: number;
+            accepted: number;
+            skipped: number;
+            failed: {
+                email: string;
+                reason: string;
+            }[];
+            notificationsSent: number;
+            notificationsFailed: {
+                email: string;
+                reason: string;
+            }[];
+        };
+        AdminBulkAcceptRegistrationsRequest: {
+            campaignId: string;
+            selection: {
+                /** @enum {string} */
+                mode: "ids";
+                registrationIds: string[];
+            } | {
+                /** @enum {string} */
+                mode: "all";
+                q?: string;
+                /** @default [] */
+                excludedRegistrationIds: string[];
+            };
+        };
     };
     responses: never;
     parameters: never;
@@ -1339,7 +1565,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Always returned when the address is well-formed and a campaign is open, whether or not an email was actually sent. */
+            /** @description Returned when the address is well-formed, a campaign is open, and the code was either handed to the mail provider or withheld by the per-address cooldown. It still says nothing about whether the address is known to us. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1366,8 +1592,17 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description Too many code requests from this address or client. */
+            /** @description Too many code requests from this client. Carries `Retry-After`. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The mail provider would not take the code. A fact about us, not about the address, so it is reported rather than hidden. */
+            502: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3409,6 +3644,270 @@ export interface operations {
             };
             /** @description Too many attempts from this address. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminBroadcastRecipients: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BroadcastRecipientsRequest"];
+            };
+        };
+        responses: {
+            /** @description The resolved recipients. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastRecipients"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The selection reaches more people than a broadcast may. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminBroadcastPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BroadcastPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description The rendered email. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastPreview"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The selection reaches more people than a broadcast may. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminBroadcastTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BroadcastTestRequest"];
+            };
+        };
+        responses: {
+            /** @description The test email was accepted by the mail provider. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastTestResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The mail provider refused the test email. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminSendBroadcast: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BroadcastSendRequest"];
+            };
+        };
+        responses: {
+            /** @description What was sent. A non-empty `failed` still means the rest went out. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastSendResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description `CONFLICT` when the audience is too large; `AUDIENCE_CHANGED` when it no longer holds the confirmed number of people. The two want different responses from the client, so they are separate codes rather than one message to parse. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminBulkAcceptRegistrations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminBulkAcceptRegistrationsRequest"];
+            };
+        };
+        responses: {
+            /** @description What the batch did, per outcome. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBulkAcceptRegistrationsResponse"];
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No campaign with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The selection is larger than one batch may accept. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

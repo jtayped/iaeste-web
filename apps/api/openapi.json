@@ -99,6 +99,7 @@
                   "FORBIDDEN",
                   "NOT_FOUND",
                   "CONFLICT",
+                  "AUDIENCE_CHANGED",
                   "ALREADY_REGISTERED",
                   "INVALID_TOKEN",
                   "INTERNAL_ERROR",
@@ -2479,6 +2480,615 @@
           "degree",
           "year"
         ]
+      },
+      "BroadcastRecipients": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rowId": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "surnames": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "rowId",
+                "email",
+                "name",
+                "surnames"
+              ]
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "sample",
+          "truncated"
+        ]
+      },
+      "BroadcastRecipientsRequest": {
+        "type": "object",
+        "properties": {
+          "audience": {
+            "$ref": "#/components/schemas/BroadcastAudience"
+          }
+        },
+        "required": [
+          "audience"
+        ]
+      },
+      "BroadcastAudience": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "registrations"
+                ]
+              },
+              "selection": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "ids"
+                        ]
+                      },
+                      "rowIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "maxItems": 500
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "rowIds"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "all"
+                        ]
+                      },
+                      "excludedRowIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "maxItems": 500,
+                        "default": []
+                      },
+                      "campaignId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "status": {
+                        "$ref": "#/components/schemas/RegistrationStatus"
+                      },
+                      "q": {
+                        "type": "string",
+                        "maxLength": 200
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "campaignId"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "selection"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "members"
+                ]
+              },
+              "selection": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "ids"
+                        ]
+                      },
+                      "rowIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "maxItems": 500
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "rowIds"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "all"
+                        ]
+                      },
+                      "excludedRowIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "maxItems": 500,
+                        "default": []
+                      },
+                      "q": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "filter": {
+                        "type": "string",
+                        "enum": [
+                          "all",
+                          "current",
+                          "past"
+                        ]
+                      },
+                      "campaignId": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "mode"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "selection"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "invitations"
+                ]
+              },
+              "selection": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "ids"
+                        ]
+                      },
+                      "rowIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "maxItems": 500
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "rowIds"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "all"
+                        ]
+                      },
+                      "excludedRowIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "maxItems": 500,
+                        "default": []
+                      },
+                      "campaignId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "pending",
+                          "accepted",
+                          "cancelled",
+                          "expired"
+                        ]
+                      },
+                      "q": {
+                        "type": "string",
+                        "maxLength": 200
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "campaignId"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "selection"
+            ]
+          }
+        ]
+      },
+      "BroadcastPreview": {
+        "type": "object",
+        "properties": {
+          "html": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "sampleRecipient": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "rowId": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "surnames": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "rowId",
+              "email",
+              "name",
+              "surnames"
+            ]
+          }
+        },
+        "required": [
+          "html",
+          "subject",
+          "sampleRecipient"
+        ]
+      },
+      "BroadcastPreviewRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "$ref": "#/components/schemas/BroadcastContent"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/BroadcastAudience"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "BroadcastContent": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 140
+          },
+          "heading": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 90
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8000
+          },
+          "callToAction": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "href": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ]
+          }
+        },
+        "required": [
+          "subject",
+          "body"
+        ],
+        "example": {
+          "subject": "assemblea general · 3 d'octubre",
+          "body": "hola {{nom}},\n\nens veiem **dijous** a les 18:00."
+        }
+      },
+      "BroadcastTestResponse": {
+        "type": "object",
+        "properties": {
+          "sentTo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sentTo"
+        ]
+      },
+      "BroadcastTestRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "$ref": "#/components/schemas/BroadcastContent"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "BroadcastSendResponse": {
+        "type": "object",
+        "properties": {
+          "requested": {
+            "type": "integer"
+          },
+          "sent": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email",
+                "reason"
+              ]
+            }
+          }
+        },
+        "required": [
+          "requested",
+          "sent",
+          "failed"
+        ]
+      },
+      "BroadcastSendRequest": {
+        "type": "object",
+        "properties": {
+          "audience": {
+            "$ref": "#/components/schemas/BroadcastAudience"
+          },
+          "content": {
+            "$ref": "#/components/schemas/BroadcastContent"
+          },
+          "expectedRecipients": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          }
+        },
+        "required": [
+          "audience",
+          "content",
+          "expectedRecipients"
+        ]
+      },
+      "AdminBulkAcceptRegistrationsResponse": {
+        "type": "object",
+        "properties": {
+          "requested": {
+            "type": "integer"
+          },
+          "accepted": {
+            "type": "integer"
+          },
+          "skipped": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email",
+                "reason"
+              ]
+            }
+          },
+          "notificationsSent": {
+            "type": "integer"
+          },
+          "notificationsFailed": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email",
+                "reason"
+              ]
+            }
+          }
+        },
+        "required": [
+          "requested",
+          "accepted",
+          "skipped",
+          "failed",
+          "notificationsSent",
+          "notificationsFailed"
+        ]
+      },
+      "AdminBulkAcceptRegistrationsRequest": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selection": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "ids"
+                    ]
+                  },
+                  "registrationIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 200
+                  }
+                },
+                "required": [
+                  "mode",
+                  "registrationIds"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "all"
+                    ]
+                  },
+                  "q": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "excludedRegistrationIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "maxItems": 200,
+                    "default": []
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "campaignId",
+          "selection"
+        ]
       }
     },
     "parameters": {}
@@ -2542,7 +3152,7 @@
         },
         "responses": {
           "200": {
-            "description": "Always returned when the address is well-formed and a campaign is open, whether or not an email was actually sent.",
+            "description": "Returned when the address is well-formed, a campaign is open, and the code was either handed to the mail provider or withheld by the per-address cooldown. It still says nothing about whether the address is known to us.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2572,7 +3182,17 @@
             }
           },
           "429": {
-            "description": "Too many code requests from this address or client.",
+            "description": "Too many code requests from this client. Carries `Retry-After`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The mail provider would not take the code. A fact about us, not about the address, so it is reported rather than hidden.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5274,6 +5894,321 @@
           },
           "429": {
             "description": "Too many attempts from this address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/broadcasts/recipients": {
+      "post": {
+        "operationId": "adminBroadcastRecipients",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Resolve a table selection to the distinct addresses it reaches, with a sample of who they belong to. POST rather than GET because the selection can name hundreds of row ids, which do not fit a query string. Reads only. Requires `broadcasts.send`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BroadcastRecipientsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The resolved recipients.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BroadcastRecipients"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The selection reaches more people than a broadcast may.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/broadcasts/preview": {
+      "post": {
+        "operationId": "adminBroadcastPreview",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Render the message exactly as it will be sent. With an audience, the placeholders are filled from the first real recipient. Sends nothing. Requires `broadcasts.send`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BroadcastPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The rendered email.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BroadcastPreview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The selection reaches more people than a broadcast may.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/broadcasts/test": {
+      "post": {
+        "operationId": "adminBroadcastTest",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Send the message to the signed-in admin's own address, with stand-in placeholder values. The address is taken from the session and can never be chosen by the caller. Requires `broadcasts.send`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BroadcastTestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The test email was accepted by the mail provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BroadcastTestResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The mail provider refused the test email.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/broadcasts": {
+      "post": {
+        "operationId": "adminSendBroadcast",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Send the message to everyone the selection names — one separate email per person, never one email addressed to all of them. Refuses when the audience no longer holds `expectedRecipients` people, so a broadcast cannot quietly reach a different set than the one confirmed. Requires `broadcasts.send`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BroadcastSendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What was sent. A non-empty `failed` still means the rest went out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BroadcastSendResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`CONFLICT` when the audience is too large; `AUDIENCE_CHANGED` when it no longer holds the confirmed number of people. The two want different responses from the client, so they are separate codes rather than one message to parse.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/registrations/bulk-accept": {
+      "post": {
+        "operationId": "adminBulkAcceptRegistrations",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Accept every registration a review-queue selection names. Rows that are no longer `pending_review` are skipped rather than failing the batch. The acceptance emails go out in one batch after the memberships exist, so a mail-provider failure can never undo an accepted member. Requires `registrations.review`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminBulkAcceptRegistrationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What the batch did, per outcome.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBulkAcceptRegistrationsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No campaign with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The selection is larger than one batch may accept.",
             "content": {
               "application/json": {
                 "schema": {

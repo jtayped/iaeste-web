@@ -1,10 +1,15 @@
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 import type { Database, Db } from "../client";
 import {
   registration,
   type registrationStatusEnum,
 } from "../schema/registration";
+import {
+  adminRegistrationWhere,
+  registrationSelectionWhere,
+  type RegistrationSelection,
+} from "./registrations-admin-query";
 import { acceptRegistrationTx } from "./registrations-accept";
 import { findAutomaticallyAcceptedUser } from "./automatic-acceptance";
 import { IllegalTransitionError, NotFoundError } from "./errors";
@@ -12,6 +17,11 @@ import { firstOrThrow } from "./util";
 
 export type RegistrationStatus =
   (typeof registrationStatusEnum.enumValues)[number];
+
+export type {
+  AdminRegistrationFilters,
+  RegistrationSelection,
+} from "./registrations-admin-query";
 
 /** The form as submitted — see `registration.profileSnapshot`'s column comment. */
 export interface RegistrationProfileSnapshot {
@@ -184,23 +194,7 @@ export function createRegistrationRepository(db: Database) {
       limit: number;
       offset: number;
     }): Promise<{ rows: (typeof registration.$inferSelect)[]; total: number }> {
-      const clauses = [eq(registration.campaignId, params.campaignId)];
-      if (params.status) clauses.push(eq(registration.status, params.status));
-
-      const needle = params.q?.trim();
-      if (needle) {
-        const like = `%${needle}%`;
-        const search = or(
-          ilike(registration.email, like),
-          ilike(registration.universityEmail, like),
-          ilike(registration.personalEmail, like),
-          sql`${registration.profileSnapshot} ->> 'name' ilike ${like}`,
-          sql`${registration.profileSnapshot} ->> 'surnames' ilike ${like}`,
-        );
-        if (search) clauses.push(search);
-      }
-
-      const where = and(...clauses);
+      const where = adminRegistrationWhere(params);
 
       const [rows, [countRow]] = await Promise.all([
         db
@@ -217,6 +211,23 @@ export function createRegistrationRepository(db: Database) {
       ]);
 
       return { rows, total: Number(countRow?.value ?? 0) };
+    },
+
+    /**
+     * The registrations a cross-page selection actually names, oldest first so
+     * a bulk action processes the queue in the order it formed.
+     *
+     * `limit` is the caller's ceiling plus one: a route that allows two
+     * hundred asks for two hundred and one and refuses when it gets them, so
+     * "too many" is a cheap count rather than a load of everything.
+     */
+    async resolveSelection(selection: RegistrationSelection, limit: number) {
+      return db
+        .select()
+        .from(registration)
+        .where(registrationSelectionWhere(selection))
+        .orderBy(registration.createdAt)
+        .limit(limit);
     },
 
     /** Registrations still waiting on the applicant to click the email link. */

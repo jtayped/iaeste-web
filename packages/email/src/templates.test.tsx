@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { render } from "@react-email/components";
 import type { ReactElement } from "react";
 
+import Broadcast from "./emails/broadcast";
 import ContactFormEmail from "./emails/contact-form";
 import InvitationCancelled from "./emails/invitation-cancelled";
 import MembershipAccepted from "./emails/acceptance";
@@ -25,6 +26,7 @@ const templates: [string, () => ReactElement][] = [
     "acceptance",
     () => <MembershipAccepted {...MembershipAccepted.PreviewProps} />,
   ],
+  ["broadcast", () => <Broadcast {...Broadcast.PreviewProps} />],
   [
     "contact-form",
     () => <ContactFormEmail {...ContactFormEmail.PreviewProps} />,
@@ -169,5 +171,61 @@ describe("invitation-cancelled", () => {
     assert.match(expired, /ha caducat/);
     assert.match(cancelled, /hem cancel/);
     assert.doesNotMatch(cancelled, /ha caducat/);
+  });
+});
+
+describe("broadcast", () => {
+  it("renders markdown as email html rather than leaving the syntax visible", async () => {
+    const html = await render(
+      <Broadcast
+        subject="assemblea"
+        body="hola, **vine** el [dijous](https://example.com)."
+      />,
+    );
+
+    assert.match(html, /<strong[^>]*>vine<\/strong>/);
+    assert.match(html, /<a href="https:\/\/example\.com"[^>]*>dijous<\/a>/);
+    assert.doesNotMatch(html, /\*\*vine\*\*/);
+  });
+
+  it("uses the subject for the heading when no heading is given", async () => {
+    const html = await render(
+      <Broadcast subject="assemblea general" body="ens veiem dijous." />,
+    );
+
+    assert.match(html, /<h1[^>]*>assemblea general<\/h1>/);
+  });
+
+  it("prefers an explicit heading over the subject", async () => {
+    const html = await render(
+      <Broadcast
+        subject="assemblea general"
+        heading="ens veiem dijous!"
+        body="a les sis."
+      />,
+    );
+
+    assert.match(html, /<h1[^>]*>ens veiem dijous!<\/h1>/);
+  });
+
+  it("omits the button entirely when there is no call to action", async () => {
+    const html = await render(
+      <Broadcast subject="assemblea" body="ens veiem dijous." />,
+    );
+
+    assert.doesNotMatch(html, /<a[^>]*>/);
+  });
+
+  it("renders the call-to-action button when there is one", async () => {
+    const html = await render(
+      <Broadcast
+        subject="assemblea"
+        body="ens veiem dijous."
+        callToAction={{ label: "com arribar-hi", href: "https://example.com" }}
+      />,
+    );
+
+    assert.match(html, /com arribar-hi/);
+    assert.match(html, /href="https:\/\/example\.com"/);
   });
 });

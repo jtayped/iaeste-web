@@ -16,6 +16,7 @@ import { registration as registrationTable, user } from "@repo/db/schema";
 import MembershipAccepted from "@repo/email/acceptance";
 import RegistrationPending from "@repo/email/pending-review";
 import MembershipRejected from "@repo/email/rejection";
+import { renderEmail } from "@repo/email/render";
 import { createResendEmailer, type Emailer } from "@repo/email/resend";
 import VerifyUserEmail from "@repo/email/verify-email";
 
@@ -148,6 +149,38 @@ export interface AdminRegistrationListPage {
   offset: number;
 }
 
+/**
+ * A review-queue selection to accept in one go: the rows an operator ticked,
+ * or everything the filter matches minus the rows they un-ticked.
+ */
+export type BulkAcceptSelection =
+  | { mode: "ids"; registrationIds: string[] }
+  | { mode: "all"; q?: string; excludedRegistrationIds: string[] };
+
+export interface BulkAcceptInput {
+  campaignId: string;
+  selection: BulkAcceptSelection;
+  reviewerId: string;
+  max: number;
+}
+
+export interface BulkAcceptResult {
+  requested: number;
+  accepted: number;
+  skipped: number;
+  failed: { email: string; reason: string }[];
+  notificationsSent: number;
+  notificationsFailed: { email: string; reason: string }[];
+}
+
+/** Thrown when a bulk accept names more registrations than the route allows. */
+export class TooManyRegistrationsError extends Error {
+  constructor(readonly max: number) {
+    super(`A bulk accept can cover at most ${max} registrations.`);
+    this.name = "TooManyRegistrationsError";
+  }
+}
+
 export interface RegistrationService {
   list(params: AdminRegistrationListParams): Promise<AdminRegistrationListPage>;
   resendVerification(registrationId: string): Promise<void>;
@@ -156,6 +189,7 @@ export interface RegistrationService {
     registrationId: string,
     input: AcceptInput,
   ): Promise<{ notificationSent: boolean }>;
+  acceptMany(input: BulkAcceptInput): Promise<BulkAcceptResult>;
   reject(
     registrationId: string,
     input: RejectInput,
@@ -340,6 +374,108 @@ export function createDrizzleRegistrationService(
       }
 
       return { notificationSent };
+    },
+
+    /**
+     * Accepts a whole review-queue selection — the AGO's actual workflow,
+     * where a room full of applicants is approved at once.
+     *
+     * Three properties matter here and none of them are free:
+     *
+     * 1. Each acceptance is its own transaction, so one applicant whose
+     *    addresses collide with another account cannot roll back the
+     *    forty-nine memberships around them. They land in `failed`, named.
+     * 2. A row that stopped being `pending_review` between the query and its
+     *    turn is skipped, not failed. Two admins working the queue at once is
+     *    the expected case at an assembly, not an error.
+     * 3. Every email goes out *after* every membership is committed, in one
+     *    batch. An acceptance that is real in Postgres but unannounced is
+     *    recoverable; the reverse is not.
+     */
+    async acceptMany({ campaignId, selection, reviewerId, max }) {
+      const db = resolveDb();
+      const registrations = createRegistrationRepository(db);
+      const campaign = await createCampaignRepository(db).getById(campaignId);
+
+      const rows = await registrations.resolveSelection(
+        selection.mode === "ids"
+          ? { mode: "ids", registrationIds: selection.registrationIds }
+          : {
+              mode: "all",
+              campaignId,
+              // Narrowed to the only status that can be accepted rather than
+              // trusting whichever tab the table was on, so "select all"
+              // taken on `tots` accepts exactly the acceptable rows.
+              status: "pending_review",
+              ...(selection.q ? { q: selection.q } : {}),
+              excludedRegistrationIds: selection.excludedRegistrationIds,
+            },
+        max + 1,
+      );
+
+      if (rows.length > max) throw new TooManyRegistrationsError(max);
+
+      const campaignLabel = campaign?.label ?? campaignId;
+      const signInLink = `${getAdminPublicOrigin()}/sign-in`;
+      const notifications: { to: string; subject: string; html: string }[] = [];
+      const failed: { email: string; reason: string }[] = [];
+      let skipped = 0;
+
+      for (const row of rows) {
+        // An `ids` selection is not scoped by the query above, so the
+        // campaign is re-checked per row: without this, ids from another
+        // campaign could be accepted into the one named in the request.
+        if (row.campaignId !== campaignId || row.status !== "pending_review") {
+          skipped += 1;
+          continue;
+        }
+
+        const address = row.personalEmail ?? row.email;
+        try {
+          const result = await registrations.accept(row.id, { reviewerId });
+          const snapshot = result.registration
+            .profileSnapshot as RegistrationProfileSnapshot;
+          notifications.push({
+            to: result.registration.email,
+            subject: "ja ets membre · iaeste lc lleida",
+            html: await renderEmail(
+              MembershipAccepted({
+                name: snapshot.name,
+                signInLink,
+                campaign: campaignLabel,
+                via: "registration",
+              }),
+            ),
+          });
+        } catch (error) {
+          if (error instanceof IllegalTransitionError) {
+            // Another admin got to this row first. Expected at an assembly.
+            skipped += 1;
+            continue;
+          }
+          failed.push({
+            email: address,
+            reason: error instanceof Error ? error.message : "unknown error",
+          });
+        }
+      }
+
+      const sendResult =
+        notifications.length > 0
+          ? await emailer().sendBatch(notifications)
+          : { sent: 0, failed: [] };
+
+      return {
+        requested: rows.length,
+        accepted: notifications.length,
+        skipped,
+        failed,
+        notificationsSent: sendResult.sent,
+        notificationsFailed: sendResult.failed.map(({ to, reason }) => ({
+          email: to,
+          reason,
+        })),
+      };
     },
 
     async reject(registrationId, input) {

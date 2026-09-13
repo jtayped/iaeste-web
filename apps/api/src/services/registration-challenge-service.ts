@@ -22,7 +22,7 @@ import {
   getInscripcionsPublicOrigin,
   getRuntimeEnvironment,
 } from "../config";
-import { canSend, recordSend } from "../lib/rate-limit";
+import { canSend, clearLimit, recordSend } from "../lib/rate-limit";
 import { RegistrationsClosedError } from "../repositories/registrations";
 import {
   CODE_TTL_MS,
@@ -41,6 +41,26 @@ import "../lib/react-global";
 
 export const VERIFICATION_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const RESEND_COOLDOWN_SECONDS = 60;
+
+/**
+ * The mail provider would not take the sign-up code.
+ *
+ * This is the one failure in step one that the applicant must be told about.
+ * Every other outcome is deliberately indistinguishable — whether the address
+ * is already registered, whether an account exists — because those are facts
+ * about a person. "We could not send you the code" is a fact about us, and
+ * hiding it behind a cheerful "check your inbox" leaves someone staring at a
+ * code screen for an email that is never coming. During a live presentation,
+ * with a provider burst limit in play, that is the difference between a
+ * retry and a lost sign-up.
+ */
+export class CodeDeliveryError extends Error {
+  constructor(cause?: unknown) {
+    super("The registration code could not be sent.");
+    this.name = "CodeDeliveryError";
+    this.cause = cause;
+  }
+}
 
 function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
@@ -102,6 +122,7 @@ export function createRegistrationChallengeService(
       });
     } catch (error) {
       console.error("Failed to send registration code", error);
+      throw new CodeDeliveryError(error);
     }
   }
 
@@ -152,10 +173,11 @@ export function createRegistrationChallengeService(
         await createCampaignRepository(db).getOpenForRegistration();
       if (!campaign) throw new RegistrationsClosedError();
 
-      if (!canSend(`registration-code:${email}`)) {
+      const cooldownKey = `registration-code:${email}`;
+      if (!canSend(cooldownKey)) {
         return { resendAfterSeconds: RESEND_COOLDOWN_SECONDS };
       }
-      recordSend(`registration-code:${email}`);
+      recordSend(cooldownKey);
 
       const code = generateRegistrationCode();
       await createEmailChallengeRepository(db).create({
@@ -163,7 +185,17 @@ export function createRegistrationChallengeService(
         codeHash: hashRegistrationCode(email, code),
         expiresAt: new Date(Date.now() + CODE_TTL_MS),
       });
-      await sendCode(email, code);
+
+      try {
+        await sendCode(email, code);
+      } catch (error) {
+        // The cooldown was recorded before the send, so a failure must give
+        // it back: charging someone sixty seconds for an email they never
+        // received is the limiter punishing our outage, not their behaviour.
+        clearLimit(cooldownKey);
+        throw error;
+      }
+
       return { resendAfterSeconds: RESEND_COOLDOWN_SECONDS };
     },
 

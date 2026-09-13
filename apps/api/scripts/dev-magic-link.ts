@@ -74,6 +74,9 @@ const emailer: Emailer = {
   async send(message) {
     captured = findHref(message.react);
   },
+  async sendBatch() {
+    throw new Error("this script never sends a batch");
+  },
 };
 
 const auth = createAuth({

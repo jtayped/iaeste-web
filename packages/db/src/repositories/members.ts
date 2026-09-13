@@ -78,6 +78,11 @@ export function createMemberRepository(db: Db) {
       return listQueries.selection(selection, targetCampaignId, limit);
     },
 
+    /** Resolve a bulk-selection descriptor to addresses, for a broadcast. */
+    listBroadcastSelection(selection: MemberSelection, limit: number) {
+      return listQueries.broadcastSelection(selection, limit);
+    },
+
     /** The profile + account role for one member, or undefined. */
     getProfile,
 

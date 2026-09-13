@@ -24,6 +24,33 @@ interface ApiResult<TData> {
   response?: Response;
 }
 
+/**
+ * Reads the `Retry-After` the API now sends with every 429 on these routes.
+ * It is always whole seconds — never an HTTP date — so anything that is not a
+ * positive integer is dropped rather than guessed at, and the caller falls
+ * back to a message that does not name a wait.
+ */
+function readRetryAfter(response: Response | undefined): number | undefined {
+  const raw = response?.headers.get("retry-after");
+  if (!raw) return undefined;
+  const seconds = Number(raw);
+  return Number.isInteger(seconds) && seconds > 0 ? seconds : undefined;
+}
+
+/**
+ * The key is left off entirely when the header is absent, so callers can test
+ * for it without having to tell "no header" apart from "no wait".
+ */
+function rateLimited(response: Response | undefined): {
+  kind: "rateLimited";
+  retryAfterSeconds?: number;
+} {
+  const retryAfterSeconds = readRetryAfter(response);
+  return retryAfterSeconds === undefined
+    ? { kind: "rateLimited" }
+    : { kind: "rateLimited", retryAfterSeconds };
+}
+
 function toFieldIssues(error: ApiError): FieldIssue[] {
   const details = error.error.details ?? [];
 
@@ -37,15 +64,16 @@ function toFieldIssues(error: ApiError): FieldIssue[] {
 /**
  * What step one should do next.
  *
- * `closed` is the only condition this endpoint is allowed to reveal, and it
- * is about the committee's calendar rather than about the person asking. Every
- * other outcome is deliberately indistinguishable — see the route's doc
- * comment in the API.
+ * `closed` and `deliveryFailed` are the only conditions this endpoint is
+ * allowed to reveal, and both are about us — the committee's calendar and our
+ * mail provider — rather than about the person asking. Every other outcome is
+ * deliberately indistinguishable — see the route's doc comment in the API.
  */
 export type StartOutcome =
   | { kind: "sent"; resendAfterSeconds: number }
   | { kind: "closed" }
-  | { kind: "rateLimited" }
+  | { kind: "deliveryFailed" }
+  | { kind: "rateLimited"; retryAfterSeconds?: number }
   | { kind: "invalid"; issues: FieldIssue[] }
   | { kind: "failed" };
 
@@ -54,8 +82,11 @@ export function mapStartResult(result: ApiResult<StartResponse>): StartOutcome {
 
   if (error) {
     // The 429 carries `CONFLICT` rather than a code of its own, so the HTTP
-    // status is the only thing that separates it from a closed campaign.
-    if (response?.status === 429) return { kind: "rateLimited" };
+    // status is the only thing that separates it from a closed campaign. The
+    // 502 does have a code of its own, so either half identifies it.
+    if (response?.status === 429) return rateLimited(response);
+    if (response?.status === 502 || error.error.code === "UPSTREAM_UNAVAILABLE")
+      return { kind: "deliveryFailed" };
     switch (error.error.code) {
       case "CONFLICT":
         return { kind: "closed" };
@@ -77,7 +108,7 @@ export type VerifyCodeOutcome =
   | { kind: "ok"; session: Session }
   | { kind: "badCode" }
   | { kind: "identityConflict" }
-  | { kind: "rateLimited" }
+  | { kind: "rateLimited"; retryAfterSeconds?: number }
   | { kind: "failed" };
 
 export function mapVerifyCodeResult(
@@ -86,7 +117,7 @@ export function mapVerifyCodeResult(
   const { data, error, response } = result;
 
   if (error) {
-    if (response?.status === 429) return { kind: "rateLimited" };
+    if (response?.status === 429) return rateLimited(response);
     if (error.error.code === "INVALID_TOKEN") return { kind: "badCode" };
     if (error.error.code === "CONFLICT") return { kind: "identityConflict" };
     return { kind: "failed" };
@@ -102,7 +133,7 @@ export type VerifyDraftOutcome =
   | { kind: "ok"; session: Session }
   | { kind: "invalidLink" }
   | { kind: "identityConflict" }
-  | { kind: "rateLimited" }
+  | { kind: "rateLimited"; retryAfterSeconds?: number }
   | { kind: "failed" };
 
 export function mapVerifyDraftResult(
@@ -111,7 +142,7 @@ export function mapVerifyDraftResult(
   const { data, error, response } = result;
 
   if (error) {
-    if (response?.status === 429) return { kind: "rateLimited" };
+    if (response?.status === 429) return rateLimited(response);
     if (error.error.code === "INVALID_TOKEN") return { kind: "invalidLink" };
     if (error.error.code === "CONFLICT") return { kind: "identityConflict" };
     return { kind: "failed" };

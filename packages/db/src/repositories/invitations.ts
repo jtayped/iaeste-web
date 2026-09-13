@@ -1,4 +1,14 @@
-import { and, desc, eq, ilike, lt, or, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  lt,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import type { Database } from "../client";
 import {
@@ -15,6 +25,50 @@ export type InvitationStatus =
   (typeof memberInvitationStatusEnum.enumValues)[number];
 export type InvitationRole =
   (typeof memberInvitationRoleEnum.enumValues)[number];
+
+/** The filters the invitations table applies, without the paging. */
+export interface AdminInvitationFilters {
+  campaignId: string;
+  q?: string;
+  status?: InvitationStatus | "expired";
+}
+
+/** Cross-page selection over the invitations table. See `RegistrationSelection`. */
+export type InvitationSelection =
+  | { mode: "ids"; invitationIds: string[] }
+  | (AdminInvitationFilters & {
+      mode: "all";
+      excludedInvitationIds: string[];
+    });
+
+/**
+ * The invitations table's SQL filter, shared by the paged list and by any
+ * bulk action resolved against it, so a selection cannot mean a different set
+ * of people than the table showed.
+ */
+function adminInvitationWhere(params: AdminInvitationFilters) {
+  const clauses = [eq(memberInvitation.campaignId, params.campaignId)];
+
+  if (params.status === "expired") {
+    clauses.push(eq(memberInvitation.status, "pending"));
+    clauses.push(lt(memberInvitation.expiresAt, sql`now()`));
+  } else if (params.status) {
+    clauses.push(eq(memberInvitation.status, params.status));
+  }
+
+  const needle = params.q?.trim();
+  if (needle) {
+    const like = `%${needle}%`;
+    const search = or(
+      ilike(memberInvitation.email, like),
+      ilike(memberInvitation.prefillName, like),
+      ilike(memberInvitation.prefillSurnames, like),
+    );
+    if (search) clauses.push(search);
+  }
+
+  return and(...clauses);
+}
 
 export interface CreateInvitationInput {
   campaignId: string;
@@ -108,28 +162,7 @@ export function createInvitationRepository(db: Database) {
       rows: (typeof memberInvitation.$inferSelect & { expired: boolean })[];
       total: number;
     }> {
-      const nowSql = sql`now()`;
-      const clauses = [eq(memberInvitation.campaignId, params.campaignId)];
-
-      if (params.status === "expired") {
-        clauses.push(eq(memberInvitation.status, "pending"));
-        clauses.push(lt(memberInvitation.expiresAt, nowSql));
-      } else if (params.status) {
-        clauses.push(eq(memberInvitation.status, params.status));
-      }
-
-      const needle = params.q?.trim();
-      if (needle) {
-        const like = `%${needle}%`;
-        const search = or(
-          ilike(memberInvitation.email, like),
-          ilike(memberInvitation.prefillName, like),
-          ilike(memberInvitation.prefillSurnames, like),
-        );
-        if (search) clauses.push(search);
-      }
-
-      const where = and(...clauses);
+      const where = adminInvitationWhere(params);
 
       const [rows, [countRow]] = await Promise.all([
         db
@@ -153,6 +186,32 @@ export function createInvitationRepository(db: Database) {
         })),
         total: Number(countRow?.value ?? 0),
       };
+    },
+
+    /**
+     * The invitations a cross-page selection actually names, newest first to
+     * match the table's own order.
+     */
+    async resolveSelection(selection: InvitationSelection, limit: number) {
+      const where =
+        selection.mode === "ids"
+          ? inArray(memberInvitation.id, selection.invitationIds)
+          : and(
+              adminInvitationWhere(selection),
+              selection.excludedInvitationIds.length > 0
+                ? notInArray(
+                    memberInvitation.id,
+                    selection.excludedInvitationIds,
+                  )
+                : undefined,
+            );
+
+      return db
+        .select()
+        .from(memberInvitation)
+        .where(where)
+        .orderBy(desc(memberInvitation.createdAt))
+        .limit(limit);
     },
 
     async cancel(invitationId: string) {

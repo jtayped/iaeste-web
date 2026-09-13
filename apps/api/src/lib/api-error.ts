@@ -14,6 +14,7 @@ export type ApiErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
+  | "AUDIENCE_CHANGED"
   | "ALREADY_REGISTERED"
   | "INVALID_TOKEN"
   | "INTERNAL_ERROR"

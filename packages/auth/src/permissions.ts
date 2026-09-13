@@ -23,6 +23,7 @@ export const capabilities = [
   "members.delete", // irreversibly erase a user and every row about them
   "invitations.write", // invite a member
   "invitations.grant_admin", // invite someone as admin
+  "broadcasts.send", // write and send a one-off email to a table selection
   "sheets.sync",
 ] as const;
 

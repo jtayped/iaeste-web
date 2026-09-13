@@ -16,9 +16,11 @@ export type ApiErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
+  | "AUDIENCE_CHANGED"
   | "ALREADY_REGISTERED"
   | "INVALID_TOKEN"
-  | "INTERNAL_ERROR";
+  | "INTERNAL_ERROR"
+  | "UPSTREAM_UNAVAILABLE";
 
 const CODE_MESSAGES: Record<ApiErrorCode, string> = {
   VALIDATION_ERROR: "les dades no són vàlides",
@@ -28,9 +30,11 @@ const CODE_MESSAGES: Record<ApiErrorCode, string> = {
   FORBIDDEN: "no tens permís per fer això",
   NOT_FOUND: "no s'ha trobat",
   CONFLICT: "l'estat ha canviat mentrestant",
+  AUDIENCE_CHANGED: "la selecció ha canviat: revisa-la i torna-ho a enviar",
   ALREADY_REGISTERED: "ja hi ha una inscripció per aquesta adreça",
   INVALID_TOKEN: "l'enllaç no és vàlid",
   INTERNAL_ERROR: "error intern de l'api",
+  UPSTREAM_UNAVAILABLE: "un servei extern no ha respost: torna-ho a provar",
 };
 
 export class ApiRequestError extends Error {

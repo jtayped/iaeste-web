@@ -8,15 +8,22 @@ import {
   type CampaignOption,
 } from "@/components/admin/campaign-picker";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { BroadcastAction } from "@/components/broadcasts/broadcast-action";
 import { DataTable } from "@/components/data-table/data-table";
 import {
   TableFilter,
   TableSearch,
   TableToolbar,
 } from "@/components/data-table/toolbar";
-import type { DataTableColumn } from "@/components/data-table/types";
+import type {
+  DataTableColumn,
+  DataTableSelectionHandle,
+} from "@/components/data-table/types";
+import { BulkAcceptAction } from "@/components/registrations/bulk-accept-action";
 import { QueueRowActions } from "@/components/registrations/queue-actions";
 import type { AdminRegistration, RegistrationStatus } from "@/lib/admin-types";
+import { fullName } from "@/lib/admin-types";
+import { registrationsAudience } from "@/lib/broadcasts";
 import { formatRelative } from "@/lib/format";
 import {
   REGISTRATION_STATUSES,
@@ -102,9 +109,15 @@ function isStatus(value: string): value is RegistrationStatus {
 export function RegistrationsQueue({
   campaigns,
   initialCampaignId,
+  canBroadcast,
+  canReview,
 }: {
   campaigns: readonly CampaignOption[];
   initialCampaignId: string;
+  /** `broadcasts.send` — resolved on the server, re-checked by the API. */
+  canBroadcast: boolean;
+  /** `registrations.review`, which the route subtree already requires. */
+  canReview: boolean;
 }) {
   const { get, setParams } = useTableParams(DEFAULTS);
 
@@ -127,6 +140,38 @@ export function RegistrationsQueue({
   const handleSearch = React.useCallback(
     (next: string) => setParams({ q: next, page: "1" }),
     [setParams],
+  );
+
+  // Bulk accept is only ever legal from `pending_review`; the API skips any
+  // other status silently, so offering it elsewhere would be a button that can
+  // only ever report "0 acceptades".
+  const canBulkAccept = canReview && status === "pending_review";
+  const campaignLabel =
+    campaigns.find((campaign) => campaign.id === campaignId)?.label ??
+    "la campanya";
+
+  const selectionActions = (handle: DataTableSelectionHandle) => (
+    <>
+      {canBroadcast ? (
+        <BroadcastAction
+          audience={registrationsAudience(handle.value, {
+            campaignId,
+            status,
+            ...(q ? { q } : {}),
+          })}
+          selection={handle}
+          unit="sol·licituds"
+        />
+      ) : null}
+      {canBulkAccept ? (
+        <BulkAcceptAction
+          campaignId={campaignId}
+          campaignLabel={campaignLabel}
+          q={q}
+          selection={handle}
+        />
+      ) : null}
+    </>
   );
 
   return (
@@ -160,6 +205,19 @@ export function RegistrationsQueue({
                 setParams({
                   page: offsetToPage(next, query.data.limit),
                 }),
+            },
+          }
+        : {})}
+      {...((canBroadcast || canBulkAccept) && query.data
+        ? {
+            selection: {
+              // The scope is the server-side query: change the campaign, the
+              // status or the search and the old ticks stop meaning anything.
+              scope: JSON.stringify({ campaignId, status, q }),
+              total: query.data.total,
+              rowLabel: (row: AdminRegistration) =>
+                fullName(row.profileSnapshot),
+              actions: selectionActions,
             },
           }
         : {})}

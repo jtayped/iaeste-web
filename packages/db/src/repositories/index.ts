@@ -14,3 +14,4 @@ export * from "./known-person";
 export * from "./registration-drafts";
 export * from "./user-emails";
 export * from "./automatic-acceptance";
+export * from "./broadcast-recipients";

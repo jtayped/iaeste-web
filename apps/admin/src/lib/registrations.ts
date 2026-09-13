@@ -10,12 +10,19 @@ import {
 import { toast } from "@repo/ui/toast";
 
 import type {
+  AdminBulkAcceptRegistrationsResponse,
   AdminRegistrationDetail,
   AdminRegistrationList,
   RegistrationStatus,
 } from "@/lib/admin-types";
+import type { DataTableSelectionValue } from "@/components/data-table/types";
 import { apiClient, NO_BODY_POST } from "@/lib/api";
 import { errorDetail, errorMessage, unwrap } from "@/lib/api-error";
+import {
+  bulkAcceptDetail,
+  bulkAcceptSelection,
+  bulkAcceptSummary,
+} from "@/lib/bulk-accept";
 import { queryKeys } from "@/lib/query-keys";
 
 export const REGISTRATIONS_PAGE_SIZE = 50;
@@ -132,6 +139,61 @@ export function useReviewAction(): UseMutationResult<
     mutationFn: runReviewAction,
     onSuccess: (_data, action) => {
       toast.success(SUCCESS_COPY[action.kind]);
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.registrations.all,
+      });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.overview });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.members.all });
+    },
+    onError: (error) => {
+      const detail = errorDetail(error);
+      toast.error(errorMessage(error), {
+        ...(detail ? { description: detail } : {}),
+      });
+    },
+  });
+}
+
+export interface BulkAcceptInput {
+  campaignId: string;
+  /** The search behind a "select all", so the API resolves the same set. */
+  q: string;
+  selection: DataTableSelectionValue;
+}
+
+/**
+ * Accepting a whole room at once — the AGO case.
+ *
+ * The selection rename and the result sentence live in `./bulk-accept`, which
+ * has no hooks and is unit-tested; what is left here is the request and the
+ * invalidations it shares with the single-row review actions.
+ */
+export function useBulkAcceptRegistrations(): UseMutationResult<
+  AdminBulkAcceptRegistrationsResponse,
+  Error,
+  BulkAcceptInput
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ campaignId, q, selection }) =>
+      unwrap(
+        await apiClient.POST("/v1/admin/registrations/bulk-accept", {
+          body: { campaignId, selection: bulkAcceptSelection(selection, q) },
+        }),
+      ),
+    onSuccess: (result) => {
+      const detail = bulkAcceptDetail(result);
+      const options = detail ? { description: detail } : undefined;
+
+      // A partial failure is never a green toast: somebody has to chase the
+      // addresses named in the description.
+      if (result.failed.length > 0 || result.notificationsFailed.length > 0) {
+        toast.warning(bulkAcceptSummary(result), options);
+      } else {
+        toast.success(bulkAcceptSummary(result), options);
+      }
+
       void queryClient.invalidateQueries({
         queryKey: queryKeys.registrations.all,
       });

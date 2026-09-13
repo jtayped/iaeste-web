@@ -2,6 +2,16 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   adminAcceptBodySchema,
+  adminBulkAcceptRegistrationsBodySchema,
+  adminBulkAcceptRegistrationsResponseSchema,
+  broadcastPreviewBodySchema,
+  broadcastPreviewResponseSchema,
+  broadcastRecipientsBodySchema,
+  broadcastRecipientsResponseSchema,
+  broadcastSendBodySchema,
+  broadcastSendResponseSchema,
+  broadcastTestBodySchema,
+  broadcastTestResponseSchema,
   adminCampaignListSchema,
   adminCampaignListQuerySchema,
   adminCampaignRegistrationBodySchema,
@@ -121,8 +131,10 @@ export const startRegistrationRoute = createRoute({
   responses: {
     200: {
       description:
-        "Always returned when the address is well-formed and a campaign is " +
-        "open, whether or not an email was actually sent.",
+        "Returned when the address is well-formed, a campaign is open, and " +
+        "the code was either handed to the mail provider or withheld by the " +
+        "per-address cooldown. It still says nothing about whether the " +
+        "address is known to us.",
       content: {
         "application/json": { schema: registrationStartResponseSchema },
       },
@@ -136,7 +148,14 @@ export const startRegistrationRoute = createRoute({
       content: { "application/json": { schema: apiErrorSchema } },
     },
     429: {
-      description: "Too many code requests from this address or client.",
+      description:
+        "Too many code requests from this client. Carries `Retry-After`.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    502: {
+      description:
+        "The mail provider would not take the code. A fact about us, not " +
+        "about the address, so it is reported rather than hidden.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
   },
@@ -1440,6 +1459,180 @@ export const adminCrmAnalyticsRoute = createRoute({
     503: {
       description:
         "Odoo is unconfigured or unreachable and no cached snapshot exists.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+// --- Broadcasts (the admin email composer) --------------------------------
+
+export const adminBroadcastRecipientsRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/broadcasts/recipients",
+  operationId: "adminBroadcastRecipients",
+  tags: ["Admin"],
+  description:
+    "Resolve a table selection to the distinct addresses it reaches, with a " +
+    "sample of who they belong to. POST rather than GET because the " +
+    "selection can name hundreds of row ids, which do not fit a query " +
+    "string. Reads only. Requires `broadcasts.send`.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: broadcastRecipientsBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "The resolved recipients.",
+      content: {
+        "application/json": { schema: broadcastRecipientsResponseSchema },
+      },
+    },
+    409: {
+      description: "The selection reaches more people than a broadcast may.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminBroadcastPreviewRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/broadcasts/preview",
+  operationId: "adminBroadcastPreview",
+  tags: ["Admin"],
+  description:
+    "Render the message exactly as it will be sent. With an audience, the " +
+    "placeholders are filled from the first real recipient. Sends nothing. " +
+    "Requires `broadcasts.send`.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: broadcastPreviewBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "The rendered email.",
+      content: {
+        "application/json": { schema: broadcastPreviewResponseSchema },
+      },
+    },
+    409: {
+      description: "The selection reaches more people than a broadcast may.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminBroadcastTestRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/broadcasts/test",
+  operationId: "adminBroadcastTest",
+  tags: ["Admin"],
+  description:
+    "Send the message to the signed-in admin's own address, with stand-in " +
+    "placeholder values. The address is taken from the session and can never " +
+    "be chosen by the caller. Requires `broadcasts.send`.",
+  request: {
+    body: {
+      required: true,
+      content: { "application/json": { schema: broadcastTestBodySchema } },
+    },
+  },
+  responses: {
+    200: {
+      description: "The test email was accepted by the mail provider.",
+      content: {
+        "application/json": { schema: broadcastTestResponseSchema },
+      },
+    },
+    502: {
+      description: "The mail provider refused the test email.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminBroadcastSendRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/broadcasts",
+  operationId: "adminSendBroadcast",
+  tags: ["Admin"],
+  description:
+    "Send the message to everyone the selection names — one separate email " +
+    "per person, never one email addressed to all of them. Refuses when the " +
+    "audience no longer holds `expectedRecipients` people, so a broadcast " +
+    "cannot quietly reach a different set than the one confirmed. Requires " +
+    "`broadcasts.send`.",
+  request: {
+    body: {
+      required: true,
+      content: { "application/json": { schema: broadcastSendBodySchema } },
+    },
+  },
+  responses: {
+    200: {
+      description:
+        "What was sent. A non-empty `failed` still means the rest went out.",
+      content: {
+        "application/json": { schema: broadcastSendResponseSchema },
+      },
+    },
+    409: {
+      description:
+        "`CONFLICT` when the audience is too large; `AUDIENCE_CHANGED` when " +
+        "it no longer holds the confirmed number of people. The two want " +
+        "different responses from the client, so they are separate codes " +
+        "rather than one message to parse.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    ...adminAuthResponses,
+  },
+});
+
+export const adminBulkAcceptRegistrationsRoute = createRoute({
+  method: "post",
+  path: "/v1/admin/registrations/bulk-accept",
+  operationId: "adminBulkAcceptRegistrations",
+  tags: ["Admin"],
+  description:
+    "Accept every registration a review-queue selection names. Rows that are " +
+    "no longer `pending_review` are skipped rather than failing the batch. " +
+    "The acceptance emails go out in one batch after the memberships exist, " +
+    "so a mail-provider failure can never undo an accepted member. Requires " +
+    "`registrations.review`.",
+  request: {
+    body: {
+      required: true,
+      content: {
+        "application/json": { schema: adminBulkAcceptRegistrationsBodySchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "What the batch did, per outcome.",
+      content: {
+        "application/json": {
+          schema: adminBulkAcceptRegistrationsResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: "No campaign with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+    409: {
+      description: "The selection is larger than one batch may accept.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
     ...adminAuthResponses,
