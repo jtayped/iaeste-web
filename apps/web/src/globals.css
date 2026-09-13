@@ -1,5 +1,26 @@
 @reference "@repo/ui/globals.css";
 
+/* Pin the cascade-layer order, and give this app a layer of its own.
+
+   Two things went wrong in production without this, neither visible in `next
+   dev`, because dev serves one stylesheet and the production build splits this
+   fragment into a second one.
+
+   1. Layer order is fixed by where each name is FIRST seen. This file happened
+      to open its `components` block before its `base` block, so `components`
+      registered first and `base` outranked it document-wide — which let
+      Tailwind's preflight `a { color: inherit }` beat HeroUI's
+      `.button { color: var(--button-fg) }`. The white-plate buttons rendered
+      white-on-white.
+
+   2. Inside `components`, this file's rules were emitted BEFORE
+      `@repo/ui`'s, so every override here silently lost the tie to the very
+      rules it was written to replace.
+
+   `app` sits after `components` so these beat the shared package, and before
+   `utilities` so a `className` at a call site still beats these. */
+@layer properties, theme, base, components, app, utilities;
+
 /* This file is a fragment: `@reference` above pulls in the shared stylesheet's
    context without re-emitting it, which is what lets `@apply` below resolve
    shared tokens. The catch is that Tailwind reads a fragment's `@theme` to
@@ -36,7 +57,7 @@
    come with it: borders lighten (the edge stops competing with the curve) and
    shadows get an offset and a wide, soft blur instead of a tight ring.
    --------------------------------------------------------------------------- */
-@layer components {
+@layer app {
   /* 12px. At the site's 48px call-to-action this is the Apple proportion —
      `rounded-md` at 6px on a 48px button reads as a rectangle with the corners
      sanded off. */
