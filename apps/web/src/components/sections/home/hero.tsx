@@ -97,7 +97,10 @@ const Hero = () => {
               </Link>
               <Link
                 href="/student"
-                className={buttonVariants({ variant: "secondary", size: "xl" })}
+                className={buttonVariants({
+                  variant: "onDarkSoft",
+                  size: "xl",
+                })}
               >
                 <GraduationCap aria-hidden />
                 {t("buttons.student")}

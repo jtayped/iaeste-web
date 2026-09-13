@@ -6,16 +6,21 @@ import { useTranslations } from "next-intl";
 import React from "react";
 
 /**
- * `mailto:` the committee. The icon is not optional any more — this button sat
- * beside `ContactFormBtn` in two heroes with the icon switched off, so the pair
- * read as two different kinds of control.
+ * `mailto:` the committee.
  */
 const SendEmailBtn = ({
   text,
+  variant = "secondary",
+  icon = true,
   size = "xl",
   className = "",
 }: {
   text?: string;
+  /** `onDarkSoft` on a navy band, `secondary` on the page. */
+  variant?: "secondary" | "onDarkSoft";
+  /** A leading icon separates two buttons in a row; a lone button is clearer
+   *  without one, and "send an email" already says what the envelope says. */
+  icon?: boolean;
   size?: "default" | "xl";
   className?: string;
 }) => {
@@ -24,15 +29,11 @@ const SendEmailBtn = ({
   return (
     <a
       href={`mailto:${email}`}
-      className={buttonVariants({
-        variant: "secondary",
-        size,
-        className: cn(className),
-      })}
+      className={buttonVariants({ variant, size, className: cn(className) })}
     >
       {/* `LetterText` is a document glyph; `Mail` is the envelope this actually
           opens. */}
-      <Mail aria-hidden />
+      {icon && <Mail aria-hidden />}
       {text ?? t("send-email")}
     </a>
   );

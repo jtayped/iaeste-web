@@ -83,6 +83,23 @@
     @apply rounded-lg;
   }
 
+  /* The brand blue, quieted.
+
+     `secondary` was a saturated #1A84D5 fill carrying near-black text — the
+     combination reads as a default framework button, and in the contact
+     sections it was *louder* than the navy `send` beside it, which is the
+     action that actually matters. A tint of the same blue with navy type keeps
+     the brand colour in play, drops the button a clear step below the solid
+     primary, and clears 10:1 instead of the fill's 4.6:1.
+
+     Scoped to this app for the same reason as the corner scale above. */
+  .button.button--brand {
+    --button-bg: color-mix(in oklab, var(--secondary) 12%, transparent);
+    --button-bg-hover: color-mix(in oklab, var(--secondary) 20%, transparent);
+    --button-bg-pressed: var(--button-bg-hover);
+    --button-fg: var(--primary);
+  }
+
   /* A 1px hairline under a 16px curve is where the "drawn in a browser" look
      comes from — the straight edge and the curve fight. Lighten it and let the
      shadow carry the separation. */

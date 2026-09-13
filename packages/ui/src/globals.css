@@ -282,6 +282,23 @@
     @apply shadow-sm;
   }
 
+  /* The second action in a pair on a navy band. A saturated fill beside the
+     white plate reads as two competing primaries, so this one is the ground
+     itself, lifted. */
+  .button.button--on-dark-soft {
+    --button-bg: color-mix(in oklab, var(--background) 14%, transparent);
+    --button-bg-hover: color-mix(in oklab, var(--background) 24%, transparent);
+    --button-bg-pressed: var(--button-bg-hover);
+    --button-fg: var(--background);
+    border: 1px solid color-mix(in oklab, var(--background) 28%, transparent);
+  }
+
+  .button.button--on-dark-soft:focus-visible:not(:focus),
+  .button.button--on-dark-soft[data-focus-visible="true"] {
+    outline: 2px solid var(--background);
+    outline-offset: 2px;
+  }
+
   /* The marketing call-to-action size. HeroUI's scale shrinks on desktop
      (`h-10 md:h-9` base, `h-11 md:h-10` at `lg`), which is right for dense app
      UI and wrong for a hero. This one grows, and matches what the home hero,

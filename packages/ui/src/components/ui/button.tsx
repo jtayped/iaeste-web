@@ -13,7 +13,8 @@ type ButtonVariant =
   | "secondary"
   | "ghost"
   | "link"
-  | "onDark";
+  | "onDark"
+  | "onDarkSoft";
 
 type ButtonSize = "default" | "sm" | "lg" | "xl" | "icon";
 
@@ -28,6 +29,9 @@ type ButtonSize = "default" | "sm" | "lg" | "xl" | "icon";
  *
  * `onDark` is the third: the white plate the site puts on its navy bands,
  * where `default` would be the same navy as the ground behind it.
+ * `onDarkSoft` is its quieter partner — the second action in a pair on a navy
+ * band, where a saturated fill next to a white plate reads as two competing
+ * primaries.
  *
  * All three ride on `ghost` — the only variant that adds neither a fill nor a
  * border — and are then repainted by `.button--brand` / `.button--link` /
@@ -42,12 +46,14 @@ const HEROUI_VARIANT = {
   ghost: "ghost",
   link: "ghost",
   onDark: "ghost",
+  onDarkSoft: "ghost",
 } as const satisfies Record<ButtonVariant, string>;
 
 const BRAND_VARIANT_CLASS = {
   secondary: "button--brand",
   link: "button--link",
   onDark: "button--on-dark",
+  onDarkSoft: "button--on-dark-soft",
 } as const satisfies Partial<Record<ButtonVariant, string>>;
 
 /**

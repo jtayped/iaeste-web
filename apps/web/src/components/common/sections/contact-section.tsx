@@ -31,7 +31,7 @@ const ContactSection = ({
           {t("description")}
         </Paragraph>
         <div className="mt-8">
-          <SendEmailBtn />
+          <SendEmailBtn icon={false} />
         </div>
         {children}
       </article>

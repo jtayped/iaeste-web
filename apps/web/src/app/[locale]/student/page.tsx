@@ -26,7 +26,7 @@ const StudentsPage = async () => {
         component={
           <ButtonGroup className="flex-wrap justify-center">
             <ContactFormBtn />
-            <SendEmailBtn />
+            <SendEmailBtn variant="onDarkSoft" />
           </ButtonGroup>
         }
       />
