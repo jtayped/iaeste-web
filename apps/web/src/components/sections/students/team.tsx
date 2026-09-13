@@ -31,13 +31,18 @@ const Team = () => {
             {t("description")}
           </Paragraph>
         </article>
-        <div className="grid max-h-[400px] grid-cols-2 gap-4 md:order-1">
+        {/* Two things are load-bearing here. A *definite* height, because the
+            children are `h-full` and that resolves against nothing under a
+            `max-h`. And `grid-rows-1`, which Tailwind emits as
+            `minmax(0, 1fr)` — an `auto` row sizes to the photos' intrinsic
+            600x800 and spills straight over the team cards below. */}
+        <div className="grid h-[280px] grid-cols-2 grid-rows-1 gap-4 sm:h-[360px] md:order-1 md:h-[400px]">
           <Image
             src={images[0]}
             width={600}
             height={800}
             alt={t("photoAlt")}
-            className="h-full w-full rounded-lg object-cover"
+            className="h-full w-full rounded-2xl object-cover"
           />
           <div className="grid grid-rows-2 gap-4">
             {/* Two of three are decorative once the first carries the
@@ -48,14 +53,14 @@ const Team = () => {
               width={600}
               height={800}
               alt=""
-              className="h-full w-full rounded-lg object-cover"
+              className="h-full w-full rounded-2xl object-cover"
             />
             <Image
               src={images[2]}
               width={800}
               height={600}
               alt=""
-              className="h-full w-full rounded-lg object-cover"
+              className="h-full w-full rounded-2xl object-cover"
             />
           </div>
         </div>

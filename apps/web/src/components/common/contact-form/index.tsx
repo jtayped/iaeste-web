@@ -60,7 +60,7 @@ const ContactForm = () => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-5 rounded-xl border bg-card p-6 shadow-sm md:p-8"
+        className="space-y-5 rounded-2xl border bg-card p-6 shadow-sm md:p-8"
         id="contact-form"
       >
         <div className="grid gap-5 sm:grid-cols-2">

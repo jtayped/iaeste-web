@@ -30,7 +30,7 @@ const PhotoCard = ({
   return (
     <article
       className={cn(
-        "flex h-full flex-col overflow-hidden rounded-lg border bg-card transition-colors hover:border-primary/30",
+        "flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary/30",
         className,
       )}
     >
@@ -43,7 +43,7 @@ const PhotoCard = ({
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover"
         />
-        <span className="absolute bottom-3 left-3 grid size-10 place-items-center rounded-lg bg-background/90 text-primary backdrop-blur-sm">
+        <span className="absolute bottom-3 left-3 grid size-10 place-items-center rounded-xl bg-background/90 text-primary backdrop-blur-sm">
           <Icon size={20} aria-hidden />
         </span>
       </div>

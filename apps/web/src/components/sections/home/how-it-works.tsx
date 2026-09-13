@@ -12,7 +12,7 @@ const HowItWorks = () => {
       <ol className="mt-12 grid grid-cols-1 gap-12 md:mt-16 md:grid-cols-3 md:gap-10 lg:gap-14">
         {steps.map((s, idx) => (
           <li key={s.key}>
-            <span className="grid size-14 place-items-center rounded-xl bg-white text-primary shadow-sm">
+            <span className="grid size-14 place-items-center rounded-2xl bg-white text-primary shadow-sm">
               <s.icon size={26} aria-hidden />
             </span>
             <h3 className="mt-6 text-2xl font-semibold tracking-tight text-balance">

@@ -18,7 +18,7 @@ const Collaborators = () => {
               href={c.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="block rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="block rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               {/* The link used to carry an `aria-label` and the image a matching
                   `alt`, so every partner was announced twice. */}

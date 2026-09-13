@@ -64,7 +64,7 @@ const SidebarComponent = () => {
         <button
           onClick={toggleSidebar}
           aria-label="close menu"
-          className="-mr-2 grid size-11 place-items-center rounded-lg transition-colors outline-none hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-white/40"
+          className="-mr-2 grid size-11 place-items-center rounded-full transition-colors outline-none hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-white/40"
         >
           <X size={24} />
         </button>

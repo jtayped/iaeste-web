@@ -35,7 +35,7 @@ const FeatureCard = ({
         className,
       )}
     >
-      <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary/8 text-primary">
+      <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary/8 text-primary">
         <Icon size={22} aria-hidden />
       </span>
       <h3 className="mt-5 text-lg leading-snug font-semibold tracking-tight text-balance">

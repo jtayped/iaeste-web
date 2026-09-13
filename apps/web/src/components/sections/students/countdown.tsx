@@ -77,7 +77,7 @@ const Countdown = ({ target, label }: { target: string; label: string }) => {
           return (
             <li
               key={unit}
-              className="min-w-[4.75rem] rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-center"
+              className="min-w-[4.75rem] rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-center"
             >
               <span className="block text-2xl leading-none font-semibold tabular-nums">
                 {value === undefined ? "--" : String(value).padStart(2, "0")}
