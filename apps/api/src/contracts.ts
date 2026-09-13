@@ -1118,7 +1118,9 @@ const broadcastInvitationsAudienceSchema = z.object({
     z.object({
       ...broadcastSelectionShape.all,
       campaignId: z.string().min(1),
-      status: z.enum(["pending", "accepted", "cancelled", "expired"]).optional(),
+      status: z
+        .enum(["pending", "accepted", "cancelled", "expired"])
+        .optional(),
       q: z.string().trim().max(200).optional(),
     }),
   ]),
@@ -1219,9 +1221,7 @@ export const broadcastSendResponseSchema = z
     requested: z.number().int(),
     sent: z.number().int(),
     /** Every address the provider refused, named so it can be chased. */
-    failed: z.array(
-      z.object({ email: z.string(), reason: z.string() }),
-    ),
+    failed: z.array(z.object({ email: z.string(), reason: z.string() })),
   })
   .openapi("BroadcastSendResponse");
 
@@ -1244,10 +1244,7 @@ export const adminBulkAcceptRegistrationsBodySchema = z
     selection: z.discriminatedUnion("mode", [
       z.object({
         mode: z.literal("ids"),
-        registrationIds: z
-          .array(z.string().min(1))
-          .min(1)
-          .max(BULK_ACCEPT_MAX),
+        registrationIds: z.array(z.string().min(1)).min(1).max(BULK_ACCEPT_MAX),
       }),
       z.object({
         mode: z.literal("all"),

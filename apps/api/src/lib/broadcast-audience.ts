@@ -31,9 +31,7 @@ export function toBroadcastAudience(
                   ? { status: audience.selection.status }
                   : {}),
                 ...(audience.selection.q ? { q: audience.selection.q } : {}),
-                excludedRegistrationIds: [
-                  ...audience.selection.excludedRowIds,
-                ],
+                excludedRegistrationIds: [...audience.selection.excludedRowIds],
               },
       };
 

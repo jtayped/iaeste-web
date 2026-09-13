@@ -17,13 +17,13 @@ The wire shape is one discriminated union:
 
 ```jsonc
 {
-  "kind": "registrations",           // or "members" | "invitations"
+  "kind": "registrations", // or "members" | "invitations"
   "selection": {
-    "mode": "all",                   // or "ids", with "rowIds"
+    "mode": "all", // or "ids", with "rowIds"
     "campaignId": "…",
     "status": "pending_review",
-    "excludedRowIds": []
-  }
+    "excludedRowIds": [],
+  },
 }
 ```
 
@@ -55,13 +55,13 @@ formatting into the message.
 
 ## Guards worth knowing
 
-| Guard                       | Where                                  | Why |
-| --------------------------- | -------------------------------------- | --- |
-| One message per recipient   | `Emailer.sendBatch`                    | One `to` with everybody in it publishes the whole list to everybody on it. |
-| De-duplication by address   | `createBroadcastRecipientRepository`   | One person can hold two rows a selection reaches. |
-| `expectedRecipients`        | `POST /v1/admin/broadcasts`            | 409 when the audience changed since the operator confirmed the count. |
-| 500-recipient ceiling       | `BROADCAST_MAX_RECIPIENTS`             | More than the whole organisation means a mis-set filter, not a real send. |
-| Test send goes to the author | `POST /v1/admin/broadcasts/test`       | The address comes from the session; a caller-supplied one would make this an open relay over our verified domain. |
+| Guard                        | Where                                | Why                                                                                                               |
+| ---------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| One message per recipient    | `Emailer.sendBatch`                  | One `to` with everybody in it publishes the whole list to everybody on it.                                        |
+| De-duplication by address    | `createBroadcastRecipientRepository` | One person can hold two rows a selection reaches.                                                                 |
+| `expectedRecipients`         | `POST /v1/admin/broadcasts`          | 409 when the audience changed since the operator confirmed the count.                                             |
+| 500-recipient ceiling        | `BROADCAST_MAX_RECIPIENTS`           | More than the whole organisation means a mis-set filter, not a real send.                                         |
+| Test send goes to the author | `POST /v1/admin/broadcasts/test`     | The address comes from the session; a caller-supplied one would make this an open relay over our verified domain. |
 
 ## Bulk accept
 

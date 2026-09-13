@@ -77,10 +77,7 @@ describe("registration acceptance — account role", () => {
     const reviewer = await createTestUser(db);
     // A past applicant, or an account made before roles were written here.
     const existing = await createTestUser(db, { email: APPLICANT });
-    await db
-      .update(user)
-      .set({ role: null })
-      .where(eq(user.id, existing.id));
+    await db.update(user).set({ role: null }).where(eq(user.id, existing.id));
 
     const result = await createRegistrationRepository(db).accept(
       registration.id,

@@ -57,7 +57,11 @@ export function makeApp(
   });
 }
 
-export function post(a: ReturnType<typeof makeApp>, path: string, body: unknown) {
+export function post(
+  a: ReturnType<typeof makeApp>,
+  path: string,
+  body: unknown,
+) {
   return a.request(path, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -87,7 +91,11 @@ export async function seedRegistration(
   return row!;
 }
 
-export async function seedMember(db: Database, campaignId: string, name: string) {
+export async function seedMember(
+  db: Database,
+  campaignId: string,
+  name: string,
+) {
   const user = await createTestUser(db, {
     name,
     email: `${name.toLowerCase()}@alumnes.udl.cat`,

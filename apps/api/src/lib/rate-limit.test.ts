@@ -20,7 +20,12 @@ describe("per-IP window", () => {
     // half a minute must all get through, which is the whole reason the
     // window is five minutes wide rather than one.
     for (let index = 0; index < 60; index += 1) {
-      const verdict = checkRequest("reg-start:udl", 300, WINDOW_MS, now + index * 500);
+      const verdict = checkRequest(
+        "reg-start:udl",
+        300,
+        WINDOW_MS,
+        now + index * 500,
+      );
       assert.equal(verdict.allowed, true, `request ${index}`);
     }
   });

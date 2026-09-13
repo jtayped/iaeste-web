@@ -1,5 +1,8 @@
 import type { Database } from "../client";
-import { createInvitationRepository, type InvitationSelection } from "./invitations";
+import {
+  createInvitationRepository,
+  type InvitationSelection,
+} from "./invitations";
 import { createMemberRepository, type MemberSelection } from "./members";
 import {
   createRegistrationRepository,
@@ -92,9 +95,10 @@ export function createBroadcastRecipientRepository(db: Database) {
         }
 
         case "members": {
-          const rows = await createMemberRepository(
-            db,
-          ).listBroadcastSelection(audience.selection, limit);
+          const rows = await createMemberRepository(db).listBroadcastSelection(
+            audience.selection,
+            limit,
+          );
           return dedupeByEmail(
             rows.map((row) => ({
               rowId: row.userId,

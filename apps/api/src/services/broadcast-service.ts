@@ -120,9 +120,10 @@ export function createBroadcastService(
     audience: BroadcastAudience,
     max: number,
   ): Promise<BroadcastRecipientRow[]> {
-    const rows = await createBroadcastRecipientRepository(
-      resolveDb(),
-    ).resolve(audience, max + 1);
+    const rows = await createBroadcastRecipientRepository(resolveDb()).resolve(
+      audience,
+      max + 1,
+    );
     if (rows.length > max) throw new TooManyRecipientsError(max);
     return rows;
   }
@@ -155,7 +156,10 @@ export function createBroadcastService(
 
     async preview(content, { audience, max }) {
       const [first] = audience ? await resolve(audience, max) : [];
-      const { subject, html } = await renderFor(content, first ?? SAMPLE_RECIPIENT);
+      const { subject, html } = await renderFor(
+        content,
+        first ?? SAMPLE_RECIPIENT,
+      );
       return { html, subject, sampleRecipient: first ?? null };
     },
 

@@ -132,9 +132,7 @@ export function useSendBroadcast(): UseMutationResult<
  * changed selection, or narrow a too-wide one — so the API names them apart.
  */
 export function isAudienceChangedError(error: unknown): boolean {
-  return (
-    error instanceof ApiRequestError && error.code === "AUDIENCE_CHANGED"
-  );
+  return error instanceof ApiRequestError && error.code === "AUDIENCE_CHANGED";
 }
 
 /** The 409 raised because the selection reaches more people than allowed. */

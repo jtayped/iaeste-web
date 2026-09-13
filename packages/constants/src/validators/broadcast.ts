@@ -19,11 +19,7 @@ import { z } from "zod";
  * it, so `{{nom}}` mistyped as `{{name}}` is a compose-time error rather than
  * three hundred emails that literally read "hola {{name}},".
  */
-export const BROADCAST_PLACEHOLDERS = [
-  "nom",
-  "cognoms",
-  "correu",
-] as const;
+export const BROADCAST_PLACEHOLDERS = ["nom", "cognoms", "correu"] as const;
 
 export type BroadcastPlaceholder = (typeof BROADCAST_PLACEHOLDERS)[number];
 
@@ -44,10 +40,7 @@ const PLACEHOLDER_PATTERN = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
 export function unknownPlaceholders(text: string): string[] {
   const unknown = new Set<string>();
   for (const [, name] of text.matchAll(PLACEHOLDER_PATTERN)) {
-    if (
-      name &&
-      !(BROADCAST_PLACEHOLDERS as readonly string[]).includes(name)
-    ) {
+    if (name && !(BROADCAST_PLACEHOLDERS as readonly string[]).includes(name)) {
       unknown.add(name);
     }
   }
@@ -103,7 +96,10 @@ export const broadcastSubjectSchema = noUnknownPlaceholders(
     .string()
     .trim()
     .min(1, "cal un assumpte")
-    .max(BROADCAST_SUBJECT_MAX, `l'assumpte no pot passar de ${BROADCAST_SUBJECT_MAX} caràcters`),
+    .max(
+      BROADCAST_SUBJECT_MAX,
+      `l'assumpte no pot passar de ${BROADCAST_SUBJECT_MAX} caràcters`,
+    ),
 );
 
 /**
@@ -116,7 +112,10 @@ export const broadcastHeadingSchema = noUnknownPlaceholders(
     .string()
     .trim()
     .min(1, "el títol no pot ser buit")
-    .max(BROADCAST_HEADING_MAX, `el títol no pot passar de ${BROADCAST_HEADING_MAX} caràcters`),
+    .max(
+      BROADCAST_HEADING_MAX,
+      `el títol no pot passar de ${BROADCAST_HEADING_MAX} caràcters`,
+    ),
 );
 
 export const broadcastBodySchema = noUnknownPlaceholders(
@@ -124,7 +123,10 @@ export const broadcastBodySchema = noUnknownPlaceholders(
     .string()
     .trim()
     .min(1, "cal escriure el missatge")
-    .max(BROADCAST_BODY_MAX, `el missatge no pot passar de ${BROADCAST_BODY_MAX} caràcters`),
+    .max(
+      BROADCAST_BODY_MAX,
+      `el missatge no pot passar de ${BROADCAST_BODY_MAX} caràcters`,
+    ),
 );
 
 /**
@@ -138,7 +140,10 @@ export const broadcastCallToActionSchema = z.object({
       .string()
       .trim()
       .min(1, "cal un text per al botó")
-      .max(BROADCAST_CTA_LABEL_MAX, `el text del botó no pot passar de ${BROADCAST_CTA_LABEL_MAX} caràcters`),
+      .max(
+        BROADCAST_CTA_LABEL_MAX,
+        `el text del botó no pot passar de ${BROADCAST_CTA_LABEL_MAX} caràcters`,
+      ),
   ),
   href: z
     .string()

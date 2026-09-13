@@ -172,7 +172,10 @@ describe("admin bulk accept", () => {
 
     assert.equal(body.accepted, 1);
     const registrations = createRegistrationRepository(db);
-    assert.equal((await registrations.getById(aina.id))!.status, "pending_review");
+    assert.equal(
+      (await registrations.getById(aina.id))!.status,
+      "pending_review",
+    );
   });
 
   it("skips rows that are no longer pending rather than failing the batch", async () => {

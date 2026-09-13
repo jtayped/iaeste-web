@@ -6,11 +6,7 @@ import {
   createRegistrationRepository,
 } from "@repo/db/repositories";
 import { user } from "@repo/db/schema";
-import type {
-  BatchEmail,
-  Emailer,
-  SendEmailOptions,
-} from "@repo/email/resend";
+import type { BatchEmail, Emailer, SendEmailOptions } from "@repo/email/resend";
 
 /** Shared fixtures/helpers for registration-service.test.ts and registration-service.admin.test.ts. */
 
