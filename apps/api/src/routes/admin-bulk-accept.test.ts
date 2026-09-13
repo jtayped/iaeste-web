@@ -4,8 +4,9 @@ import { after, afterEach, before, describe, it } from "node:test";
 import type { Database } from "@repo/db/client";
 import { eq } from "drizzle-orm";
 
+import { can } from "@repo/auth";
 import { createRegistrationRepository } from "@repo/db/repositories";
-import { membership, registration } from "@repo/db/schema";
+import { membership, registration, user } from "@repo/db/schema";
 import { closeTestDb, getTestDb, truncateAll } from "@repo/db/test-support";
 import {
   createTestCampaign,
@@ -126,6 +127,30 @@ describe("admin bulk accept", () => {
       assert.match(email.subject, /ja ets membre/);
       assert.match(email.html, /iniciar sessió/i);
     }
+  });
+
+  it("leaves everyone it accepts able to sign in and reach the dashboard", async () => {
+    const campaign = await createTestCampaign(db);
+    const actor = await createTestUser(db);
+    await seedRegistration(db, campaign.id, "Aina");
+    const a = makeApp(db, createRecordingEmailer(), "admin", actor.id);
+
+    await post(a, "/v1/admin/registrations/bulk-accept", {
+      campaignId: campaign.id,
+      selection: { mode: "all", excludedRegistrationIds: [] },
+    });
+
+    const [account] = await db
+      .select({ role: user.role })
+      .from(user)
+      .where(eq(user.email, "aina@alumnes.udl.cat"));
+
+    // The whole point of the acceptance email is the sign-in button in it.
+    // An account whose role `can()` does not recognise is refused
+    // `admin.access`, so it would follow that button, authenticate, and be
+    // redirected straight back out — the worst possible first minute for
+    // someone we just accepted in a room.
+    assert.equal(can({ user: { role: account?.role } }, "admin.access"), true);
   });
 
   it("honours the rows the operator un-ticked", async () => {
