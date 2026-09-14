@@ -23,8 +23,19 @@ RUN SKIP_INSTALL_SIMPLE_GIT_HOOKS=1 npm ci
 # occurred". Reinstalling sharp here resolves its optional deps against this
 # image's platform; the version comes from the workspace so the two cannot
 # drift apart.
+#
+# It installs into a scratch prefix and copies only the `@img/*` binding
+# packages back in. Installing into /app itself would need --no-package-lock,
+# which makes npm re-resolve all ~900 packages from scratch and rewrite the
+# tree npm ci just laid down -- that dehoisted a second copy of `next` into
+# apps/web/node_modules and broke the build on two incompatible NextConfig
+# types. The scratch prefix cannot touch the installed tree at all.
 RUN SHARP_VERSION="$(node -p "require('./packages/ui/package.json').dependencies.sharp")" \
- && npm install --no-save --no-package-lock --include=optional "sharp@$SHARP_VERSION"
+ && npm install --no-save --no-package-lock --include=optional \
+      --prefix /tmp/sharp "sharp@$SHARP_VERSION" \
+ && mkdir -p node_modules/@img \
+ && cp -R /tmp/sharp/node_modules/@img/. node_modules/@img/ \
+ && rm -rf /tmp/sharp
 
 FROM base AS builder
 WORKDIR /app
