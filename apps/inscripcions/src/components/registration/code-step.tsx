@@ -17,8 +17,8 @@ import {
 import { cn } from "@repo/ui/lib/utils";
 
 import { FIELD_HINT } from "@/components/form/field-styles";
-import { childVariants } from "@/components/form/motion";
 import { Section } from "@/components/form/notices";
+import { FormCard } from "@/components/form/surface";
 import { codeStepSchema, type CodeStep } from "@/lib/form-schema";
 
 export const CodeStepForm = ({
@@ -72,10 +72,7 @@ export const CodeStepForm = ({
         aria-busy={submitting}
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <motion.div
-          variants={childVariants}
-          className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm"
-        >
+        <FormCard className="divide-y">
           <Section
             title="escriu el codi"
             icon={KeyRound}
@@ -190,7 +187,7 @@ export const CodeStepForm = ({
               </button>
             </div>
           </div>
-        </motion.div>
+        </FormCard>
       </form>
     </Form>
   );

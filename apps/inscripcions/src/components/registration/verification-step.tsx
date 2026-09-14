@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import {
   Check,
   Clock3,
@@ -15,7 +14,7 @@ import type { MemberEmailKind } from "@repo/constants/validators/member-email";
 import { Button } from "@repo/ui/button";
 import { cn } from "@repo/ui/lib/utils";
 
-import { childVariants } from "@/components/form/motion";
+import { FormCard } from "@/components/form/surface";
 
 /**
  * Only the addresses the draft was actually started with. A draft begun with
@@ -75,10 +74,7 @@ export const VerificationStep = ({
   const complete = pending === 0;
 
   return (
-    <motion.div
-      variants={childVariants}
-      className="overflow-hidden rounded-xl border bg-card shadow-sm"
-    >
+    <FormCard>
       <div className="p-6 sm:p-8">
         <div className="flex items-start gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -195,6 +191,6 @@ export const VerificationStep = ({
             : "les adreces no són correctes? torna a començar"}
         </button>
       </div>
-    </motion.div>
+    </FormCard>
   );
 };

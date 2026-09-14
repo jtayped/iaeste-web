@@ -87,7 +87,7 @@ const DegreeField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
               onBlur={field.onBlur}
               className={cn(
                 FIELD_CONTROL,
-                "flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-left text-base shadow-sm transition-colors md:text-sm",
+                "flex w-full items-center justify-between gap-2 rounded-xl border border-input bg-transparent px-3 text-left text-base shadow-sm transition-colors md:text-sm",
                 "hover:border-ring/40 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none",
                 "aria-[invalid=true]:border-destructive",
                 !field.value && "text-muted-foreground",

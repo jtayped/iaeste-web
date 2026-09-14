@@ -1,12 +1,11 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { ArrowLeft, History, TriangleAlert } from "lucide-react";
 
 import { Button } from "@repo/ui/button";
 
-import { childVariants } from "@/components/form/motion";
+import { FormCard } from "@/components/form/surface";
 import type { Session } from "@/lib/registration-flow";
 
 import { toSessionContext } from "./context";
@@ -25,14 +24,10 @@ export const MembershipStep = ({
 
   if (showMismatch) {
     return (
-      <motion.section
-        variants={childVariants}
-        aria-live="polite"
-        className="overflow-hidden rounded-xl border border-amber-500/30 bg-card shadow-sm"
-      >
+      <FormCard aria-live="polite" className="border-warning/40">
         <div className="p-6 sm:p-8">
           <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-800">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-warning-soft text-warning-soft-foreground">
               <TriangleAlert aria-hidden className="size-5" />
             </span>
             <div className="min-w-0">
@@ -51,7 +46,7 @@ export const MembershipStep = ({
           </div>
         </div>
 
-        <div className="grid gap-3 border-t bg-amber-50/60 p-6 sm:grid-cols-2 sm:p-8">
+        <div className="grid gap-3 border-t bg-warning-soft p-6 sm:grid-cols-2 sm:p-8">
           <Button className="h-11" onClick={onTryAnotherEmail}>
             <ArrowLeft aria-hidden />
             prova un altre correu
@@ -59,19 +54,16 @@ export const MembershipStep = ({
           <Button className="h-11" variant="outline" onClick={onContinue}>
             continua igualment
           </Button>
-          <p className="text-xs leading-relaxed text-amber-900 sm:col-span-2">
+          <p className="text-xs leading-relaxed text-warning-soft-foreground sm:col-span-2">
             si continues, el formulari començarà amb les dades en blanc.
           </p>
         </div>
-      </motion.section>
+      </FormCard>
     );
   }
 
   return (
-    <motion.section
-      variants={childVariants}
-      className="overflow-hidden rounded-xl border bg-card shadow-sm"
-    >
+    <FormCard>
       <div className="p-6 sm:p-8">
         <div className="flex items-start gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -100,6 +92,6 @@ export const MembershipStep = ({
           no, és el primer any
         </Button>
       </div>
-    </motion.section>
+    </FormCard>
   );
 };
