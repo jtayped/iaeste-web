@@ -1,3 +1,30 @@
+/* Pin the cascade-layer order, before anything else is parsed.
+
+   Layer order is fixed by where each name is FIRST seen across the whole
+   document, and a production Next build splits an app that has its own
+   `globals.css` into two stylesheets — with the app's fragment linked *first*,
+   ahead of this one. When nothing declared the order, `apps/web`'s fragment
+   opened a `components` block before its `base` block, so `components`
+   registered first and `base` outranked it document-wide; Tailwind's preflight
+   `a { color: inherit }` then beat HeroUI's
+   `.button { color: var(--button-fg) }` and every white-plate button on the
+   public site rendered white on white. See 9b7fcca, and note that none of it
+   reproduced in `next dev`, which serves one stylesheet.
+
+   So each app fragment declares this same order too, and the fragment's copy
+   is the one that takes effect. This copy covers `apps/admin` and
+   `apps/inscripcions`, which have no fragment at all and would otherwise be
+   relying on the order Tailwind happens to emit.
+
+   `app` is the slot for a per-app override: after `components`, so it beats
+   this package, and before `utilities`, so a `className` at a call site still
+   beats it. It stays in the list even while no app has one.
+
+   `@layer` statements are allowed before `@import`, and have to be — a name
+   first seen after the imports would be appended to the end of the order
+   instead of taking its place in it. */
+@layer properties, theme, base, components, app, utilities;
+
 @import "tailwindcss";
 @import "@heroui/styles";
 
@@ -116,10 +143,25 @@
        the lighter border token below. */
     --field-border: hsl(215 16% 58%);
     --field-border-width: 1px;
-    /* HeroUI's fields are `--radius * 1.5`; IAESTE's are the same `rounded-md`
-       as its buttons. One token covers every field, so no component has to
-       pin its own corner. */
-    --field-radius: calc(var(--radius) * 0.75);
+    /* 12px, the same corner as `.button`. One token covers every field —
+       HeroUI carries `rounded-field` on `.input`, `.textarea`,
+       `.select__trigger`, `.autocomplete__trigger`, `.input-group`,
+       `.search-field__group`, `.number-field__group`, `.date-input-group`,
+       `.color-input-group`, both date pickers and `.input-otp__slot`, and on
+       nothing else — so no component has to pin its own corner and a field
+       added later inherits the scale for free. */
+    --field-radius: 0.75rem;
+    /* The card's edge and its shadow, per theme.
+
+       Light: a 1px hairline under a 16px curve is where the "drawn in a
+       browser" look comes from, so the border lightens and a soft shadow
+       carries the separation instead.
+
+       Dark: see the `.dark` block — the same 70% border over a dark surface
+       is most of an already faint edge given away, and a shadow built from
+       `--foreground` would be a near-white halo. */
+    --card-border-color: color-mix(in oklab, var(--border) 70%, transparent);
+    --card-shadow-color: var(--foreground);
     /* The selected pill in a segmented control (HeroUI's tab indicator). */
     --segment: var(--background);
     --segment-foreground: var(--foreground);
@@ -199,6 +241,21 @@
     --danger-foreground: hsl(210 40% 98%);
     --border: hsl(217.2 32.6% 17.5%);
     --separator: var(--border);
+    /* Both card tokens are re-stated here because the light values invert.
+
+       `--surface` is `--background` in this theme, so a dark card is exactly
+       the colour of the page behind it and the border is the only thing
+       separating them — and it is already faint, 1.31:1 against the surface.
+       Giving 30% of it away to match the light theme's hairline drops that to
+       1.16:1, so dark keeps the border at full strength.
+
+       The shadow colour cannot be `--foreground` either: it is near-white
+       here, which would paint a pale halo around every card instead of a
+       shadow. Black at the same 8%/14% over a near-black surface reads as a
+       barely-there deepening at the edge, which is the correct amount of
+       shadow for a dark UI — the border above is what does the work. */
+    --card-border-color: var(--border);
+    --card-shadow-color: hsl(0 0% 0%);
     --focus: hsl(206 78% 60%);
     --link: var(--focus);
     --radius: 0.5rem;
@@ -251,20 +308,40 @@
    `--button-*` custom properties, which is exactly how HeroUI's own variants
    work — see `@heroui/styles/dist/components/button.css`. */
 @layer components {
-  /* HeroUI v3 buttons are pills. IAESTE's are not, and this is a component
-     swap rather than a redesign, so keep the existing radius scale. */
+  /* HeroUI v3 buttons are pills. IAESTE's are not — 12px. At the public
+     site's 48px call to action that is the Apple proportion, where the old
+     `rounded-md` at 6px read as a rectangle with the corners sanded off. */
   .button {
-    @apply rounded-md;
+    @apply rounded-xl;
   }
 
-  /* IAESTE blue. HeroUI's `secondary` is a neutral grey fill, so the brand
-     colour needs a variant of its own. The doubled class outranks the
-     `.button--ghost` that carries it. */
+  /* Icon-only controls go fully round: the hamburger, the social links, the
+     blog pagination, the admin's row actions. A square-ish 44px box with a
+     glyph in the middle is the one shape that always looks better as a
+     circle. The doubled class outranks the `.button` rule above it, which
+     shares its specificity. */
+  .button.button--icon-only {
+    @apply rounded-full;
+  }
+
+  /* IAESTE blue, quieted.
+
+     `brand` was a solid #1A84D5 fill carrying near-black text. The
+     combination reads as a default framework button, and in the public
+     site's contact sections it was *louder* than the navy `send` beside it,
+     which is the action that actually matters. A saturated mid-blue also has
+     nowhere good to put its text — dark type sits at 4.61:1, white type at
+     3.5:1 — so it was the lowest-contrast control anywhere in the product.
+
+     A 12% tint of the same blue with navy type keeps the brand colour in
+     play, drops the button a clear step below the solid primary, and
+     measures about 10:1. The doubled class outranks the `.button--ghost`
+     that carries it. */
   .button.button--brand {
-    --button-bg: var(--secondary);
-    --button-bg-hover: var(--secondary-hover);
-    --button-bg-pressed: var(--secondary-hover);
-    --button-fg: var(--secondary-foreground);
+    --button-bg: color-mix(in oklab, var(--secondary) 12%, transparent);
+    --button-bg-hover: color-mix(in oklab, var(--secondary) 20%, transparent);
+    --button-bg-pressed: var(--button-bg-hover);
+    --button-fg: var(--primary);
   }
 
   /* The white plate the public site puts on its navy bands, where `default`
@@ -337,13 +414,24 @@
     transform: none;
   }
 
-  /* HeroUI v3 leans on large radii — `rounded-3xl` on buttons, `min(32px,
-     var(--radius-3xl))` on cards and alerts, `rounded-2xl` on chips. IAESTE's
-     scale is much tighter. Pin each one back rather than redefining
-     `--radius-2xl`/`--radius-3xl` globally, which would also move the two
-     blog surfaces that use those utilities directly. */
+  /* The IAESTE corner scale, pinned onto HeroUI's components from here down.
+
+     Roughly Apple's: 12px on controls and fields, 16px on cards, panels and
+     floating surfaces, full round on icon-only buttons and chips, and one
+     step tighter than its container for anything nested inside a surface.
+     HeroUI's own scale is looser still and less regular — `rounded-3xl` on
+     buttons, `min(32px, var(--radius-3xl))` on cards, alerts and overlays,
+     `rounded-2xl` on chips and list rows — so each one is pinned back
+     individually rather than by redefining `--radius-2xl`/`--radius-3xl`,
+     which would also move the blog surfaces that use those utilities
+     directly.
+
+     Radius on its own reads as "bigger corners" rather than as that world,
+     so two things travel with it on cards below: the border lightens, since
+     a 1px hairline fights a 16px curve, and the flat ring becomes a shadow
+     with an offset and a wide soft blur. */
   .chip {
-    @apply rounded-md;
+    @apply rounded-full;
   }
 
   /* IAESTE blue, and the outlined status label. Neither exists in HeroUI's
@@ -361,13 +449,26 @@
 
   /* Keep the IAESTE card: a bordered block box with its own padding. HeroUI's
      `flex flex-col gap-3` would re-space every card in the public sections,
-     and `overflow-hidden` is what clips the `accent` bar to the corner. */
+     and `overflow-hidden` is what clips the `accent` bar to the corner.
+
+     16px. App code that puts a surface beside a card — the team collage
+     photos, the blog's cover images — spells the same value, so no two
+     surfaces sit at two curvatures side by side. Both colours are theme
+     tokens; see the `base` block for why dark needs its own values. */
   .card {
-    @apply block overflow-hidden rounded-lg border p-6;
+    @apply block overflow-hidden rounded-2xl border p-6;
+
+    border-color: var(--card-border-color);
+    box-shadow:
+      0 1px 2px -1px
+        color-mix(in oklab, var(--card-shadow-color) 8%, transparent),
+      0 8px 24px -12px
+        color-mix(in oklab, var(--card-shadow-color) 14%, transparent);
   }
 
+  /* A floating surface, so it reads as a panel rather than as a control. */
   .alert {
-    @apply rounded-lg border;
+    @apply rounded-2xl border;
   }
 
   /* HeroUI tints only the indicator and title for `danger` and leaves the
@@ -383,8 +484,21 @@
     border-color: color-mix(in oklab, var(--accent) 30%, transparent);
   }
 
+  /* And the registration site's "you have already applied" notice, which was a
+     hand-rolled amber box off the raw Tailwind palette. */
+  .alert--warning {
+    border-color: color-mix(in oklab, var(--warning) 45%, transparent);
+  }
+
   .alert--danger .alert__description {
     color: var(--danger-soft-foreground);
+  }
+
+  /* Same reason: the registration site's warning notice is a bare
+     description, so the amber has to reach it rather than stopping at the
+     indicator and a title it does not have. */
+  .alert--warning .alert__description {
+    color: var(--warning-soft-foreground);
   }
 
   /* React Aria sets `data-invalid` from the field root it owns. The admin has
@@ -413,9 +527,10 @@
   }
 
   /* Same "pin the radius back" treatment as `.card` / `.chip` above, for
-     every floating surface and the things inside it. HeroUI puts overlays at
-     `min(32px, var(--radius-3xl))` and list rows at `rounded-2xl`; against a
-     `rounded-md` trigger that reads as two different products.
+     every floating surface. HeroUI puts overlays at
+     `min(32px, var(--radius-3xl))`, which against a 12px trigger reads as two
+     different products; 16px is the card corner, and a popover is a card that
+     floats.
 
      The border comes back too: HeroUI carries an overlay on its shadow alone,
      which leaves a white popover with no edge against a white page. */
@@ -423,14 +538,20 @@
   .select__popover,
   .dropdown__popover,
   .tooltip {
-    @apply rounded-md border;
+    @apply border;
+  }
+
+  .popover,
+  .select__popover,
+  .dropdown__popover {
+    @apply rounded-2xl;
   }
 
   /* Same radius-and-border pin as the popovers above: HeroUI's dialogs are
      32px-cornered and carried on their shadow alone, which on a white page is
      a white panel with no edge. */
   .alert-dialog__dialog {
-    @apply rounded-lg border;
+    @apply rounded-2xl border;
   }
 
   /* HeroUI keeps a dialog's buttons in one row at every width. At 360px two
@@ -445,7 +566,7 @@
      too, and one carried on its shadow alone has no edge against a white
      page. */
   .toast {
-    @apply rounded-lg border;
+    @apply rounded-2xl border;
   }
 
   /* An edge-anchored panel gets an edge. HeroUI carries the drawer on its
@@ -478,21 +599,27 @@
   /* HeroUI's tooltip is tighter than IAESTE's and, more importantly, breaks
      mid-word: `break-all` turns "dispositiu" into "disposi/tiu". Catalan is
      long enough already. */
+  /* A tooltip is a label, not a panel — it stays a step below the 16px
+     overlays it shares a screen with. */
   .tooltip {
-    @apply px-3 py-1.5 break-normal text-popover-foreground;
+    @apply rounded-lg px-3 py-1.5 break-normal text-popover-foreground;
   }
 
+  /* Anything nested inside a surface sits one step tighter than the surface
+     that contains it: 8px rows and cells inside a 16px popover or menu, and
+     inside the 12px segmented-control track below. */
   .calendar__cell,
   .calendar__nav-button,
   .list-box-item,
   .menu-item,
   .tabs__tab,
   .tabs__indicator {
-    @apply rounded-md;
+    @apply rounded-lg;
   }
 
+  /* The track is a control, so it takes the control corner. */
   .tabs__list-container {
-    @apply rounded-lg;
+    @apply rounded-xl;
   }
 
   /* HeroUI writes a breadcrumb trail as bold grey links that underline on

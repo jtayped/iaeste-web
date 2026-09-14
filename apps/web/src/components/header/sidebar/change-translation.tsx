@@ -29,7 +29,7 @@ const ChangeTranslation = ({ className = "" }: { className?: string }) => {
             locale={l}
             aria-current={isActive ? "true" : undefined}
             className={cn(
-              "flex h-11 items-center justify-center gap-2 rounded-lg border text-[13px] transition-colors",
+              "flex h-11 items-center justify-center gap-2 rounded-xl border text-[13px] transition-colors",
               isActive
                 ? "border-white/60 bg-white/15 font-medium"
                 : "border-white/15 text-primary-foreground/70 hover:bg-white/10",

@@ -19,7 +19,7 @@ function Skeleton({
   return (
     <HeroUISkeleton
       animationType={animationType}
-      className={cn("rounded-md", className)}
+      className={cn("rounded-lg", className)}
       {...props}
     />
   );

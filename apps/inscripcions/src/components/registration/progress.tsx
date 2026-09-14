@@ -81,7 +81,7 @@ export const Progress = ({
             <button
               type="button"
               onClick={() => onSelect(step.key)}
-              className="flex min-w-0 items-center gap-2 rounded-md outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex min-w-0 items-center gap-2 rounded-lg outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-label={`ves al pas ${step.label}`}
             >
               {marker}

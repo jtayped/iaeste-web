@@ -2,11 +2,18 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { History, MailCheck } from "lucide-react";
+import { History, MailCheck, TriangleAlert } from "lucide-react";
+import {
+  Alert,
+  AlertContent,
+  AlertDescription,
+  AlertIndicator,
+} from "@repo/ui/alert";
 import { cn } from "@repo/ui/lib/utils";
 
 import { FIELD_HINT, SECTION_HEADING } from "@/components/form/field-styles";
 import { childVariants } from "@/components/form/motion";
+import { FormCard } from "@/components/form/surface";
 import type { KnownMembership } from "@/lib/registration-flow";
 
 /**
@@ -44,10 +51,7 @@ export const KnownPersonNotice = ({
   /** Changes only how the address got here — proven by a code, or by a token. */
   invited: boolean;
 }) => (
-  <motion.div
-    variants={childVariants}
-    className="rounded-xl border bg-card p-6 shadow-sm sm:p-8"
-  >
+  <FormCard className="p-6 sm:p-8">
     <div className="flex items-center gap-2.5">
       <MailCheck aria-hidden="true" className="size-4 shrink-0 text-primary" />
       <h2 className={SECTION_HEADING}>ja et coneixem</h2>
@@ -73,7 +77,7 @@ export const KnownPersonNotice = ({
           {memberships.map((membership) => (
             <li
               key={`${membership.campaignLabel}-${membership.status}`}
-              className="flex items-center justify-between gap-3 rounded-md bg-default/50 px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-3 rounded-lg bg-default/50 px-3 py-2 text-sm"
             >
               <span className="font-medium tabular-nums">
                 {membership.campaignLabel}
@@ -86,7 +90,7 @@ export const KnownPersonNotice = ({
         </ul>
       </div>
     )}
-  </motion.div>
+  </FormCard>
 );
 
 /**
@@ -96,14 +100,20 @@ export const KnownPersonNotice = ({
  * cannot be submitted twice.
  */
 export const AlreadyAppliedNotice = ({ status }: { status: string }) => (
-  <motion.div
-    variants={childVariants}
-    className="rounded-md border border-amber-500/30 bg-amber-50/60 px-4 py-3 text-sm text-amber-900"
-  >
-    {status === "accepted"
-      ? "aquest correu ja és membre d'aquesta edició. no cal que t'inscriguis de nou."
-      : status === "rejected"
-        ? "ja vam revisar una sol·licitud d'aquest correu per a aquesta edició. si creus que hi ha un error, escriu-nos a iaeste@udl.cat."
-        : "aquest correu ja té una sol·licitud en aquesta edició i el comitè l'està revisant. no cal que la tornis a enviar."}
+  <motion.div variants={childVariants}>
+    <Alert variant="warning">
+      <AlertIndicator>
+        <TriangleAlert />
+      </AlertIndicator>
+      <AlertContent>
+        <AlertDescription>
+          {status === "accepted"
+            ? "aquest correu ja és membre d'aquesta edició. no cal que t'inscriguis de nou."
+            : status === "rejected"
+              ? "ja vam revisar una sol·licitud d'aquest correu per a aquesta edició. si creus que hi ha un error, escriu-nos a iaeste@udl.cat."
+              : "aquest correu ja té una sol·licitud en aquesta edició i el comitè l'està revisant. no cal que la tornis a enviar."}
+        </AlertDescription>
+      </AlertContent>
+    </Alert>
   </motion.div>
 );

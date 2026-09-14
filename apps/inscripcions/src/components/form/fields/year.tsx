@@ -56,7 +56,7 @@ const YearField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
                 />
                 <span
                   className={cn(
-                    "flex h-11 items-center justify-center rounded-md border border-input bg-transparent text-sm font-medium text-muted-foreground tabular-nums shadow-sm transition-colors",
+                    "flex h-11 items-center justify-center rounded-xl border border-input bg-transparent text-sm font-medium text-muted-foreground tabular-nums shadow-sm transition-colors",
                     "hover:border-ring/40 hover:text-foreground",
                     "peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground",
                     "peer-focus-visible:ring-1 peer-focus-visible:ring-ring peer-focus-visible:outline-none",

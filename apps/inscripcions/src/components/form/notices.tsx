@@ -3,6 +3,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { AlertCircleIcon, LucideIcon } from "lucide-react";
+import {
+  Alert,
+  AlertContent,
+  AlertDescription,
+  AlertIndicator,
+  AlertTitle,
+} from "@repo/ui/alert";
 import { cn } from "@repo/ui/lib/utils";
 import { Logo } from "@repo/ui/logo";
 import type { FieldErrors } from "react-hook-form";
@@ -78,40 +85,46 @@ export const ErrorSummary = ({
   rootMessage?: string;
   onSelectField: (field: string) => void;
 }) => (
-  <div
-    role="alert"
+  <Alert
+    variant="destructive"
     id="form-error-summary"
     tabIndex={-1}
     aria-live="polite"
-    className="rounded-md border border-destructive/40 bg-destructive/5 p-4 focus-visible:ring-1 focus-visible:ring-destructive focus-visible:outline-none"
+    className="focus-visible:ring-1 focus-visible:ring-destructive focus-visible:outline-none"
   >
-    <div className="flex items-center gap-2 text-destructive">
-      <AlertCircleIcon aria-hidden="true" className="size-4 shrink-0" />
-      <p className={SECTION_HEADING}>
+    <AlertIndicator>
+      <AlertCircleIcon aria-hidden="true" />
+    </AlertIndicator>
+    <AlertContent>
+      <AlertTitle className={SECTION_HEADING}>
         {fields.length > 0
           ? "revisa les dades marcades"
           : "no ho hem pogut enviar"}
-      </p>
-    </div>
-    <div className={cn(FIELD_HINT, "mt-2 space-y-1 text-muted-foreground")}>
-      {rootMessage && <p>{rootMessage}</p>}
-      {fields.length > 0 && (
-        <ul className="space-y-1">
-          {fields.map((field) => (
-            <li key={field}>
-              <button
-                type="button"
-                className="text-left underline decoration-muted-foreground/30 underline-offset-4 transition-colors hover:text-destructive hover:decoration-destructive focus-visible:ring-1 focus-visible:ring-destructive focus-visible:outline-none"
-                onClick={() => onSelectField(field)}
-              >
-                {FIELD_LABELS[field]}: {errors[field]?.message}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  </div>
+      </AlertTitle>
+      <div className={cn(FIELD_HINT, "mt-2 space-y-1 text-muted-foreground")}>
+        {rootMessage && (
+          <AlertDescription className={cn(FIELD_HINT, "block")}>
+            {rootMessage}
+          </AlertDescription>
+        )}
+        {fields.length > 0 && (
+          <ul className="space-y-1">
+            {fields.map((field) => (
+              <li key={field}>
+                <button
+                  type="button"
+                  className="rounded-lg text-left underline decoration-muted-foreground/30 underline-offset-4 transition-colors hover:text-destructive hover:decoration-destructive focus-visible:ring-1 focus-visible:ring-destructive focus-visible:outline-none"
+                  onClick={() => onSelectField(field)}
+                >
+                  {FIELD_LABELS[field]}: {errors[field]?.message}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </AlertContent>
+  </Alert>
 );
 
 /**

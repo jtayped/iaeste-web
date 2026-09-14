@@ -31,7 +31,7 @@ const NoteField = ({ form }: { form: UseFormReturn<ProfileForm> }) => {
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
         aria-controls={contentId}
-        className="group flex items-center gap-2 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+        className="group flex items-center gap-2 rounded-lg text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
       >
         <span className="flex size-5 items-center justify-center rounded-full border border-input transition-colors group-hover:border-ring/40">
           <Plus

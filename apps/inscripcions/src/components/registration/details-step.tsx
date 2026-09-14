@@ -16,7 +16,8 @@ import YearField from "@/components/form/fields/year";
 import NoteField from "@/components/form/fields/note";
 import PhoneField from "@/components/form/fields/phone";
 import { ErrorSummary, Section } from "@/components/form/notices";
-import { childVariants, noticeVariants } from "@/components/form/motion";
+import { FormCard } from "@/components/form/surface";
+import { noticeVariants } from "@/components/form/motion";
 import {
   FIELD_ORDER,
   profileFormSchema,
@@ -204,10 +205,7 @@ export const DetailsStepForm = ({
             )}
           </AnimatePresence>
 
-          <motion.div
-            variants={childVariants}
-            className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm"
-          >
+          <FormCard className="divide-y">
             <Section title="qui ets?" icon={CircleUserRound}>
               <NameField form={form} />
               <SurnameField form={form} />
@@ -258,7 +256,7 @@ export const DetailsStepForm = ({
                     : "ja hem verificat el teu correu. quan enviïs les dades, el comitè revisarà la sol·licitud i t'escriurà."}
               </p>
             </div>
-          </motion.div>
+          </FormCard>
         </div>
       </form>
     </Form>

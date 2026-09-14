@@ -20,8 +20,8 @@ import { TextField } from "@repo/ui/text-field";
 import { cn } from "@repo/ui/lib/utils";
 
 import { FIELD_CONTROL, FIELD_HINT } from "@/components/form/field-styles";
-import { childVariants } from "@/components/form/motion";
 import { ExternalMemberNotice, Section } from "@/components/form/notices";
+import { FormCard } from "@/components/form/surface";
 import {
   emailStepFormSchema,
   emailStepSchema,
@@ -62,10 +62,7 @@ export const EmailStepForm = ({
         aria-busy={submitting}
         onSubmit={form.handleSubmit(submit)}
       >
-        <motion.div
-          variants={childVariants}
-          className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm"
-        >
+        <FormCard className="divide-y">
           <Section title="el teu correu" icon={Mail} className="sm:grid-cols-1">
             <div className="flex gap-3 rounded-lg bg-primary/8 p-4 text-primary">
               <History aria-hidden className="mt-0.5 size-4 shrink-0" />
@@ -133,7 +130,7 @@ export const EmailStepForm = ({
               el necessitaràs al pas següent per confirmar l&apos;adreça.
             </p>
           </div>
-        </motion.div>
+        </FormCard>
 
         <ExternalMemberNotice />
       </form>
