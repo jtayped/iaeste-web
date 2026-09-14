@@ -1,3 +1,4 @@
+import { Card } from "@repo/ui/card";
 import { cn } from "@repo/ui/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import Image from "next/image";
@@ -28,9 +29,9 @@ const PhotoCard = ({
   className?: string;
 }) => {
   return (
-    <article
+    <Card
       className={cn(
-        "flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary/30",
+        "flex h-full flex-col p-0 transition-colors hover:border-primary/30",
         className,
       )}
     >
@@ -55,7 +56,7 @@ const PhotoCard = ({
           {description}
         </p>
       </div>
-    </article>
+    </Card>
   );
 };
 

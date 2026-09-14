@@ -13,6 +13,7 @@ import {
   AlertIndicator,
 } from "@repo/ui/alert";
 import { Button } from "@repo/ui/button";
+import { Card } from "@repo/ui/card";
 import { Form } from "@repo/ui/form";
 import { AlertCircle, Check, Loader } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -58,73 +59,77 @@ const ContactForm = () => {
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-5 rounded-2xl border bg-card p-6 shadow-sm md:p-8"
-        id="contact-form"
-      >
-        <div className="grid gap-5 sm:grid-cols-2">
-          <ContactField form={form} name="name" autoComplete="given-name" />
+      {/* The panel is the shared `Card`, so the form sits on the same surface
+          as every other card on the page rather than on a near-copy of one. */}
+      <Card className="md:p-8">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-5"
+          id="contact-form"
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            <ContactField form={form} name="name" autoComplete="given-name" />
+            <ContactField
+              form={form}
+              name="lastname"
+              autoComplete="family-name"
+            />
+          </div>
           <ContactField
             form={form}
-            name="lastname"
-            autoComplete="family-name"
+            name="email"
+            type="email"
+            autoComplete="email"
           />
-        </div>
-        <ContactField
-          form={form}
-          name="email"
-          type="email"
-          autoComplete="email"
-        />
-        <ContactField form={form} name="subject" />
-        <ContactField
-          form={form}
-          name="message"
-          multiline
-          max={CONTACT_FORM_LIMITS.message.max}
-        />
+          <ContactField form={form} name="subject" />
+          <ContactField
+            form={form}
+            name="message"
+            multiline
+            max={CONTACT_FORM_LIMITS.message.max}
+          />
 
-        {/* Always mounted so screen readers announce whichever result lands. */}
-        <div role="status" aria-live="polite" className="empty:hidden">
-          {errors.root && (
-            <Alert variant="destructive">
-              <AlertIndicator>
-                <AlertCircle />
-              </AlertIndicator>
-              <AlertContent>
-                <AlertDescription>{errors.root.message}</AlertDescription>
-              </AlertContent>
-            </Alert>
-          )}
-          {sent && (
-            <Alert variant="accent">
-              <AlertIndicator>
-                <Check />
-              </AlertIndicator>
-              <AlertContent>
-                <AlertDescription>{t("submitBtn.success")}</AlertDescription>
-              </AlertContent>
-            </Alert>
-          )}
-        </div>
+          {/* Always mounted so screen readers announce whichever result lands. */}
+          <div role="status" aria-live="polite" className="empty:hidden">
+            {errors.root && (
+              <Alert variant="destructive">
+                <AlertIndicator>
+                  <AlertCircle />
+                </AlertIndicator>
+                <AlertContent>
+                  <AlertDescription>{errors.root.message}</AlertDescription>
+                </AlertContent>
+              </Alert>
+            )}
+            {sent && (
+              <Alert variant="accent">
+                <AlertIndicator>
+                  <Check />
+                </AlertIndicator>
+                <AlertContent>
+                  <AlertDescription>{t("submitBtn.success")}</AlertDescription>
+                </AlertContent>
+              </Alert>
+            )}
+          </div>
 
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          size="xl"
-          className="w-full"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader className="animate-spin" />
-              {t("submitBtn.loading")}
-            </>
-          ) : (
-            t("submitBtn.default")
-          )}
-        </Button>
-      </form>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            size="xl"
+            className="w-full"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader className="animate-spin" />
+                {t("submitBtn.loading")}
+              </>
+            ) : (
+              t("submitBtn.default")
+            )}
+          </Button>
+        </form>
+      </Card>
     </Form>
   );
 };

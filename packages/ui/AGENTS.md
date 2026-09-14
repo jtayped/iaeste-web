@@ -92,6 +92,31 @@ The `@theme inline` block at the top of the file maps legacy utility names
 colours) onto HeroUI's tokens, so app code written before the migration keeps
 working.
 
+## Radius scale
+
+One vocabulary, pinned in `globals.css`, for all three apps. App code that
+hand-rolls a surface spells it the same way.
+
+| Value                | What it is                                                                                            |
+| -------------------- | ----------------------------------------------------------------------------------------------------- |
+| `rounded-2xl` (16px) | Cards, panels and floating surfaces: cards, alerts, popovers, menus, dialogs, toasts.                 |
+| `rounded-xl` (12px)  | Controls and fields: buttons, inputs, textareas, triggers, segmented-control tracks.                  |
+| `rounded-lg` (8px)   | Anything nested inside one of those: menu and list rows, calendar cells, the pill inside a tab track. |
+| `rounded-full`       | Icon-only buttons, and chips.                                                                         |
+
+Three steps and a circle. Nothing else — a `rounded-md` box beside a `Card` is
+the drift this exists to stop, and there is no fifth value waiting to be
+invented for a particular screen.
+
+Fields never pin their own corner — `--field-radius` carries the 12px, and
+HeroUI's `rounded-field` puts it on every field carrier it ships, so a date
+picker or an OTP input added later inherits it. The card's edge and shadow come
+from `--card-border-color` and `--card-shadow-color`, which are defined per
+theme because `--foreground` is near-white under `.dark` and would paint a halo.
+
+Media is not a surface: a photograph or a thumbnail takes whatever radius the
+box it sits in needs, and the blog's images stay at `rounded-xl`.
+
 ## React Hook Form
 
 `Form` is React Hook Form's `FormProvider`; HeroUI's `Form` renders an HTML

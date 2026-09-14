@@ -31,7 +31,7 @@ const FeatureCard = ({
   return (
     <Card
       className={cn(
-        "h-full border-border bg-card transition-colors hover:border-primary/30",
+        "h-full transition-colors hover:border-primary/30",
         className,
       )}
     >
