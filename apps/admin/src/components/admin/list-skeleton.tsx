@@ -1,3 +1,4 @@
+import { Card } from "@repo/ui/card";
 import { Skeleton } from "@repo/ui/skeleton";
 
 /**
@@ -10,17 +11,14 @@ export function ListSkeleton({ rows = 4 }: { rows?: number }) {
   return (
     <div className="space-y-2" aria-busy aria-label="carregant">
       {Array.from({ length: rows }, (_, index) => (
-        <div
-          key={index}
-          className="space-y-3 rounded-lg border border-border p-4"
-        >
+        <Card key={index} className="space-y-3 p-4">
           <div className="flex items-start justify-between gap-3">
             <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-5 w-20 rounded-md" />
+            <Skeleton className="h-5 w-20 rounded-lg" />
           </div>
           <Skeleton className="h-3 w-56" />
           <Skeleton className="h-3 w-32" />
-        </div>
+        </Card>
       ))}
     </div>
   );
@@ -30,7 +28,7 @@ export function ListSkeleton({ rows = 4 }: { rows?: number }) {
 export function PanelSkeleton({ className }: { className?: string }) {
   return (
     <Skeleton
-      className={className ?? "h-40 rounded-lg"}
+      className={className ?? "h-40 rounded-2xl"}
       aria-busy
       aria-label="carregant"
     />

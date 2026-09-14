@@ -55,10 +55,14 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
     id: "flags",
     header: "context",
     cell: (row) => (
-      <div className="flex flex-wrap gap-1">
+      // One line: the table scrolls, so two flags sit side by side instead of
+      // stacking and making this row twice as tall as its neighbours.
+      <div className="flex flex-nowrap gap-1 whitespace-nowrap">
         {row.isCurrent ? <Badge variant="default">actual</Badge> : null}
         {row.isRegistrationOpen ? (
-          <Badge variant="secondary">inscripcions obertes</Badge>
+          <Badge variant="secondary" className="whitespace-nowrap">
+            inscripcions obertes
+          </Badge>
         ) : null}
         {!row.isCurrent && !row.isRegistrationOpen ? (
           <span className="text-muted-foreground">—</span>

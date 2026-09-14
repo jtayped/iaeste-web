@@ -35,7 +35,7 @@ function PlaceholderHint() {
   if (!shown) return null;
 
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 p-3">
+    <div className="flex items-start gap-2 rounded-2xl border border-border bg-muted/40 p-3">
       <p className="min-w-0 flex-1 text-xs text-muted-foreground">
         pots escriure{" "}
         {PLACEHOLDER_HINTS.map((hint, index) => (
@@ -135,7 +135,7 @@ export function ComposeFields({ draft }: { draft: BroadcastDraft }) {
         <FieldError message={visibleErrors.body} />
       </div>
 
-      <fieldset className="space-y-3 rounded-lg border border-border p-3">
+      <fieldset className="space-y-3 rounded-2xl border border-border p-3">
         <legend className="px-1 text-sm font-medium">botó (opcional)</legend>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">

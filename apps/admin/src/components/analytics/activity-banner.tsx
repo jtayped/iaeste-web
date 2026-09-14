@@ -28,7 +28,7 @@ function DormantCallout({
   lastActivityAt: string | null;
 }) {
   return (
-    <div className="flex gap-3 rounded-lg border border-[color-mix(in_oklab,var(--warning)_45%,transparent)] bg-[color-mix(in_oklab,var(--warning)_10%,transparent)] p-4">
+    <div className="flex gap-3 rounded-2xl border border-[color-mix(in_oklab,var(--warning)_45%,transparent)] bg-[color-mix(in_oklab,var(--warning)_10%,transparent)] p-4">
       <PauseCircle
         className="mt-0.5 size-5 shrink-0 text-[var(--warning-soft-foreground)]"
         aria-hidden
@@ -64,7 +64,7 @@ function RecentActivity({
   showCounters: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-border p-4 text-sm">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-border p-4 text-sm">
       <span className="flex items-center gap-2">
         <Activity
           className="size-4 shrink-0 text-muted-foreground"
@@ -102,7 +102,7 @@ export function ActivityBanner({ activity }: { activity: CrmActivity }) {
 
   if (summary.mode === "unknown" || summary.days === null) {
     return (
-      <div className="flex gap-3 rounded-lg border border-border p-4">
+      <div className="flex gap-3 rounded-2xl border border-border p-4">
         <CircleHelp
           className="mt-0.5 size-5 shrink-0 text-muted-foreground"
           aria-hidden

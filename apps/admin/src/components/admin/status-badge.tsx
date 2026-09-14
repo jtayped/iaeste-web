@@ -1,4 +1,5 @@
 import { Badge } from "@repo/ui/badge";
+import { cn } from "@repo/ui/lib/utils";
 
 import type { Labelled } from "@/lib/labels";
 
@@ -17,7 +18,11 @@ export function StatusBadge({
   return (
     <Badge
       variant={status.tone}
-      className={className}
+      // A chip is a pill of one height; "sense alta activa" breaking across
+      // three lines inside it is the control failing, not text flowing. The
+      // chip keeps its shape and whatever holds it (a scrolling table cell, a
+      // wrapping chip row) deals with the width.
+      className={cn("whitespace-nowrap", className)}
       // Statuses are read, not clicked; without this the badge is a focus
       // target that goes nowhere on a keyboard pass.
       tabIndex={-1}

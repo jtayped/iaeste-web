@@ -62,7 +62,7 @@ function MetricCell({
   return (
     <Link
       href={metric.href}
-      className="group block h-full rounded-md ring-ring outline-none hover:bg-default/50 focus-visible:ring-2"
+      className="group block h-full rounded-lg ring-ring outline-none hover:bg-default/50 focus-visible:ring-2"
     >
       <MetricBody metric={metric} featured={featured} />
     </Link>
@@ -115,7 +115,7 @@ export function TeamOverview({
   return (
     <section className="space-y-3">
       <SectionTitle>equip</SectionTitle>
-      <Card className="overflow-hidden rounded-lg border-border p-0 shadow-none">
+      <Card className="p-0">
         <div className="border-b border-border">
           <MetricCell
             featured
@@ -160,7 +160,7 @@ export function RegistrationOverview({
   return (
     <section className="space-y-3">
       <SectionTitle>sol·licituds</SectionTitle>
-      <Card className="grid overflow-hidden rounded-lg border-border p-0 shadow-none sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+      <Card className="grid p-0 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
         {metrics.map((metric) => (
           <div
             key={metric.label}

@@ -1,3 +1,4 @@
+import { Card } from "@repo/ui/card";
 import { Skeleton } from "@repo/ui/skeleton";
 
 /**
@@ -15,11 +16,9 @@ export function TableSkeleton({
   rows?: number;
 }) {
   return (
-    <div
-      className="w-full overflow-hidden rounded-lg border border-border"
-      aria-busy
-      aria-label="carregant"
-    >
+    // The same `Card` the real table lands in — a skeleton on a different
+    // surface is a visible swap the moment the data arrives.
+    <Card className="w-full p-0" aria-busy aria-label="carregant">
       <div className="flex gap-4 border-b border-border bg-default/40 px-4 py-3">
         {Array.from({ length: columns }, (_, index) => (
           <Skeleton key={index} className="h-3 flex-1" />
@@ -34,6 +33,6 @@ export function TableSkeleton({
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

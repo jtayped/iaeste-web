@@ -15,7 +15,7 @@ export function SelectionBar({
 }) {
   return (
     <div
-      className="flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2.5 sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-2 rounded-2xl border border-primary/30 bg-primary/5 p-2.5 sm:flex-row sm:items-center sm:justify-between"
       aria-live="polite"
     >
       <p className="px-1 text-sm font-medium tabular-nums">

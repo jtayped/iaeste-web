@@ -22,7 +22,7 @@ export default function Loading() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2, 3, 4, 5].map((index) => (
-            <Skeleton key={index} className="h-[6.5rem] rounded-lg" />
+            <Skeleton key={index} className="h-[6.5rem] rounded-2xl" />
           ))}
         </div>
       </div>

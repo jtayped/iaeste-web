@@ -63,6 +63,12 @@ const COLUMNS: DataTableColumn<AdminRegistration>[] = [
     id: "surnames",
     header: "cognoms",
     cell: (row) => row.profileSnapshot.surnames,
+    // Held back to `sm`. This screen exists to accept or reject, and at 360px
+    // the surname is the column standing between "estat" and the two buttons
+    // that are the point of the row — it pushed them off the visible width
+    // entirely. The full name is one tap away on the fitxa, and the search box
+    // matches surnames, so nothing is lost that the phone needed.
+    className: "hidden sm:table-cell",
   },
   {
     id: "email",

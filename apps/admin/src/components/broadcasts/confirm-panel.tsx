@@ -29,7 +29,7 @@ export function ConfirmPanel({
   // look for an outage that is not happening.
   if (error) {
     return (
-      <div className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-3">
+      <div className="flex items-start gap-3 rounded-2xl border border-destructive/40 bg-destructive/5 p-3">
         <AlertTriangle
           className="mt-0.5 size-5 shrink-0 text-destructive"
           aria-hidden
@@ -67,7 +67,7 @@ export function ConfirmPanel({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+      <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-3">
         <Users className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
         <div className="min-w-0 space-y-1">
           <p className="font-medium tabular-nums">
@@ -83,7 +83,7 @@ export function ConfirmPanel({
       </div>
 
       {total === 0 ? (
-        <div className="flex items-start gap-2 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+        <div className="flex items-start gap-2 rounded-2xl border border-border p-3 text-sm text-muted-foreground">
           <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
           la selecció no arriba a cap adreça. torna enrere i revisa-la.
         </div>

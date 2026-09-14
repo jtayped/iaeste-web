@@ -56,9 +56,9 @@ export function NavUser({ user }: { user: AdminSessionUser }) {
     <DropdownMenu>
       <DropdownMenuTrigger>
         <SidebarMenuButton size="lg" tooltip={displayName}>
-          <Avatar className="size-7 rounded-md">
+          <Avatar className="size-7 rounded-lg">
             {user.image ? <AvatarImage src={user.image} alt="" /> : null}
-            <AvatarFallback className="rounded-md text-[0.6875rem]">
+            <AvatarFallback className="rounded-lg text-[0.6875rem]">
               {initials(user)}
             </AvatarFallback>
           </Avatar>

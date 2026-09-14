@@ -1,3 +1,5 @@
+import { Card } from "@repo/ui/card";
+
 const MESSAGES = {
   new_user_signup_disabled: {
     title: "aquest compte no existeix",
@@ -28,12 +30,9 @@ export function VerifyErrorNotice({ code }: { code: VerifyErrorCode }) {
   const { title, detail } = MESSAGES[code];
 
   return (
-    <div
-      role="alert"
-      className="space-y-1 rounded-lg border border-border bg-default/40 p-4"
-    >
+    <Card role="alert" className="space-y-1 bg-default/40 p-4">
       <p className="text-sm font-medium">{title}</p>
       <p className="text-sm text-muted-foreground">{detail}</p>
-    </div>
+    </Card>
   );
 }

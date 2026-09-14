@@ -63,7 +63,7 @@ export function CampaignSummary({
       <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         campanyes
       </h2>
-      <Card className="divide-y divide-border rounded-lg border-border p-0 shadow-none">
+      <Card className="divide-y divide-border p-0">
         <Row
           role="campanya actual"
           explanation="on viuen les altes i les baixes d'aquest curs"

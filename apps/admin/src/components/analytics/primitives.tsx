@@ -27,7 +27,7 @@ export function AnalyticsPanel({
   return (
     <section className={cn("space-y-3", className)}>
       <SectionTitle>{title}</SectionTitle>
-      <Card className="rounded-lg border-border p-4 shadow-none md:p-5">
+      <Card className="p-4 md:p-5">
         {note ? (
           <p className="mb-4 text-xs text-muted-foreground">{note}</p>
         ) : null}

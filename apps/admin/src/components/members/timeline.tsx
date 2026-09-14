@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { Card } from "@repo/ui/card";
+
 import { Section } from "@/components/admin/detail-panel";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type {
@@ -24,7 +26,7 @@ export function MembershipTimeline({
   if (memberships.length === 0) {
     return (
       <Section title="historial">
-        <p className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+        <p className="rounded-2xl border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
           encara no té cap alta registrada.
         </p>
       </Section>
@@ -80,19 +82,23 @@ export function EventLog({
 
   return (
     <Section title="registre d'accions">
-      <ul className="divide-y divide-border rounded-lg border border-border">
-        {events.map((event) => (
-          <li
-            key={event.id}
-            className="flex flex-col gap-0.5 px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
-          >
-            <span className="text-sm">{eventLabel(event.eventType)}</span>
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {formatDateTime(event.createdAt)}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {/* Same shape as `FieldList`: the card is the surface, the list
+          inside it keeps the semantics. */}
+      <Card className="p-0">
+        <ul className="divide-y divide-border">
+          {events.map((event) => (
+            <li
+              key={event.id}
+              className="flex flex-col gap-0.5 px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+            >
+              <span className="text-sm">{eventLabel(event.eventType)}</span>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {formatDateTime(event.createdAt)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </Section>
   );
 }

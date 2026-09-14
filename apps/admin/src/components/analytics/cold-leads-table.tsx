@@ -1,5 +1,6 @@
 import { ArrowUpRight, Snowflake } from "lucide-react";
 
+import { Card } from "@repo/ui/card";
 import {
   Table,
   TableBody,
@@ -44,8 +45,8 @@ export function ColdLeadsTable({ coldLeads }: { coldLeads: CrmColdLead[] }) {
   return (
     <section className="space-y-3">
       <SectionTitle>els més freds</SectionTitle>
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <Table>
+      <Card className="p-0">
+        <Table className="w-max min-w-full">
           <TableHeader>
             <TableRow>
               <TableHead className="px-3">lead</TableHead>
@@ -96,7 +97,7 @@ export function ColdLeadsTable({ coldLeads }: { coldLeads: CrmColdLead[] }) {
             ))}
           </TableBody>
         </Table>
-      </div>
+      </Card>
       <p className="text-xs text-muted-foreground">
         els leads oberts amb el toc més antic, els primers de la llista. cada
         nom obre la fitxa a odoo en una pestanya nova.

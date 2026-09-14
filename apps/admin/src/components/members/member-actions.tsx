@@ -139,7 +139,7 @@ export function MemberActions({ member }: { member: AdminMemberDetail }) {
 
       <Section
         title="elimina definitivament"
-        className="rounded-lg border border-destructive/40 bg-destructive/5 p-4"
+        className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4"
       >
         <p className="text-xs text-muted-foreground">
           esborra el compte, el perfil, totes les altes i baixes,

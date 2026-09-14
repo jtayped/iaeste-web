@@ -16,7 +16,7 @@ import { formatCount, type CrmTotals } from "@/lib/analytics";
  */
 export function LimitsNote({ totals }: { totals: CrmTotals }) {
   return (
-    <details className="group rounded-lg border border-border px-4 py-3">
+    <details className="group rounded-2xl border border-border px-4 py-3">
       <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium text-muted-foreground marker:content-none sm:min-h-0">
         <ChevronRight
           className="size-4 shrink-0 transition-transform group-open:rotate-90"

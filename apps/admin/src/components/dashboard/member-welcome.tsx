@@ -27,7 +27,7 @@ export function MemberWelcome({ name }: { name: string | null }) {
   const first = firstName(name);
 
   return (
-    <Card className="rounded-lg border-border p-5 shadow-none md:p-6">
+    <Card className="p-5 md:p-6">
       <h2 className="text-base font-semibold tracking-tight">
         ja ets dins{first ? `, ${first}` : ""}
       </h2>

@@ -4,6 +4,7 @@ import * as React from "react";
 import { Loader2, MailCheck } from "lucide-react";
 
 import { Button } from "@repo/ui/button";
+import { Card } from "@repo/ui/card";
 import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 
@@ -63,7 +64,7 @@ export function SignInForm() {
 
   if (state.status === "sent") {
     return (
-      <div className="space-y-3 rounded-lg border border-border p-5">
+      <Card className="space-y-3 p-5">
         <MailCheck className="size-5 text-secondary" aria-hidden />
         <div className="space-y-1">
           <p className="text-sm font-medium">revisa el teu correu</p>
@@ -82,7 +83,7 @@ export function SignInForm() {
         >
           fes servir una altra adreça
         </Button>
-      </div>
+      </Card>
     );
   }
 

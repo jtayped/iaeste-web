@@ -43,7 +43,7 @@ export default async function SignInPage({
         <div className="space-y-2">
           <span
             aria-hidden
-            className="flex size-9 items-center justify-center rounded-md bg-[#0B3E5B]"
+            className="flex size-9 items-center justify-center rounded-lg bg-[#0B3E5B]"
           >
             <Logo variant="icon" color="white" width={24} alt="" />
           </span>

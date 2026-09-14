@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { Card } from "@repo/ui/card";
 import {
   Table,
   TableBody,
@@ -109,14 +110,26 @@ export function DataTable<Row>({
       ) : null}
 
       {ready && rows.length > 0 ? (
-        // The scroll container is this wrapper, not the document: a page body
-        // that scrolls sideways on a phone takes the header and the nav with
-        // it.
-        <div
-          className="w-full overflow-x-auto rounded-lg border border-border"
-          aria-busy={state.isFetching}
-        >
-          <Table>
+        // The list panel is a `Card`, the same surface as the detail pages'
+        // `FieldList` and the analytics panels — a hand-rolled bordered box
+        // beside them now reads as a different product, because the shared
+        // card carries a softened border and a shadow the box never had.
+        // `p-0` because the table supplies its own cell padding, and the
+        // card's own `overflow-hidden` is what clips the scrolling table to
+        // the rounded corner. The scroll container is inside this panel (the
+        // shared `Table` provides it), never the document: a page body that
+        // scrolls sideways on a phone takes the header and the nav with it.
+        <Card className="w-full p-0" aria-busy={state.isFetching}>
+          {/* `w-max` is what makes the shared `Table`'s own scroll container
+              actually scroll. Left at its default `w-full` it never does — it
+              shrink-wraps to the viewport and squeezes every column
+              to its min-content width, so a surname breaks in half, a status
+              chip wraps inside its own pill, and a row grows to three lines.
+              At max-content the columns keep their natural width and the
+              narrow viewport scrolls sideways, which is the behaviour
+              `AGENTS.md` asks for. `min-w-full` keeps a short table filling
+              the panel on a wide screen. */}
+          <Table className="w-max min-w-full">
             <caption className="sr-only">{label}</caption>
             <TableHeader>
               <TableRow>
@@ -197,7 +210,12 @@ export function DataTable<Row>({
                     ))}
                     {rowActions ? (
                       <TableCell className="text-right">
-                        <div className="flex flex-wrap justify-end gap-2">
+                        {/* Never wraps. The table scrolls sideways, so a row's
+                            actions have room to stay on one line; stacking
+                            them instead doubled every row's height on a phone
+                            and put "rebutja" under "accepta" where it reads
+                            as a second, lesser row. */}
+                        <div className="flex flex-nowrap justify-end gap-2 whitespace-nowrap">
                           {rowActions(row)}
                         </div>
                       </TableCell>
@@ -207,7 +225,7 @@ export function DataTable<Row>({
               })}
             </TableBody>
           </Table>
-        </div>
+        </Card>
       ) : null}
 
       {pagination && ready ? (

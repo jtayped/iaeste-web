@@ -51,11 +51,11 @@ export function AppSidebar({
           <SidebarMenuItem>
             <Link
               href="/"
-              className="flex items-center gap-2 rounded-md px-1.5 py-1 ring-sidebar-ring outline-none focus-visible:ring-2"
+              className="flex items-center gap-2 rounded-lg px-1.5 py-1 ring-sidebar-ring outline-none focus-visible:ring-2"
             >
               <span
                 aria-hidden
-                className="flex size-7 shrink-0 items-center justify-center rounded-md bg-[#0B3E5B]"
+                className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#0B3E5B]"
               >
                 <Logo variant="icon" color="white" width={18} alt="" />
               </span>

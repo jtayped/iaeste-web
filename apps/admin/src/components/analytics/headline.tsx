@@ -112,7 +112,7 @@ export function HeadlineMetrics({
   return (
     <section className="space-y-3">
       <SectionTitle>on som</SectionTitle>
-      <Card className="overflow-hidden rounded-lg border-border p-0 shadow-none">
+      <Card className="p-0">
         <QueueHero queue={queue} />
         <div className="grid divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           <StatTile

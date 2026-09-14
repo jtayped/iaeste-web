@@ -168,7 +168,7 @@ export function ProfileForm({ profile }: { profile: AdminMemberProfile }) {
   const degreeErrorId = "profile-degree-error";
 
   return (
-    <Card className="rounded-lg border-border p-0 shadow-none">
+    <Card className="p-0">
       <form onSubmit={handleSubmit} noValidate>
         <div className="space-y-5 p-4 sm:p-5">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -248,7 +248,7 @@ export function ProfileForm({ profile }: { profile: AdminMemberProfile }) {
                     onChange={() => change("year", year)}
                     className="peer sr-only"
                   />
-                  <span className="flex h-11 items-center justify-center rounded-md border border-input text-sm font-medium text-muted-foreground transition-colors peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:outline-none sm:h-9">
+                  <span className="flex h-11 items-center justify-center rounded-xl border border-input text-sm font-medium text-muted-foreground transition-colors peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:outline-none sm:h-9">
                     {year}
                   </span>
                 </label>

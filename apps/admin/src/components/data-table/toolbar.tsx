@@ -149,11 +149,20 @@ export function TableFilter({
         <span className="block text-xs text-muted-foreground">{label}</span>
       ) : null}
       {/* Four options do not fit 360px. `TabsList` scrolls sideways in its own
-          container rather than wrapping or shrinking the labels. */}
+          container rather than wrapping or shrinking the labels — but only if
+          the labels themselves refuse to wrap. Without `whitespace-nowrap`,
+          "sense verificar" broke across two lines inside a tab that is a fixed
+          36px tall, so the second line was clipped and the list never
+          scrolled. `min-h-11` lifts the tab to the 44px touch floor on a
+          phone; the shared `h-9` is a height, and a min-height outranks it. */}
       <Tabs value={value} onValueChange={onChange}>
         <TabsList aria-label={label}>
           {options.map((option) => (
-            <TabsTrigger key={option.value} value={option.value}>
+            <TabsTrigger
+              key={option.value}
+              value={option.value}
+              className="min-h-11 whitespace-nowrap sm:min-h-9"
+            >
               {option.label}
             </TabsTrigger>
           ))}

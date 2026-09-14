@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@repo/ui/button";
+import { Card } from "@repo/ui/card";
 
 import { signOut } from "@/lib/auth-client";
 
@@ -20,10 +21,7 @@ export function NoAccessNotice() {
   const [pending, setPending] = React.useState(false);
 
   return (
-    <div
-      role="alert"
-      className="space-y-3 rounded-lg border border-border bg-default/40 p-4"
-    >
+    <Card role="alert" className="space-y-3 bg-default/40 p-4">
       <p className="text-sm font-medium">aquest compte no té accés</p>
       <p className="text-sm text-muted-foreground">
         has entrat correctament, però el teu compte no té permisos
@@ -45,6 +43,6 @@ export function NoAccessNotice() {
       >
         {pending ? "tancant la sessió…" : "tanca la sessió"}
       </Button>
-    </div>
+    </Card>
   );
 }

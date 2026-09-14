@@ -18,15 +18,21 @@ export function PendingWork({ pendingReview }: { pendingReview: number }) {
   const plural = pendingReview === 1 ? "sol·licitud" : "sol·licituds";
 
   return (
-    <section className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-default/40 p-4">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-        <Inbox className="size-4" aria-hidden />
-      </span>
-      <div className="min-w-0 flex-1 space-y-0.5">
-        <p className="text-sm font-medium">feina pendent</p>
-        <p className="text-sm text-muted-foreground">
-          {pendingReview} {plural} amb el correu verificat esperen revisió.
-        </p>
+    // Stacked on a phone, one row from `sm`. Sharing a single flex row at
+    // 360px left the sentence about 90px to live in — it wrapped to three
+    // lines beside a button that had taken a third of the width. The button
+    // goes full-width underneath instead, which is also where a thumb is.
+    <section className="flex flex-col gap-3 rounded-2xl border border-border bg-default/40 p-4 sm:flex-row sm:items-center sm:gap-4">
+      <div className="flex min-w-0 flex-1 items-center gap-4">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Inbox className="size-4" aria-hidden />
+        </span>
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-sm font-medium">feina pendent</p>
+          <p className="text-sm text-muted-foreground">
+            {pendingReview} {plural} amb el correu verificat esperen revisió.
+          </p>
+        </div>
       </div>
       <Link
         href="/registrations"
@@ -34,7 +40,7 @@ export function PendingWork({ pendingReview }: { pendingReview: number }) {
           buttonVariants({ size: "sm" }),
           // 44px tall on a phone — this is the dashboard's one primary action
           // and `size="sm"` alone lands under the touch-target floor.
-          "min-h-11 shrink-0 gap-1.5 sm:min-h-9",
+          "min-h-11 w-full shrink-0 gap-1.5 sm:min-h-9 sm:w-auto",
         )}
       >
         revisa-les

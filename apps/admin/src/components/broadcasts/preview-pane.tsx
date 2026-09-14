@@ -98,7 +98,7 @@ export function PreviewPane({
       ) : null}
 
       {enabled && !preview.isError ? (
-        <div className="overflow-hidden rounded-lg border border-border bg-white">
+        <div className="overflow-hidden rounded-2xl border border-border bg-white">
           {preview.data ? (
             <iframe
               // Fully sandboxed: this is untrusted-by-construction email HTML.

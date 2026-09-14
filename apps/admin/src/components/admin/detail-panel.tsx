@@ -33,7 +33,7 @@ export function Section({
 
 export function FieldList({ children }: { children: React.ReactNode }) {
   return (
-    <Card className="rounded-lg border-border p-0 shadow-none">
+    <Card className="p-0">
       <dl className="divide-y divide-border">{children}</dl>
     </Card>
   );

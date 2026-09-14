@@ -1,5 +1,6 @@
 import { OctagonAlert } from "lucide-react";
 
+import { Card } from "@repo/ui/card";
 import {
   Table,
   TableBody,
@@ -70,8 +71,8 @@ export function OwnersTable({
   return (
     <section className="space-y-3">
       <SectionTitle>propietaris</SectionTitle>
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <Table>
+      <Card className="p-0">
+        <Table className="w-max min-w-full">
           <TableHeader>
             <TableRow>
               <TableHead className="px-3">propietari</TableHead>
@@ -140,7 +141,7 @@ export function OwnersTable({
             })}
           </TableBody>
         </Table>
-      </div>
+      </Card>
       <p className="text-xs text-muted-foreground">
         «toc més antic» i «mediana» són dies des de l&apos;últim moviment del
         lead. les columnes per etapa només apareixen en pantalles amples.

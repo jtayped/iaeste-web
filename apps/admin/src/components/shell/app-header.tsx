@@ -41,7 +41,7 @@ export function AppHeader({
           closed drawer, so the header has to say where you are. */}
       <Link
         href="/"
-        className="truncate rounded-md px-1 text-sm font-semibold tracking-tight ring-ring outline-none focus-visible:ring-2 md:hidden"
+        className="truncate rounded-lg px-1 text-sm font-semibold tracking-tight ring-ring outline-none focus-visible:ring-2 md:hidden"
       >
         iaeste lleida
       </Link>
