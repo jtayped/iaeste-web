@@ -27,7 +27,11 @@ const ClosedCampaignPage = () => (
     tone="neutral"
     title="ara mateix no hi ha inscripcions obertes"
     actions={
-      <ButtonGroup className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex">
+      /* `StatusScreen` already stretches its direct children on a phone, but
+         that is this group, not the buttons inside it — HeroUI's `.button` is
+         `w-fit`, so they would still size to their own labels and stack
+         ragged. Same responsive shape as the home screen's pair. */
+      <ButtonGroup className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center [&>*]:min-h-11 [&>*]:w-full sm:[&>*]:w-auto">
         <Link
           href="mailto:iaeste@udl.cat?subject=Inscripci%C3%B3%20a%20IAESTE%20Lleida"
           className={buttonVariants()}

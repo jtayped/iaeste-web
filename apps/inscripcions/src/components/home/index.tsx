@@ -57,8 +57,13 @@ const HomePage = ({
                   : "contacta amb nosaltres per correu o visita el web."}
             </Paragraph>
           </motion.div>
-          <motion.div variants={childVariants} className="mx-auto mt-6">
-            <ButtonGroup className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex [&>*]:min-h-11">
+          {/* Stacked and equal-width on a phone, a centred row from `sm` up.
+              HeroUI's `.button` is `w-fit`, so without the `w-full` override
+              the two actions size themselves to their own labels and sit
+              ragged against the left of the stack. `sm:w-auto` hands the
+              width back to the label once they are side by side. */}
+          <motion.div variants={childVariants} className="mt-6">
+            <ButtonGroup className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center [&>*]:min-h-11 [&>*]:w-full sm:[&>*]:w-auto">
               {isOpen ? (
                 <Link
                   href="/formulari"

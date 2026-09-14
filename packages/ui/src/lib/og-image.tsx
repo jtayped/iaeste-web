@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { ImageResponse } from "next/og";
+import sharp from "sharp";
 
 /**
  * The share card, shared by the public site and the registration app.
@@ -35,7 +36,36 @@ const brandAsset = (...segments: string[]) =>
 const NAVY = "11, 62, 91";
 
 export const ogImageSize = { width: 1200, height: 630 };
-export const ogImageContentType = "image/png";
+
+/**
+ * JPEG, not PNG, and the card is re-encoded below to match.
+ *
+ * `ImageResponse` only ever emits PNG, and this card is a photograph: the
+ * render weighs 1.04MB. Facebook, X, LinkedIn and Slack all accept that, but
+ * WhatsApp silently drops any `og:image` past a few hundred kilobytes and
+ * falls back to a bare text link — which is exactly what was happening, and
+ * only there. The same card as JPEG is ~119KB.
+ */
+export const ogImageContentType = "image/jpeg";
+
+/**
+ * Quality is set high enough that the wordmark's edges stay clean, and 4:4:4
+ * keeps the chroma at full resolution — white type on navy is exactly the
+ * case default subsampling smears. Together: ~119KB, still a tenth of the PNG.
+ *
+ * Baseline rather than progressive, and deliberately not `mozjpeg: true`,
+ * which forces progressive on and ignores `progressive: false` alongside it.
+ * The two of mozjpeg's knobs that matter here are set directly instead. A
+ * progressive scan buys nothing for an image no one watches load, and this
+ * one is decoded by link-preview crawlers rather than by a browser.
+ */
+const JPEG_OPTIONS = {
+  quality: 85,
+  progressive: false,
+  trellisQuantisation: true,
+  overshootDeringing: true,
+  chromaSubsampling: "4:4:4",
+} as const;
 
 function dataUri(buffer: Buffer, mime: string) {
   return `data:${mime};base64,${buffer.toString("base64")}`;
@@ -138,11 +168,18 @@ function Wordmark({ emblem }: { emblem: string }) {
   );
 }
 
-/** Renders the card for one page. `title` is that page's translated `ogTitle`. */
+/**
+ * Renders the card for one page. `title` is that page's translated `ogTitle`.
+ *
+ * Returns a plain `Response` rather than the `ImageResponse` itself, because
+ * the PNG that satori hands back is re-encoded as JPEG first — see
+ * `ogImageContentType`. Next's `opengraph-image` convention uses whatever
+ * `Response` the default export returns, so this is still a drop-in.
+ */
 export async function renderOgImage(title: string) {
   const { background, emblem, regular, extrabold } = await loadAssets();
 
-  return new ImageResponse(
+  const png = new ImageResponse(
     <div
       style={{
         display: "flex",
@@ -221,4 +258,20 @@ export async function renderOgImage(title: string) {
       ],
     },
   );
+
+  const jpeg = await sharp(Buffer.from(await png.arrayBuffer()))
+    .jpeg(JPEG_OPTIONS)
+    .toBuffer();
+
+  return new Response(new Uint8Array(jpeg), {
+    headers: {
+      "Content-Type": ogImageContentType,
+      // `ImageResponse` already picked the right one for the environment
+      // (`no-store` under `next dev`, a year of immutable caching otherwise);
+      // re-encoding the body does not change how long it stays valid.
+      "Cache-Control":
+        png.headers.get("cache-control") ??
+        "public, immutable, no-transform, max-age=31536000",
+    },
+  });
 }
