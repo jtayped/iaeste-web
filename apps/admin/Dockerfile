@@ -13,7 +13,8 @@ RUN turbo prune admin --docker
 FROM base AS installer
 WORKDIR /app
 COPY --from=pruner /app/out/json/ .
-RUN SKIP_INSTALL_SIMPLE_GIT_HOOKS=1 npm ci
+RUN --mount=type=cache,target=/root/.npm,sharing=locked \
+    SKIP_INSTALL_SIMPLE_GIT_HOOKS=1 npm ci
 
 # `turbo prune` writes a pruned lockfile with every platform-specific optional
 # package stripped out, so the `npm ci` above installs sharp's JavaScript

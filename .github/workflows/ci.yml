@@ -157,65 +157,54 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    # One job per image instead of five sequential steps: they build in
+    # parallel, so this job's wall time is bounded by the slowest image
+    # rather than the sum of all five. `scope` matches deploy.yml's cache
+    # scope for the same image exactly (no `-pr` suffix) on purpose --
+    # merging a PR should let the production build reuse the cache this job
+    # just populated instead of starting cold.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            file: apps/api/Dockerfile
+            build-args: ""
+          - name: inscripcions
+            file: apps/inscripcions/Dockerfile
+            build-args: |
+              NEXT_PUBLIC_API_URL=http://localhost:3004
+              NEXT_PUBLIC_INSCRIPCIONS_STATE=on
+              NEXT_PUBLIC_WHATSAPP_INVITE=https://chat.whatsapp.com/example
+          - name: web
+            file: apps/web/Dockerfile
+            build-args: |
+              NEXT_PUBLIC_API_URL=http://localhost:3004
+              RESEND_API_KEY=build-placeholder
+              CONTACT_FORM_FROM=noreply@iaestelleida.cat
+              CONTACT_FORM_TO=ci@example.com
+          # No build args: apps/admin compiles no NEXT_PUBLIC_* values into
+          # the bundle (next.config.ts reads API_INTERNAL_URL at runtime), so
+          # the image build needs nothing threaded through here.
+          - name: admin
+            file: apps/admin/Dockerfile
+            build-args: ""
+          # No build args: apps/cms bakes only non-secret placeholders in its
+          # Dockerfile's builder stage; Coolify supplies the real runtime
+          # values.
+          - name: cms
+            file: apps/cms/Dockerfile
+            build-args: ""
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
 
-      - name: Build API image
+      - name: Build ${{ matrix.name }} image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: apps/api/Dockerfile
+          file: ${{ matrix.file }}
           push: false
-          cache-from: type=gha,scope=api-pr
-          cache-to: type=gha,mode=max,scope=api-pr
-
-      - name: Build inscripcions image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: apps/inscripcions/Dockerfile
-          push: false
-          build-args: |
-            NEXT_PUBLIC_API_URL=http://localhost:3004
-            NEXT_PUBLIC_INSCRIPCIONS_STATE=on
-            NEXT_PUBLIC_WHATSAPP_INVITE=https://chat.whatsapp.com/example
-          cache-from: type=gha,scope=inscripcions-pr
-          cache-to: type=gha,mode=max,scope=inscripcions-pr
-
-      - name: Build web image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: apps/web/Dockerfile
-          push: false
-          build-args: |
-            NEXT_PUBLIC_API_URL=http://localhost:3004
-            RESEND_API_KEY=build-placeholder
-            CONTACT_FORM_FROM=noreply@iaestelleida.cat
-            CONTACT_FORM_TO=ci@example.com
-          cache-from: type=gha,scope=web-pr
-          cache-to: type=gha,mode=max,scope=web-pr
-
-      # No build args: apps/admin compiles no NEXT_PUBLIC_* values into the
-      # bundle (next.config.ts reads API_INTERNAL_URL at runtime), so the
-      # image build needs nothing threaded through here.
-      - name: Build admin image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: apps/admin/Dockerfile
-          push: false
-          cache-from: type=gha,scope=admin-pr
-          cache-to: type=gha,mode=max,scope=admin-pr
-
-      # No build args: apps/cms bakes only non-secret placeholders in its
-      # Dockerfile's builder stage; Coolify supplies the real runtime values.
-      - name: Build cms image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: apps/cms/Dockerfile
-          push: false
-          cache-from: type=gha,scope=cms-pr
-          cache-to: type=gha,mode=max,scope=cms-pr
+          build-args: ${{ matrix.build-args }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
