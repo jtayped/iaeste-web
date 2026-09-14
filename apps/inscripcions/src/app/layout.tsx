@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   title,
   description,
   applicationName: "Inscripcions · IAESTE LC Lleida",
-  manifest: "/manifest.webmanifest",
   icons: brandIcons,
   openGraph: {
     title,

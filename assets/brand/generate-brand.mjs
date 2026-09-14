@@ -82,12 +82,18 @@ const LOCKUP = {
  * two Inter weights it is set in. The admin remains `noindex`, but it still
  * uses the shared card when someone sends a link to another committee member.
  * The CMS gets neither: only the Payload panel's own chrome is ours to brand.
+ *
+ * `pwa` adds the maskable icon and is the only thing that varies with
+ * install-ability: admin is the one app committee members actually install
+ * to their home screen, so it is the only one that gets that icon — web and
+ * inscripcions are public-facing pages, not apps anyone should be prompted
+ * to install.
  */
 const APPS = {
-  web: { brand: true, og: true },
-  admin: { brand: true, og: true },
-  inscripcions: { brand: true, og: true },
-  cms: { brand: false, og: false },
+  web: { brand: true, og: true, pwa: false },
+  admin: { brand: true, og: true, pwa: true },
+  inscripcions: { brand: true, og: true, pwa: false },
+  cms: { brand: false, og: false, pwa: false },
 };
 
 /**
@@ -292,10 +298,14 @@ async function main() {
   // ---- fan out into every app ----------------------------------------------
   for (const [app, wants] of Object.entries(APPS)) {
     const pub = path.join(REPO, "apps", app, "public");
-    for (const file of [
+    const iconFiles = [
       "favicon.ico", "icon.svg", "apple-touch-icon.png",
-      "icon-192.png", "icon-512.png", "icon-maskable-512.png",
-    ]) {
+      "icon-192.png", "icon-512.png",
+    ];
+    if (wants.pwa) iconFiles.push("icon-maskable-512.png");
+    else await rm(path.join(pub, "icon-maskable-512.png"), { force: true });
+
+    for (const file of iconFiles) {
       await copyFile(path.join(icons, file), path.join(pub, file));
     }
 
