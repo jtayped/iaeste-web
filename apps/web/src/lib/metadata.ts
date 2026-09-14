@@ -43,7 +43,6 @@ export async function generatePageMetadata({
     title: t("title"),
     description: t("description"),
     applicationName: "IAESTE LC Lleida",
-    manifest: "/manifest.webmanifest",
     icons: brandIcons,
     alternates: {
       canonical: `/${locale}${path}`,
