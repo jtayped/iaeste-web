@@ -1,4 +1,7 @@
 name: CI
+# no-op commit: verifying the container-images GHA cache scope is actually
+# shared with deploy.yml now, without touching anything Docker builds from
+# (this file and every *.md are in .dockerignore) -- see ci/verify-cache-sharing
 
 on:
   push:
