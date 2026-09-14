@@ -21,6 +21,17 @@ WORKDIR /app
 COPY --from=pruner /app/out/json/ .
 RUN SKIP_INSTALL_SIMPLE_GIT_HOOKS=1 npm ci
 
+# `turbo prune` writes a pruned lockfile with every platform-specific optional
+# package stripped out, so the `npm ci` above installs sharp's JavaScript
+# without a native binding and `require("sharp")` throws at runtime. Next links
+# the `opengraph-image` module into the metadata of every page, so that one
+# missing binary took the whole site down with "a client-side exception has
+# occurred". Reinstalling sharp here resolves its optional deps against this
+# image's platform; the version comes from the workspace so the two cannot
+# drift apart.
+RUN SHARP_VERSION="$(node -p "require('./apps/cms/package.json').dependencies.sharp")" \
+ && npm install --no-save --no-package-lock --include=optional "sharp@$SHARP_VERSION"
+
 FROM base AS builder
 WORKDIR /app
 COPY --from=installer /app/ .

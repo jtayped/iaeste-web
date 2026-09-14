@@ -2,7 +2,6 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { ImageResponse } from "next/og";
-import sharp from "sharp";
 
 /**
  * The share card, shared by the public site and the registration app.
@@ -169,12 +168,37 @@ function Wordmark({ emblem }: { emblem: string }) {
 }
 
 /**
+ * Loaded on call, and never allowed to throw.
+ *
+ * Next links an app's `opengraph-image` module into the metadata of every page
+ * it renders, so a top-level `import sharp` puts a native module on the server
+ * render path of the whole site. `turbo prune` writes a lockfile without
+ * sharp's platform-specific optional packages, so the Docker `npm ci` installed
+ * the JavaScript half without a binding, and `require("sharp")` threw — on the
+ * home page, the form, and every status screen, not just on the card. The
+ * Dockerfiles now reinstall the binding, and this is the second half of that
+ * fix: a share preview must never be able to white-page the site.
+ */
+async function loadSharp() {
+  try {
+    return (await import("sharp")).default;
+  } catch (error) {
+    console.error(
+      "[og-image] sharp could not be loaded; serving the PNG card instead",
+      error,
+    );
+    return undefined;
+  }
+}
+
+/**
  * Renders the card for one page. `title` is that page's translated `ogTitle`.
  *
  * Returns a plain `Response` rather than the `ImageResponse` itself, because
  * the PNG that satori hands back is re-encoded as JPEG first — see
  * `ogImageContentType`. Next's `opengraph-image` convention uses whatever
- * `Response` the default export returns, so this is still a drop-in.
+ * `Response` the default export returns, so this is still a drop-in, and so is
+ * the `ImageResponse` handed straight back when the encoder is unavailable.
  */
 export async function renderOgImage(title: string) {
   const { background, emblem, regular, extrabold } = await loadAssets();
@@ -258,6 +282,14 @@ export async function renderOgImage(title: string) {
       ],
     },
   );
+
+  const sharp = await loadSharp();
+
+  // The PNG is a valid card in its own right — every crawler but WhatsApp
+  // takes it, and all of them sniff the bytes rather than trust the declared
+  // `og:image:type`. So an unavailable encoder costs the WhatsApp preview and
+  // nothing else.
+  if (!sharp) return png;
 
   const jpeg = await sharp(Buffer.from(await png.arrayBuffer()))
     .jpeg(JPEG_OPTIONS)
