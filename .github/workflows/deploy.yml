@@ -56,13 +56,32 @@ jobs:
       contents: read
     outputs:
       full: ${{ steps.filter.outputs.full }}
+      # Not wired into any `if:` yet — see the note on the `affected` step.
+      api: ${{ steps.affected.outputs.api }}
+      admin: ${{ steps.affected.outputs.admin }}
+      cms: ${{ steps.affected.outputs.cms }}
+      inscripcions: ${{ steps.affected.outputs.inscripcions }}
+      web: ${{ steps.affected.outputs.web }}
     steps:
+      # Full history: the affected-apps query diffs against the commit this
+      # push started from, which a shallow clone would not contain.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
+            # Paths outside every workspace, which turbo's dependency graph
+            # cannot reason about — a change here has to mark all five apps.
+            force_all:
+              - '.github/scripts/deploy-coolify.mjs'
+              - '.github/workflows/deploy.yml'
             full:
               - '.github/scripts/deploy-coolify.mjs'
               - '.github/workflows/deploy.yml'
@@ -81,6 +100,26 @@ jobs:
               - 'package.json'
               - 'package-lock.json'
               - 'turbo.json'
+
+      # Dry run. This computes, per app, whether the push actually affects it,
+      # using turbo's dependency graph instead of the flat `full` path glob
+      # above — so a change confined to apps/web marks only web, while a change
+      # to packages/ui marks every app that imports it.
+      #
+      # Nothing consumes these outputs yet. `full` still gates all ten
+      # build/deploy jobs exactly as before, so this push behaves identically
+      # to every push before it. The point is to log the booleans against real
+      # commits first and confirm they match what a human would have picked,
+      # because the failure mode of getting this wrong is not a slow deploy but
+      # a silently skipped one. Once a handful of pushes of each shape look
+      # right — one app, a shared package, the lockfile — a follow-up swaps the
+      # `if:` conditions over and drops `full`.
+      - name: Which apps does this push affect?
+        id: affected
+        run: node .github/scripts/affected-apps.mjs
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          FORCE_ALL: ${{ steps.filter.outputs.force_all }}
 
   build-admin:
     name: Build and push iaeste-admin
