@@ -2,6 +2,15 @@ import { z } from "@hono/zod-openapi";
 
 import { DEGREE_OPTIONS } from "@repo/constants/studies";
 import {
+  campaignListQuerySchema,
+  CAMPAIGN_STATES,
+  invitationListQuerySchema,
+  listPageSchema,
+  memberListQuerySchema,
+  registrationListQuerySchema,
+  REGISTRATION_STATUSES,
+} from "@repo/constants/validators/admin-list";
+import {
   broadcastBodySchema,
   broadcastCallToActionSchema,
   broadcastHeadingSchema,
@@ -84,15 +93,8 @@ export const registrationCreatedSchema = z
   })
   .openapi("RegistrationCreated");
 
-const REGISTRATION_STATUS_VALUES = [
-  "pending_email",
-  "pending_review",
-  "accepted",
-  "rejected",
-] as const;
-
 export const registrationStatusSchema = z
-  .enum(REGISTRATION_STATUS_VALUES)
+  .enum(REGISTRATION_STATUSES)
   .openapi("RegistrationStatus");
 
 // --- Registration: proving the address before anything is collected -------
@@ -201,9 +203,7 @@ export const registrationSessionSchema = z
      * which would make `RegistrationStatus` nullable for every other reader
      * of it (the admin table included).
      */
-    openCampaignRegistrationStatus: z
-      .enum(REGISTRATION_STATUS_VALUES)
-      .nullable(),
+    openCampaignRegistrationStatus: z.enum(REGISTRATION_STATUSES).nullable(),
     /** True when this proven identity can renew without committee review. */
     willAutoAccept: z.boolean(),
   })
@@ -339,22 +339,36 @@ export const adminRegistrationSchema = z
   })
   .openapi("AdminRegistration");
 
-export const adminRegistrationListSchema = z
-  .object({
-    rows: z.array(adminRegistrationSchema),
-    total: z.number().int(),
-    limit: z.number().int(),
-    offset: z.number().int(),
-  })
-  .openapi("AdminRegistrationList");
+/**
+ * One admin list envelope, registered under `name`.
+ *
+ * The shape comes from `@repo/constants` so the four cannot drift apart, and
+ * is rebuilt through this module's `z` because the OpenAPI extension only
+ * registers schemas on the classes it patched — `@repo/constants` builds with
+ * plain zod, which is fine to embed but not to register.
+ */
+function adminListSchema<T extends z.ZodTypeAny>(
+  row: T,
+  name: string,
+  extra: z.ZodRawShape = {},
+) {
+  return z.object({ ...listPageSchema(row).shape, ...extra }).openapi(name);
+}
 
+export const adminRegistrationListSchema = adminListSchema(
+  adminRegistrationSchema,
+  "AdminRegistrationList",
+);
+
+/**
+ * `@repo/constants` owns every admin list's query shape — `q`, `sort`, `dir`,
+ * `limit`, `offset` and the endpoint's own filters. Each one is respread here
+ * only to attach OpenAPI examples and the registered status enums.
+ */
 export const adminListQuerySchema = z.object({
+  ...registrationListQuerySchema.shape,
   campaignId: z.string().min(1).openapi({ example: "campaign_123" }),
   status: registrationStatusSchema.optional(),
-  /** ILIKE over email, snapshot name, and snapshot surnames. */
-  q: z.string().trim().max(200).optional(),
-  limit: z.coerce.number().int().min(1).max(200).default(50),
-  offset: z.coerce.number().int().min(0).default(0),
 });
 
 export const registrationIdParamSchema = z.object({
@@ -429,7 +443,7 @@ export const adminOverviewSchema = z
 // --- Admin: campaigns ------------------------------------------------------
 
 export const campaignStateSchema = z
-  .enum(["draft", "published", "archived"])
+  .enum(CAMPAIGN_STATES)
   .openapi("CampaignState");
 
 const campaignBaseShape = {
@@ -462,20 +476,13 @@ export const adminCampaignWithCountsSchema = z
   })
   .openapi("AdminCampaignWithCounts");
 
-export const adminCampaignListSchema = z
-  .object({
-    rows: z.array(adminCampaignWithCountsSchema),
-    total: z.number().int(),
-    limit: z.number().int(),
-    offset: z.number().int(),
-  })
-  .openapi("AdminCampaignList");
+export const adminCampaignListSchema = adminListSchema(
+  adminCampaignWithCountsSchema,
+  "AdminCampaignList",
+);
 export const adminCampaignListQuerySchema = z.object({
-  /** ILIKE over slug and label. */
-  q: z.string().trim().max(200).optional(),
+  ...campaignListQuerySchema.shape,
   state: campaignStateSchema.optional(),
-  limit: z.coerce.number().int().min(1).max(200).default(100),
-  offset: z.coerce.number().int().min(0).default(0),
 });
 
 export const campaignIdParamSchema = z.object({
@@ -570,14 +577,7 @@ export const userIdParamSchema = z.object({
 });
 
 export const adminMemberListQuerySchema = z.object({
-  q: z.string().trim().max(120).optional(),
-  filter: z.enum(["all", "current", "past"]).optional(),
-  /** Exact active membership source; replaces current/past when present. */
-  campaignId: z.string().min(1).optional(),
-  /** Adds invitation readiness relative to this campaign. */
-  targetCampaignId: z.string().min(1).optional(),
-  limit: z.coerce.number().int().min(1).max(100).optional(),
-  offset: z.coerce.number().int().min(0).optional(),
+  ...memberListQuerySchema.shape,
 });
 
 export const memberTargetStateSchema = z
@@ -599,15 +599,11 @@ export const adminMemberListItemSchema = z
   })
   .openapi("AdminMemberListItem");
 
-export const adminMemberListSchema = z
-  .object({
-    rows: z.array(adminMemberListItemSchema),
-    total: z.number().int(),
-    inviteEligibleTotal: z.number().int(),
-    limit: z.number().int(),
-    offset: z.number().int(),
-  })
-  .openapi("AdminMemberList");
+export const adminMemberListSchema = adminListSchema(
+  adminMemberListItemSchema,
+  "AdminMemberList",
+  { inviteEligibleTotal: z.number().int() },
+);
 
 export const adminMemberProfileSchema = z
   .object({
@@ -803,23 +799,14 @@ export const adminInvitationSchema = z
   })
   .openapi("AdminInvitation");
 
-export const adminInvitationListSchema = z
-  .object({
-    rows: z.array(adminInvitationSchema),
-    total: z.number().int(),
-    limit: z.number().int(),
-    offset: z.number().int(),
-  })
-  .openapi("AdminInvitationList");
+export const adminInvitationListSchema = adminListSchema(
+  adminInvitationSchema,
+  "AdminInvitationList",
+);
 
 export const adminInvitationListQuerySchema = z.object({
-  campaignId: z.string().min(1),
-  /** ILIKE over the invitee email and the prefill name/surnames. */
-  q: z.string().trim().max(200).optional(),
-  /** `expired` is the read-time computed state, not a stored status. */
-  status: z.enum(["pending", "accepted", "cancelled", "expired"]).optional(),
-  limit: z.coerce.number().int().min(1).max(200).default(50),
-  offset: z.coerce.number().int().min(0).default(0),
+  ...invitationListQuerySchema.shape,
+  campaignId: z.string().min(1).openapi({ example: "campaign_123" }),
 });
 
 export const invitationIdParamSchema = z.object({

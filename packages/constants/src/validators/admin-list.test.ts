@@ -150,6 +150,9 @@ describe("the four endpoint schemas", () => {
 
   it("rejects a sort key that belongs to a different table", () => {
     // `degree` is a member/registration column; campaigns have no such thing.
-    assert.equal(campaignListQuerySchema.safeParse({ sort: "degree" }).success, false);
+    assert.equal(
+      campaignListQuerySchema.safeParse({ sort: "degree" }).success,
+      false,
+    );
   });
 });

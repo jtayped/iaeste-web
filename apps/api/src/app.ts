@@ -985,11 +985,14 @@ export function createApp(dependencies: AppDependencies = {}) {
   });
 
   app.openapi(adminListRegistrationsRoute, async (c) => {
-    const { campaignId, status, q, limit, offset } = c.req.valid("query");
+    const { campaignId, status, q, sort, dir, limit, offset } =
+      c.req.valid("query");
     const result = await registrationService.list({
       campaignId,
       status,
       q,
+      sort,
+      dir,
       limit,
       offset,
     });
@@ -1147,10 +1150,10 @@ export function createApp(dependencies: AppDependencies = {}) {
     errorBody(c, "NOT_FOUND", "No campaign with that id.");
 
   app.openapi(adminListCampaignsRoute, async (c) => {
-    const { q, state, limit, offset } = c.req.valid("query");
+    const { q, state, sort, dir, limit, offset } = c.req.valid("query");
     const { rows, total } = await createCampaignRepository(
       adminDb(),
-    ).listWithCounts({ q, state, limit, offset });
+    ).listWithCounts({ q, state, sort, dir, limit, offset });
     return c.json(
       {
         rows: rows.map((row) => ({
@@ -1326,10 +1329,16 @@ export function createApp(dependencies: AppDependencies = {}) {
   });
 
   app.openapi(adminListMembersRoute, async (c) => {
-    const { q, filter, campaignId, targetCampaignId, limit, offset } =
-      c.req.valid("query");
-    const pageLimit = limit ?? 25;
-    const pageOffset = offset ?? 0;
+    const {
+      q,
+      filter,
+      campaignId,
+      targetCampaignId,
+      sort,
+      dir,
+      limit,
+      offset,
+    } = c.req.valid("query");
     const { rows, total, inviteEligibleTotal } = await createMemberRepository(
       adminDb(),
     ).list({
@@ -1337,19 +1346,12 @@ export function createApp(dependencies: AppDependencies = {}) {
       filter,
       campaignId,
       targetCampaignId,
-      limit: pageLimit,
-      offset: pageOffset,
+      sort,
+      dir,
+      limit,
+      offset,
     });
-    return c.json(
-      {
-        rows,
-        total,
-        inviteEligibleTotal,
-        limit: pageLimit,
-        offset: pageOffset,
-      },
-      200,
-    );
+    return c.json({ rows, total, inviteEligibleTotal, limit, offset }, 200);
   });
 
   app.openapi(adminGetMemberRoute, async (c) => {
@@ -1641,12 +1643,15 @@ export function createApp(dependencies: AppDependencies = {}) {
   // --- Admin: invitations --------------------------------------------
 
   app.openapi(adminListInvitationsRoute, async (c) => {
-    const { campaignId, q, status, limit, offset } = c.req.valid("query");
+    const { campaignId, q, status, sort, dir, limit, offset } =
+      c.req.valid("query");
     return c.json(
       await invitationService.listPage({
         campaignId,
         q,
         status,
+        sort,
+        dir,
         limit,
         offset,
       }),

@@ -480,13 +480,16 @@ export const adminListRegistrationsRoute = createRoute({
   tags: ["Admin"],
   description:
     "Requires the `registrations.review` capability. campaignId is " +
-    "required so omitting it can never list across every campaign at once.",
+    "required so omitting it can never list across every campaign at once. " +
+    "`sort` is one of name | surnames | email | degree | studyYear | " +
+    "status | createdAt and `dir` asc | desc, resolved in SQL; both default " +
+    "to createdAt desc.",
   request: {
     query: adminListQuerySchema,
   },
   responses: {
     200: {
-      description: "Registrations for the given campaign.",
+      description: "A page of registrations for the given campaign.",
       content: {
         "application/json": { schema: adminRegistrationListSchema },
       },
@@ -689,13 +692,15 @@ export const adminListCampaignsRoute = createRoute({
   operationId: "adminListCampaigns",
   tags: ["Admin"],
   description:
-    "Campaigns with active-member and pending-review counts, newest " +
-    "membership start first. Paginated for a uniform table contract even " +
-    "though the set is small. Requires `campaigns.write`.",
+    "Campaigns with active-member and pending-review counts. Paginated for " +
+    "a uniform table contract even though the set is small. `sort` is one " +
+    "of label | slug | state | activeMembers | pendingReview | " +
+    "membershipStartsAt and `dir` asc | desc, resolved in SQL; both default " +
+    "to membershipStartsAt desc. Requires `campaigns.write`.",
   request: { query: adminCampaignListQuerySchema },
   responses: {
     200: {
-      description: "All campaigns, newest membership start first.",
+      description: "A page of campaigns in the requested order.",
       content: { "application/json": { schema: adminCampaignListSchema } },
     },
     ...adminAuthResponses,
@@ -959,7 +964,10 @@ export const adminListMembersRoute = createRoute({
     "Paginated, searchable member list. `q` matches name / surnames / " +
     "email; `filter` is all | current | past; `campaignId` selects active " +
     "members of one exact campaign. `targetCampaignId` adds invitation " +
-    "readiness and an eligible count. Requires `members.read`.",
+    "readiness and an eligible count. `sort` is one of name | surnames | " +
+    "email | degree | studyYear | role | status | totalMemberships | " +
+    "targetState and `dir` asc | desc, resolved in SQL; both default to " +
+    "surnames asc. Requires `members.read`.",
   request: { query: adminMemberListQuerySchema },
   responses: {
     200: {
@@ -1223,12 +1231,14 @@ export const adminListInvitationsRoute = createRoute({
   operationId: "adminListInvitations",
   tags: ["Admin"],
   description:
-    "Invitations for a campaign, `expired` computed at read time. " +
-    "Requires `invitations.write`.",
+    "Invitations for a campaign, `expired` computed in SQL from the " +
+    "database's clock. `sort` is one of email | name | status | role | " +
+    "createdAt | expiresAt and `dir` asc | desc, resolved in SQL; both " +
+    "default to createdAt desc. Requires `invitations.write`.",
   request: { query: adminInvitationListQuerySchema },
   responses: {
     200: {
-      description: "Invitations for the campaign, newest first.",
+      description: "A page of invitations in the requested order.",
       content: {
         "application/json": { schema: adminInvitationListSchema },
       },

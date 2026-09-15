@@ -58,12 +58,7 @@ export function listQuerySchema<K extends string>(options: {
     q: z.string().trim().max(options.search).optional(),
     sort: z.enum(options.sortKeys).default(options.defaultSort.key),
     dir: sortDirectionSchema.default(options.defaultSort.dir),
-    limit: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(limit.max)
-      .default(limit.default),
+    limit: z.coerce.number().int().min(1).max(limit.max).default(limit.default),
     offset: z.coerce.number().int().min(0).default(0),
   });
 }
@@ -110,8 +105,7 @@ export const INVITATION_STATUS_FILTERS = [
   "cancelled",
   "expired",
 ] as const;
-export type InvitationStatusFilter =
-  (typeof INVITATION_STATUS_FILTERS)[number];
+export type InvitationStatusFilter = (typeof INVITATION_STATUS_FILTERS)[number];
 
 export const MEMBER_FILTERS = ["all", "current", "past"] as const;
 export type MemberFilter = (typeof MEMBER_FILTERS)[number];

@@ -1,6 +1,10 @@
 import crypto from "node:crypto";
 
 import { getDb } from "@repo/db/client";
+import type {
+  RegistrationSortKey,
+  SortDirection,
+} from "@repo/constants/validators/admin-list";
 import { eq } from "drizzle-orm";
 
 import {
@@ -138,6 +142,8 @@ export interface AdminRegistrationListParams {
   campaignId: string;
   status?: RegistrationStatus;
   q?: string;
+  sort?: RegistrationSortKey;
+  dir?: SortDirection;
   limit: number;
   offset: number;
 }
