@@ -45,6 +45,16 @@ jobs:
 
       - run: npm ci
 
+      # Turborepo remote cache, backed by GitHub's own Actions cache rather
+      # than Vercel's hosted service — no account or token to manage. The
+      # action starts a local cache server and exports the TURBO_API /
+      # TURBO_TOKEN / TURBO_TEAM that `turbo` looks for, so it has to run
+      # before any npm script that shells out to turbo. With it, a change
+      # confined to one workspace lets turbo skip lint/types/test/build for
+      # every workspace that doesn't depend on it, instead of re-running all
+      # of them from zero.
+      - uses: rharkor/caching-for-turbo@v2.5.1
+
       # Cheapest checks first, so a formatting or typing mistake fails in
       # seconds rather than after the whole suite has run.
       - name: Format
@@ -129,6 +139,16 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # Turborepo remote cache, backed by GitHub's own Actions cache rather
+      # than Vercel's hosted service — no account or token to manage. The
+      # action starts a local cache server and exports the TURBO_API /
+      # TURBO_TOKEN / TURBO_TEAM that `turbo` looks for, so it has to run
+      # before any npm script that shells out to turbo. With it, a change
+      # confined to one workspace lets turbo skip lint/types/test/build for
+      # every workspace that doesn't depend on it, instead of re-running all
+      # of them from zero.
+      - uses: rharkor/caching-for-turbo@v2.5.1
 
       - name: Build all workspaces
         run: npm run build
