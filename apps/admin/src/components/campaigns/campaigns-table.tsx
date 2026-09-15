@@ -22,7 +22,7 @@ import type { AdminCampaignWithCounts, CampaignState } from "@/lib/admin-types";
 import { CAMPAIGNS_PAGE_SIZE, useCampaigns } from "@/lib/campaigns";
 import { formatDateRange } from "@/lib/format";
 import { campaignState } from "@/lib/labels";
-import { offsetToPage, useTableParams } from "@/lib/table-params";
+import { useTableParams } from "@/lib/table-params";
 
 const DEFAULTS = { q: "", state: "" } as const;
 
@@ -137,10 +137,13 @@ export function CampaignsTable({
 }: {
   initialData: AdminCampaignWithCounts[];
 }) {
-  const { get, setParams, offset, sort, setSort } = useTableParams(DEFAULTS, {
-    pageSize: CAMPAIGNS_PAGE_SIZE,
-    sort: { keys: CAMPAIGN_SORT_KEYS, default: CAMPAIGN_DEFAULT_SORT },
-  });
+  const { get, setParams, offset, setOffset, sort, setSort } = useTableParams(
+    DEFAULTS,
+    {
+      pageSize: CAMPAIGNS_PAGE_SIZE,
+      sort: { keys: CAMPAIGN_SORT_KEYS, default: CAMPAIGN_DEFAULT_SORT },
+    },
+  );
   const q = get("q");
   const rawState = get("state");
   const state: CampaignState | "" = isState(rawState) ? rawState : "";
@@ -199,10 +202,7 @@ export function CampaignsTable({
               total: query.data.total,
               limit: query.data.limit,
               offset: query.data.offset,
-              onOffsetChange: (next: number) =>
-                setParams({
-                  page: offsetToPage(next, query.data.limit),
-                }),
+              onOffsetChange: setOffset,
             },
           }
         : {})}

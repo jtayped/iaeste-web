@@ -53,6 +53,14 @@ export interface TableParams<K extends string, S extends string> {
   /** `?page=` as an offset, already clamped to >= 0. */
   offset: number;
   /**
+   * The inverse of `offset`: takes the offset a pagination control asks for
+   * and writes the page that produces it. Both directions use the same
+   * `pageSize`, which is the point of them living together here — a screen
+   * converting on its own had the row count from the last response to hand
+   * and reached for that instead.
+   */
+  setOffset: (offset: number) => void;
+  /**
    * Validated against `options.sort.keys`; an unknown URL value reads as the
    * default. With no `options.sort`, `S` is `never` and this is the inert
    * `{ key: "", dir: "asc" }` — typed so nothing can read a key out of it.
@@ -82,6 +90,10 @@ function pageToOffset(page: string, limit: number): number {
   const parsed = Number.parseInt(page, 10);
   if (!Number.isFinite(parsed) || parsed < 1) return 0;
   return (parsed - 1) * limit;
+}
+
+function offsetToPage(offset: number, limit: number): string {
+  return String(Math.floor(Math.max(offset, 0) / limit) + 1);
 }
 
 export function useTableParams<K extends string, S extends string = never>(
@@ -159,6 +171,11 @@ export function useTableParams(
     [setParams],
   );
 
+  const setOffset = React.useCallback(
+    (next: number) => setParams({ page: offsetToPage(next, options.pageSize) }),
+    [setParams, options.pageSize],
+  );
+
   const scope = React.useMemo(
     () => scopeOf(defaults, (key) => searchParams.get(key)),
     [defaults, searchParams],
@@ -168,12 +185,9 @@ export function useTableParams(
     get,
     setParams,
     offset: pageToOffset(searchParams.get("page") ?? "1", options.pageSize),
+    setOffset,
     sort,
     setSort,
     scope,
   };
-}
-
-export function offsetToPage(offset: number, limit: number): string {
-  return String(Math.floor(offset / limit) + 1);
 }

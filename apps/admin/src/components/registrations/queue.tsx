@@ -41,7 +41,7 @@ import {
   registrationStatus,
 } from "@/lib/labels";
 import { REGISTRATIONS_PAGE_SIZE, useRegistrations } from "@/lib/registrations";
-import { offsetToPage, useTableParams } from "@/lib/table-params";
+import { useTableParams } from "@/lib/table-params";
 
 /**
  * `page`, `sort` and `dir` are `useTableParams`' own — declaring one here is a
@@ -195,16 +195,14 @@ export function RegistrationsQueue({
   /** `registrations.review`, which the route subtree already requires. */
   canReview: boolean;
 }) {
-  const { get, setParams, offset, sort, setSort, scope } = useTableParams(
-    DEFAULTS,
-    {
+  const { get, setParams, offset, setOffset, sort, setSort, scope } =
+    useTableParams(DEFAULTS, {
       pageSize: REGISTRATIONS_PAGE_SIZE,
       sort: {
         keys: REGISTRATION_SORT_KEYS,
         default: REGISTRATION_DEFAULT_SORT,
       },
-    },
-  );
+    });
 
   const rawStatus = get("status");
   const status: RegistrationStatusFilter = isStatus(rawStatus)
@@ -303,10 +301,7 @@ export function RegistrationsQueue({
               total: query.data.total,
               limit: query.data.limit,
               offset: query.data.offset,
-              onOffsetChange: (next: number) =>
-                setParams({
-                  page: offsetToPage(next, query.data.limit),
-                }),
+              onOffsetChange: setOffset,
             },
           }
         : {})}

@@ -31,7 +31,7 @@ import {
   roleLabel,
 } from "@/lib/labels";
 import { MEMBERS_PAGE_SIZE, useMembers } from "@/lib/members";
-import { offsetToPage, useTableParams } from "@/lib/table-params";
+import { useTableParams } from "@/lib/table-params";
 
 export interface MemberCampaignOption {
   id: string;
@@ -183,13 +183,11 @@ export function MembersTable({
     () => ({ q: "", source: initialSource, target: initialTarget }),
     [initialSource, initialTarget],
   );
-  const { get, setParams, offset, sort, setSort, scope } = useTableParams(
-    defaults,
-    {
+  const { get, setParams, offset, setOffset, sort, setSort, scope } =
+    useTableParams(defaults, {
       pageSize: MEMBERS_PAGE_SIZE,
       sort: { keys: MEMBER_SORT_KEYS, default: MEMBER_DEFAULT_SORT },
-    },
-  );
+    });
 
   const q = get("q");
   const rawSource = get("source");
@@ -287,10 +285,7 @@ export function MembersTable({
               total: query.data.total,
               limit: query.data.limit,
               offset: query.data.offset,
-              onOffsetChange: (next: number) =>
-                setParams({
-                  page: offsetToPage(next, query.data.limit),
-                }),
+              onOffsetChange: setOffset,
             },
           }
         : {})}
