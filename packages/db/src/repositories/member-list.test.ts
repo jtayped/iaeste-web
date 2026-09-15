@@ -5,6 +5,8 @@ import type { Database } from "../client";
 import { user } from "../schema/auth";
 import { memberProfile } from "../schema/member-profile";
 import { closeTestDb, getTestDb, truncateAll } from "../test-support/db";
+import { MEMBER_SORT_KEYS } from "@repo/constants/validators/admin-list";
+
 import { createMemberListQueries } from "./member-list";
 
 describe("member list — ordering", () => {
@@ -80,6 +82,103 @@ describe("member list — ordering", () => {
       "every person appeared exactly once across the pages",
     );
     assert.deepEqual([...seen].sort(), [...created].sort());
+  });
+
+  it("sorts by nom and by cognoms independently", async () => {
+    // The user-facing point of the whole contract: an operator can order by
+    // given name or by surname, whichever they know the person by.
+    await addMembers([
+      { name: "Carla", surnames: "Ferrer" },
+      { name: "Anna", surnames: "Roca" },
+      { name: "Berta", surnames: "Domingo" },
+    ]);
+    const queries = createMemberListQueries(db);
+
+    const byName = await queries.list({
+      sort: "name",
+      dir: "asc",
+      limit: 10,
+      offset: 0,
+    });
+    assert.deepEqual(
+      byName.rows.map((row) => row.name),
+      ["Anna", "Berta", "Carla"],
+    );
+
+    const bySurnames = await queries.list({
+      sort: "surnames",
+      dir: "asc",
+      limit: 10,
+      offset: 0,
+    });
+    assert.deepEqual(
+      bySurnames.rows.map((row) => row.surnames),
+      ["Domingo", "Ferrer", "Roca"],
+    );
+  });
+
+  it("reverses exactly when dir is desc", async () => {
+    await addMembers([
+      { name: "Anna", surnames: "Roca" },
+      { name: "Berta", surnames: "Domingo" },
+      { name: "Carla", surnames: "Ferrer" },
+    ]);
+    const queries = createMemberListQueries(db);
+
+    const asc = await queries.list({
+      sort: "surnames",
+      dir: "asc",
+      limit: 10,
+      offset: 0,
+    });
+    const desc = await queries.list({
+      sort: "surnames",
+      dir: "desc",
+      limit: 10,
+      offset: 0,
+    });
+    assert.deepEqual(
+      desc.rows.map((row) => row.userId),
+      [...asc.rows.map((row) => row.userId)].reverse(),
+      "desc is the exact reverse of asc, tiebreaker included",
+    );
+  });
+
+  it("defaults to surnames ascending when no sort is given", async () => {
+    await addMembers([
+      { name: "Anna", surnames: "Roca" },
+      { name: "Berta", surnames: "Domingo" },
+    ]);
+    const queries = createMemberListQueries(db);
+
+    const implicit = await queries.list({ limit: 10, offset: 0 });
+    const explicit = await queries.list({
+      sort: "surnames",
+      dir: "asc",
+      limit: 10,
+      offset: 0,
+    });
+    assert.deepEqual(
+      implicit.rows.map((row) => row.userId),
+      explicit.rows.map((row) => row.userId),
+    );
+  });
+
+  it("sorts by the other columns too", async () => {
+    await addMembers([{ name: "Anna", surnames: "Roca" }]);
+    const queries = createMemberListQueries(db);
+
+    // Every key the contract declares must produce valid SQL — a sort key
+    // with a typo in its expression is a 500 nobody sees until a click.
+    for (const sort of MEMBER_SORT_KEYS) {
+      const page = await queries.list({
+        sort,
+        dir: "desc",
+        limit: 10,
+        offset: 0,
+      });
+      assert.equal(page.rows.length, 1, `sort=${sort}`);
+    }
   });
 
   it("keeps the same order across two identical queries", async () => {
