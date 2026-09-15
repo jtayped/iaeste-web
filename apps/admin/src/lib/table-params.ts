@@ -77,29 +77,30 @@ type NoReservedKeys<K extends string> = [
 
 const NO_SORT = { key: "", dir: "asc" } as const;
 
-/**
- * The pre-contract form, for screens not yet migrated: the URL parameters and
- * nothing else. Such a screen still spells `page` itself, so the reserved-key
- * check cannot apply to it; passing `options` opts into the full contract.
- */
-export function useTableParams<K extends string>(
-  defaults: Readonly<Record<K, string>>,
-): Pick<TableParams<K, never>, "get" | "setParams">;
+/** `?page=` is 1-based for humans; the API counts rows from zero. */
+function pageToOffset(page: string, limit: number): number {
+  const parsed = Number.parseInt(page, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) return 0;
+  return (parsed - 1) * limit;
+}
+
 export function useTableParams<K extends string, S extends string = never>(
   defaults: Readonly<Record<K, string>> & NoReservedKeys<K>,
   options: TableParamsOptions<S>,
 ): TableParams<K, S>;
+// The body works in plain strings — `defaults` is read by key at runtime and
+// the inert `NO_SORT` is outside any caller's `S`. The signature above is the
+// only one callers see.
 export function useTableParams(
   defaults: Readonly<Record<string, string>>,
-  options?: TableParamsOptions<string>,
+  options: TableParamsOptions<string>,
 ): TableParams<string, string> {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const pageSize = options?.pageSize ?? 0;
-  const sortKeys = options?.sort?.keys;
-  const defaultSort = options?.sort?.default;
+  const sortKeys = options.sort?.keys;
+  const defaultSort = options.sort?.default;
 
   const get = React.useCallback(
     (key: string): string => searchParams.get(key) ?? defaults[key] ?? "",
@@ -166,18 +167,11 @@ export function useTableParams(
   return {
     get,
     setParams,
-    offset: pageToOffset(searchParams.get("page") ?? "1", pageSize),
+    offset: pageToOffset(searchParams.get("page") ?? "1", options.pageSize),
     sort,
     setSort,
     scope,
   };
-}
-
-/** `?page=` is 1-based for humans; the API counts rows from zero. */
-export function pageToOffset(page: string, limit: number): number {
-  const parsed = Number.parseInt(page, 10);
-  if (!Number.isFinite(parsed) || parsed < 1) return 0;
-  return (parsed - 1) * limit;
 }
 
 export function offsetToPage(offset: number, limit: number): string {

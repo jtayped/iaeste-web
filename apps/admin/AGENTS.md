@@ -178,12 +178,9 @@ for the parameters currently in the address bar.
   the `scope` string, built from `defaults` alone — which is why the reserved
   keys cannot be in it.
 - **`page`, `sort` and `dir` are reserved URL keys** owned by
-  `useTableParams`; putting one in `defaults` is a compile error on the
-  two-argument form every new table uses. (The one-argument overload stays
-  permissive only until the four existing screens are migrated off it — they
-  still spell `page: "1"` themselves. Do not write a new one that way.) Every
-  setter resets the page unless the caller names one, so that rule lives in the
-  hook rather than in fourteen call sites that each have to remember it.
+  `useTableParams`; putting one in `defaults` is a compile error. Every setter
+  resets the page unless the caller names one, so that rule lives in the hook
+  rather than in fourteen call sites that each have to remember it.
 - **Every bulk action confirms, then reports through `reportBulkOutcome`**
   (`src/lib/bulk-outcome.ts`). Every non-zero count is named and a partial
   failure is a warning toast, never a green one: the description carries names

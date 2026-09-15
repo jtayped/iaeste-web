@@ -6,6 +6,7 @@ import { Inbox } from "lucide-react";
 import {
   REGISTRATION_DEFAULT_SORT,
   REGISTRATION_SORT_KEYS,
+  REGISTRATION_STATUSES,
   type RegistrationSortKey,
 } from "@repo/constants/validators/admin-list";
 
@@ -31,11 +32,7 @@ import type { AdminRegistration, RegistrationStatus } from "@/lib/admin-types";
 import { fullName } from "@/lib/admin-types";
 import { registrationsAudience } from "@/lib/broadcasts";
 import { formatRelative } from "@/lib/format";
-import {
-  REGISTRATION_STATUSES,
-  REGISTRATION_TAB_LABELS,
-  registrationStatus,
-} from "@/lib/labels";
+import { REGISTRATION_TAB_LABELS, registrationStatus } from "@/lib/labels";
 import { REGISTRATIONS_PAGE_SIZE, useRegistrations } from "@/lib/registrations";
 import { offsetToPage, useTableParams } from "@/lib/table-params";
 
