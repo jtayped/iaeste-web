@@ -1,0 +1,29 @@
+name: Cache health
+
+# GitHub caps the Actions cache at 10GB per repository and evicts by LRU,
+# silently. In September 2026 the five images' `type=gha,mode=max` layer
+# exports had quietly filled 9.18GB of that, leaving turbo's task cache
+# thrashing against the remainder with nothing anywhere reporting it. The
+# layer exports now go to GHCR instead, which is uncapped for a public
+# package — this job is what makes a repeat of that visible before it starts
+# costing cache hits again.
+
+on:
+  schedule:
+    # Mondays, 07:00 UTC.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+jobs:
+  usage:
+    name: Report Actions cache usage
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Summarise and warn
+        run: node .github/scripts/cache-usage.mjs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}

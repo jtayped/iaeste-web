@@ -157,12 +157,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # Writing the layer cache to GHCR is a registry push, even though the
+      # image itself is never pushed from a PR.
+      packages: write
     # One job per image instead of five sequential steps: they build in
     # parallel, so this job's wall time is bounded by the slowest image
-    # rather than the sum of all five. `scope` matches deploy.yml's cache
-    # scope for the same image exactly (no `-pr` suffix) on purpose --
-    # merging a PR should let the production build reuse the cache this job
-    # just populated instead of starting cold.
+    # rather than the sum of all five. The cache ref matches deploy.yml's for
+    # the same image exactly, on purpose — merging a PR should let the
+    # production build reuse the cache this job just populated instead of
+    # starting cold.
     strategy:
       fail-fast: false
       matrix:
@@ -198,6 +201,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build ${{ matrix.name }} image
         uses: docker/build-push-action@v6
@@ -206,5 +214,9 @@ jobs:
           file: ${{ matrix.file }}
           push: false
           build-args: ${{ matrix.build-args }}
-          cache-from: type=gha,scope=${{ matrix.name }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/iaeste-${{ matrix.name }}:buildcache
+          # ignore-error: a pull request from a fork gets a read-only
+          # GITHUB_TOKEN, so the cache export would fail and take an otherwise
+          # green build down with it. Missing the write is the right outcome
+          # there; failing the check is not.
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/iaeste-${{ matrix.name }}:buildcache,mode=max,image-manifest=true,ignore-error=true
