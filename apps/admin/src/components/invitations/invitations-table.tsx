@@ -3,6 +3,11 @@
 import * as React from "react";
 import { MailPlus } from "lucide-react";
 
+import {
+  INVITATION_DEFAULT_SORT,
+  INVITATION_SORT_KEYS,
+  type InvitationSortKey,
+} from "@repo/constants/validators/admin-list";
 import { Button } from "@repo/ui/button";
 
 import {
@@ -39,9 +44,9 @@ import {
   useInvitationAction,
   useInvitations,
 } from "@/lib/invitations";
-import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
+import { offsetToPage, useTableParams } from "@/lib/table-params";
 
-const DEFAULTS = { campaign: "", status: "all", q: "", page: "1" } as const;
+const DEFAULTS = { campaign: "", status: "all", q: "" } as const;
 
 const FILTERS = INVITATION_FILTER_STATUSES.map((value) => ({
   value,
@@ -59,17 +64,40 @@ function prefillName(row: AdminInvitation): string {
   return parts.length > 0 ? parts.join(" ") : "—";
 }
 
-const COLUMNS: DataTableColumn<AdminInvitation>[] = [
-  { id: "email", header: "correu", primary: true, cell: (row) => row.email },
+/**
+ * Every column orders by its own value, with the wire keys taken from
+ * `INVITATION_SORT_KEYS` so a column the route cannot resolve is a compile
+ * error. Three of them are worth spelling out:
+ *
+ * - `nom` sorts by the prefill (`name`), which most invitations do not have —
+ *   an invitation is usually just an address. The route sorts the empty ones
+ *   last in *both* directions, so flipping the column never opens the table on
+ *   a screenful of dashes. Nothing to compensate for here.
+ * - `estat` sorts by the state the badge shows, `expired` included: the route
+ *   folds "pending past `expiresAt`" into the sort expression, so the expired
+ *   ones group together instead of scattering among the pending.
+ * - `enviat` opens `desc` (a click on a date means "newest first"), while
+ *   `caduca` stays `asc` so the first click surfaces what lapses soonest.
+ */
+const COLUMNS: DataTableColumn<AdminInvitation, InvitationSortKey>[] = [
+  {
+    id: "email",
+    header: "correu",
+    sortKey: "email",
+    primary: true,
+    cell: (row) => row.email,
+  },
   {
     id: "prefill",
     header: "nom",
+    sortKey: "name",
     cell: prefillName,
     className: "hidden lg:table-cell",
   },
   {
     id: "status",
     header: "estat",
+    sortKey: "status",
     cell: (row) => (
       <StatusBadge status={invitationStatus(row.status, row.expired)} />
     ),
@@ -77,18 +105,22 @@ const COLUMNS: DataTableColumn<AdminInvitation>[] = [
   {
     id: "role",
     header: "rol",
+    sortKey: "role",
     cell: (row) => roleLabel(row.intendedRole),
     className: "hidden sm:table-cell",
   },
   {
     id: "createdAt",
     header: "enviat",
+    sortKey: "createdAt",
+    sortFirst: "desc",
     cell: (row) => formatRelative(row.createdAt),
     className: "hidden md:table-cell whitespace-nowrap",
   },
   {
     id: "expiresAt",
     header: "caduca",
+    sortKey: "expiresAt",
     cell: (row) =>
       row.status === "accepted" ? "—" : formatDate(row.expiresAt),
     className: "hidden xl:table-cell whitespace-nowrap",
@@ -98,9 +130,9 @@ const COLUMNS: DataTableColumn<AdminInvitation>[] = [
 /**
  * The invitations table.
  *
- * Campaign, status, search and page all live in the URL and go straight to
- * `GET /v1/admin/invitations`. The status remains visible in each row while
- * the toolbar narrows the result set on the server.
+ * Campaign, status, search, ordering and page all live in the URL and go
+ * straight to `GET /v1/admin/invitations`. The status remains visible in each
+ * row while the toolbar narrows the result set on the server.
  */
 export function InvitationsTable({
   campaigns,
@@ -112,25 +144,32 @@ export function InvitationsTable({
   /** `broadcasts.send` — resolved on the server, re-checked by the API. */
   canBroadcast: boolean;
 }) {
-  const { get, setParams } = useTableParams(DEFAULTS);
+  const { get, setParams, offset, sort, setSort, scope } = useTableParams(
+    DEFAULTS,
+    {
+      pageSize: INVITATIONS_PAGE_SIZE,
+      sort: { keys: INVITATION_SORT_KEYS, default: INVITATION_DEFAULT_SORT },
+    },
+  );
   const campaignId = get("campaign") || initialCampaignId;
   const rawStatus = get("status");
   const status: InvitationStatusFilter = isStatus(rawStatus)
     ? rawStatus
     : "all";
   const q = get("q");
-  const offset = pageToOffset(get("page"), INVITATIONS_PAGE_SIZE);
 
   const query = useInvitations({
     campaignId,
     status,
     q,
+    sort: sort.key,
+    dir: sort.dir,
     limit: INVITATIONS_PAGE_SIZE,
     offset,
   });
   const action = useInvitationAction();
   const handleSearch = React.useCallback(
-    (next: string) => setParams({ q: next, page: "1" }),
+    (next: string) => setParams({ q: next }),
     [setParams],
   );
 
@@ -139,6 +178,7 @@ export function InvitationsTable({
       label="invitacions enviades en aquesta campanya"
       columns={COLUMNS}
       rows={query.data?.rows ?? []}
+      sort={{ key: sort.key, dir: sort.dir, onChange: setSort }}
       rowKey={(row) => row.id}
       rowActions={(row) =>
         row.status === "pending" ? (
@@ -196,9 +236,10 @@ export function InvitationsTable({
       {...(canBroadcast && query.data
         ? {
             selection: {
-              // The scope is the server-side query: change the campaign, the
-              // status or the search and the old ticks stop meaning anything.
-              scope: JSON.stringify({ campaignId, status, q }),
+              // The scope is the search plus the filters: change the campaign,
+              // the status or the search and the old ticks stop meaning
+              // anything. Sorting and paging leave it alone — same set.
+              scope,
               total: query.data.total,
               rowLabel: (row: AdminInvitation) => row.email,
               actions: (handle: DataTableSelectionHandle) => (
@@ -226,13 +267,13 @@ export function InvitationsTable({
           <TableFilter
             value={status}
             options={FILTERS}
-            onChange={(next) => setParams({ status: next, page: "1" })}
+            onChange={(next) => setParams({ status: next })}
           />
           <CampaignPicker
             id="invitations-campaign"
             campaigns={campaigns}
             value={campaignId}
-            onChange={(next) => setParams({ campaign: next, page: "1" })}
+            onChange={(next) => setParams({ campaign: next })}
           />
         </TableToolbar>
       }

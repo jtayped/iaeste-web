@@ -4,6 +4,12 @@ import * as React from "react";
 import { Inbox } from "lucide-react";
 
 import {
+  REGISTRATION_DEFAULT_SORT,
+  REGISTRATION_SORT_KEYS,
+  type RegistrationSortKey,
+} from "@repo/constants/validators/admin-list";
+
+import {
   CampaignPicker,
   type CampaignOption,
 } from "@/components/admin/campaign-picker";
@@ -31,13 +37,12 @@ import {
   registrationStatus,
 } from "@/lib/labels";
 import { REGISTRATIONS_PAGE_SIZE, useRegistrations } from "@/lib/registrations";
-import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
+import { offsetToPage, useTableParams } from "@/lib/table-params";
 
 const DEFAULTS = {
   status: "pending_review",
   campaign: "",
   q: "",
-  page: "1",
 } as const;
 
 const FILTERS = REGISTRATION_STATUSES.map((value) => ({
@@ -52,44 +57,60 @@ const EMPTY_COPY: Record<RegistrationStatus, string> = {
   rejected: "no s'ha rebutjat cap sol·licitud d'aquesta campanya.",
 };
 
-const COLUMNS: DataTableColumn<AdminRegistration>[] = [
+/**
+ * Every column orders by its own value, resolved in SQL by the route: `nom`
+ * and `cognoms` are separate keys, and the status tab filter does not make the
+ * `estat` column unsortable — the `all` tab still mixes four states. The wire
+ * keys come from `REGISTRATION_SORT_KEYS`, so a column the route cannot
+ * resolve is a compile error. `enviada` opens `desc`: a click on a date means
+ * "newest first", which is also this queue's default ordering.
+ */
+const COLUMNS: DataTableColumn<AdminRegistration, RegistrationSortKey>[] = [
   {
     id: "name",
     header: "nom",
+    sortKey: "name",
     primary: true,
     cell: (row) => row.profileSnapshot.name,
   },
   {
     id: "surnames",
     header: "cognoms",
+    sortKey: "surnames",
     cell: (row) => row.profileSnapshot.surnames,
   },
   {
     id: "email",
     header: "correu personal",
+    sortKey: "email",
     cell: (row) => row.personalEmail ?? row.email,
     className: "hidden lg:table-cell",
   },
   {
     id: "degree",
     header: "estudis",
+    sortKey: "degree",
     cell: (row) => row.profileSnapshot.degree,
     className: "hidden xl:table-cell",
   },
   {
     id: "studyYear",
     header: "curs",
+    sortKey: "studyYear",
     cell: (row) => row.profileSnapshot.studyYear,
     className: "hidden sm:table-cell tabular-nums",
   },
   {
     id: "status",
     header: "estat",
+    sortKey: "status",
     cell: (row) => <StatusBadge status={registrationStatus(row.status)} />,
   },
   {
     id: "createdAt",
     header: "enviada",
+    sortKey: "createdAt",
+    sortFirst: "desc",
     cell: (row) => formatRelative(row.createdAt),
     className: "hidden md:table-cell whitespace-nowrap",
   },
@@ -102,9 +123,10 @@ function isStatus(value: string): value is RegistrationStatus {
 /**
  * The review queue.
  *
- * `?q=`, `?status=`, `?campaign=` and `?page=` go straight to the API. Search,
- * status, campaign selection and paging are all server-side. It opens on
- * `pending_review` because that is the tab with work in it.
+ * `?q=`, `?status=`, `?campaign=`, `?sort=`, `?dir=` and `?page=` go straight
+ * to the API. Search, status, campaign selection, ordering and paging are all
+ * server-side. It opens on `pending_review` because that is the tab with work
+ * in it, newest first because a queue is read from the top.
  */
 export function RegistrationsQueue({
   campaigns,
@@ -119,7 +141,16 @@ export function RegistrationsQueue({
   /** `registrations.review`, which the route subtree already requires. */
   canReview: boolean;
 }) {
-  const { get, setParams } = useTableParams(DEFAULTS);
+  const { get, setParams, offset, sort, setSort, scope } = useTableParams(
+    DEFAULTS,
+    {
+      pageSize: REGISTRATIONS_PAGE_SIZE,
+      sort: {
+        keys: REGISTRATION_SORT_KEYS,
+        default: REGISTRATION_DEFAULT_SORT,
+      },
+    },
+  );
 
   const rawStatus = get("status");
   const status: RegistrationStatus = isStatus(rawStatus)
@@ -127,18 +158,19 @@ export function RegistrationsQueue({
     : "pending_review";
   const campaignId = get("campaign") || initialCampaignId;
   const q = get("q");
-  const offset = pageToOffset(get("page"), REGISTRATIONS_PAGE_SIZE);
 
   const query = useRegistrations({
     campaignId,
     status,
     q,
+    sort: sort.key,
+    dir: sort.dir,
     limit: REGISTRATIONS_PAGE_SIZE,
     offset,
   });
 
   const handleSearch = React.useCallback(
-    (next: string) => setParams({ q: next, page: "1" }),
+    (next: string) => setParams({ q: next }),
     [setParams],
   );
 
@@ -179,6 +211,7 @@ export function RegistrationsQueue({
       label="cua de revisió de sol·licituds"
       columns={COLUMNS}
       rows={query.data?.rows ?? []}
+      sort={{ key: sort.key, dir: sort.dir, onChange: setSort }}
       rowKey={(row) => row.id}
       rowHref={(row) => `/registrations/${row.id}`}
       rowActions={(row) => <QueueRowActions registration={row} />}
@@ -211,9 +244,10 @@ export function RegistrationsQueue({
       {...((canBroadcast || canBulkAccept) && query.data
         ? {
             selection: {
-              // The scope is the server-side query: change the campaign, the
-              // status or the search and the old ticks stop meaning anything.
-              scope: JSON.stringify({ campaignId, status, q }),
+              // The search and the two filters, and nothing else: change one
+              // and the old ticks stop meaning anything, while sorting or
+              // paging reorders or re-slices the same set and keeps them.
+              scope,
               total: query.data.total,
               rowLabel: (row: AdminRegistration) =>
                 fullName(row.profileSnapshot),
@@ -232,13 +266,13 @@ export function RegistrationsQueue({
           <TableFilter
             value={status}
             options={FILTERS}
-            onChange={(next) => setParams({ status: next, page: "1" })}
+            onChange={(next) => setParams({ status: next })}
           />
           <CampaignPicker
             id="registrations-campaign"
             campaigns={campaigns}
             value={campaignId}
-            onChange={(next) => setParams({ campaign: next, page: "1" })}
+            onChange={(next) => setParams({ campaign: next })}
           />
         </TableToolbar>
       }

@@ -7,6 +7,10 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 
+import type {
+  InvitationSortKey,
+  SortDirection,
+} from "@repo/constants/validators/admin-list";
 import { toast } from "@repo/ui/toast";
 
 import type {
@@ -32,6 +36,9 @@ export interface InvitationsQuery {
   campaignId: string;
   status: InvitationStatusFilter;
   q: string;
+  /** Resolved in SQL by the route; never re-ordered on the client. */
+  sort: InvitationSortKey;
+  dir: SortDirection;
   limit: number;
   offset: number;
 }
@@ -49,6 +56,8 @@ export function useInvitations(params: InvitationsQuery) {
               campaignId: params.campaignId,
               ...(params.status === "all" ? {} : { status: params.status }),
               ...(params.q ? { q: params.q } : {}),
+              sort: params.sort,
+              dir: params.dir,
               limit: params.limit,
               offset: params.offset,
             },

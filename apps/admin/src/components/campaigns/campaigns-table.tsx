@@ -3,6 +3,11 @@
 import * as React from "react";
 import { CalendarRange } from "lucide-react";
 
+import {
+  CAMPAIGN_DEFAULT_SORT,
+  CAMPAIGN_SORT_KEYS,
+  type CampaignSortKey,
+} from "@repo/constants/validators/admin-list";
 import { Badge } from "@repo/ui/badge";
 
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -17,9 +22,9 @@ import type { AdminCampaignWithCounts, CampaignState } from "@/lib/admin-types";
 import { CAMPAIGNS_PAGE_SIZE, useCampaigns } from "@/lib/campaigns";
 import { formatDateRange } from "@/lib/format";
 import { campaignState } from "@/lib/labels";
-import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
+import { offsetToPage, useTableParams } from "@/lib/table-params";
 
-const DEFAULTS = { q: "", state: "", page: "1" } as const;
+const DEFAULTS = { q: "", state: "" } as const;
 
 const CAMPAIGN_STATES = [
   "draft",
@@ -38,17 +43,34 @@ function isState(value: string): value is CampaignState {
   return (CAMPAIGN_STATES as readonly string[]).includes(value);
 }
 
-const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
-  { id: "label", header: "campanya", primary: true, cell: (row) => row.label },
+/**
+ * `flags` is the one column with no `sortKey`: it renders two independent
+ * booleans as badges, so there is no single value "order by context" could
+ * mean. It stays a plain `<th>` rather than inventing an ordering — see the
+ * "Tables" section of `apps/admin/AGENTS.md`.
+ *
+ * The three quantities open `desc`: a click on a date means "newest first" and
+ * a click on a count means "most first".
+ */
+const COLUMNS: DataTableColumn<AdminCampaignWithCounts, CampaignSortKey>[] = [
+  {
+    id: "label",
+    header: "campanya",
+    sortKey: "label",
+    primary: true,
+    cell: (row) => row.label,
+  },
   {
     id: "slug",
     header: "identificador",
+    sortKey: "slug",
     cell: (row) => <span className="font-mono text-xs">{row.slug}</span>,
     className: "hidden lg:table-cell",
   },
   {
     id: "state",
     header: "estat",
+    sortKey: "state",
     cell: (row) => <StatusBadge status={campaignState(row.state)} />,
   },
   {
@@ -69,18 +91,24 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
   {
     id: "activeMembers",
     header: "membres",
+    sortKey: "activeMembers",
+    sortFirst: "desc",
     cell: (row) => row.activeMembers,
     className: "tabular-nums",
   },
   {
     id: "pendingReview",
     header: "per revisar",
+    sortKey: "pendingReview",
+    sortFirst: "desc",
     cell: (row) => row.pendingReview,
     className: "hidden sm:table-cell tabular-nums",
   },
   {
     id: "membership",
     header: "durada de l'equip",
+    sortKey: "membershipStartsAt",
+    sortFirst: "desc",
     cell: (row) =>
       formatDateRange(row.membershipStartsAt, row.membershipEndsAt),
     className: "hidden xl:table-cell whitespace-nowrap",
@@ -90,28 +118,47 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts>[] = [
 /**
  * Every campaign, in one table.
  *
- * Search, state and page are URL parameters sent to
- * `GET /v1/admin/campaigns`. The API returns only the requested page, even
- * though this list will usually be shorter than one page.
+ * Search, state, ordering and page are URL parameters sent to
+ * `GET /v1/admin/campaigns`. The API returns only the requested page, in the
+ * order it was asked for, even though this list will usually be shorter than
+ * one page.
  */
 export function CampaignsTable({
   initialData,
 }: {
   initialData: AdminCampaignWithCounts[];
 }) {
-  const { get, setParams } = useTableParams(DEFAULTS);
+  const { get, setParams, offset, sort, setSort } = useTableParams(DEFAULTS, {
+    pageSize: CAMPAIGNS_PAGE_SIZE,
+    sort: { keys: CAMPAIGN_SORT_KEYS, default: CAMPAIGN_DEFAULT_SORT },
+  });
   const q = get("q");
   const rawState = get("state");
   const state: CampaignState | "" = isState(rawState) ? rawState : "";
-  const offset = pageToOffset(get("page"), CAMPAIGNS_PAGE_SIZE);
-  const isFirstUnfilteredPage = q === "" && state === "" && offset === 0;
+  // The server-rendered rows are the *default* ordering of the whole
+  // unfiltered first page. Handing them to TanStack as `initialData` for any
+  // other query would answer the first header click with those same rows: the
+  // chevron would move and the table would not, which reads as sorting being
+  // broken. So the sort has to be at its default too.
+  const isDefaultSort =
+    sort.key === CAMPAIGN_DEFAULT_SORT.key &&
+    sort.dir === CAMPAIGN_DEFAULT_SORT.dir;
+  const isFirstUnfilteredPage =
+    q === "" && state === "" && offset === 0 && isDefaultSort;
 
   const query = useCampaigns(
-    { q, state, limit: CAMPAIGNS_PAGE_SIZE, offset },
+    {
+      q,
+      state,
+      sort: sort.key,
+      dir: sort.dir,
+      limit: CAMPAIGNS_PAGE_SIZE,
+      offset,
+    },
     isFirstUnfilteredPage ? initialData : undefined,
   );
   const handleSearch = React.useCallback(
-    (next: string) => setParams({ q: next, page: "1" }),
+    (next: string) => setParams({ q: next }),
     [setParams],
   );
 
@@ -120,6 +167,7 @@ export function CampaignsTable({
       label="campanyes del comitè"
       columns={COLUMNS}
       rows={query.data?.rows ?? []}
+      sort={{ key: sort.key, dir: sort.dir, onChange: setSort }}
       rowKey={(row) => row.id}
       rowHref={(row) => `/campaigns/${row.id}`}
       state={{
@@ -159,9 +207,7 @@ export function CampaignsTable({
           <TableFilter
             value={state || "all"}
             options={FILTERS}
-            onChange={(next) =>
-              setParams({ state: isState(next) ? next : "", page: "1" })
-            }
+            onChange={(next) => setParams({ state: isState(next) ? next : "" })}
           />
         </TableToolbar>
       }

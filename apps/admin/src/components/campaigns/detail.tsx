@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { CAMPAIGN_DEFAULT_SORT } from "@repo/constants/validators/admin-list";
 import { Badge } from "@repo/ui/badge";
 
 import { Field, FieldList, Section } from "@/components/admin/detail-panel";
@@ -28,8 +29,18 @@ export function CampaignDetail({
   id: string;
   initialData: AdminCampaignWithCounts[];
 }) {
+  // The default ordering, which is both what the server rendered `initialData`
+  // in and the key the unsorted campanyes list subscribes to — so the fitxa and
+  // that list share one cache entry rather than each fetching the same page.
   const query = useCampaigns(
-    { q: "", state: "", limit: CAMPAIGNS_PAGE_SIZE, offset: 0 },
+    {
+      q: "",
+      state: "",
+      sort: CAMPAIGN_DEFAULT_SORT.key,
+      dir: CAMPAIGN_DEFAULT_SORT.dir,
+      limit: CAMPAIGNS_PAGE_SIZE,
+      offset: 0,
+    },
     initialData,
   );
   const campaign =

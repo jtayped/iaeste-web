@@ -7,6 +7,10 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 
+import type {
+  RegistrationSortKey,
+  SortDirection,
+} from "@repo/constants/validators/admin-list";
 import { toast } from "@repo/ui/toast";
 
 import type {
@@ -31,6 +35,9 @@ export interface RegistrationsQuery {
   campaignId: string;
   status: RegistrationStatus | "all";
   q: string;
+  /** Resolved in SQL by the route; never re-ordered on the client. */
+  sort: RegistrationSortKey;
+  dir: SortDirection;
   limit: number;
   offset: number;
 }
@@ -55,6 +62,8 @@ export function useRegistrations(params: RegistrationsQuery) {
               campaignId: params.campaignId,
               ...(params.status === "all" ? {} : { status: params.status }),
               ...(params.q ? { q: params.q } : {}),
+              sort: params.sort,
+              dir: params.dir,
               limit: params.limit,
               offset: params.offset,
             },
