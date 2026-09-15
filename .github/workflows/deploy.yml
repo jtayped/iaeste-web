@@ -114,8 +114,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             API_INTERNAL_URL=${{ vars.ADMIN_API_INTERNAL_URL || 'http://iaeste-api:3004' }}
-          cache-from: type=gha,scope=admin
-          cache-to: type=gha,mode=max,scope=admin
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-admin:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-admin:buildcache,mode=max,image-manifest=true
 
   build-cms:
     name: Build and push iaeste-cms
@@ -147,8 +147,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=cms
-          cache-to: type=gha,mode=max,scope=cms
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-cms:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-cms:buildcache,mode=max,image-manifest=true
 
   build-api:
     name: Build and push iaeste-api
@@ -180,8 +180,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=api
-          cache-to: type=gha,mode=max,scope=api
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-api:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-api:buildcache,mode=max,image-manifest=true
 
   build-inscripcions:
     name: Build and push iaeste-inscripcions
@@ -217,8 +217,8 @@ jobs:
             NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
             NEXT_PUBLIC_INSCRIPCIONS_STATE=${{ vars.NEXT_PUBLIC_INSCRIPCIONS_STATE || 'on' }}
             NEXT_PUBLIC_WHATSAPP_INVITE=${{ vars.NEXT_PUBLIC_WHATSAPP_INVITE }}
-          cache-from: type=gha,scope=inscripcions
-          cache-to: type=gha,mode=max,scope=inscripcions
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-inscripcions:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-inscripcions:buildcache,mode=max,image-manifest=true
 
   build-web:
     name: Build and push iaeste-web
@@ -255,8 +255,8 @@ jobs:
             RESEND_API_KEY=build-placeholder
             CONTACT_FORM_FROM=noreply@iaestelleida.cat
             CONTACT_FORM_TO=ci@example.com
-          cache-from: type=gha,scope=web
-          cache-to: type=gha,mode=max,scope=web
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-web:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-web:buildcache,mode=max,image-manifest=true
 
   deploy-api:
     name: Deploy API first
@@ -266,7 +266,15 @@ jobs:
       needs.build-admin.result == 'success' && needs.build-cms.result == 'success' &&
       needs.build-inscripcions.result == 'success' && needs.build-web.result == 'success') ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'api')))
-    needs: [detect-changes, build-api, build-admin, build-cms, build-inscripcions, build-web]
+    needs:
+      [
+        detect-changes,
+        build-api,
+        build-admin,
+        build-cms,
+        build-inscripcions,
+        build-web,
+      ]
     runs-on: ubuntu-latest
     permissions:
       contents: read
