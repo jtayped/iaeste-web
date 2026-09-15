@@ -3,6 +3,12 @@
 import * as React from "react";
 import { Users } from "lucide-react";
 
+import {
+  MEMBER_DEFAULT_SORT,
+  MEMBER_SORT_KEYS,
+  type MemberSortKey,
+} from "@repo/constants/validators/admin-list";
+
 import { StatusBadge } from "@/components/admin/status-badge";
 import { BroadcastAction } from "@/components/broadcasts/broadcast-action";
 import { DataTable } from "@/components/data-table/data-table";
@@ -20,7 +26,7 @@ import type { AdminMemberListItem, MemberFilter } from "@/lib/admin-types";
 import { membersAudience } from "@/lib/broadcasts";
 import { memberTargetState, membershipStatus, roleLabel } from "@/lib/labels";
 import { MEMBERS_PAGE_SIZE, useMembers } from "@/lib/members";
-import { offsetToPage, pageToOffset, useTableParams } from "@/lib/table-params";
+import { offsetToPage, useTableParams } from "@/lib/table-params";
 
 export interface MemberCampaignOption {
   id: string;
@@ -29,36 +35,59 @@ export interface MemberCampaignOption {
   isRegistrationOpen: boolean;
 }
 
-const BASE_COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
-  { id: "name", header: "nom", primary: true, cell: (row) => row.name },
-  { id: "surnames", header: "cognoms", cell: (row) => row.surnames },
+/**
+ * Every column orders by its own value, so `nom` and `cognoms` are separate
+ * keys rather than one ordering that secretly means surname-first. The wire
+ * keys come from `MEMBER_SORT_KEYS`, so a column the route cannot resolve is a
+ * compile error. `campanyes` opens `desc`: a click on a count means "most
+ * first".
+ */
+const COLUMNS: DataTableColumn<AdminMemberListItem, MemberSortKey>[] = [
+  {
+    id: "name",
+    header: "nom",
+    sortKey: "name",
+    primary: true,
+    cell: (row) => row.name,
+  },
+  {
+    id: "surnames",
+    header: "cognoms",
+    sortKey: "surnames",
+    cell: (row) => row.surnames,
+  },
   {
     id: "email",
     header: "correu",
+    sortKey: "email",
     cell: (row) => row.email,
     className: "hidden lg:table-cell",
   },
   {
     id: "degree",
     header: "estudis",
+    sortKey: "degree",
     cell: (row) => row.degree,
     className: "hidden xl:table-cell",
   },
   {
     id: "studyYear",
     header: "curs",
+    sortKey: "studyYear",
     cell: (row) => row.studyYear,
     className: "hidden sm:table-cell tabular-nums",
   },
   {
     id: "role",
     header: "rol",
+    sortKey: "role",
     cell: (row) => roleLabel(row.role),
     className: "hidden lg:table-cell",
   },
   {
     id: "status",
     header: "estat actual",
+    sortKey: "status",
     cell: (row) =>
       row.currentStatus ? (
         <StatusBadge status={membershipStatus(row.currentStatus)} />
@@ -69,10 +98,38 @@ const BASE_COLUMNS: DataTableColumn<AdminMemberListItem>[] = [
   {
     id: "totalMemberships",
     header: "campanyes",
+    sortKey: "totalMemberships",
+    sortFirst: "desc",
     cell: (row) => row.totalMemberships,
     className: "hidden xl:table-cell tabular-nums",
   },
 ];
+
+/**
+ * The readiness column, in its two forms.
+ *
+ * With no target campaign every row carries the same (absent) state, so the
+ * API has nothing to order by and the tiebreaker decides on its own: a header
+ * that flipped a chevron and moved no rows would read as sorting being broken.
+ * It becomes sortable exactly when it means something. Two literals rather
+ * than one with a conditional `sortKey`, because an explicitly `undefined`
+ * optional property is not the same as an absent one.
+ */
+const TARGET_COLUMN: DataTableColumn<AdminMemberListItem, MemberSortKey> = {
+  id: "targetState",
+  header: "destí",
+  cell: (row) =>
+    row.targetState ? (
+      <StatusBadge status={memberTargetState(row.targetState)} />
+    ) : (
+      "—"
+    ),
+};
+
+const SORTABLE_TARGET_COLUMN: DataTableColumn<
+  AdminMemberListItem,
+  MemberSortKey
+> = { ...TARGET_COLUMN, sortKey: "targetState" };
 
 function sourceCampaignId(source: string): string | undefined {
   return source.startsWith("campaign:") ? source.slice(9) : undefined;
@@ -103,10 +160,16 @@ export function MembersTable({
   canBroadcast: boolean;
 }) {
   const defaults = React.useMemo(
-    () => ({ q: "", source: initialSource, target: initialTarget, page: "1" }),
+    () => ({ q: "", source: initialSource, target: initialTarget }),
     [initialSource, initialTarget],
   );
-  const { get, setParams } = useTableParams(defaults);
+  const { get, setParams, offset, sort, setSort, scope } = useTableParams(
+    defaults,
+    {
+      pageSize: MEMBERS_PAGE_SIZE,
+      sort: { keys: MEMBER_SORT_KEYS, default: MEMBER_DEFAULT_SORT },
+    },
+  );
 
   const q = get("q");
   const rawSource = get("source");
@@ -122,37 +185,26 @@ export function MembersTable({
     campaigns.find((campaign) => campaign.id === initialTarget);
   const filter = sourceFilter(source);
   const campaignId = sourceCampaignId(source);
-  const offset = pageToOffset(get("page"), MEMBERS_PAGE_SIZE);
 
   const query = useMembers({
     q,
     filter,
     ...(campaignId ? { campaignId } : {}),
     ...(target ? { targetCampaignId: target.id } : {}),
+    sort: sort.key,
+    dir: sort.dir,
     limit: MEMBERS_PAGE_SIZE,
     offset,
   });
   const rows = query.data?.rows ?? [];
 
-  const columns = React.useMemo<DataTableColumn<AdminMemberListItem>[]>(
-    () => [
-      ...BASE_COLUMNS,
-      {
-        id: "targetState",
-        header: "destí",
-        cell: (row) =>
-          row.targetState ? (
-            <StatusBadge status={memberTargetState(row.targetState)} />
-          ) : (
-            "—"
-          ),
-      },
-    ],
-    [],
+  const columns = React.useMemo(
+    () => [...COLUMNS, target ? SORTABLE_TARGET_COLUMN : TARGET_COLUMN],
+    [target],
   );
 
   const handleSearch = React.useCallback(
-    (next: string) => setParams({ q: next, page: "1" }),
+    (next: string) => setParams({ q: next }),
     [setParams],
   );
 
@@ -188,6 +240,7 @@ export function MembersTable({
       label="llista de membres del comitè"
       columns={columns}
       rows={rows}
+      sort={{ key: sort.key, dir: sort.dir, onChange: setSort }}
       rowKey={(row) => row.userId}
       rowHref={(row) => `/members/${row.userId}`}
       state={{
@@ -222,7 +275,7 @@ export function MembersTable({
             // Ineligible rows stay visible in "destí" and the bulk invite
             // route skips them, reporting how many it left out.
             selection: {
-              scope: JSON.stringify({ q, source, target: target?.id ?? "" }),
+              scope,
               total: query.data.total,
               rowLabel: (row: AdminMemberListItem) =>
                 `${row.name} ${row.surnames}`.trim(),
@@ -266,7 +319,7 @@ export function MembersTable({
               label="membres de"
               value={source}
               options={sourceOptions}
-              onChange={(next) => setParams({ source: next, page: "1" })}
+              onChange={(next) => setParams({ source: next })}
             />
             {target ? (
               <TableSelectFilter
@@ -274,7 +327,7 @@ export function MembersTable({
                 label="convida a"
                 value={target.id}
                 options={targetOptions}
-                onChange={(next) => setParams({ target: next, page: "1" })}
+                onChange={(next) => setParams({ target: next })}
               />
             ) : null}
           </div>

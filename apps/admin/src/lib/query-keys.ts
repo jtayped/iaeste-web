@@ -1,4 +1,9 @@
 import type {
+  MemberSortKey,
+  SortDirection,
+} from "@repo/constants/validators/admin-list";
+
+import type {
   BroadcastAudience,
   BroadcastContent,
   CampaignState,
@@ -33,11 +38,19 @@ export const queryKeys = {
 
   members: {
     all: ["members"] as const,
+    /**
+     * The ordering is part of the key: a different `sort`/`dir` is a different
+     * page of rows from the server, and a key that left them out would hand
+     * the previous ordering back out of the cache and silently ignore the
+     * click.
+     */
     list: (params: {
       q: string;
       filter: MemberFilter;
       campaignId?: string;
       targetCampaignId?: string;
+      sort: MemberSortKey;
+      dir: SortDirection;
       limit: number;
       offset: number;
     }) => ["members", "list", params] as const,
