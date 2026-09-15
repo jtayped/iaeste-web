@@ -1,6 +1,23 @@
 /**
  * Date formatting for the admin screens.
  *
+ * **Which formatter to reach for.** The formatters below are not
+ * interchangeable, and picking per-cell is how `/invitations` ended up showing
+ * a relative `enviat` next to a numeric `caduca`, where nothing tells you which
+ * of the two comes first. The convention:
+ *
+ * - **In a list**, a date is relative text with the absolute date on `title`:
+ *   `relativeDate()`, or the `<DateCell>` that wraps it. Scanning a list is
+ *   about recency and urgency ("fa 3 dies", "d'aquí a 2 dies"), and the exact
+ *   day is a hover away when it matters. Every date column in a table uses
+ *   this — one column relative and the next absolute cannot be compared.
+ * - **On a detail page**, a date is absolute. You are reading one record and
+ *   the question is *when*, not *how long ago*.
+ * - **One absolute format throughout**: `formatDate` (`05/09/2026`), with
+ *   `formatDateTime` only where the hour is part of the fact (the audit log)
+ *   and `formatDateLong` only inside a sentence, where the numeric form reads
+ *   as a serial number.
+ *
  * Everything here reads and writes **UTC** components rather than local ones.
  * That is deliberate: these values are rendered by server components and then
  * hydrated on the client, and `getDate()` on a server running UTC disagrees
@@ -79,7 +96,8 @@ export function fromIsoDay(iso: string): Date | undefined {
 }
 
 /** `fa 3 dies` / `d'aquí a 2 mesos`, relative to now. */
-export function formatRelative(iso: string): string {
+export function formatRelative(iso: string | null | undefined): string {
+  if (!iso) return "—";
   const then = new Date(iso).getTime();
   if (Number.isNaN(then)) return "—";
 
@@ -95,4 +113,21 @@ export function formatRelative(iso: string): string {
   const months = Math.round(magnitude / 30);
   const unit = months === 1 ? "mes" : "mesos";
   return diffDays < 0 ? `fa ${months} ${unit}` : `d'aquí a ${months} ${unit}`;
+}
+
+/**
+ * The list form of a date: what to show, and what to put on `title`.
+ *
+ * A cell that only says `fa 3 dies` cannot be lined up against the exact day a
+ * detail page shows, and one that only says `05/09/2026` makes the reader do
+ * the subtraction. Returning both lets a cell show the relative form and keep
+ * the absolute one a hover away — `<DateCell>` is how a table renders it.
+ */
+export function relativeDate(iso: string | null | undefined): {
+  text: string;
+  title: string | undefined;
+} {
+  const text = formatRelative(iso);
+  if (text === "—") return { text, title: undefined };
+  return { text, title: formatDate(iso) };
 }

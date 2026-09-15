@@ -46,6 +46,10 @@
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary-hover: var(--secondary-hover);
+  /* `--link` is already defined below for both schemes; this is only the
+     Tailwind mapping that makes `text-link` exist, so navigation can be
+     painted in it without a one-off `var(--link)`. */
+  --color-link: var(--link);
   --color-destructive: var(--danger);
   --color-destructive-foreground: var(--danger-foreground);
   --color-muted-foreground: var(--muted);

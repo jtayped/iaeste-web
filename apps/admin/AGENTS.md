@@ -196,12 +196,22 @@ for the parameters currently in the address bar.
   `src/components/members/members-table.tsx` as the reference implementation.
 
 **Columns are declared once** as `DataTableColumn<Row, SortKey>[]`, usually at
-module scope. `primary: true` marks the one cell that links to the record.
-Responsive display classes go in `className`, which is applied to the `<th>`
-and every `<td>` together so a header can never drift away from its column.
-`sortKey` is the wire value from the list's key union in `@repo/constants`, and
-`sortFirst` the direction the first click asks for — `desc` on a date column,
-because someone clicking one means "newest first".
+module scope. `primary: true` marks the cell that identifies the record and
+carries the emphasis — it does not draw the link itself. Responsive display
+classes go in `className`, which is applied to the `<th>` and every `<td>`
+together so a header can never drift away from its column — this is also how a
+column not worth a sideways scroll is dropped below `md`. `sortKey` is the wire
+value from the list's key union in `@repo/constants`, and `sortFirst` the
+direction the first click asks for — `desc` on a date column, because someone
+clicking one means "newest first"; a column with a `sortKey` renders through
+`<SortHeader>` on a table that passed `sort`, and as a plain `<th>` otherwise.
+
+**Navigation is the whole row, not a cell.** A table that passes `rowHref` gets
+one overlay `<Link>` stretched across the row, named by `rowLabel`, with the
+selection checkbox and `rowActions` cells raised above it — a row of six links
+is six tab stops to one place. A per-cell anchor in a `primary` column would
+nest inside that overlay, so there must not be one. The header buttons sit
+ahead of the row links in the tab order, which is why sorting stays reachable.
 
 **The two analytics tables are outside this contract.** `owners-table` and
 `cold-leads-table` render a fixed five-minute Odoo snapshot with no query of

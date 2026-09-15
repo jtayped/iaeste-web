@@ -1,4 +1,5 @@
 import { Badge } from "@repo/ui/badge";
+import { cn } from "@repo/ui/lib/utils";
 
 import type { Labelled } from "@/lib/labels";
 
@@ -17,7 +18,9 @@ export function StatusBadge({
   return (
     <Badge
       variant={status.tone}
-      className={className}
+      // A two-word status that wraps makes its row taller than every other row
+      // in the table, and the column is sized off the header anyway.
+      className={cn("whitespace-nowrap", className)}
       // Statuses are read, not clicked; without this the badge is a focus
       // target that goes nowhere on a keyboard pass.
       tabIndex={-1}

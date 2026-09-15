@@ -11,7 +11,6 @@ import { CampaignActions } from "@/components/campaigns/campaign-actions";
 import { EditCampaign } from "@/components/campaigns/edit-campaign";
 import type { AdminCampaignWithCounts } from "@/lib/admin-types";
 import { CAMPAIGNS_PAGE_SIZE, useCampaigns } from "@/lib/campaigns";
-import { formatDateLong } from "@/lib/format";
 import { campaignState } from "@/lib/labels";
 
 /**
@@ -71,11 +70,11 @@ export function CampaignDetail({
         ) : null}
       </div>
 
+      {/* Counters only. The identificador and the four dates are editable
+          fields a few centimetres below, and the same value twice on one page
+          — in two date formats — was read as two different records. */}
       <Section title="resum">
         <FieldList>
-          <Field label="identificador">
-            <span className="font-mono text-xs">{campaign.slug}</span>
-          </Field>
           <Field label="membres actius">{campaign.activeMembers}</Field>
           <Field label="sol·licituds per revisar">
             {campaign.pendingReview > 0 ? (
@@ -88,14 +87,6 @@ export function CampaignDetail({
             ) : (
               campaign.pendingReview
             )}
-          </Field>
-          <Field label="l'equip">
-            {formatDateLong(campaign.membershipStartsAt)} –{" "}
-            {formatDateLong(campaign.membershipEndsAt)}
-          </Field>
-          <Field label="inscripcions">
-            {formatDateLong(campaign.registrationOpensAt)} –{" "}
-            {formatDateLong(campaign.registrationClosesAt)}
           </Field>
         </FieldList>
       </Section>

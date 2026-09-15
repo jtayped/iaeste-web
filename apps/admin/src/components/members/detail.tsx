@@ -11,7 +11,7 @@ import {
   type AdminMemberDetail,
   type AdminMemberEmail,
 } from "@/lib/admin-types";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { roleLabel } from "@/lib/labels";
 import { useMember } from "@/lib/members";
 
@@ -49,13 +49,18 @@ export function MemberDetail({
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <Section title="perfil">
+      <Section
+        title="perfil"
+        description="aquestes dades les manté la persona mateixa des del seu perfil. des d'aquí només se'n poden canviar els correus i el rol."
+      >
         <FieldList>
           <Field label="telèfon">{profile.phoneDisplay}</Field>
           <Field label="grau">{profile.degree}</Field>
           <Field label="curs">{profile.studyYear}</Field>
           <Field label="rol">{roleLabel(profile.role)}</Field>
-          <Field label="compte creat">{formatDate(profile.createdAt)}</Field>
+          <Field label="compte creat">
+            {formatDateTime(profile.createdAt)}
+          </Field>
         </FieldList>
       </Section>
 
@@ -79,11 +84,16 @@ export function MemberDetail({
         </FieldList>
       </Section>
 
-      <MembershipTimeline memberships={member.memberships} />
-
-      <MemberActions member={member} />
+      <MembershipTimeline
+        memberships={member.memberships}
+        email={profile.email}
+      />
 
       <EventLog events={member.events} />
+
+      {/* Last, and in this order: everything above is the record, everything
+          from here on changes it — ending with the block that destroys it. */}
+      <MemberActions member={member} />
     </div>
   );
 }

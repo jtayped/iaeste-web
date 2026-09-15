@@ -36,6 +36,46 @@ function Chip({
   );
 }
 
+/**
+ * The same state as one line, for the phone header.
+ *
+ * It used to be held back to `md`, which meant that on the two screens that
+ * carry their own campaign select — membres and inscripcions — a phone could
+ * be showing last year's data with nothing on screen saying so. One truncated
+ * line fits under the header's title; the whole of it stays on `title`.
+ *
+ * `showRegistration` is the same gate the chips take: off without
+ * `registrations.review`, so the phone line says no more than the desktop
+ * chips beside it.
+ */
+export function campaignContextText(
+  overview: AdminOverview,
+  showRegistration = true,
+): string {
+  const { currentCampaign, registrationOpenCampaign } = overview;
+
+  if (!showRegistration) {
+    return currentCampaign
+      ? `${currentCampaign.label} · actual`
+      : "cap campanya actual";
+  }
+
+  if (currentCampaign === null && registrationOpenCampaign === null) {
+    return "cap campanya activa";
+  }
+
+  const current = currentCampaign
+    ? `${currentCampaign.label} · actual`
+    : "cap campanya actual";
+
+  if (registrationOpenCampaign === null)
+    return `${current} · inscripcions tancades`;
+  if (currentCampaign?.id === registrationOpenCampaign.id) {
+    return `${current} · inscripcions obertes`;
+  }
+  return `${current} · ${registrationOpenCampaign.label} · inscripcions obertes`;
+}
+
 export function CampaignContext({
   overview,
   showRegistration = true,

@@ -12,8 +12,11 @@ export const dynamic = "force-dynamic";
 
 const BREADCRUMB: BreadcrumbEntry[] = [{ label: "membres" }];
 const TITLE = "membres";
+// The two campaign selects are the whole point of this screen — you look at
+// last year's team to invite it into this year's — and read as two unrelated
+// filters unless the page says which is which.
 const DESCRIPTION =
-  "qui forma part del comitè, ara i abans, i qui renovarà la propera campanya.";
+  "qui forma part del comitè, ara i abans. «membres de» és l'equip que estàs mirant; «convida a», la campanya on els donaràs d'alta.";
 
 export const metadata = adminMetadata(BREADCRUMB, TITLE, DESCRIPTION);
 
