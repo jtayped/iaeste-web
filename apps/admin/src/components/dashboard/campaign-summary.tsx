@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Card } from "@repo/ui/card";
+import { cn } from "@repo/ui/lib/utils";
 
 import type { AdminCampaignRef } from "@/lib/overview";
 
@@ -18,7 +19,7 @@ function Row({
   linked: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 p-4 sm:p-5">
       <div className="min-w-0">
         <p className="text-sm font-medium">{role}</p>
         <p className="text-xs text-muted-foreground">{explanation}</p>
@@ -28,7 +29,7 @@ function Row({
       ) : linked ? (
         <Link
           href="/campaigns"
-          className="text-sm font-medium text-secondary underline-offset-4 outline-none hover:underline focus-visible:underline"
+          className="rounded-sm text-sm font-medium text-link underline-offset-4 ring-ring outline-none hover:underline focus-visible:ring-2"
         >
           {campaign.label}
         </Link>
@@ -50,6 +51,7 @@ export function CampaignSummary({
   registrationOpenCampaign,
   linked = true,
   showRegistration = true,
+  className,
 }: {
   currentCampaign: AdminCampaignRef | null;
   registrationOpenCampaign: AdminCampaignRef | null;
@@ -57,13 +59,22 @@ export function CampaignSummary({
   linked?: boolean;
   /** Off without `registrations.review` — the intake queue is not their work. */
   showRegistration?: boolean;
+  className?: string;
 }) {
   return (
-    <section className="space-y-3">
+    <section className={cn("space-y-3", className)}>
       <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         campanyes
       </h2>
-      <Card className="divide-y divide-border rounded-lg border-border p-0 shadow-none">
+      {/* Two tracks, but only when there are two rows: without
+          `registrations.review` the single row would otherwise sit in the left
+          half of the card with the right half blank. */}
+      <Card
+        className={cn(
+          "grid divide-y divide-border rounded-lg border-border p-0 shadow-none",
+          showRegistration && "md:grid-cols-2 md:divide-x md:divide-y-0",
+        )}
+      >
         <Row
           role="campanya actual"
           explanation="on viuen les altes i les baixes d'aquest curs"

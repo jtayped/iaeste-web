@@ -16,15 +16,20 @@ import type {
   DataTableColumn,
   DataTableSelectionHandle,
 } from "@/components/data-table/types";
-import {
-  TableSearch,
-  TableSelectFilter,
-  TableToolbar,
-} from "@/components/data-table/toolbar";
 import { BulkInviteAction } from "@/components/members/bulk-invite-action";
-import type { AdminMemberListItem, MemberFilter } from "@/lib/admin-types";
+import { MembersFilters } from "@/components/members/members-filters";
+import {
+  fullName,
+  type AdminMemberListItem,
+  type MemberFilter,
+} from "@/lib/admin-types";
 import { membersAudience } from "@/lib/broadcasts";
-import { memberTargetState, membershipStatus, roleLabel } from "@/lib/labels";
+import {
+  memberTargetState,
+  membershipStatus,
+  personName,
+  roleLabel,
+} from "@/lib/labels";
 import { MEMBERS_PAGE_SIZE, useMembers } from "@/lib/members";
 import { offsetToPage, useTableParams } from "@/lib/table-params";
 
@@ -48,13 +53,13 @@ const COLUMNS: DataTableColumn<AdminMemberListItem, MemberSortKey>[] = [
     header: "nom",
     sortKey: "name",
     primary: true,
-    cell: (row) => row.name,
+    cell: (row) => personName(row.name),
   },
   {
     id: "surnames",
     header: "cognoms",
     sortKey: "surnames",
-    cell: (row) => row.surnames,
+    cell: (row) => personName(row.surnames),
   },
   {
     id: "email",
@@ -67,12 +72,20 @@ const COLUMNS: DataTableColumn<AdminMemberListItem, MemberSortKey>[] = [
     id: "degree",
     header: "estudis",
     sortKey: "degree",
-    cell: (row) => row.degree,
+    // A three-line degree name is what makes one row twice the height of the
+    // one above it; the whole string stays reachable on the tooltip.
+    cell: (row) => (
+      <span className="block max-w-[22ch] truncate" title={row.degree}>
+        {row.degree}
+      </span>
+    ),
     className: "hidden xl:table-cell",
   },
   {
+    // `curs` is the academic year everywhere else in this app — in the campaign
+    // selector two filters to the left of here, among others.
     id: "studyYear",
-    header: "curs",
+    header: "any de carrera",
     sortKey: "studyYear",
     cell: (row) => row.studyYear,
     className: "hidden sm:table-cell tabular-nums",
@@ -94,6 +107,7 @@ const COLUMNS: DataTableColumn<AdminMemberListItem, MemberSortKey>[] = [
       ) : (
         <StatusBadge status={{ label: "sense alta activa", tone: "outline" }} />
       ),
+    className: "whitespace-nowrap",
   },
   {
     id: "totalMemberships",
@@ -124,12 +138,18 @@ const TARGET_COLUMN: DataTableColumn<AdminMemberListItem, MemberSortKey> = {
     ) : (
       "—"
     ),
+  className: "whitespace-nowrap",
 };
 
 const SORTABLE_TARGET_COLUMN: DataTableColumn<
   AdminMemberListItem,
   MemberSortKey
 > = { ...TARGET_COLUMN, sortKey: "targetState" };
+
+/** Announced by the row link and by the row's checkbox, so they cannot differ. */
+function memberName(row: AdminMemberListItem): string {
+  return personName(fullName(row));
+}
 
 function sourceCampaignId(source: string): string | undefined {
   return source.startsWith("campaign:") ? source.slice(9) : undefined;
@@ -212,6 +232,12 @@ export function MembersTable({
     ...(q ? { q } : {}),
     ...(campaignId ? { campaignId } : { filter }),
   };
+  // What the collapsed `filtres` button has to admit to on a phone: anything
+  // the operator moved off the default the page opened on.
+  const activeCount =
+    (q ? 1 : 0) +
+    (source === initialSource ? 0 : 1) +
+    (target === undefined || target.id === initialTarget ? 0 : 1);
   const sourceOptions = [
     ...campaigns.map((campaign) => ({
       value: `campaign:${campaign.id}`,
@@ -243,6 +269,7 @@ export function MembersTable({
       sort={{ key: sort.key, dir: sort.dir, onChange: setSort }}
       rowKey={(row) => row.userId}
       rowHref={(row) => `/members/${row.userId}`}
+      rowLabel={memberName}
       state={{
         isPending: query.isPending,
         isError: query.isError,
@@ -277,8 +304,8 @@ export function MembersTable({
             selection: {
               scope,
               total: query.data.total,
-              rowLabel: (row: AdminMemberListItem) =>
-                `${row.name} ${row.surnames}`.trim(),
+              unit: { singular: "membre", plural: "membres" },
+              rowLabel: memberName,
               actions: (selection: DataTableSelectionHandle) => (
                 <>
                   {canBroadcast ? (
@@ -306,32 +333,17 @@ export function MembersTable({
           }
         : {})}
       toolbar={
-        <TableToolbar>
-          <TableSearch
-            id="members-search"
-            value={q}
-            placeholder="nom, cognoms o correu"
-            onCommit={handleSearch}
-          />
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-            <TableSelectFilter
-              id="members-source"
-              label="membres de"
-              value={source}
-              options={sourceOptions}
-              onChange={(next) => setParams({ source: next })}
-            />
-            {target ? (
-              <TableSelectFilter
-                id="members-target"
-                label="convida a"
-                value={target.id}
-                options={targetOptions}
-                onChange={(next) => setParams({ target: next })}
-              />
-            ) : null}
-          </div>
-        </TableToolbar>
+        <MembersFilters
+          q={q}
+          onSearch={handleSearch}
+          source={source}
+          sourceOptions={sourceOptions}
+          onSourceChange={(next) => setParams({ source: next })}
+          {...(target ? { targetId: target.id } : {})}
+          targetOptions={targetOptions}
+          onTargetChange={(next) => setParams({ target: next })}
+          activeCount={activeCount}
+        />
       }
     />
   );

@@ -72,6 +72,7 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts, CampaignSortKey>[] = [
     header: "estat",
     sortKey: "state",
     cell: (row) => <StatusBadge status={campaignState(row.state)} />,
+    className: "whitespace-nowrap",
   },
   {
     id: "flags",
@@ -79,14 +80,19 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts, CampaignSortKey>[] = [
     cell: (row) => (
       <div className="flex flex-wrap gap-1">
         {row.isCurrent ? <Badge variant="default">actual</Badge> : null}
+        {/* Both of these are read, not pressed: brand blue in a row would
+            outrank the buttons above the table. */}
         {row.isRegistrationOpen ? (
-          <Badge variant="secondary">inscripcions obertes</Badge>
+          <Badge variant="default">inscripcions obertes</Badge>
         ) : null}
         {!row.isCurrent && !row.isRegistrationOpen ? (
           <span className="text-muted-foreground">—</span>
         ) : null}
       </div>
     ),
+    // Two chips wide, and on a phone the three columns that survive are the
+    // campaign, the state it is in and how many people are in it.
+    className: "hidden md:table-cell",
   },
   {
     id: "activeMembers",
@@ -109,6 +115,9 @@ const COLUMNS: DataTableColumn<AdminCampaignWithCounts, CampaignSortKey>[] = [
     header: "durada de l'equip",
     sortKey: "membershipStartsAt",
     sortFirst: "desc",
+    // A span, not an instant: «fa 9 dies – d'aquí a 8 mesos» is not a duration
+    // anyone can read, so this one stays absolute on both ends. The ordering
+    // is by the start of the span, which is what `membershipStartsAt` names.
     cell: (row) =>
       formatDateRange(row.membershipStartsAt, row.membershipEndsAt),
     className: "hidden xl:table-cell whitespace-nowrap",
@@ -170,6 +179,7 @@ export function CampaignsTable({
       sort={{ key: sort.key, dir: sort.dir, onChange: setSort }}
       rowKey={(row) => row.id}
       rowHref={(row) => `/campaigns/${row.id}`}
+      rowLabel={(row) => row.label}
       state={{
         isPending: query.isPending,
         isError: query.isError,

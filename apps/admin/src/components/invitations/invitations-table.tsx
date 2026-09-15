@@ -18,6 +18,7 @@ import { ConfirmAction } from "@/components/admin/confirm-action";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { BroadcastAction } from "@/components/broadcasts/broadcast-action";
 import { DataTable } from "@/components/data-table/data-table";
+import { DateCell } from "@/components/data-table/date-cell";
 import {
   TableFilter,
   TableSearch,
@@ -32,7 +33,6 @@ import type {
   InvitationStatusFilter,
 } from "@/lib/admin-types";
 import { invitationsAudience } from "@/lib/broadcasts";
-import { formatDate, formatRelative } from "@/lib/format";
 import {
   invitationStatus,
   INVITATION_FILTER_LABELS,
@@ -65,74 +65,158 @@ function prefillName(row: AdminInvitation): string {
 }
 
 /**
+ * Resend and cancel, per row.
+ *
+ * The mutation is instantiated here rather than once for the table so that
+ * acting on one invitation does not grey out the buttons of the other
+ * thirteen.
+ */
+function InvitationRowActions({ row }: { row: AdminInvitation }) {
+  const action = useInvitationAction();
+  const pending = action.isPending;
+
+  if (row.status !== "pending") return null;
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        className="min-h-11 sm:min-h-9"
+        disabled={pending}
+        onClick={() => action.mutate({ kind: "resend", id: row.id })}
+      >
+        reenvia
+      </Button>
+      <ConfirmAction
+        trigger={
+          <Button
+            size="sm"
+            variant="ghost"
+            // One of these two sends another mail and the other kills the
+            // invitation; in the same outline, at the same size, the only way
+            // to tell them apart was to read them. Colour does it now.
+            className="min-h-11 [--button-fg:var(--destructive)] sm:min-h-9"
+            disabled={pending}
+          >
+            anul·la
+          </Button>
+        }
+        title="anul·lar aquesta invitació?"
+        description={`l'enllaç que hem enviat a ${row.email} deixarà de funcionar immediatament.`}
+        confirmLabel="anul·la"
+        destructive
+        pending={pending}
+        onConfirm={() => action.mutate({ kind: "cancel", id: row.id })}
+      />
+    </>
+  );
+}
+
+/**
+ * `estat` sorts by the state the badge shows, `expired` included: the route
+ * folds "pending past `expiresAt`" into the sort expression, so the expired
+ * ones group together instead of scattering among the pending.
+ */
+const STATUS_COLUMN: DataTableColumn<AdminInvitation, InvitationSortKey> = {
+  id: "status",
+  header: "estat",
+  sortKey: "status",
+  cell: (row) => (
+    <StatusBadge status={invitationStatus(row.status, row.expired)} />
+  ),
+  // At phone width the buttons are worth more than the badge: a row that has
+  // them is pending, which is the distinction the badge was drawing.
+  className: "hidden sm:table-cell whitespace-nowrap",
+};
+
+/** Only a pending invitation can be resent or cancelled. */
+function hasInvitationActions(status: InvitationStatusFilter): boolean {
+  return status === "all" || status === "pending";
+}
+
+/**
+ * A status filter other than `tots` puts the same badge on every row, which
+ * says nothing the toolbar has not already said.
+ *
+ * What is left at 390px is the address and, beside it, the two buttons: the
+ * role, both dates, the name and the badge come back as the viewport grows,
+ * and the record they belong to is the row itself, not a detail page.
+ *
  * Every column orders by its own value, with the wire keys taken from
  * `INVITATION_SORT_KEYS` so a column the route cannot resolve is a compile
- * error. Three of them are worth spelling out:
+ * error. Two are worth spelling out:
  *
  * - `nom` sorts by the prefill (`name`), which most invitations do not have —
  *   an invitation is usually just an address. The route sorts the empty ones
  *   last in *both* directions, so flipping the column never opens the table on
  *   a screenful of dashes. Nothing to compensate for here.
- * - `estat` sorts by the state the badge shows, `expired` included: the route
- *   folds "pending past `expiresAt`" into the sort expression, so the expired
- *   ones group together instead of scattering among the pending.
  * - `enviat` opens `desc` (a click on a date means "newest first"), while
  *   `caduca` stays `asc` so the first click surfaces what lapses soonest.
  */
-const COLUMNS: DataTableColumn<AdminInvitation, InvitationSortKey>[] = [
-  {
-    id: "email",
-    header: "correu",
-    sortKey: "email",
-    primary: true,
-    cell: (row) => row.email,
-  },
-  {
-    id: "prefill",
-    header: "nom",
-    sortKey: "name",
-    cell: prefillName,
-    className: "hidden lg:table-cell",
-  },
-  {
-    id: "status",
-    header: "estat",
-    sortKey: "status",
-    cell: (row) => (
-      <StatusBadge status={invitationStatus(row.status, row.expired)} />
-    ),
-  },
-  {
-    id: "role",
-    header: "rol",
-    sortKey: "role",
-    cell: (row) => roleLabel(row.intendedRole),
-    className: "hidden sm:table-cell",
-  },
-  {
-    id: "createdAt",
-    header: "enviat",
-    sortKey: "createdAt",
-    sortFirst: "desc",
-    cell: (row) => formatRelative(row.createdAt),
-    className: "hidden md:table-cell whitespace-nowrap",
-  },
-  {
-    id: "expiresAt",
-    header: "caduca",
-    sortKey: "expiresAt",
-    cell: (row) =>
-      row.status === "accepted" ? "—" : formatDate(row.expiresAt),
-    className: "hidden xl:table-cell whitespace-nowrap",
-  },
-];
+function invitationColumns(
+  status: InvitationStatusFilter,
+): DataTableColumn<AdminInvitation, InvitationSortKey>[] {
+  return [
+    {
+      id: "email",
+      header: "correu",
+      sortKey: "email",
+      primary: true,
+      // The widest cell in the row, and on a phone it is the cell competing
+      // with the buttons for the width.
+      cell: (row) => (
+        <span className="block max-w-[22ch] truncate" title={row.email}>
+          {row.email}
+        </span>
+      ),
+    },
+    {
+      id: "prefill",
+      header: "nom",
+      sortKey: "name",
+      cell: prefillName,
+      className: "hidden lg:table-cell",
+    },
+    ...(status === "all" ? [STATUS_COLUMN] : []),
+    {
+      id: "role",
+      header: "rol",
+      sortKey: "role",
+      cell: (row) => roleLabel(row.intendedRole),
+      className: "hidden sm:table-cell",
+    },
+    {
+      id: "createdAt",
+      header: "enviat",
+      sortKey: "createdAt",
+      sortFirst: "desc",
+      cell: (row) => <DateCell value={row.createdAt} />,
+      className: "hidden md:table-cell",
+    },
+    {
+      id: "expiresAt",
+      header: "caduca",
+      sortKey: "expiresAt",
+      // An accepted invitation has no expiry left to speak of; `<DateCell>`
+      // draws the same «—» every other missing date in the app gets.
+      cell: (row) => (
+        <DateCell value={row.status === "accepted" ? null : row.expiresAt} />
+      ),
+      className: "hidden lg:table-cell",
+    },
+  ];
+}
 
 /**
  * The invitations table.
  *
  * Campaign, status, search, ordering and page all live in the URL and go
- * straight to `GET /v1/admin/invitations`. The status remains visible in each
- * row while the toolbar narrows the result set on the server.
+ * straight to `GET /v1/admin/invitations`, and the active status filter also
+ * decides which columns the table has anything to say with.
+ *
+ * There is no invitation detail route, so rows do not navigate: everything an
+ * invitation is is already on the row.
  */
 export function InvitationsTable({
   campaigns,
@@ -167,7 +251,7 @@ export function InvitationsTable({
     limit: INVITATIONS_PAGE_SIZE,
     offset,
   });
-  const action = useInvitationAction();
+  const columns = React.useMemo(() => invitationColumns(status), [status]);
   const handleSearch = React.useCallback(
     (next: string) => setParams({ q: next }),
     [setParams],
@@ -176,37 +260,17 @@ export function InvitationsTable({
   return (
     <DataTable
       label="invitacions enviades en aquesta campanya"
-      columns={COLUMNS}
+      columns={columns}
       rows={query.data?.rows ?? []}
       sort={{ key: sort.key, dir: sort.dir, onChange: setSort }}
       rowKey={(row) => row.id}
-      rowActions={(row) =>
-        row.status === "pending" ? (
-          <>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={action.isPending}
-              onClick={() => action.mutate({ kind: "resend", id: row.id })}
-            >
-              reenvia
-            </Button>
-            <ConfirmAction
-              trigger={
-                <Button size="sm" variant="outline" disabled={action.isPending}>
-                  anul·la
-                </Button>
-              }
-              title="anul·lar aquesta invitació?"
-              description={`l'enllaç que hem enviat a ${row.email} deixarà de funcionar immediatament.`}
-              confirmLabel="anul·la"
-              destructive
-              pending={action.isPending}
-              onConfirm={() => action.mutate({ kind: "cancel", id: row.id })}
-            />
-          </>
-        ) : null
-      }
+      {...(hasInvitationActions(status)
+        ? {
+            rowActions: (row: AdminInvitation) => (
+              <InvitationRowActions row={row} />
+            ),
+          }
+        : {})}
       state={{
         isPending: query.isPending,
         isError: query.isError,
@@ -242,6 +306,7 @@ export function InvitationsTable({
               scope,
               total: query.data.total,
               rowLabel: (row: AdminInvitation) => row.email,
+              unit: { singular: "invitació", plural: "invitacions" },
               actions: (handle: DataTableSelectionHandle) => (
                 <BroadcastAction
                   audience={invitationsAudience(handle.value, {
@@ -261,7 +326,7 @@ export function InvitationsTable({
           <TableSearch
             id="invitations-search"
             value={q}
-            placeholder="correu o nom"
+            placeholder="nom, cognoms o correu"
             onCommit={handleSearch}
           />
           <TableFilter

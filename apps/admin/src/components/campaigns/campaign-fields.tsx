@@ -1,5 +1,7 @@
 "use client";
 
+import { Lock } from "lucide-react";
+
 import { DatePicker } from "@repo/ui/date-picker";
 import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
@@ -83,18 +85,40 @@ export function CampaignFields({
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="campaign-slug">identificador</Label>
-        <Input
-          id="campaign-slug"
-          className="h-11 font-mono sm:h-9"
-          placeholder="2026-2027"
-          value={state.slug}
-          disabled={!slugEditable}
-          aria-invalid={errors.slug !== undefined}
-          onChange={(event) =>
-            onChange({ slug: event.target.value.toLowerCase() })
-          }
-        />
+        <Label
+          id="campaign-slug-label"
+          {...(slugEditable ? { htmlFor: "campaign-slug" } : {})}
+        >
+          identificador
+        </Label>
+        {slugEditable ? (
+          <Input
+            id="campaign-slug"
+            className="h-11 font-mono sm:h-9"
+            placeholder="2026-2027"
+            value={state.slug}
+            aria-invalid={errors.slug !== undefined}
+            onChange={(event) =>
+              onChange({ slug: event.target.value.toLowerCase() })
+            }
+          />
+        ) : (
+          // Not a disabled input: a greyed-out value at placeholder weight
+          // reads as an empty field. The value it already holds is the point,
+          // so it is shown at full strength inside a locked frame.
+          <div
+            aria-labelledby="campaign-slug-label"
+            className="flex h-11 items-center gap-2 rounded-md border border-input bg-muted px-3 sm:h-9"
+          >
+            <Lock
+              className="size-3.5 shrink-0 text-muted-foreground"
+              aria-hidden
+            />
+            <span className="truncate font-mono text-sm text-foreground">
+              {state.slug}
+            </span>
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">
           {slugEditable
             ? "només minúscules, xifres i guions. no es podrà canviar un cop publicada."
@@ -134,7 +158,7 @@ export function CampaignFields({
         <DateField
           id="campaign-registration-closes"
           label="es tanquen les inscripcions"
-          hint="obrir-les de veritat és una acció a part, des de la fitxa."
+          hint="les dates no obren ni tanquen el formulari: això ho fan els botons «obre les inscripcions» i «tanca les inscripcions» de la secció «estat de la campanya»."
           value={state.registrationClosesAt}
           {...(errors.registrationClosesAt
             ? { error: errors.registrationClosesAt }

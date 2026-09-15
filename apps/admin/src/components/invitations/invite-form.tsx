@@ -14,6 +14,15 @@ import {
   SelectValue,
 } from "@repo/ui/select";
 import {
+  Dialog,
+  DialogBody,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/ui/dialog";
+import {
   Drawer,
   DrawerBody,
   DrawerClose,
@@ -22,6 +31,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@repo/ui/drawer";
+import { useIsMobile } from "@repo/ui/hooks/use-mobile";
 
 import type { CampaignOption } from "@/components/admin/campaign-picker";
 import {
@@ -61,6 +71,7 @@ export function InviteForm({
   const [role, setRole] = React.useState<InvitationRole>("member");
   const [notice, setNotice] = React.useState<Notice>({ kind: "none" });
   const [emailError, setEmailError] = React.useState<string | undefined>();
+  const isMobile = useIsMobile();
 
   const create = useCreateInvitation();
   const email = fields.email.trim().toLowerCase();
@@ -125,157 +136,198 @@ export function InviteForm({
 
   const pending = create.isPending;
 
+  const trigger = (
+    // The button is the trigger: React Aria hands it the trigger props
+    // through context, so it needs no wrapper of its own.
+    <Button size="sm" className="w-full sm:w-auto">
+      <Plus className="size-4" aria-hidden />
+      convida algú
+    </Button>
+  );
+
+  const title = "convida algú";
+  const description =
+    "rebrà un correu amb un enllaç per entrar al comitè sense passar pel formulari públic.";
+
+  const form = (
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+      <div className="space-y-1.5">
+        {/* The one field that has to be filled in is the one that is marked.
+            The other two used to be the ones carrying a note, which told you
+            about the fields you can ignore and nothing about the one you
+            cannot. */}
+        <Label htmlFor="invite-email">
+          correu{" "}
+          <span className="text-destructive" aria-hidden>
+            *
+          </span>
+          <span className="sr-only">(obligatori)</span>
+        </Label>
+        <Input
+          id="invite-email"
+          type="email"
+          inputMode="email"
+          autoComplete="off"
+          required
+          className="h-11 sm:h-9"
+          // Not a udl.cat address: half the existing invitations are to
+          // gmail accounts, and a domain in the placeholder reads as a
+          // rule about which addresses are allowed.
+          placeholder="nom@exemple.com"
+          value={fields.email}
+          aria-invalid={emailError !== undefined}
+          onChange={(event) => {
+            setFields((current) => ({
+              ...current,
+              email: event.target.value,
+            }));
+            setNotice({ kind: "none" });
+          }}
+        />
+        {emailError ? (
+          <p className="text-sm text-destructive">{emailError}</p>
+        ) : null}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="invite-name">nom</Label>
+          <Input
+            id="invite-name"
+            className="h-11 sm:h-9"
+            value={fields.name}
+            onChange={(event) =>
+              setFields((current) => ({
+                ...current,
+                name: event.target.value,
+              }))
+            }
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="invite-surnames">cognoms</Label>
+          <Input
+            id="invite-surnames"
+            className="h-11 sm:h-9"
+            value={fields.surnames}
+            onChange={(event) =>
+              setFields((current) => ({
+                ...current,
+                surnames: event.target.value,
+              }))
+            }
+          />
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        si els omples, el formulari els arribarà emplenats. sempre els podran
+        corregir.
+      </p>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="invite-campaign">campanya</Label>
+        <Select value={campaignId} onValueChange={setCampaignId}>
+          <SelectTrigger id="invite-campaign" className="h-11 sm:h-9">
+            <SelectValue placeholder="tria una campanya" />
+          </SelectTrigger>
+          <SelectContent>
+            {campaigns.map((campaign) => (
+              <SelectItem key={campaign.id} value={campaign.id}>
+                {campaign.label}
+                {campaign.isCurrent === true ? " · actual" : ""}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="invite-role">rol</Label>
+        <Select
+          value={role}
+          onValueChange={(next) => {
+            setRole(next as InvitationRole);
+            setNotice({ kind: "none" });
+          }}
+        >
+          <SelectTrigger id="invite-role" className="h-11 sm:h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="member">membre</SelectItem>
+            <SelectItem value="admin">administrador</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {notice.kind === "external" ? (
+        <ExternalDomainConfirm
+          email={email}
+          pending={pending}
+          onConfirm={() => send(true)}
+        />
+      ) : null}
+      {notice.kind === "duplicate" ? (
+        <DuplicateInviteNotice detail={notice.detail} />
+      ) : null}
+      {notice.kind === "forbiddenAdmin" ? (
+        <GrantAdminDeniedNotice detail={notice.detail} />
+      ) : null}
+
+      {/* Send is rendered last and reads first, so a keyboard pass
+                reaches cancel before it rather than jumping past it. */}
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end [&>*]:min-h-11 sm:[&>*]:min-h-9">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => handleOpenChange(false)}
+        >
+          cancel·la
+        </Button>
+        <Button type="submit" disabled={pending || campaignId.length === 0}>
+          {pending ? "enviant…" : "envia la invitació"}
+        </Button>
+      </div>
+    </form>
+  );
+
+  // Four fields do not need a panel the height of the screen. On a phone the
+  // sheet is still the right shape — it is the full width of the screen and
+  // the thumb is at the bottom — so the two live side by side rather than one
+  // replacing the other.
+  if (isMobile) {
+    return (
+      <Drawer isOpen={open} onOpenChange={handleOpenChange}>
+        {trigger}
+        <DrawerContent className="w-full sm:max-w-lg">
+          <DrawerHeader>
+            <DrawerTitle>{title}</DrawerTitle>
+            <DrawerDescription>{description}</DrawerDescription>
+          </DrawerHeader>
+
+          {/* The form lives in the body: that is the part React Aria leaves
+              scrollable and keeps out of the drag-to-dismiss. */}
+          <DrawerBody className="mt-6">{form}</DrawerBody>
+          {/* Labelled here, not in the shared component: React Aria ships no
+              Catalan bundle, so its default close label falls back to English. */}
+          <DrawerClose aria-label="tanca" />
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
-    <Drawer isOpen={open} onOpenChange={handleOpenChange}>
-      {/* The button is the trigger: React Aria hands it the trigger props
-          through context, so it needs no wrapper of its own. */}
-      <Button size="sm" className="w-full sm:w-auto">
-        <Plus className="size-4" aria-hidden />
-        convida algú
-      </Button>
-      <DrawerContent className="w-full sm:max-w-lg">
-        <DrawerHeader>
-          <DrawerTitle>convida algú</DrawerTitle>
-          <DrawerDescription>
-            rebrà un correu amb un enllaç per entrar al comitè sense passar pel
-            formulari públic.
-          </DrawerDescription>
-        </DrawerHeader>
+    <Dialog isOpen={open} onOpenChange={handleOpenChange}>
+      {trigger}
+      <DialogContent className="w-full sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
 
-        {/* The form lives in the body: that is the part React Aria leaves
-            scrollable and keeps out of the drag-to-dismiss. */}
-        <DrawerBody className="mt-6">
-          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-            <div className="space-y-1.5">
-              <Label htmlFor="invite-email">correu</Label>
-              <Input
-                id="invite-email"
-                type="email"
-                inputMode="email"
-                autoComplete="off"
-                className="h-11 sm:h-9"
-                placeholder="nom.cognom@udl.cat"
-                value={fields.email}
-                aria-invalid={emailError !== undefined}
-                onChange={(event) => {
-                  setFields((current) => ({
-                    ...current,
-                    email: event.target.value,
-                  }));
-                  setNotice({ kind: "none" });
-                }}
-              />
-              {emailError ? (
-                <p className="text-sm text-destructive">{emailError}</p>
-              ) : null}
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="invite-name">nom (opcional)</Label>
-                <Input
-                  id="invite-name"
-                  className="h-11 sm:h-9"
-                  value={fields.name}
-                  onChange={(event) =>
-                    setFields((current) => ({
-                      ...current,
-                      name: event.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="invite-surnames">cognoms (opcional)</Label>
-                <Input
-                  id="invite-surnames"
-                  className="h-11 sm:h-9"
-                  value={fields.surnames}
-                  onChange={(event) =>
-                    setFields((current) => ({
-                      ...current,
-                      surnames: event.target.value,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              si els omples, el formulari els arribarà emplenats. sempre els
-              podran corregir.
-            </p>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="invite-campaign">campanya</Label>
-              <Select value={campaignId} onValueChange={setCampaignId}>
-                <SelectTrigger id="invite-campaign" className="h-11 sm:h-9">
-                  <SelectValue placeholder="tria una campanya" />
-                </SelectTrigger>
-                <SelectContent>
-                  {campaigns.map((campaign) => (
-                    <SelectItem key={campaign.id} value={campaign.id}>
-                      {campaign.label}
-                      {campaign.isCurrent === true ? " · actual" : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="invite-role">rol</Label>
-              <Select
-                value={role}
-                onValueChange={(next) => {
-                  setRole(next as InvitationRole);
-                  setNotice({ kind: "none" });
-                }}
-              >
-                <SelectTrigger id="invite-role" className="h-11 sm:h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="member">membre</SelectItem>
-                  <SelectItem value="admin">administrador</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {notice.kind === "external" ? (
-              <ExternalDomainConfirm
-                email={email}
-                pending={pending}
-                onConfirm={() => send(true)}
-              />
-            ) : null}
-            {notice.kind === "duplicate" ? (
-              <DuplicateInviteNotice detail={notice.detail} />
-            ) : null}
-            {notice.kind === "forbiddenAdmin" ? (
-              <GrantAdminDeniedNotice detail={notice.detail} />
-            ) : null}
-
-            <div className="flex flex-col gap-2 sm:flex-row-reverse [&>*]:min-h-11 sm:[&>*]:min-h-9">
-              <Button
-                type="submit"
-                disabled={pending || campaignId.length === 0}
-              >
-                {pending ? "enviant…" : "envia la invitació"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-              >
-                cancel·la
-              </Button>
-            </div>
-          </form>
-        </DrawerBody>
-        {/* Labelled here, not in the shared component: React Aria ships no
-            Catalan bundle, so its default close label falls back to English. */}
-        <DrawerClose aria-label="tanca" />
-      </DrawerContent>
-    </Drawer>
+        <DialogBody className="mt-6">{form}</DialogBody>
+        <DialogClose aria-label="tanca" />
+      </DialogContent>
+    </Dialog>
   );
 }

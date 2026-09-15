@@ -3,9 +3,24 @@
 import { Button } from "@repo/ui/button";
 
 import { ConfirmAction } from "@/components/admin/confirm-action";
-import type { AdminRegistration } from "@/lib/admin-types";
+import type { AdminRegistration, RegistrationStatus } from "@/lib/admin-types";
 import { fullName } from "@/lib/admin-types";
+import { personName } from "@/lib/labels";
 import { useReviewAction } from "@/lib/registrations";
+
+/**
+ * Whether the filter in force can contain a row with something to offer, so
+ * the queue can leave the whole actions column out rather than heading a
+ * column of empty cells. The one place that decides is here, next to the
+ * buttons themselves.
+ */
+export function hasQueueRowActions(
+  status: RegistrationStatus | "all",
+): boolean {
+  return (
+    status === "all" || status === "pending_review" || status === "rejected"
+  );
+}
 
 /**
  * Accept / reject / restore from the queue itself, so the common case — a
@@ -22,7 +37,7 @@ export function QueueRowActions({
 }) {
   const action = useReviewAction();
   const { id, status } = registration;
-  const name = fullName(registration.profileSnapshot);
+  const name = personName(fullName(registration.profileSnapshot));
   const pending = action.isPending;
 
   if (status === "pending_review") {
@@ -30,7 +45,11 @@ export function QueueRowActions({
       <>
         <ConfirmAction
           trigger={
-            <Button size="sm" disabled={pending}>
+            <Button
+              size="sm"
+              className="min-h-11 sm:min-h-9"
+              disabled={pending}
+            >
               accepta
             </Button>
           }
@@ -42,7 +61,12 @@ export function QueueRowActions({
         />
         <ConfirmAction
           trigger={
-            <Button size="sm" variant="outline" disabled={pending}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="min-h-11 sm:min-h-9"
+              disabled={pending}
+            >
               rebutja
             </Button>
           }
@@ -67,6 +91,7 @@ export function QueueRowActions({
       <Button
         size="sm"
         variant="outline"
+        className="min-h-11 sm:min-h-9"
         disabled={pending}
         onClick={() => action.mutate({ kind: "restore", id })}
       >

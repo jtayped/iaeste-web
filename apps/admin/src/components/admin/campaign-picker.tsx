@@ -41,14 +41,36 @@ export function CampaignPicker({
   // already says is noise.
   if (campaigns.length <= 1) return null;
 
+  const selected = campaigns.find((campaign) => campaign.id === value);
+  const selectedLabel = selected
+    ? `${selected.label}${selected.isCurrent === true ? " · actual" : ""}`
+    : undefined;
+
   return (
-    <div className="space-y-1.5">
+    // The tooltip is on the field rather than the trigger because the trigger
+    // takes no `title` of its own; hovering it still picks this one up.
+    <div className="min-w-0 space-y-1.5" title={selectedLabel}>
       <Label htmlFor={id} className="text-xs text-muted-foreground">
         {label}
       </Label>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger id={id} className="h-11 w-full sm:h-9 sm:w-64">
-          <SelectValue placeholder="tria una campanya" />
+      <Select
+        value={value}
+        // The campaign is required, so "no campaign" is not a state this can
+        // be put into — an empty value is ignored rather than passed on as a
+        // filter nobody can read back.
+        onValueChange={(next) => {
+          if (next !== "") onChange(next);
+        }}
+      >
+        {/* `curs 2026-2027 · inscripcions obertes` is wider than any fixed
+            track, so the trigger keeps a minimum width and grows to a cap,
+            and the label ellipsizes inside it instead of spilling out over
+            the table header. The full text stays on `title`. */}
+        <SelectTrigger
+          id={id}
+          className="h-11 w-full min-w-0 sm:h-9 sm:w-auto sm:max-w-80 sm:min-w-56"
+        >
+          <SelectValue className="truncate" placeholder="tria una campanya" />
         </SelectTrigger>
         <SelectContent>
           {campaigns.map((campaign) => (

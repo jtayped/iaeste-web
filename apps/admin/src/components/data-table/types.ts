@@ -24,8 +24,9 @@ export interface DataTableColumn<Row, SortKey extends string = never> {
   header: string;
   cell: (row: Row) => React.ReactNode;
   /**
-   * Marks the cell that carries the link to the record. Exactly one column
-   * per table should set it; it is also the cell drawn in medium weight.
+   * Marks the cell that names the record: the one drawn in medium weight, and
+   * the one a reader's eye lands on first. With `rowHref` the whole row is the
+   * link, so this is emphasis rather than a second link.
    */
   primary?: boolean;
   /** Applied to the `<th>` and every `<td>` of this column. */
@@ -96,6 +97,11 @@ export type DataTableSelectionValue =
   | { mode: "ids"; rowIds: readonly string[] }
   | { mode: "all"; excludedRowIds: readonly string[] };
 
+export interface DataTableSelectionUnit {
+  singular: string;
+  plural: string;
+}
+
 export interface DataTableSelectionHandle {
   count: number;
   value: DataTableSelectionValue;
@@ -106,12 +112,22 @@ export interface DataTableSelectionHandle {
 export interface DataTableSelectionConfig<Row> {
   /** Changes whenever the server-side result set changes. */
   scope: string;
-  /** Number of selectable rows across every page in this scope. */
+  /**
+   * Rows the current query matches, across every page in this scope. It is
+   * both what "select all" selects and the denominator the selection bar
+   * counts against — "24 de 35 membres".
+   */
   total: number;
   /** Rows such as already-invited members can remain visible but disabled. */
   isRowSelectable?: (row: Row) => boolean;
   /** Human label announced by each row checkbox. Defaults to the row id. */
   rowLabel?: (row: Row) => string;
+  /**
+   * What is being selected, for the selection bar's count. An operator selects
+   * people, not rows, and "24 files" next to twenty visible rows reads as a
+   * bug — so each table names its own unit.
+   */
+  unit?: DataTableSelectionUnit;
   /** Rendered once in the shared selection bar. */
   actions: (selection: DataTableSelectionHandle) => React.ReactNode;
 }

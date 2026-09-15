@@ -12,6 +12,7 @@ import {
   SidebarSeparator,
 } from "@repo/ui/sidebar";
 
+import { DrawerClose } from "@/components/shell/drawer-close";
 import { NavUser } from "@/components/shell/nav-user";
 import { SidebarNav } from "@/components/shell/sidebar-nav";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
@@ -47,29 +48,32 @@ export function AppSidebar({
       mobileDescription="seccions del dashboard d'administració"
     >
       <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-2">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link
-              href="/"
-              className="flex items-center gap-2 rounded-md px-1.5 py-1 ring-sidebar-ring outline-none focus-visible:ring-2"
-            >
-              <span
-                aria-hidden
-                className="flex size-7 shrink-0 items-center justify-center rounded-md bg-[#0B3E5B]"
+        <div className="flex min-w-0 items-center gap-1">
+          <SidebarMenu className="min-w-0 flex-1">
+            <SidebarMenuItem>
+              <Link
+                href="/"
+                className="flex items-center gap-2 rounded-md px-1.5 py-1 ring-sidebar-ring outline-none focus-visible:ring-2"
               >
-                <Logo variant="icon" color="white" width={18} alt="" />
-              </span>
-              <span className="grid leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate text-sm font-semibold">
-                  iaeste lleida
+                <span
+                  aria-hidden
+                  className="flex size-7 shrink-0 items-center justify-center rounded-md bg-[#0B3E5B]"
+                >
+                  <Logo variant="icon" color="white" width={18} alt="" />
                 </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  administració
+                <span className="grid leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="truncate text-sm font-semibold">
+                    iaeste lleida
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    administració
+                  </span>
                 </span>
-              </span>
-            </Link>
-          </SidebarMenuItem>
-        </SidebarMenu>
+              </Link>
+            </SidebarMenuItem>
+          </SidebarMenu>
+          <DrawerClose />
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
