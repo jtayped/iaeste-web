@@ -3,20 +3,17 @@ name: Deploy
 on:
   push:
     branches: [master]
+    # Deliberately coarse. This list used to name each workspace one by one
+    # and had already drifted — `packages/auth` was missing, so a change to it
+    # alone never triggered a deploy even though apps/api depends on it. The
+    # `detect-changes` job now works out which apps a push actually affects
+    # from turbo's dependency graph, so this only has to be wide enough not to
+    # miss anything; too wide costs one cheap job that then skips everything.
     paths:
-      - ".github/scripts/deploy-coolify.mjs"
+      - ".github/scripts/**"
       - ".github/workflows/deploy.yml"
-      - "apps/admin/**"
-      - "apps/api/**"
-      - "apps/cms/**"
-      - "apps/inscripcions/**"
-      - "apps/web/**"
-      - "packages/api-client/**"
-      - "packages/constants/**"
-      - "packages/db/**"
-      - "packages/email/**"
-      - "packages/env/**"
-      - "packages/ui/**"
+      - "apps/**"
+      - "packages/**"
       - "tooling/**"
       - "package.json"
       - "package-lock.json"
@@ -55,8 +52,6 @@ jobs:
     permissions:
       contents: read
     outputs:
-      full: ${{ steps.filter.outputs.full }}
-      # Not wired into any `if:` yet — see the note on the `affected` step.
       api: ${{ steps.affected.outputs.api }}
       admin: ${{ steps.affected.outputs.admin }}
       cms: ${{ steps.affected.outputs.cms }}
@@ -80,40 +75,17 @@ jobs:
             # Paths outside every workspace, which turbo's dependency graph
             # cannot reason about — a change here has to mark all five apps.
             force_all:
-              - '.github/scripts/deploy-coolify.mjs'
+              - '.github/scripts/**'
               - '.github/workflows/deploy.yml'
-            full:
-              - '.github/scripts/deploy-coolify.mjs'
-              - '.github/workflows/deploy.yml'
-              - 'apps/admin/**'
-              - 'apps/api/**'
-              - 'apps/cms/**'
-              - 'apps/inscripcions/**'
-              - 'apps/web/**'
-              - 'packages/api-client/**'
-              - 'packages/constants/**'
-              - 'packages/db/**'
-              - 'packages/email/**'
-              - 'packages/env/**'
-              - 'packages/ui/**'
-              - 'tooling/**'
-              - 'package.json'
-              - 'package-lock.json'
-              - 'turbo.json'
 
-      # Dry run. This computes, per app, whether the push actually affects it,
-      # using turbo's dependency graph instead of the flat `full` path glob
-      # above — so a change confined to apps/web marks only web, while a change
-      # to packages/ui marks every app that imports it.
+      # Which apps this push actually affects, from turbo's dependency graph:
+      # a change confined to apps/web marks only web, while a change to
+      # packages/ui marks every app that imports it. Every build-* and deploy-*
+      # job below gates on its own boolean from here, so an unaffected app is
+      # neither rebuilt nor redeployed.
       #
-      # Nothing consumes these outputs yet. `full` still gates all ten
-      # build/deploy jobs exactly as before, so this push behaves identically
-      # to every push before it. The point is to log the booleans against real
-      # commits first and confirm they match what a human would have picked,
-      # because the failure mode of getting this wrong is not a slow deploy but
-      # a silently skipped one. Once a handful of pushes of each shape look
-      # right — one app, a shared package, the lockfile — a follow-up swaps the
-      # `if:` conditions over and drops `full`.
+      # Replayed over the 14 merges to master before this landed, 5 would have
+      # narrowed, 2 of them to a single app.
       - name: Which apps does this push affect?
         id: affected
         run: node .github/scripts/affected-apps.mjs
@@ -123,7 +95,7 @@ jobs:
 
   build-admin:
     name: Build and push iaeste-admin
-    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    if: github.event_name == 'push' && needs.detect-changes.outputs.admin == 'true'
     needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
@@ -158,7 +130,7 @@ jobs:
 
   build-cms:
     name: Build and push iaeste-cms
-    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    if: github.event_name == 'push' && needs.detect-changes.outputs.cms == 'true'
     needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
@@ -191,7 +163,7 @@ jobs:
 
   build-api:
     name: Build and push iaeste-api
-    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    if: github.event_name == 'push' && needs.detect-changes.outputs.api == 'true'
     needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
@@ -224,7 +196,7 @@ jobs:
 
   build-inscripcions:
     name: Build and push iaeste-inscripcions
-    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    if: github.event_name == 'push' && needs.detect-changes.outputs.inscripcions == 'true'
     needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
@@ -261,7 +233,7 @@ jobs:
 
   build-web:
     name: Build and push iaeste-web
-    if: github.event_name == 'push' && needs.detect-changes.outputs.full == 'true'
+    if: github.event_name == 'push' && needs.detect-changes.outputs.web == 'true'
     needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
@@ -297,13 +269,23 @@ jobs:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-web:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/iaeste-web:buildcache,mode=max,image-manifest=true
 
+  # apps/api/docker-entrypoint.sh runs `node apps/api/dist/migrate.js` before
+  # the server starts, so deploying the API is what applies the shared schema
+  # migrations. That makes this a migration barrier, not a convention, and the
+  # other four still wait on it.
+  #
+  # What changed with affected-only deploys is what counts as satisfied. A
+  # `needs.deploy-api.result == 'success'` test would block web whenever api
+  # was skipped for being unaffected — which is most pushes, and exactly the
+  # case where there is no migration to wait for. `!contains(needs.*.result,
+  # 'failure')` accepts a skipped dependency and still refuses a broken one,
+  # so an unaffected api lets web through while a failed api stops everything.
   deploy-api:
     name: Deploy API first
     if: >-
       always() && !cancelled() &&
-      ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-api.result == 'success' &&
-      needs.build-admin.result == 'success' && needs.build-cms.result == 'success' &&
-      needs.build-inscripcions.result == 'success' && needs.build-web.result == 'success') ||
+      ((github.event_name == 'push' && needs.detect-changes.outputs.api == 'true' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'api')))
     needs:
       [
@@ -332,8 +314,8 @@ jobs:
     name: Deploy admin
     if: >-
       always() && !cancelled() &&
-      ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-admin.result == 'success' &&
-      needs.deploy-api.result == 'success') ||
+      ((github.event_name == 'push' && needs.detect-changes.outputs.admin == 'true' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'admin' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
     needs: [detect-changes, build-admin, deploy-api]
@@ -355,8 +337,8 @@ jobs:
     name: Deploy inscripcions
     if: >-
       always() && !cancelled() &&
-      ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-inscripcions.result == 'success' &&
-      needs.deploy-api.result == 'success') ||
+      ((github.event_name == 'push' && needs.detect-changes.outputs.inscripcions == 'true' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'inscripcions' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
     needs: [detect-changes, build-inscripcions, deploy-api]
@@ -378,8 +360,8 @@ jobs:
     name: Deploy cms
     if: >-
       always() && !cancelled() &&
-      ((github.event_name == 'push' && needs.detect-changes.outputs.full == 'true' && needs.build-cms.result == 'success' &&
-      needs.deploy-api.result == 'success') ||
+      ((github.event_name == 'push' && needs.detect-changes.outputs.cms == 'true' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'cms' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
     needs: [detect-changes, build-cms, deploy-api]
@@ -403,8 +385,8 @@ jobs:
     name: Deploy web
     if: >-
       always() && !cancelled() &&
-      ((github.event_name == 'push' && needs.build-web.result == 'success' &&
-      needs.deploy-api.result == 'success' && needs.deploy-cms.result == 'success') ||
+      ((github.event_name == 'push' && needs.detect-changes.outputs.web == 'true' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'web' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
     needs: [detect-changes, build-web, deploy-api, deploy-cms]
