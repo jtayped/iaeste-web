@@ -1,6 +1,9 @@
 import { and, eq, ilike, inArray, notInArray, or, sql } from "drizzle-orm";
 
+import type { RegistrationSortKey } from "@repo/constants/validators/admin-list";
+
 import { registration } from "../schema/registration";
+import type { SortTerm } from "./sort";
 import type { registrationStatusEnum } from "../schema/registration";
 
 type RegistrationStatus = (typeof registrationStatusEnum.enumValues)[number];
@@ -70,4 +73,40 @@ export function registrationSelectionWhere(selection: RegistrationSelection) {
       ? notInArray(registration.id, selection.excludedRegistrationIds)
       : undefined,
   );
+}
+
+/**
+ * What each sort key orders by.
+ *
+ * The person's own fields live in the JSONB snapshot rather than in columns,
+ * so they sort as the text the table renders. `studyYear` is cast to an
+ * integer first or "10" would sort between "1" and "2". `email` sorts by what
+ * the column actually shows, which is the personal address when there is one.
+ *
+ * `status` orders by the enum, which Postgres sorts in declaration order —
+ * here that is the lifecycle, `pending_email` through `rejected`, which is
+ * the grouping an operator working a queue wants.
+ */
+const REGISTRATION_SORTS: Record<RegistrationSortKey, readonly SortTerm[]> = {
+  name: [
+    sql`${registration.profileSnapshot} ->> 'name'`,
+    sql`${registration.profileSnapshot} ->> 'surnames'`,
+  ],
+  surnames: [
+    sql`${registration.profileSnapshot} ->> 'surnames'`,
+    sql`${registration.profileSnapshot} ->> 'name'`,
+  ],
+  email: [sql`coalesce(${registration.personalEmail}, ${registration.email})`],
+  degree: [sql`${registration.profileSnapshot} ->> 'degree'`],
+  studyYear: [
+    sql`nullif(${registration.profileSnapshot} ->> 'studyYear', '')::int`,
+  ],
+  status: [registration.status],
+  createdAt: [registration.createdAt],
+};
+
+export function registrationSortTerms(
+  key: RegistrationSortKey,
+): readonly SortTerm[] {
+  return REGISTRATION_SORTS[key];
 }

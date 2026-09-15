@@ -2,6 +2,7 @@ import {
   and,
   desc,
   eq,
+  getTableColumns,
   ilike,
   inArray,
   lt,
@@ -9,6 +10,12 @@ import {
   or,
   sql,
 } from "drizzle-orm";
+
+import {
+  INVITATION_DEFAULT_SORT,
+  type InvitationSortKey,
+  type SortDirection,
+} from "@repo/constants/validators/admin-list";
 
 import type { Database } from "../client";
 import {
@@ -18,6 +25,7 @@ import {
 } from "../schema/member-invitation";
 import { user } from "../schema/auth";
 import { firstOrThrow } from "./util";
+import { nullsLast, orderTerms, type SortTerm } from "./sort";
 import { acceptInvitationTx, illegalOrMissing } from "./invitations-accept";
 import type { RegistrationProfileSnapshot } from "./registrations";
 
@@ -69,6 +77,44 @@ function adminInvitationWhere(params: AdminInvitationFilters) {
 
   return and(...clauses);
 }
+
+/**
+ * `expired` as SQL rather than as a `Date.now()` comparison after the query.
+ *
+ * The `expired` status *filter* has always been SQL (`expires_at < now()`),
+ * while the flag on each row was computed in JavaScript afterwards. Two
+ * clocks: an invitation that lapsed between the two showed a "pendent" badge
+ * on the "caducades" tab. Now both read the database's `now()`.
+ */
+const invitationExpired = sql<boolean>`(
+  ${memberInvitation.status} = 'pending'
+    and ${memberInvitation.expiresAt} < now()
+)`;
+
+/** The status a reader actually sees, with `expired` folded in. */
+const invitationEffectiveStatus = sql`case
+  when ${invitationExpired} then 'expired'
+  else ${memberInvitation.status}::text
+end`;
+
+/**
+ * What each sort key orders by. Every column of the table is here.
+ *
+ * The prefill name is empty for most invitations — they are usually just an
+ * address — so it sorts its blanks to the bottom either way round rather than
+ * opening the reversed list with a screenful of "—".
+ */
+const INVITATION_SORTS: Record<InvitationSortKey, readonly SortTerm[]> = {
+  email: [memberInvitation.email],
+  name: [
+    nullsLast(memberInvitation.prefillName),
+    nullsLast(memberInvitation.prefillSurnames),
+  ],
+  status: [invitationEffectiveStatus],
+  role: [memberInvitation.intendedRole],
+  createdAt: [memberInvitation.createdAt],
+  expiresAt: [memberInvitation.expiresAt],
+};
 
 export interface CreateInvitationInput {
   campaignId: string;
@@ -131,18 +177,16 @@ export function createInvitationRepository(db: Database) {
       return row;
     },
 
-    /** Every invitation for a campaign, with `expired` computed at read time. */
+    /** Every invitation for a campaign, with `expired` computed in SQL. */
     async listByCampaign(campaignId: string) {
-      const rows = await db
-        .select()
+      return db
+        .select({
+          ...getTableColumns(memberInvitation),
+          expired: invitationExpired,
+        })
         .from(memberInvitation)
         .where(eq(memberInvitation.campaignId, campaignId))
-        .orderBy(desc(memberInvitation.createdAt));
-      const now = Date.now();
-      return rows.map((row) => ({
-        ...row,
-        expired: row.status === "pending" && row.expiresAt.getTime() < now,
-      }));
+        .orderBy(desc(memberInvitation.createdAt), desc(memberInvitation.id));
     },
 
     /**
@@ -156,6 +200,9 @@ export function createInvitationRepository(db: Database) {
       campaignId: string;
       q?: string;
       status?: "pending" | "accepted" | "cancelled" | "expired";
+      /** Defaults to newest first, the order this table has always had. */
+      sort?: InvitationSortKey;
+      dir?: SortDirection;
       limit: number;
       offset: number;
     }): Promise<{
@@ -166,10 +213,19 @@ export function createInvitationRepository(db: Database) {
 
       const [rows, [countRow]] = await Promise.all([
         db
-          .select()
+          .select({
+            ...getTableColumns(memberInvitation),
+            expired: invitationExpired,
+          })
           .from(memberInvitation)
           .where(where)
-          .orderBy(desc(memberInvitation.createdAt))
+          .orderBy(
+            ...orderTerms(
+              INVITATION_SORTS[params.sort ?? INVITATION_DEFAULT_SORT.key],
+              params.dir ?? INVITATION_DEFAULT_SORT.dir,
+              memberInvitation.id,
+            ),
+          )
           .limit(params.limit)
           .offset(params.offset),
         db
@@ -178,14 +234,7 @@ export function createInvitationRepository(db: Database) {
           .where(where),
       ]);
 
-      const now = Date.now();
-      return {
-        rows: rows.map((row) => ({
-          ...row,
-          expired: row.status === "pending" && row.expiresAt.getTime() < now,
-        })),
-        total: Number(countRow?.value ?? 0),
-      };
+      return { rows, total: Number(countRow?.value ?? 0) };
     },
 
     /**
@@ -210,7 +259,7 @@ export function createInvitationRepository(db: Database) {
         .select()
         .from(memberInvitation)
         .where(where)
-        .orderBy(desc(memberInvitation.createdAt))
+        .orderBy(desc(memberInvitation.createdAt), desc(memberInvitation.id))
         .limit(limit);
     },
 

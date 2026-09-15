@@ -1,4 +1,12 @@
 import type {
+  CampaignSortKey,
+  InvitationSortKey,
+  MemberSortKey,
+  RegistrationSortKey,
+  SortDirection,
+} from "@repo/constants/validators/admin-list";
+
+import type {
   BroadcastAudience,
   BroadcastContent,
   CampaignState,
@@ -14,6 +22,11 @@ import type {
  * are built root-first and the parameters that narrow a list come last. A key
  * spelled inline at a call site is the usual reason an action appears to do
  * nothing until you reload.
+ *
+ * Every list key carries its `sort` and `dir`. A different ordering is a
+ * different page of rows from the server, so a key that left them out would
+ * hand the previous ordering back out of the cache and silently ignore the
+ * click.
  */
 export const queryKeys = {
   overview: ["overview"] as const,
@@ -25,6 +38,8 @@ export const queryKeys = {
       campaignId: string;
       status: RegistrationStatus | "all";
       q: string;
+      sort: RegistrationSortKey;
+      dir: SortDirection;
       limit: number;
       offset: number;
     }) => ["registrations", "list", params] as const,
@@ -38,6 +53,8 @@ export const queryKeys = {
       filter: MemberFilter;
       campaignId?: string;
       targetCampaignId?: string;
+      sort: MemberSortKey;
+      dir: SortDirection;
       limit: number;
       offset: number;
     }) => ["members", "list", params] as const,
@@ -49,6 +66,8 @@ export const queryKeys = {
     list: (params: {
       q: string;
       state: CampaignState | "";
+      sort: CampaignSortKey;
+      dir: SortDirection;
       limit: number;
       offset: number;
     }) => ["campaigns", "list", params] as const,
@@ -60,6 +79,8 @@ export const queryKeys = {
       campaignId: string;
       status: InvitationStatusFilter;
       q: string;
+      sort: InvitationSortKey;
+      dir: SortDirection;
       limit: number;
       offset: number;
     }) => ["invitations", "list", params] as const,

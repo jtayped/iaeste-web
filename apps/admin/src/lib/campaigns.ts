@@ -7,6 +7,10 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 
+import type {
+  CampaignSortKey,
+  SortDirection,
+} from "@repo/constants/validators/admin-list";
 import { toast } from "@repo/ui/toast";
 
 import type {
@@ -23,6 +27,9 @@ export const CAMPAIGNS_PAGE_SIZE = 100;
 export interface CampaignsQuery {
   q: string;
   state: CampaignState | "";
+  /** Resolved in SQL by the route; never re-ordered on the client. */
+  sort: CampaignSortKey;
+  dir: SortDirection;
   limit: number;
   offset: number;
 }
@@ -59,6 +66,8 @@ export function useCampaigns(
             query: {
               ...(params.q ? { q: params.q } : {}),
               ...(params.state ? { state: params.state } : {}),
+              sort: params.sort,
+              dir: params.dir,
               limit: params.limit,
               offset: params.offset,
             },

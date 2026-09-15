@@ -1,6 +1,11 @@
 import crypto from "node:crypto";
 
 import { getDb } from "@repo/db/client";
+import type {
+  InvitationSortKey,
+  InvitationStatusFilter,
+  SortDirection,
+} from "@repo/constants/validators/admin-list";
 import {
   createCampaignRepository,
   createInvitationRepository,
@@ -73,7 +78,9 @@ export interface CreateInvitationServiceInput {
 export interface AdminInvitationListParams {
   campaignId: string;
   q?: string;
-  status?: "pending" | "accepted" | "cancelled" | "expired";
+  status?: InvitationStatusFilter;
+  sort?: InvitationSortKey;
+  dir?: SortDirection;
   limit: number;
   offset: number;
 }

@@ -1,4 +1,10 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
+
+import {
+  REGISTRATION_DEFAULT_SORT,
+  type RegistrationSortKey,
+  type SortDirection,
+} from "@repo/constants/validators/admin-list";
 
 import type { Database, Db } from "../client";
 import {
@@ -8,8 +14,10 @@ import {
 import {
   adminRegistrationWhere,
   registrationSelectionWhere,
+  registrationSortTerms,
   type RegistrationSelection,
 } from "./registrations-admin-query";
+import { orderTerms } from "./sort";
 import { acceptRegistrationTx } from "./registrations-accept";
 import { findAutomaticallyAcceptedUser } from "./automatic-acceptance";
 import { IllegalTransitionError, NotFoundError } from "./errors";
@@ -191,6 +199,9 @@ export function createRegistrationRepository(db: Database) {
       campaignId: string;
       status?: RegistrationStatus;
       q?: string;
+      /** Defaults to newest first, the order the queue has always had. */
+      sort?: RegistrationSortKey;
+      dir?: SortDirection;
       limit: number;
       offset: number;
     }): Promise<{ rows: (typeof registration.$inferSelect)[]; total: number }> {
@@ -201,7 +212,15 @@ export function createRegistrationRepository(db: Database) {
           .select()
           .from(registration)
           .where(where)
-          .orderBy(desc(registration.createdAt))
+          .orderBy(
+            ...orderTerms(
+              registrationSortTerms(
+                params.sort ?? REGISTRATION_DEFAULT_SORT.key,
+              ),
+              params.dir ?? REGISTRATION_DEFAULT_SORT.dir,
+              registration.id,
+            ),
+          )
           .limit(params.limit)
           .offset(params.offset),
         db
@@ -226,7 +245,7 @@ export function createRegistrationRepository(db: Database) {
         .select()
         .from(registration)
         .where(registrationSelectionWhere(selection))
-        .orderBy(registration.createdAt)
+        .orderBy(registration.createdAt, registration.id)
         .limit(limit);
     },
 

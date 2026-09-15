@@ -20,13 +20,6 @@ export interface Labelled {
   tone: Tone;
 }
 
-export const REGISTRATION_STATUSES = [
-  "pending_email",
-  "pending_review",
-  "accepted",
-  "rejected",
-] as const satisfies readonly RegistrationStatus[];
-
 const REGISTRATION_LABELS: Record<RegistrationStatus, Labelled> = {
   pending_email: { label: "correu sense verificar", tone: "outline" },
   pending_review: { label: "per revisar", tone: "default" },

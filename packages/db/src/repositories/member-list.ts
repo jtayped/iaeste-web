@@ -1,4 +1,19 @@
-import { and, eq, ilike, inArray, notInArray, or, sql } from "drizzle-orm";
+import {
+  and,
+  eq,
+  ilike,
+  inArray,
+  notInArray,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
+
+import {
+  MEMBER_DEFAULT_SORT,
+  type MemberSortKey,
+  type SortDirection,
+} from "@repo/constants/validators/admin-list";
 
 import type { Db } from "../client";
 import { user } from "../schema/auth";
@@ -8,6 +23,7 @@ import { membership } from "../schema/membership";
 import { membershipCampaign } from "../schema/membership-campaign";
 import { registration } from "../schema/registration";
 import { userEmail } from "../schema/user-email";
+import { orderTerms, type SortTerm } from "./sort";
 
 export type MemberListFilter = "all" | "current" | "past";
 
@@ -18,6 +34,9 @@ export interface MemberListParams {
   campaignId?: string;
   /** Adds invitation readiness relative to this campaign. */
   targetCampaignId?: string;
+  /** Defaults to the surname-first order this list has always had. */
+  sort?: MemberSortKey;
+  dir?: SortDirection;
   limit: number;
   offset: number;
 }
@@ -67,6 +86,41 @@ export function createMemberListQueries(db: Db) {
   const totalMemberships = sql<number>`(
     select count(*) from ${membership} m2 where m2.user_id = ${memberProfile.userId}
   )`;
+
+  /**
+   * What each sort key orders by.
+   *
+   * Every column of the table is here, sorting by its own value — `nom` and
+   * `cognoms` are separate keys rather than one "order by name", because an
+   * operator may know someone by either. Each falls back to the other, so
+   * `surnames asc` is exactly the order this list has always had and `name`
+   * still groups a family together.
+   */
+  function sortTerms(key: MemberSortKey, target: SQL): readonly SortTerm[] {
+    switch (key) {
+      case "name":
+        return [memberProfile.name, memberProfile.surnames];
+      case "surnames":
+        return [memberProfile.surnames, memberProfile.name];
+      case "email":
+        return [user.email];
+      case "degree":
+        return [memberProfile.degree];
+      case "studyYear":
+        return [memberProfile.studyYear];
+      case "role":
+        return [user.role];
+      case "status":
+        return [currentStatus];
+      case "totalMemberships":
+        return [totalMemberships];
+      case "targetState":
+        // The same value for every row when no target campaign is in play,
+        // which is also the only time the column is not rendered; the
+        // tiebreaker then decides the order on its own.
+        return [target];
+    }
+  }
 
   function whereClause(
     params: Pick<MemberListParams, "q" | "filter" | "campaignId">,
@@ -156,7 +210,10 @@ export function createMemberListQueries(db: Db) {
       const where = whereClause(params);
       const target = params.targetCampaignId
         ? targetState(params.targetCampaignId)
-        : sql<MemberTargetState | null>`null`;
+        : // Typed rather than a bare `null`: an untyped null is a valid value
+          // to select but not a valid one to ORDER BY, and `sort=targetState`
+          // with no target campaign would be a 500.
+          sql<MemberTargetState | null>`null::text`;
 
       const [rows, [countRow], [eligibleCountRow]] = await Promise.all([
         db
@@ -175,7 +232,13 @@ export function createMemberListQueries(db: Db) {
           .from(memberProfile)
           .innerJoin(user, eq(user.id, memberProfile.userId))
           .where(where)
-          .orderBy(memberProfile.surnames, memberProfile.name)
+          .orderBy(
+            ...orderTerms(
+              sortTerms(params.sort ?? MEMBER_DEFAULT_SORT.key, target),
+              params.dir ?? MEMBER_DEFAULT_SORT.dir,
+              memberProfile.userId,
+            ),
+          )
           .limit(params.limit)
           .offset(params.offset),
         db
@@ -232,7 +295,11 @@ export function createMemberListQueries(db: Db) {
         .from(memberProfile)
         .innerJoin(user, eq(user.id, memberProfile.userId))
         .where(and(selected, exclusions))
-        .orderBy(memberProfile.surnames, memberProfile.name)
+        .orderBy(
+          memberProfile.surnames,
+          memberProfile.name,
+          memberProfile.userId,
+        )
         .limit(limit);
     },
 
@@ -262,7 +329,11 @@ export function createMemberListQueries(db: Db) {
         .from(memberProfile)
         .innerJoin(user, eq(user.id, memberProfile.userId))
         .where(and(selected, exclusions))
-        .orderBy(memberProfile.surnames, memberProfile.name)
+        .orderBy(
+          memberProfile.surnames,
+          memberProfile.name,
+          memberProfile.userId,
+        )
         .limit(limit);
     },
   };

@@ -276,7 +276,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Requires the `registrations.review` capability. campaignId is required so omitting it can never list across every campaign at once. */
+        /** @description Requires the `registrations.review` capability. campaignId is required so omitting it can never list across every campaign at once. `sort` is one of name | surnames | email | degree | studyYear | status | createdAt and `dir` asc | desc, resolved in SQL; both default to createdAt desc. */
         get: operations["adminListRegistrations"];
         put?: never;
         post?: never;
@@ -361,7 +361,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Campaigns with active-member and pending-review counts, newest membership start first. Paginated for a uniform table contract even though the set is small. Requires `campaigns.write`. */
+        /** @description Campaigns with active-member and pending-review counts. Paginated for a uniform table contract even though the set is small. `sort` is one of label | slug | state | activeMembers | pendingReview | membershipStartsAt and `dir` asc | desc, resolved in SQL; both default to membershipStartsAt desc. Requires `campaigns.write`. */
         get: operations["adminListCampaigns"];
         put?: never;
         /** @description Create a draft campaign (all four dates required). Requires `campaigns.write`. */
@@ -447,7 +447,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past; `campaignId` selects active members of one exact campaign. `targetCampaignId` adds invitation readiness and an eligible count. Requires `members.read`. */
+        /** @description Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past; `campaignId` selects active members of one exact campaign. `targetCampaignId` adds invitation readiness and an eligible count. `sort` is one of name | surnames | email | degree | studyYear | role | status | totalMemberships | targetState and `dir` asc | desc, resolved in SQL; both default to surnames asc. Requires `members.read`. */
         get: operations["adminListMembers"];
         put?: never;
         post?: never;
@@ -567,7 +567,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Invitations for a campaign, `expired` computed at read time. Requires `invitations.write`. */
+        /** @description Invitations for a campaign, `expired` computed in SQL from the database's clock. `sort` is one of email | name | status | role | createdAt | expiresAt and `dir` asc | desc, resolved in SQL; both default to createdAt desc. Requires `invitations.write`. */
         get: operations["adminListInvitations"];
         put?: never;
         /** @description Invite someone to a campaign. Requires `invitations.write`, and `invitations.grant_admin` as well when intendedRole is admin. A non-udl.cat email needs allowExternalDomain: true. */
@@ -1180,9 +1180,9 @@ export interface components {
         AdminMemberList: {
             rows: components["schemas"]["AdminMemberListItem"][];
             total: number;
-            inviteEligibleTotal: number;
             limit: number;
             offset: number;
+            inviteEligibleTotal: number;
         };
         AdminMemberListItem: {
             userId: string;
@@ -2261,11 +2261,13 @@ export interface operations {
     adminListRegistrations: {
         parameters: {
             query: {
-                campaignId: string;
-                status?: components["schemas"]["RegistrationStatus"];
                 q?: string;
+                sort?: "name" | "surnames" | "email" | "degree" | "studyYear" | "status" | "createdAt";
+                dir?: "asc" | "desc";
                 limit?: number;
                 offset?: number | null;
+                campaignId: string;
+                status?: components["schemas"]["RegistrationStatus"];
             };
             header?: never;
             path?: never;
@@ -2273,7 +2275,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Registrations for the given campaign. */
+            /** @description A page of registrations for the given campaign. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2546,9 +2548,11 @@ export interface operations {
         parameters: {
             query?: {
                 q?: string;
-                state?: components["schemas"]["CampaignState"];
+                sort?: "label" | "slug" | "state" | "activeMembers" | "pendingReview" | "membershipStartsAt";
+                dir?: "asc" | "desc";
                 limit?: number;
                 offset?: number | null;
+                state?: components["schemas"]["CampaignState"];
             };
             header?: never;
             path?: never;
@@ -2556,7 +2560,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description All campaigns, newest membership start first. */
+            /** @description A page of campaigns in the requested order. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2853,11 +2857,13 @@ export interface operations {
         parameters: {
             query?: {
                 q?: string;
+                sort?: "name" | "surnames" | "email" | "degree" | "studyYear" | "role" | "status" | "totalMemberships" | "targetState";
+                dir?: "asc" | "desc";
+                limit?: number;
+                offset?: number | null;
                 filter?: "all" | "current" | "past";
                 campaignId?: string;
                 targetCampaignId?: string;
-                limit?: number;
-                offset?: number | null;
             };
             header?: never;
             path?: never;
@@ -3301,11 +3307,13 @@ export interface operations {
     adminListInvitations: {
         parameters: {
             query: {
-                campaignId: string;
                 q?: string;
-                status?: "pending" | "accepted" | "cancelled" | "expired";
+                sort?: "email" | "name" | "status" | "role" | "createdAt" | "expiresAt";
+                dir?: "asc" | "desc";
                 limit?: number;
                 offset?: number | null;
+                campaignId: string;
+                status?: "pending" | "accepted" | "cancelled" | "expired";
             };
             header?: never;
             path?: never;
@@ -3313,7 +3321,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Invitations for the campaign, newest first. */
+            /** @description A page of invitations in the requested order. */
             200: {
                 headers: {
                     [name: string]: unknown;

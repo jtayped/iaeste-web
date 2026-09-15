@@ -7,6 +7,10 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 
+import type {
+  MemberSortKey,
+  SortDirection,
+} from "@repo/constants/validators/admin-list";
 import { toast } from "@repo/ui/toast";
 
 import type {
@@ -28,6 +32,9 @@ export interface MembersQuery {
   filter: MemberFilter;
   campaignId?: string;
   targetCampaignId?: string;
+  /** Resolved in SQL by the route; never re-ordered on the client. */
+  sort: MemberSortKey;
+  dir: SortDirection;
   limit: number;
   offset: number;
 }
@@ -49,6 +56,8 @@ export function useMembers(params: MembersQuery) {
               ...(params.targetCampaignId
                 ? { targetCampaignId: params.targetCampaignId }
                 : {}),
+              sort: params.sort,
+              dir: params.dir,
               limit: params.limit,
               offset: params.offset,
             },

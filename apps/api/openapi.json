@@ -1127,13 +1127,16 @@
             }
           },
           "total": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
           },
           "limit": {
-            "type": "integer"
+            "type": "integer",
+            "exclusiveMinimum": 0
           },
           "offset": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
           }
         },
         "required": [
@@ -1452,13 +1455,16 @@
             }
           },
           "total": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
           },
           "limit": {
-            "type": "integer"
+            "type": "integer",
+            "exclusiveMinimum": 0
           },
           "offset": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
           }
         },
         "required": [
@@ -1723,24 +1729,27 @@
             }
           },
           "total": {
-            "type": "integer"
-          },
-          "inviteEligibleTotal": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
           },
           "limit": {
-            "type": "integer"
+            "type": "integer",
+            "exclusiveMinimum": 0
           },
           "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "inviteEligibleTotal": {
             "type": "integer"
           }
         },
         "required": [
           "rows",
           "total",
-          "inviteEligibleTotal",
           "limit",
-          "offset"
+          "offset",
+          "inviteEligibleTotal"
         ]
       },
       "AdminMemberListItem": {
@@ -2092,13 +2101,16 @@
             }
           },
           "total": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
           },
           "limit": {
-            "type": "integer"
+            "type": "integer",
+            "exclusiveMinimum": 0
           },
           "offset": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
           }
         },
         "required": [
@@ -3969,26 +3981,8 @@
         "tags": [
           "Admin"
         ],
-        "description": "Requires the `registrations.review` capability. campaignId is required so omitting it can never list across every campaign at once.",
+        "description": "Requires the `registrations.review` capability. campaignId is required so omitting it can never list across every campaign at once. `sort` is one of name | surnames | email | degree | studyYear | status | createdAt and `dir` asc | desc, resolved in SQL; both default to createdAt desc.",
         "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "example": "campaign_123"
-            },
-            "required": true,
-            "name": "campaignId",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "$ref": "#/components/schemas/RegistrationStatus"
-            },
-            "required": false,
-            "name": "status",
-            "in": "query"
-          },
           {
             "schema": {
               "type": "string",
@@ -3996,6 +3990,37 @@
             },
             "required": false,
             "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "surnames",
+                "email",
+                "degree",
+                "studyYear",
+                "status",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false,
+            "name": "dir",
             "in": "query"
           },
           {
@@ -4021,11 +4046,29 @@
             "required": false,
             "name": "offset",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "campaign_123"
+            },
+            "required": true,
+            "name": "campaignId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/RegistrationStatus"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "Registrations for the given campaign.",
+            "description": "A page of registrations for the given campaign.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4375,7 +4418,7 @@
         "tags": [
           "Admin"
         ],
-        "description": "Campaigns with active-member and pending-review counts, newest membership start first. Paginated for a uniform table contract even though the set is small. Requires `campaigns.write`.",
+        "description": "Campaigns with active-member and pending-review counts. Paginated for a uniform table contract even though the set is small. `sort` is one of label | slug | state | activeMembers | pendingReview | membershipStartsAt and `dir` asc | desc, resolved in SQL; both default to membershipStartsAt desc. Requires `campaigns.write`.",
         "parameters": [
           {
             "schema": {
@@ -4388,10 +4431,32 @@
           },
           {
             "schema": {
-              "$ref": "#/components/schemas/CampaignState"
+              "type": "string",
+              "enum": [
+                "label",
+                "slug",
+                "state",
+                "activeMembers",
+                "pendingReview",
+                "membershipStartsAt"
+              ],
+              "default": "membershipStartsAt"
             },
             "required": false,
-            "name": "state",
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false,
+            "name": "dir",
             "in": "query"
           },
           {
@@ -4417,11 +4482,19 @@
             "required": false,
             "name": "offset",
             "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/CampaignState"
+            },
+            "required": false,
+            "name": "state",
+            "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "All campaigns, newest membership start first.",
+            "description": "A page of campaigns in the requested order.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4800,7 +4873,7 @@
         "tags": [
           "Admin"
         ],
-        "description": "Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past; `campaignId` selects active members of one exact campaign. `targetCampaignId` adds invitation readiness and an eligible count. Requires `members.read`.",
+        "description": "Paginated, searchable member list. `q` matches name / surnames / email; `filter` is all | current | past; `campaignId` selects active members of one exact campaign. `targetCampaignId` adds invitation readiness and an eligible count. `sort` is one of name | surnames | email | degree | studyYear | role | status | totalMemberships | targetState and `dir` asc | desc, resolved in SQL; both default to surnames asc. Requires `members.read`.",
         "parameters": [
           {
             "schema": {
@@ -4809,6 +4882,63 @@
             },
             "required": false,
             "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "surnames",
+                "email",
+                "degree",
+                "studyYear",
+                "role",
+                "status",
+                "totalMemberships",
+                "targetState"
+              ],
+              "default": "surnames"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            },
+            "required": false,
+            "name": "dir",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
             "in": "query"
           },
           {
@@ -4840,28 +4970,6 @@
             },
             "required": false,
             "name": "targetCampaignId",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100
-            },
-            "required": false,
-            "name": "limit",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "minimum": 0
-            },
-            "required": false,
-            "name": "offset",
             "in": "query"
           }
         ],
@@ -5434,17 +5542,8 @@
         "tags": [
           "Admin"
         ],
-        "description": "Invitations for a campaign, `expired` computed at read time. Requires `invitations.write`.",
+        "description": "Invitations for a campaign, `expired` computed in SQL from the database's clock. `sort` is one of email | name | status | role | createdAt | expiresAt and `dir` asc | desc, resolved in SQL; both default to createdAt desc. Requires `invitations.write`.",
         "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            },
-            "required": true,
-            "name": "campaignId",
-            "in": "query"
-          },
           {
             "schema": {
               "type": "string",
@@ -5458,14 +5557,30 @@
             "schema": {
               "type": "string",
               "enum": [
-                "pending",
-                "accepted",
-                "cancelled",
-                "expired"
-              ]
+                "email",
+                "name",
+                "status",
+                "role",
+                "createdAt",
+                "expiresAt"
+              ],
+              "default": "createdAt"
             },
             "required": false,
-            "name": "status",
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false,
+            "name": "dir",
             "in": "query"
           },
           {
@@ -5491,11 +5606,35 @@
             "required": false,
             "name": "offset",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "campaign_123"
+            },
+            "required": true,
+            "name": "campaignId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "accepted",
+                "cancelled",
+                "expired"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "Invitations for the campaign, newest first.",
+            "description": "A page of invitations in the requested order.",
             "content": {
               "application/json": {
                 "schema": {

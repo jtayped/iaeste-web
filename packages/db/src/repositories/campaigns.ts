@@ -1,5 +1,11 @@
 import { and, asc, eq, gt, ilike, ne, or, sql } from "drizzle-orm";
 
+import {
+  CAMPAIGN_DEFAULT_SORT,
+  type CampaignSortKey,
+  type SortDirection,
+} from "@repo/constants/validators/admin-list";
+
 import type { Database } from "../client";
 import { membership } from "../schema/membership";
 import { registration } from "../schema/registration";
@@ -9,6 +15,7 @@ import {
 } from "../schema/membership-campaign";
 import { IllegalTransitionError, NotFoundError } from "./errors";
 import { firstOrThrow } from "./util";
+import { orderTerms, type SortTerm } from "./sort";
 
 export type CampaignState =
   (typeof membershipCampaignStateEnum.enumValues)[number];
@@ -33,6 +40,49 @@ export interface UpdateCampaignInput {
 }
 
 export function createCampaignRepository(db: Database) {
+  // `db.$count`, not a hand-written `sql` subquery. Inside a select field
+  // drizzle renders an interpolated column *unqualified*, so
+  // `${membership.campaignId} = ${membershipCampaign.id}` came out as
+  // `"campaign_id" = "id"` and both names resolved to the subquery's own
+  // table: `membership.campaign_id = membership.id`, never true. Every
+  // campaign reported zero members and zero pending reviews. `$count` builds
+  // the condition through the query builder, which qualifies both sides.
+  //
+  // Hoisted so the `ORDER BY` uses the very expression the column shows,
+  // rather than a second copy of it that could drift — and so that sorting by
+  // a count cannot silently sort by a constant.
+  const activeMembers = db.$count(
+    membership,
+    and(
+      eq(membership.campaignId, membershipCampaign.id),
+      eq(membership.status, "active"),
+    ),
+  );
+  const pendingReview = db.$count(
+    registration,
+    and(
+      eq(registration.campaignId, membershipCampaign.id),
+      eq(registration.status, "pending_review"),
+    ),
+  );
+
+  /**
+   * What each sort key orders by.
+   *
+   * `state` orders by the enum, which Postgres sorts in declaration order —
+   * draft, published, archived, the campaign's own lifecycle. The `context`
+   * column has no entry on purpose: it renders two independent booleans as
+   * badges, and there is no single value to sort it by.
+   */
+  const CAMPAIGN_SORTS: Record<CampaignSortKey, readonly SortTerm[]> = {
+    label: [membershipCampaign.label],
+    slug: [membershipCampaign.slug],
+    state: [membershipCampaign.state],
+    activeMembers: [activeMembers],
+    pendingReview: [pendingReview],
+    membershipStartsAt: [membershipCampaign.membershipStartsAt],
+  };
+
   return {
     async create(input: CreateCampaignInput) {
       return firstOrThrow(
@@ -253,7 +303,6 @@ export function createCampaignRepository(db: Database) {
       return row;
     },
 
-    /** Every campaign plus its active-member and pending-review counts. */
     /**
      * Campaigns with their active-member and pending-review counts, newest
      * membership start first. Paginated and `q`/`state`-filterable in SQL so
@@ -264,6 +313,9 @@ export function createCampaignRepository(db: Database) {
       params: {
         q?: string;
         state?: (typeof membershipCampaignStateEnum.enumValues)[number];
+        /** Defaults to the newest membership start, as this list always was. */
+        sort?: CampaignSortKey;
+        dir?: SortDirection;
         limit: number;
         offset: number;
       } = { limit: 100, offset: 0 },
@@ -286,20 +338,18 @@ export function createCampaignRepository(db: Database) {
         db
           .select({
             campaign: membershipCampaign,
-            activeMembers: sql<number>`(
-              select count(*) from ${membership}
-              where ${membership.campaignId} = ${membershipCampaign.id}
-                and ${membership.status} = 'active'
-            )`,
-            pendingReview: sql<number>`(
-              select count(*) from ${registration}
-              where ${registration.campaignId} = ${membershipCampaign.id}
-                and ${registration.status} = 'pending_review'
-            )`,
+            activeMembers,
+            pendingReview,
           })
           .from(membershipCampaign)
           .where(where)
-          .orderBy(sql`${membershipCampaign.membershipStartsAt} desc`)
+          .orderBy(
+            ...orderTerms(
+              CAMPAIGN_SORTS[params.sort ?? CAMPAIGN_DEFAULT_SORT.key],
+              params.dir ?? CAMPAIGN_DEFAULT_SORT.dir,
+              membershipCampaign.id,
+            ),
+          )
           .limit(params.limit)
           .offset(params.offset),
         db
