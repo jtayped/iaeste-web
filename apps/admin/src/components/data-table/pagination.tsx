@@ -5,7 +5,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@repo/ui/button";
 
 /**
- * Offset pagination for the members list.
+ * Offset pagination for every admin list — members, sol·licituds, invitacions
+ * and campanyes all page through this one control.
  *
  * It says which slice you are looking at as well as offering the two steps —
  * "21–40 de 63" is what tells you whether the person you are looking for is

@@ -1,5 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 
+import type {
+  ListSort,
+  SortDirection,
+} from "@repo/constants/validators/admin-list";
+
 /**
  * One column of a `<DataTable>`.
  *
@@ -9,8 +14,12 @@ import type { LucideIcon } from "lucide-react";
  * both the header and the body cell, so they cannot fall out of step) to hide
  * the columns that are not worth the horizontal scroll — the row link leads to
  * the record where everything is spelled out.
+ *
+ * `SortKey` defaults to `never`, which is what lets a table that does not sort
+ * write `DataTableColumn<Row>`: with no key union there is nothing `sortKey`
+ * could hold, so the property can only be left out.
  */
-export interface DataTableColumn<Row> {
+export interface DataTableColumn<Row, SortKey extends string = never> {
   id: string;
   header: string;
   cell: (row: Row) => React.ReactNode;
@@ -21,6 +30,33 @@ export interface DataTableColumn<Row> {
   primary?: boolean;
   /** Applied to the `<th>` and every `<td>` of this column. */
   className?: string;
+  /**
+   * Present when the API can order by this column. The key is the wire value
+   * sent as `?sort=`, taken from the list's key union in `@repo/constants`, so
+   * a column that names an ordering the route cannot resolve is a compile
+   * error rather than a 422. A column without it is not sortable — there is no
+   * client-side comparator anywhere in this app.
+   */
+  sortKey?: SortKey;
+  /**
+   * Direction the first click on this column asks for. Dates want `desc`
+   * (newest first is what someone clicking a date column means); text and
+   * numbers want `asc`, which is the default.
+   */
+  sortFirst?: SortDirection;
+}
+
+/**
+ * The active ordering, and the way to change it.
+ *
+ * The table never holds the sort itself: it comes from the URL through
+ * `useTableParams` and goes back there, so what is rendered is always what the
+ * address bar asked the API for.
+ */
+export interface DataTableSort<SortKey extends string> {
+  key: SortKey;
+  dir: SortDirection;
+  onChange: (next: ListSort<SortKey>) => void;
 }
 
 /** What the table needs to know about the query behind it. */

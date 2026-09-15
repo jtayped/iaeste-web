@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 
 import {
@@ -18,20 +19,22 @@ import type {
   DataTableEmpty,
   DataTablePagination,
   DataTableSelectionConfig,
+  DataTableSort,
   DataTableState,
 } from "@/components/data-table/types";
 import { SelectionBar } from "@/components/data-table/selection-bar";
 import { SelectionCheckbox } from "@/components/data-table/selection-checkbox";
+import { SortHeader } from "@/components/data-table/sort-header";
 import { TableSkeleton } from "@/components/data-table/table-skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { errorMessage } from "@/lib/api-error";
 import { useTableSelection } from "@/components/data-table/use-table-selection";
 
-export interface DataTableProps<Row> {
+export interface DataTableProps<Row, SortKey extends string = never> {
   /** Describes the table for a screen reader. Required — it is the caption. */
   label: string;
-  columns: readonly DataTableColumn<Row>[];
+  columns: readonly DataTableColumn<Row, SortKey>[];
   rows: readonly Row[];
   rowKey: (row: Row) => string;
   rowHref?: (row: Row) => string;
@@ -40,6 +43,11 @@ export interface DataTableProps<Row> {
   empty: DataTableEmpty;
   /** Only for a list route the API actually paginates. */
   pagination?: DataTablePagination;
+  /**
+   * The active ordering. Omitted, no header is clickable — a column's
+   * `sortKey` alone draws nothing, so a screen opts in once, here.
+   */
+  sort?: DataTableSort<SortKey>;
   /** Search and filter controls, rendered above the table. */
   toolbar?: React.ReactNode;
   /** Optional multiselect. The table owns all checkbox/state mechanics. */
@@ -57,11 +65,12 @@ export interface DataTableProps<Row> {
  *    cards. On a narrow screen the table scrolls sideways inside its own
  *    wrapper — never the page body — and pages hide their least useful
  *    columns with responsive classes rather than changing shape.
- * 2. **Nothing is queried on the client.** Search, filters and the page are
- *    URL parameters that go to the API; what is rendered is exactly what came
- *    back. A table that filters rows it already holds is a bug.
+ * 2. **Nothing is queried on the client.** Search, filters, the ordering and
+ *    the page are URL parameters that go to the API; what is rendered is
+ *    exactly what came back, in the order it came back. A table that filters
+ *    or sorts rows it already holds is a bug.
  */
-export function DataTable<Row>({
+export function DataTable<Row, SortKey extends string = never>({
   label,
   columns,
   rows,
@@ -71,14 +80,34 @@ export function DataTable<Row>({
   state,
   empty,
   pagination,
+  sort,
   toolbar,
   selection: selectionConfig,
-}: DataTableProps<Row>) {
+}: DataTableProps<Row, SortKey>) {
   const ready = !state.isPending && !state.isError;
   const selection = useTableSelection(
     selectionConfig?.scope ?? "selection-disabled",
     selectionConfig?.total ?? 0,
   );
+
+  // A `?page=5` that outlives the result set it was written for — the search
+  // narrowed to twelve rows, someone sorted, a record was deleted — asks the
+  // API for an offset past the end and gets nothing back. That is not "cap
+  // coincidència": the rows exist, just not there. Walk back to the first
+  // page instead of reporting an empty list, and hold the empty state until
+  // the answer for that page arrives so the wrong message never flashes.
+  const pastEnd =
+    ready &&
+    rows.length === 0 &&
+    pagination !== undefined &&
+    pagination.total > 0 &&
+    pagination.offset >= pagination.total;
+  const resetOffset = React.useRef(pagination?.onOffsetChange);
+  resetOffset.current = pagination?.onOffsetChange;
+
+  React.useEffect(() => {
+    if (pastEnd) resetOffset.current?.(0);
+  }, [pastEnd]);
 
   return (
     <div className="space-y-4">
@@ -100,7 +129,7 @@ export function DataTable<Row>({
 
       {state.isError ? <ErrorState detail={errorMessage(state.error)} /> : null}
 
-      {ready && rows.length === 0 ? (
+      {ready && rows.length === 0 && !pastEnd ? (
         <EmptyState
           icon={empty.icon}
           title={empty.title}
@@ -132,12 +161,11 @@ export function DataTable<Row>({
                   </TableHead>
                 ) : null}
                 {columns.map((column) => (
-                  <TableHead
+                  <SortHeader
                     key={column.id}
-                    className={cn("whitespace-nowrap", column.className)}
-                  >
-                    {column.header}
-                  </TableHead>
+                    column={column}
+                    {...(sort ? { sort } : {})}
+                  />
                 ))}
                 {rowActions ? (
                   <TableHead className="text-right whitespace-nowrap">

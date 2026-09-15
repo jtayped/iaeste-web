@@ -147,16 +147,47 @@ list cannot look like a different product from the one next to it. A page that
 draws its own `<table>`, or its own "no hi ha res" panel, is a bug — reviewers
 should reject it.
 
-**All querying is server-side.** Search, filters and pagination are URL search
-parameters (`?q=&status=&filter=&page=`), read with `useTableParams`
-(`src/lib/table-params.ts`) and passed straight to the API. What renders is
-exactly the set the API returned for the parameters currently in the address
-bar.
+**All querying is server-side.** Search, filters, ordering and pagination are
+URL search parameters (`?q=&status=&filter=&sort=&dir=&page=`), read with
+`useTableParams` (`src/lib/table-params.ts`) and passed straight to the API.
+What renders is exactly the set the API returned, in the order it returned it,
+for the parameters currently in the address bar.
 
 - **Never filter, search, sort or paginate rows already in memory.** A
   `.filter()` over `query.data` to implement a control is the specific bug
   this section exists to prevent. If the API cannot back a filter yet, leave
   the control out and say so — do not fake it on the client.
+- **Sort is `?sort=&dir=`**, two independent enums validated by
+  `listQuerySchema` in `@repo/constants/validators/admin-list` and resolved in
+  SQL by the repository. One definition, so a screen that misspells a key
+  fails `check-types` instead of collecting a 422. A stale or hand-typed
+  `?sort=` falls back to the list's default rather than travelling to the API.
+- **A column is sortable by declaring `sortKey`**, never by a client-side
+  comparator — that is the same rule as above, said where it is tempting to
+  break it. No `sortKey`, no control: `<DataTable>` draws a header button only
+  for a column that declared one on a table that passed `sort`.
+- **Every column sorts by its own value.** `nom` and `cognoms` are separate
+  keys, not one "order by name" that secretly means surname-first: someone
+  looking for a person they know by given name clicks `nom`, someone reading a
+  roll clicks `cognoms`. A column with no single value to order by (campaigns'
+  `flags`, two independent badges) declares no key at all.
+- **The selection scope is the search plus the filters, never the sort or the
+  page.** Sorting reorders the same set and paging shows another slice of it,
+  so the ticks still mean the same people and must survive; changing a filter
+  means a different set, so the selection is dropped. `useTableParams` returns
+  the `scope` string, built from `defaults` alone — which is why the reserved
+  keys cannot be in it.
+- **`page`, `sort` and `dir` are reserved URL keys** owned by
+  `useTableParams`; putting one in `defaults` is a compile error on the
+  two-argument form every new table uses. (The one-argument overload stays
+  permissive only until the four existing screens are migrated off it — they
+  still spell `page: "1"` themselves. Do not write a new one that way.) Every
+  setter resets the page unless the caller names one, so that rule lives in the
+  hook rather than in fourteen call sites that each have to remember it.
+- **Every bulk action confirms, then reports through `reportBulkOutcome`**
+  (`src/lib/bulk-outcome.ts`). Every non-zero count is named and a partial
+  failure is a warning toast, never a green one: the description carries names
+  somebody has to chase by hand.
 - Search boxes are debounced (`<TableSearch>`) and then pushed to the URL; the
   URL change is what triggers the request. Typing does not filter anything.
 - Changing a filter or the search resets `page` to 1. An offset from the old
@@ -167,10 +198,19 @@ bar.
   `limit` and `offset`; endpoint-specific filters go to that route too. Follow
   `src/components/members/members-table.tsx` as the reference implementation.
 
-**Columns are declared once** as `DataTableColumn<Row>[]`, usually at module
-scope. `primary: true` marks the one cell that links to the record. Responsive
-display classes go in `className`, which is applied to the `<th>` and every
-`<td>` together so a header can never drift away from its column.
+**Columns are declared once** as `DataTableColumn<Row, SortKey>[]`, usually at
+module scope. `primary: true` marks the one cell that links to the record.
+Responsive display classes go in `className`, which is applied to the `<th>`
+and every `<td>` together so a header can never drift away from its column.
+`sortKey` is the wire value from the list's key union in `@repo/constants`, and
+`sortFirst` the direction the first click asks for — `desc` on a date column,
+because someone clicking one means "newest first".
+
+**The two analytics tables are outside this contract.** `owners-table` and
+`cold-leads-table` render a fixed five-minute Odoo snapshot with no query of
+their own: there is no route to sort, so "server-side sort" there would mean
+sorting an in-memory array inside the API. Leave them as they are; if they ever
+need ordering, the snapshot has to become a queryable list first.
 
 ## PWA
 
