@@ -5,8 +5,9 @@ import { CAMPAIGN_SORT_KEYS } from "@repo/constants/validators/admin-list";
 
 import type { Database } from "../client";
 import { closeTestDb, getTestDb, truncateAll } from "../test-support/db";
-import { createTestCampaign } from "../test-support/fixtures";
+import { createTestCampaign, createTestUser } from "../test-support/fixtures";
 import { createCampaignRepository } from "./campaigns";
+import { createMembershipRepository } from "./memberships";
 
 describe("campaigns — admin list ordering", () => {
   let db: Database;
@@ -77,6 +78,71 @@ describe("campaigns — admin list ordering", () => {
       implicit.rows.map((row) => row.slug),
       ["c-newest", "b-middle", "a-oldest"],
     );
+  });
+
+  it("counts the members and pending reviews each campaign actually has", async () => {
+    // Regression. These counts were hand-written `sql` subqueries, and inside
+    // a select field drizzle renders an interpolated column unqualified: the
+    // condition came out as `membership.campaign_id = membership.id`, which is
+    // never true, so every campaign reported zero. The admin's campanyes table
+    // showed 0 members for a committee of thirty. Asserting the row count is
+    // not enough — this asserts the numbers.
+    const repo = await seed();
+    const { rows } = await repo.listWithCounts({ limit: 10, offset: 0 });
+    const newest = rows.find((row) => row.slug === "c-newest");
+    assert.ok(newest);
+
+    const memberships = createMembershipRepository(db);
+    for (let i = 0; i < 3; i += 1) {
+      const u = await createTestUser(db);
+      await memberships.join({
+        userId: u.id,
+        campaignId: newest.id,
+        source: "registration",
+      });
+    }
+
+    const after = await repo.listWithCounts({ limit: 10, offset: 0 });
+    assert.equal(
+      after.rows.find((row) => row.slug === "c-newest")?.activeMembers,
+      3,
+    );
+    assert.equal(
+      after.rows.find((row) => row.slug === "a-oldest")?.activeMembers,
+      0,
+      "a campaign nobody joined still reports zero",
+    );
+  });
+
+  it("actually orders by a count, rather than by a constant", async () => {
+    // The sort keys order by the same expression the column renders, so a
+    // broken count is a sort that silently does nothing.
+    const repo = await seed();
+    const { rows } = await repo.listWithCounts({ limit: 10, offset: 0 });
+    const memberships = createMembershipRepository(db);
+    const middle = rows.find((row) => row.slug === "b-middle");
+    assert.ok(middle);
+    for (let i = 0; i < 2; i += 1) {
+      const u = await createTestUser(db);
+      await memberships.join({
+        userId: u.id,
+        campaignId: middle.id,
+        source: "registration",
+      });
+    }
+
+    const byCount = await repo.listWithCounts({
+      sort: "activeMembers",
+      dir: "desc",
+      limit: 10,
+      offset: 0,
+    });
+    assert.equal(
+      byCount.rows[0]?.slug,
+      "b-middle",
+      "the only campaign with members sorts to the top",
+    );
+    assert.equal(byCount.rows[0]?.activeMembers, 2);
   });
 
   it("produces valid SQL for every key the contract declares", async () => {

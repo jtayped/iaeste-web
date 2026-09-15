@@ -40,18 +40,31 @@ export interface UpdateCampaignInput {
 }
 
 export function createCampaignRepository(db: Database) {
+  // `db.$count`, not a hand-written `sql` subquery. Inside a select field
+  // drizzle renders an interpolated column *unqualified*, so
+  // `${membership.campaignId} = ${membershipCampaign.id}` came out as
+  // `"campaign_id" = "id"` and both names resolved to the subquery's own
+  // table: `membership.campaign_id = membership.id`, never true. Every
+  // campaign reported zero members and zero pending reviews. `$count` builds
+  // the condition through the query builder, which qualifies both sides.
+  //
   // Hoisted so the `ORDER BY` uses the very expression the column shows,
-  // rather than a second copy of it that could drift.
-  const activeMembers = sql<number>`(
-    select count(*) from ${membership}
-    where ${membership.campaignId} = ${membershipCampaign.id}
-      and ${membership.status} = 'active'
-  )`;
-  const pendingReview = sql<number>`(
-    select count(*) from ${registration}
-    where ${registration.campaignId} = ${membershipCampaign.id}
-      and ${registration.status} = 'pending_review'
-  )`;
+  // rather than a second copy of it that could drift — and so that sorting by
+  // a count cannot silently sort by a constant.
+  const activeMembers = db.$count(
+    membership,
+    and(
+      eq(membership.campaignId, membershipCampaign.id),
+      eq(membership.status, "active"),
+    ),
+  );
+  const pendingReview = db.$count(
+    registration,
+    and(
+      eq(registration.campaignId, membershipCampaign.id),
+      eq(registration.status, "pending_review"),
+    ),
+  );
 
   /**
    * What each sort key orders by.
