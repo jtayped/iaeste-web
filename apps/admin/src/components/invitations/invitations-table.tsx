@@ -44,7 +44,7 @@ import {
   useInvitationAction,
   useInvitations,
 } from "@/lib/invitations";
-import { offsetToPage, useTableParams } from "@/lib/table-params";
+import { useTableParams } from "@/lib/table-params";
 
 const DEFAULTS = { campaign: "", status: "all", q: "" } as const;
 
@@ -228,13 +228,11 @@ export function InvitationsTable({
   /** `broadcasts.send` — resolved on the server, re-checked by the API. */
   canBroadcast: boolean;
 }) {
-  const { get, setParams, offset, sort, setSort, scope } = useTableParams(
-    DEFAULTS,
-    {
+  const { get, setParams, offset, setOffset, sort, setSort, scope } =
+    useTableParams(DEFAULTS, {
       pageSize: INVITATIONS_PAGE_SIZE,
       sort: { keys: INVITATION_SORT_KEYS, default: INVITATION_DEFAULT_SORT },
-    },
-  );
+    });
   const campaignId = get("campaign") || initialCampaignId;
   const rawStatus = get("status");
   const status: InvitationStatusFilter = isStatus(rawStatus)
@@ -290,10 +288,7 @@ export function InvitationsTable({
               total: query.data.total,
               limit: query.data.limit,
               offset: query.data.offset,
-              onOffsetChange: (next: number) =>
-                setParams({
-                  page: offsetToPage(next, query.data.limit),
-                }),
+              onOffsetChange: setOffset,
             },
           }
         : {})}
