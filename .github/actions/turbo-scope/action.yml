@@ -1,0 +1,51 @@
+name: Turbo scope
+description: >-
+  Decides whether this run narrows turbo to the affected packages, and exports
+  the answer as TURBO_AFFECTED for every later step in the job.
+
+runs:
+  using: composite
+  steps:
+    # Three outcomes, cheapest reasoning first.
+    #
+    # A push to master runs everything. The merge commit's content is what the
+    # pull request just validated, so the whole graph is a cache hit and the
+    # full run costs seconds — free insurance against the one thing an
+    # affected filter cannot catch, a package breaking without its own files
+    # changing.
+    #
+    # A pull request normally narrows to the packages it changed and their
+    # dependents, which is the whole point of this action.
+    #
+    # Except when it touches the root dependency manifests. `--affected` reads
+    # turbo's graph, and that graph does not fan out uniformly at the root:
+    # editing turbo.json selects all fifteen packages, but editing
+    # package.json or package-lock.json selects only the "//" root package,
+    # which owns no build, lint, check-types or test task. Every task would
+    # then be filtered away and the job would go green having run nothing —
+    # worst of all on a dependency bump, the change least worth trusting
+    # unverified. So those two widen the run back out, the same way
+    # affected-apps.mjs fails open on a root change it cannot reason about.
+    - shell: bash
+      env:
+        EVENT: ${{ github.event_name }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        set -euo pipefail
+
+        if [ "$EVENT" != "pull_request" ]; then
+          echo "TURBO_AFFECTED=" >> "$GITHUB_ENV"
+          echo "Push to master: running every task." >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+        fi
+
+        # --name-only over the merge-base diff, so commits that landed on
+        # master since this branch started are not mistaken for its own.
+        if git diff --name-only "$BASE_SHA...HEAD" \
+          | grep -qxE 'package\.json|package-lock\.json'; then
+          echo "TURBO_AFFECTED=" >> "$GITHUB_ENV"
+          echo "Root dependency manifest changed: running every task." >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "TURBO_AFFECTED=--affected" >> "$GITHUB_ENV"
+          echo "Narrowing turbo to the packages this branch affects." >> "$GITHUB_STEP_SUMMARY"
+        fi

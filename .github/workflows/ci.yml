@@ -11,6 +11,10 @@ concurrency:
 
 env:
   TURBO_TELEMETRY_DISABLED: 1
+  # What `--affected` diffs against. Unset on a push, where turbo falls back
+  # to its own default. The flag itself is decided per job by the "How much of
+  # the graph" step, which writes TURBO_AFFECTED into the environment.
+  TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
 
 jobs:
   verify:
@@ -36,7 +40,14 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
+      # Full history: `--affected` diffs against the base branch, which a
+      # shallow clone would not contain.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: How much of the graph
+        uses: ./.github/actions/turbo-scope
 
       - uses: actions/setup-node@v4
         with:
@@ -61,13 +72,13 @@ jobs:
         run: npm run format:check
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint -- $TURBO_AFFECTED
 
       - name: Types
-        run: npm run check-types
+        run: npm run check-types -- $TURBO_AFFECTED
 
       - name: Tests
-        run: npm run test
+        run: npm run test -- $TURBO_AFFECTED
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/iaeste_test
 
@@ -131,7 +142,14 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      # Full history: `--affected` diffs against the base branch, which a
+      # shallow clone would not contain.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: How much of the graph
+        uses: ./.github/actions/turbo-scope
 
       - uses: actions/setup-node@v4
         with:
@@ -151,7 +169,7 @@ jobs:
       - uses: rharkor/caching-for-turbo@v2.5.1
 
       - name: Build all workspaces
-        run: npm run build
+        run: npm run build -- $TURBO_AFFECTED
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3004
           API_INTERNAL_URL: http://localhost:3004
@@ -171,9 +189,85 @@ jobs:
           CMS_MEDIA_DIR: /tmp/cms-media
           CMS_EMAIL_FROM: noreply@iaestelleida.cat
 
+  # Which images this pull request is worth building, from the same turbo
+  # dependency graph deploy.yml gates production on. Before this existed the
+  # matrix below was static and every PR built all five, so an admin-only
+  # change still rebuilt api, cms, web and inscripcions to prove nothing had
+  # happened to them.
+  detect-images:
+    name: Select images
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      include: ${{ steps.matrix.outputs.include }}
+    steps:
+      # Full history: the affected-apps query diffs against the base branch,
+      # which a shallow clone would not contain.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            # Paths outside every workspace, which turbo's dependency graph
+            # cannot reason about — a change here has to build all five.
+            force_all:
+              - '.github/scripts/**'
+              - '.github/workflows/ci.yml'
+
+      - name: Which apps does this pull request affect?
+        id: affected
+        run: node .github/scripts/affected-apps.mjs
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          FORCE_ALL: ${{ steps.filter.outputs.force_all }}
+
+      # The same five entries the matrix used to hold, narrowed to the
+      # affected apps. They are filtered here rather than by a job-level `if`
+      # because that cannot read the matrix context, so an unaffected image
+      # has to leave the matrix rather than skip inside the job.
+      #
+      # admin and cms carry no build args on purpose. apps/admin compiles no
+      # NEXT_PUBLIC_* values into its bundle (next.config.ts reads
+      # API_INTERNAL_URL at runtime), and apps/cms bakes its own non-secret
+      # placeholders in its Dockerfile's builder stage, with Coolify supplying
+      # the real runtime values.
+      - name: Narrow the image matrix
+        id: matrix
+        env:
+          AFFECTED: ${{ steps.affected.outputs.apps_json }}
+        run: |
+          images=$(cat <<'JSON'
+          [
+            { "name": "api", "file": "apps/api/Dockerfile", "build-args": "" },
+            { "name": "inscripcions", "file": "apps/inscripcions/Dockerfile",
+              "build-args": "NEXT_PUBLIC_API_URL=http://localhost:3004\nNEXT_PUBLIC_INSCRIPCIONS_STATE=on\nNEXT_PUBLIC_WHATSAPP_INVITE=https://chat.whatsapp.com/example" },
+            { "name": "web", "file": "apps/web/Dockerfile",
+              "build-args": "NEXT_PUBLIC_API_URL=http://localhost:3004\nRESEND_API_KEY=build-placeholder\nCONTACT_FORM_FROM=noreply@iaestelleida.cat\nCONTACT_FORM_TO=ci@example.com" },
+            { "name": "admin", "file": "apps/admin/Dockerfile", "build-args": "" },
+            { "name": "cms", "file": "apps/cms/Dockerfile", "build-args": "" }
+          ]
+          JSON
+          )
+          include=$(jq -c --argjson affected "$AFFECTED" \
+            '[ .[] | select(.name as $n | $affected | index($n) != null) ]' <<<"$images")
+          echo "include=$include" >> "$GITHUB_OUTPUT"
+          echo "Building: $(jq -r '[.[].name] | join(", ") | if . == "" then "nothing" else . end' <<<"$include")" >> "$GITHUB_STEP_SUMMARY"
+
   container-images:
     name: Build container images
-    if: github.event_name == 'pull_request'
+    needs: detect-images
+    # `include: []` is not a legal matrix, so the job has to be skipped
+    # outright when a pull request touches no app at all.
+    if: github.event_name == 'pull_request' && needs.detect-images.outputs.include != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -189,35 +283,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: api
-            file: apps/api/Dockerfile
-            build-args: ""
-          - name: inscripcions
-            file: apps/inscripcions/Dockerfile
-            build-args: |
-              NEXT_PUBLIC_API_URL=http://localhost:3004
-              NEXT_PUBLIC_INSCRIPCIONS_STATE=on
-              NEXT_PUBLIC_WHATSAPP_INVITE=https://chat.whatsapp.com/example
-          - name: web
-            file: apps/web/Dockerfile
-            build-args: |
-              NEXT_PUBLIC_API_URL=http://localhost:3004
-              RESEND_API_KEY=build-placeholder
-              CONTACT_FORM_FROM=noreply@iaestelleida.cat
-              CONTACT_FORM_TO=ci@example.com
-          # No build args: apps/admin compiles no NEXT_PUBLIC_* values into
-          # the bundle (next.config.ts reads API_INTERNAL_URL at runtime), so
-          # the image build needs nothing threaded through here.
-          - name: admin
-            file: apps/admin/Dockerfile
-            build-args: ""
-          # No build args: apps/cms bakes only non-secret placeholders in its
-          # Dockerfile's builder stage; Coolify supplies the real runtime
-          # values.
-          - name: cms
-            file: apps/cms/Dockerfile
-            build-args: ""
+        include: ${{ fromJSON(needs.detect-images.outputs.include) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
