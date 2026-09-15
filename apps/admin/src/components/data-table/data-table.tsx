@@ -156,8 +156,14 @@ export function DataTable<Row, SortKey extends string = never>({
               {/* A bare `<table>` rather than `@repo/ui`'s `<Table>`: that one
               wraps itself in a second `overflow-auto` box, and a scroller
               inside a scroller means the outer one never scrolls — so it can
-              neither be reached by keyboard nor show where the row continues. */}
-              <table className="w-full caption-bottom text-sm">
+              neither be reached by keyboard nor show where the row continues.
+              `w-full` here made the table shrink-wrap to `TableScroller`'s
+              viewport instead of overflowing it, so every column compressed
+              to min-content instead of the wrapper actually scrolling.
+              `w-max min-w-full` gives the table its natural width — full
+              width when that fits, wider than the viewport when it does not
+              — which is what makes the scroll real. */}
+              <table className="w-max min-w-full caption-bottom text-sm">
                 <caption className="sr-only">{label}</caption>
                 <TableHeader>
                   <TableRow>
