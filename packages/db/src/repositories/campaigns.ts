@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, ilike, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ilike, ne, or, sql } from "drizzle-orm";
 
 import type { Database } from "../client";
 import { membership } from "../schema/membership";
@@ -299,7 +299,10 @@ export function createCampaignRepository(db: Database) {
           })
           .from(membershipCampaign)
           .where(where)
-          .orderBy(sql`${membershipCampaign.membershipStartsAt} desc`)
+          .orderBy(
+            desc(membershipCampaign.membershipStartsAt),
+            desc(membershipCampaign.id),
+          )
           .limit(params.limit)
           .offset(params.offset),
         db

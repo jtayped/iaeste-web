@@ -201,7 +201,7 @@ export function createRegistrationRepository(db: Database) {
           .select()
           .from(registration)
           .where(where)
-          .orderBy(desc(registration.createdAt))
+          .orderBy(desc(registration.createdAt), desc(registration.id))
           .limit(params.limit)
           .offset(params.offset),
         db
@@ -226,7 +226,7 @@ export function createRegistrationRepository(db: Database) {
         .select()
         .from(registration)
         .where(registrationSelectionWhere(selection))
-        .orderBy(registration.createdAt)
+        .orderBy(registration.createdAt, registration.id)
         .limit(limit);
     },
 

@@ -137,7 +137,7 @@ export function createInvitationRepository(db: Database) {
         .select()
         .from(memberInvitation)
         .where(eq(memberInvitation.campaignId, campaignId))
-        .orderBy(desc(memberInvitation.createdAt));
+        .orderBy(desc(memberInvitation.createdAt), desc(memberInvitation.id));
       const now = Date.now();
       return rows.map((row) => ({
         ...row,
@@ -169,7 +169,7 @@ export function createInvitationRepository(db: Database) {
           .select()
           .from(memberInvitation)
           .where(where)
-          .orderBy(desc(memberInvitation.createdAt))
+          .orderBy(desc(memberInvitation.createdAt), desc(memberInvitation.id))
           .limit(params.limit)
           .offset(params.offset),
         db
@@ -210,7 +210,7 @@ export function createInvitationRepository(db: Database) {
         .select()
         .from(memberInvitation)
         .where(where)
-        .orderBy(desc(memberInvitation.createdAt))
+        .orderBy(desc(memberInvitation.createdAt), desc(memberInvitation.id))
         .limit(limit);
     },
 

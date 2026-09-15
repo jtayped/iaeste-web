@@ -175,7 +175,7 @@ export function createMemberListQueries(db: Db) {
           .from(memberProfile)
           .innerJoin(user, eq(user.id, memberProfile.userId))
           .where(where)
-          .orderBy(memberProfile.surnames, memberProfile.name)
+          .orderBy(memberProfile.surnames, memberProfile.name, memberProfile.userId)
           .limit(params.limit)
           .offset(params.offset),
         db
@@ -232,7 +232,7 @@ export function createMemberListQueries(db: Db) {
         .from(memberProfile)
         .innerJoin(user, eq(user.id, memberProfile.userId))
         .where(and(selected, exclusions))
-        .orderBy(memberProfile.surnames, memberProfile.name)
+        .orderBy(memberProfile.surnames, memberProfile.name, memberProfile.userId)
         .limit(limit);
     },
 
@@ -262,7 +262,7 @@ export function createMemberListQueries(db: Db) {
         .from(memberProfile)
         .innerJoin(user, eq(user.id, memberProfile.userId))
         .where(and(selected, exclusions))
-        .orderBy(memberProfile.surnames, memberProfile.name)
+        .orderBy(memberProfile.surnames, memberProfile.name, memberProfile.userId)
         .limit(limit);
     },
   };
