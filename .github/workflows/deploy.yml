@@ -48,7 +48,7 @@ jobs:
   detect-changes:
     name: Select images
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
     outputs:
@@ -97,7 +97,7 @@ jobs:
     name: Build and push iaeste-admin
     if: github.event_name == 'push' && needs.detect-changes.outputs.admin == 'true'
     needs: detect-changes
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
       packages: write
@@ -132,7 +132,7 @@ jobs:
     name: Build and push iaeste-cms
     if: github.event_name == 'push' && needs.detect-changes.outputs.cms == 'true'
     needs: detect-changes
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
       packages: write
@@ -165,7 +165,7 @@ jobs:
     name: Build and push iaeste-api
     if: github.event_name == 'push' && needs.detect-changes.outputs.api == 'true'
     needs: detect-changes
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
       packages: write
@@ -198,7 +198,7 @@ jobs:
     name: Build and push iaeste-inscripcions
     if: github.event_name == 'push' && needs.detect-changes.outputs.inscripcions == 'true'
     needs: detect-changes
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
       packages: write
@@ -235,7 +235,7 @@ jobs:
     name: Build and push iaeste-web
     if: github.event_name == 'push' && needs.detect-changes.outputs.web == 'true'
     needs: detect-changes
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
       packages: write
@@ -296,7 +296,7 @@ jobs:
         build-inscripcions,
         build-web,
       ]
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -319,7 +319,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'admin' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
     needs: [detect-changes, build-admin, deploy-api]
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -342,7 +342,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'inscripcions' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
     needs: [detect-changes, build-inscripcions, deploy-api]
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -365,7 +365,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'cms' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
     needs: [detect-changes, build-cms, deploy-api]
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -390,7 +390,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'web' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
     needs: [detect-changes, build-web, deploy-api, deploy-cms]
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:

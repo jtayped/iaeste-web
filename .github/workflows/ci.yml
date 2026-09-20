@@ -19,7 +19,7 @@ env:
 jobs:
   verify:
     name: Lint, types, tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     # @repo/db's repository suite runs against a real Postgres, never mocks
     # (see IA-11's acceptance criteria) — this service container is that
     # database for CI. IA-70 is where a fuller integration-test setup is
@@ -140,7 +140,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     steps:
       # Full history: `--affected` diffs against the base branch, which a
       # shallow clone would not contain.
@@ -197,7 +197,7 @@ jobs:
   detect-images:
     name: Select images
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
     outputs:
@@ -268,7 +268,7 @@ jobs:
     # `include: []` is not a legal matrix, so the job has to be skipped
     # outright when a pull request touches no app at all.
     if: github.event_name == 'pull_request' && needs.detect-images.outputs.include != '[]'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
       # Writing the layer cache to GHCR is a registry push, even though the
