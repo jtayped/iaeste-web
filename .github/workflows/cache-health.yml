@@ -22,6 +22,13 @@ jobs:
       actions: read
     steps:
       - uses: actions/checkout@v4
+      # the self-hosted runner image ships node 10.19.0 on PATH, and the
+      # runner's own node24 sits under /actions-runner/externals where a
+      # `run:` step cannot reach it. github-hosted runners preinstall a
+      # current node, which is the only reason this ever worked.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Summarise and warn
         run: node .github/scripts/cache-usage.mjs
         env:
