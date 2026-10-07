@@ -213,13 +213,22 @@ is six tab stops to one place. A per-cell anchor in a `primary` column would
 nest inside that overlay, so there must not be one. The header buttons sit
 ahead of the row links in the tab order, which is why sorting stays reachable.
 
-**Every list exports to CSV through one mechanism.** `<DataTable>` draws the
-control at the end of its toolbar row when it is given `csvExport`, and every
-list gives it one, from its lib's export hook (`useMembersExport`,
-`useRegistrationsExport`, `useInvitationsExport`, `useCampaignsExport`), each a
-thin call to `useTableExport` (`src/lib/table-export.ts`). The hook fetches the
-file through the generated client, saves it under the name the API's
-`Content-Disposition` gives it, and toasts a failure like any other mutation.
+**Every list exports to CSV through one mechanism.** `<DataTable>` takes a
+`csvExport` and every list gives it one, from its lib's export hook
+(`useMembersExport`, `useRegistrationsExport`, `useInvitationsExport`,
+`useCampaignsExport`), each a thin call to `useTableExport`
+(`src/lib/table-export.ts`). The hook fetches the file through the generated
+client, saves it under the name the API's `Content-Disposition` gives it, and
+toasts a failure like any other mutation.
+
+- **The control ends the toolbar's first row, at every width.** `<DataTable>`
+  hands it through context to `<TableToolbar>`, which is a search row (the
+  `search` prop, then the export) over the filters (its children). The
+  filters never share the export's line, so they can wrap freely without
+  running under it, and on a phone every stacked row ends at the same edge.
+  A `collapsible` toolbar (members) puts the export beside its `filtres`
+  button below `md`. Build a list's toolbar from `<TableToolbar>`, since a
+  hand-rolled one has nowhere to draw the export.
 
 - **The export is the list's query without the page, resolved on the server.**
   Each lib builds its API parameters in one function (`membersApiQuery` and

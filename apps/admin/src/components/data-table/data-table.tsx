@@ -12,7 +12,10 @@ import {
 } from "@repo/ui/table";
 import { cn } from "@repo/ui/lib/utils";
 
-import { TableExportButton } from "@/components/data-table/export-button";
+import {
+  TableExportButton,
+  TableExportProvider,
+} from "@/components/data-table/export-button";
 import { Pagination } from "@/components/data-table/pagination";
 import { TableScroller } from "@/components/data-table/table-scroller";
 import type {
@@ -57,11 +60,15 @@ export interface DataTableProps<Row, SortKey extends string = never> {
    * `sortKey` alone draws nothing, so a screen opts in once, here.
    */
   sort?: DataTableSort<SortKey>;
-  /** Search and filter controls, rendered above the table. */
+  /**
+   * Search and filter controls, rendered above the table. Build it from
+   * `<TableToolbar>`: that is what draws the export control.
+   */
   toolbar?: React.ReactNode;
   /**
-   * The list's CSV export, from `useTableExport`. Every list passes one; the
-   * table draws the control at the end of the toolbar row.
+   * The list's CSV export, from `useTableExport`. Every list passes one. The
+   * table hands the control to `<TableToolbar>`, which ends its search row
+   * with it; with no toolbar, the table draws it alone, right-aligned.
    */
   csvExport?: DataTableExport;
   /** Optional multiselect. The table owns all checkbox/state mechanics. */
@@ -132,20 +139,20 @@ export function DataTable<Row, SortKey extends string = never>({
     if (pastEnd) resetOffset.current?.(0);
   }, [pastEnd]);
 
+  const exportControl = csvExport
+    ? // An empty list would export a header row and nothing else.
+      { csvExport, disabled: !ready || rows.length === 0 }
+    : null;
+
   return (
     <div className="space-y-4">
-      {toolbar || csvExport ? (
-        // Bottom-aligned, so the export sits level with the last control
-        // whether the toolbar is one row (desktop) or a stack (phone).
-        <div className="flex min-w-0 items-end gap-3">
-          <div className="min-w-0 flex-1">{toolbar}</div>
-          {csvExport ? (
-            <TableExportButton
-              csvExport={csvExport}
-              // An empty list would export a header row and nothing else.
-              disabled={!ready || rows.length === 0}
-            />
-          ) : null}
+      {toolbar ? (
+        <TableExportProvider value={exportControl}>
+          {toolbar}
+        </TableExportProvider>
+      ) : exportControl ? (
+        <div className="flex justify-end">
+          <TableExportButton {...exportControl} />
         </div>
       ) : null}
 

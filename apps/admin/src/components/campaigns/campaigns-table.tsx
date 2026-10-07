@@ -208,13 +208,16 @@ export function CampaignsTable({
         : {})}
       csvExport={csvExport}
       toolbar={
-        <TableToolbar>
-          <TableSearch
-            id="campaigns-search"
-            value={q}
-            placeholder="nom o identificador"
-            onCommit={handleSearch}
-          />
+        <TableToolbar
+          search={
+            <TableSearch
+              id="campaigns-search"
+              value={q}
+              placeholder="nom o identificador"
+              onCommit={handleSearch}
+            />
+          }
+        >
           <TableFilter
             value={state || "all"}
             options={FILTERS}
