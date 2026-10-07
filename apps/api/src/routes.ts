@@ -12,6 +12,7 @@ import {
   broadcastSendResponseSchema,
   broadcastTestBodySchema,
   broadcastTestResponseSchema,
+  adminCampaignExportQuerySchema,
   adminCampaignListSchema,
   adminCampaignListQuerySchema,
   adminCampaignRegistrationBodySchema,
@@ -29,6 +30,7 @@ import {
   adminBulkCreateInvitationsBodySchema,
   adminBulkCreateInvitationsResponseSchema,
   adminInvitationActionResponseSchema,
+  adminInvitationExportQuerySchema,
   adminInvitationListQuerySchema,
   adminInvitationListSchema,
   adminInvitationSchema,
@@ -37,6 +39,7 @@ import {
   adminLeaveBodySchema,
   adminMemberDetailSchema,
   adminMemberEmailsResponseSchema,
+  adminMemberExportQuerySchema,
   adminMemberListQuerySchema,
   adminMemberListSchema,
   adminMemberStatusResponseSchema,
@@ -56,10 +59,12 @@ import {
   campaignIdParamSchema,
   adminAcceptResponseSchema,
   adminListQuerySchema,
+  adminRegistrationExportQuerySchema,
   adminRegistrationListSchema,
   adminRejectBodySchema,
   adminRejectResponseSchema,
   apiErrorSchema,
+  csvExportSchema,
   healthSchema,
   registrationCreatedSchema,
   registrationIdParamSchema,
@@ -473,6 +478,30 @@ const adminAuthResponses = {
   },
 };
 
+/**
+ * What every list export answers. The CSV is the list's own query run without
+ * the page, so the 422 for a bad filter is the list's 422; the 409 is the
+ * one thing an export adds, a result set bigger than one file may hold.
+ */
+const adminExportResponses = {
+  200: {
+    description:
+      "Every row the query matches, in the list's order, as a CSV " +
+      "attachment named `<table>[-<campaign slug>]-<date>.csv`.",
+    content: { "text/csv": { schema: csvExportSchema } },
+  },
+  409: {
+    description:
+      "More rows match than one export may hold. Narrow the filters.",
+    content: { "application/json": { schema: apiErrorSchema } },
+  },
+  422: {
+    description: "A query parameter is missing or not a valid value.",
+    content: { "application/json": { schema: apiErrorSchema } },
+  },
+  ...adminAuthResponses,
+};
+
 export const adminListRegistrationsRoute = createRoute({
   method: "get",
   path: "/v1/admin/registrations",
@@ -501,6 +530,25 @@ export const adminListRegistrationsRoute = createRoute({
       },
     },
     ...adminAuthResponses,
+  },
+});
+
+export const adminExportRegistrationsRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/registrations/export",
+  operationId: "adminExportRegistrations",
+  tags: ["Admin"],
+  description:
+    "Every registration `GET /v1/admin/registrations` matches for the same " +
+    "`campaignId`, `status`, `q`, `sort` and `dir`, as CSV. 404 for an " +
+    "unknown campaign. Requires the `registrations.review` capability.",
+  request: { query: adminRegistrationExportQuerySchema },
+  responses: {
+    ...adminExportResponses,
+    404: {
+      description: "No campaign with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
   },
 });
 
@@ -705,6 +753,18 @@ export const adminListCampaignsRoute = createRoute({
     },
     ...adminAuthResponses,
   },
+});
+
+export const adminExportCampaignsRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/campaigns/export",
+  operationId: "adminExportCampaigns",
+  tags: ["Admin"],
+  description:
+    "Every campaign `GET /v1/admin/campaigns` matches for the same `q`, " +
+    "`state`, `sort` and `dir`, as CSV. Requires `campaigns.write`.",
+  request: { query: adminCampaignExportQuerySchema },
+  responses: adminExportResponses,
 });
 
 export const adminCreateCampaignRoute = createRoute({
@@ -978,6 +1038,26 @@ export const adminListMembersRoute = createRoute({
   },
 });
 
+export const adminExportMembersRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/members/export",
+  operationId: "adminExportMembers",
+  tags: ["Admin"],
+  description:
+    "Every member `GET /v1/admin/members` matches for the same `q`, " +
+    "`filter`, `campaignId`, `targetCampaignId`, `sort` and `dir`, as CSV. " +
+    "A `destí` column is added when `targetCampaignId` is given. 404 for an " +
+    "unknown `campaignId`. Requires `members.read`.",
+  request: { query: adminMemberExportQuerySchema },
+  responses: {
+    ...adminExportResponses,
+    404: {
+      description: "No campaign with the given campaignId.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
+  },
+});
+
 export const adminGetMemberRoute = createRoute({
   method: "get",
   path: "/v1/admin/members/{userId}",
@@ -1244,6 +1324,25 @@ export const adminListInvitationsRoute = createRoute({
       },
     },
     ...adminAuthResponses,
+  },
+});
+
+export const adminExportInvitationsRoute = createRoute({
+  method: "get",
+  path: "/v1/admin/invitations/export",
+  operationId: "adminExportInvitations",
+  tags: ["Admin"],
+  description:
+    "Every invitation `GET /v1/admin/invitations` matches for the same " +
+    "`campaignId`, `status`, `q`, `sort` and `dir`, as CSV. 404 for an " +
+    "unknown campaign. Requires `invitations.write`.",
+  request: { query: adminInvitationExportQuerySchema },
+  responses: {
+    ...adminExportResponses,
+    404: {
+      description: "No campaign with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
   },
 });
 

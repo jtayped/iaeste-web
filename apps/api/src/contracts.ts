@@ -7,6 +7,7 @@ import {
   invitationListQuerySchema,
   listPageSchema,
   memberListQuerySchema,
+  MEMBER_TARGET_STATES,
   registrationListQuerySchema,
   REGISTRATION_STATUSES,
 } from "@repo/constants/validators/admin-list";
@@ -371,6 +372,24 @@ export const adminListQuerySchema = z.object({
   status: registrationStatusSchema.optional(),
 });
 
+/**
+ * The body of every list export: RFC 4180 CSV with a UTF-8 byte-order mark,
+ * one header row of Catalan column names, then one row per matching record.
+ */
+export const csvExportSchema = z.string().openapi({
+  description: "UTF-8 CSV, header row first.",
+});
+
+/**
+ * A list's export query: its search, filters and ordering without the page,
+ * because an export is every row they match. Derived from the list's own
+ * query so a filter added to one table is accepted by its export too.
+ */
+const PAGE_KEYS = { limit: true, offset: true } as const;
+
+export const adminRegistrationExportQuerySchema =
+  adminListQuerySchema.omit(PAGE_KEYS);
+
 export const registrationIdParamSchema = z.object({
   id: z.string().min(1).openapi({ example: "registration_123" }),
 });
@@ -484,6 +503,8 @@ export const adminCampaignListQuerySchema = z.object({
   ...campaignListQuerySchema.shape,
   state: campaignStateSchema.optional(),
 });
+export const adminCampaignExportQuerySchema =
+  adminCampaignListQuerySchema.omit(PAGE_KEYS);
 
 export const campaignIdParamSchema = z.object({
   id: z.string().min(1).openapi({ example: "campaign_123" }),
@@ -579,9 +600,11 @@ export const userIdParamSchema = z.object({
 export const adminMemberListQuerySchema = z.object({
   ...memberListQuerySchema.shape,
 });
+export const adminMemberExportQuerySchema =
+  adminMemberListQuerySchema.omit(PAGE_KEYS);
 
 export const memberTargetStateSchema = z
-  .enum(["eligible", "member", "registered", "invited"])
+  .enum(MEMBER_TARGET_STATES)
   .openapi("MemberTargetState");
 
 export const adminMemberListItemSchema = z
@@ -590,6 +613,7 @@ export const adminMemberListItemSchema = z
     name: z.string(),
     surnames: z.string(),
     email: z.string(),
+    phone: z.string(),
     degree: z.string(),
     studyYear: z.number(),
     role: z.string().nullable(),
@@ -808,6 +832,8 @@ export const adminInvitationListQuerySchema = z.object({
   ...invitationListQuerySchema.shape,
   campaignId: z.string().min(1).openapi({ example: "campaign_123" }),
 });
+export const adminInvitationExportQuerySchema =
+  adminInvitationListQuerySchema.omit(PAGE_KEYS);
 
 export const invitationIdParamSchema = z.object({
   id: z.string().min(1).openapi({ example: "invitation_123" }),

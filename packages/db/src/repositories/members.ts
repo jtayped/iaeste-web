@@ -5,7 +5,6 @@ import type { MemberProfile } from "@repo/constants/validators/registration";
 import type { Db } from "../client";
 import { user } from "../schema/auth";
 import { memberProfile } from "../schema/member-profile";
-import { membership } from "../schema/membership";
 import {
   createMemberListQueries,
   type MemberListParams,
@@ -20,22 +19,6 @@ export type {
   MemberSelection,
   MemberTargetState,
 } from "./member-list";
-
-/** One membership row for a campaign, flattened for the CSV export. */
-export interface MemberExportRow {
-  name: string;
-  surnames: string;
-  email: string;
-  phone: string;
-  degree: string;
-  studyYear: number | null;
-  role: string | null;
-  status: string;
-  source: string;
-  joinedAt: Date;
-  endedAt: Date | null;
-  endedReason: string | null;
-}
 
 /**
  * Server-side member list — search (`q` over name/surnames/email), a
@@ -135,51 +118,6 @@ export function createMemberRepository(db: Db) {
         .where(eq(user.id, userId))
         .returning({ id: user.id, role: user.role });
       return row;
-    },
-
-    /**
-     * Every membership for one campaign, flattened with the person's profile
-     * and account role, ordered by surname — the CSV export's full row set,
-     * unpaginated on purpose (an export is the whole thing). `member_profile`
-     * is left-joined so a membership without one is still exported rather than
-     * silently dropped.
-     */
-    async exportForCampaign(campaignId: string): Promise<MemberExportRow[]> {
-      const rows = await db
-        .select({
-          name: memberProfile.name,
-          surnames: memberProfile.surnames,
-          email: user.email,
-          phone: memberProfile.phoneDisplay,
-          degree: memberProfile.degree,
-          studyYear: memberProfile.studyYear,
-          role: user.role,
-          status: membership.status,
-          source: membership.source,
-          joinedAt: membership.joinedAt,
-          endedAt: membership.endedAt,
-          endedReason: membership.endedReason,
-        })
-        .from(membership)
-        .innerJoin(user, eq(user.id, membership.userId))
-        .leftJoin(memberProfile, eq(memberProfile.userId, membership.userId))
-        .where(eq(membership.campaignId, campaignId))
-        .orderBy(memberProfile.surnames, memberProfile.name);
-
-      return rows.map((row) => ({
-        name: row.name ?? "",
-        surnames: row.surnames ?? "",
-        email: row.email,
-        phone: row.phone ?? "",
-        degree: row.degree ?? "",
-        studyYear: row.studyYear ?? null,
-        role: row.role,
-        status: row.status,
-        source: row.source,
-        joinedAt: row.joinedAt,
-        endedAt: row.endedAt,
-        endedReason: row.endedReason,
-      }));
     },
   };
 }

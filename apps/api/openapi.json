@@ -1117,6 +1117,15 @@
           "label"
         ]
       },
+      "RegistrationStatus": {
+        "type": "string",
+        "enum": [
+          "pending_email",
+          "pending_review",
+          "accepted",
+          "rejected"
+        ]
+      },
       "AdminRegistrationList": {
         "type": "object",
         "properties": {
@@ -1225,15 +1234,6 @@
           "rejectionReason",
           "createdAt",
           "updatedAt"
-        ]
-      },
-      "RegistrationStatus": {
-        "type": "string",
-        "enum": [
-          "pending_email",
-          "pending_review",
-          "accepted",
-          "rejected"
         ]
       },
       "AdminRegistrationProfileSnapshot": {
@@ -1445,6 +1445,14 @@
           "reason"
         ]
       },
+      "CampaignState": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "published",
+          "archived"
+        ]
+      },
       "AdminCampaignList": {
         "type": "object",
         "properties": {
@@ -1553,14 +1561,6 @@
           "updatedAt",
           "activeMembers",
           "pendingReview"
-        ]
-      },
-      "CampaignState": {
-        "type": "string",
-        "enum": [
-          "draft",
-          "published",
-          "archived"
         ]
       },
       "AdminCampaign": {
@@ -1767,6 +1767,9 @@
           "email": {
             "type": "string"
           },
+          "phone": {
+            "type": "string"
+          },
           "degree": {
             "type": "string"
           },
@@ -1797,6 +1800,7 @@
           "name",
           "surnames",
           "email",
+          "phone",
           "degree",
           "studyYear",
           "role",
@@ -3975,6 +3979,138 @@
         }
       }
     },
+    "/v1/admin/registrations/export": {
+      "get": {
+        "operationId": "adminExportRegistrations",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Every registration `GET /v1/admin/registrations` matches for the same `campaignId`, `status`, `q`, `sort` and `dir`, as CSV. 404 for an unknown campaign. Requires the `registrations.review` capability.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "surnames",
+                "email",
+                "degree",
+                "studyYear",
+                "status",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false,
+            "name": "dir",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "campaign_123"
+            },
+            "required": true,
+            "name": "campaignId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/RegistrationStatus"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every row the query matches, in the list's order, as a CSV attachment named `<table>[-<campaign slug>]-<date>.csv`.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "description": "UTF-8 CSV, header row first."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No campaign with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "More rows match than one export may hold. Narrow the filters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter is missing or not a valid value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/registrations": {
       "get": {
         "operationId": "adminListRegistrations",
@@ -4401,6 +4537,117 @@
           },
           "409": {
             "description": "The registration is not in pending_review.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/campaigns/export": {
+      "get": {
+        "operationId": "adminExportCampaigns",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Every campaign `GET /v1/admin/campaigns` matches for the same `q`, `state`, `sort` and `dir`, as CSV. Requires `campaigns.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "label",
+                "slug",
+                "state",
+                "activeMembers",
+                "pendingReview",
+                "membershipStartsAt"
+              ],
+              "default": "membershipStartsAt"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false,
+            "name": "dir",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/CampaignState"
+            },
+            "required": false,
+            "name": "state",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every row the query matches, in the list's order, as a CSV attachment named `<table>[-<campaign slug>]-<date>.csv`.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "description": "UTF-8 CSV, header row first."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "More rows match than one export may hold. Narrow the filters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter is missing or not a valid value.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4856,6 +5103,153 @@
           },
           "404": {
             "description": "No campaign with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/members/export": {
+      "get": {
+        "operationId": "adminExportMembers",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Every member `GET /v1/admin/members` matches for the same `q`, `filter`, `campaignId`, `targetCampaignId`, `sort` and `dir`, as CSV. A `destí` column is added when `targetCampaignId` is given. 404 for an unknown `campaignId`. Requires `members.read`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "surnames",
+                "email",
+                "degree",
+                "studyYear",
+                "role",
+                "status",
+                "totalMemberships",
+                "targetState"
+              ],
+              "default": "surnames"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            },
+            "required": false,
+            "name": "dir",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "current",
+                "past"
+              ]
+            },
+            "required": false,
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "campaignId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "targetCampaignId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every row the query matches, in the list's order, as a CSV attachment named `<table>[-<campaign slug>]-<date>.csv`.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "description": "UTF-8 CSV, header row first."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No campaign with the given campaignId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "More rows match than one export may hold. Narrow the filters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter is missing or not a valid value.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5525,6 +5919,143 @@
           },
           "404": {
             "description": "No member (member_profile row) with that user id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/invitations/export": {
+      "get": {
+        "operationId": "adminExportInvitations",
+        "tags": [
+          "Admin"
+        ],
+        "description": "Every invitation `GET /v1/admin/invitations` matches for the same `campaignId`, `status`, `q`, `sort` and `dir`, as CSV. 404 for an unknown campaign. Requires `invitations.write`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "email",
+                "name",
+                "status",
+                "role",
+                "createdAt",
+                "expiresAt"
+              ],
+              "default": "createdAt"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false,
+            "name": "dir",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "campaign_123"
+            },
+            "required": true,
+            "name": "campaignId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "accepted",
+                "cancelled",
+                "expired"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every row the query matches, in the list's order, as a CSV attachment named `<table>[-<campaign slug>]-<date>.csv`.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "description": "UTF-8 CSV, header row first."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session cookie, or the session is expired or revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session's role lacks the required capability, or the user has not completed onboarding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No campaign with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "More rows match than one export may hold. Narrow the filters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter is missing or not a valid value.",
             "content": {
               "application/json": {
                 "schema": {

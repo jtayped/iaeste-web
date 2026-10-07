@@ -30,6 +30,17 @@ export const LIST_DEFAULT_LIMIT = 50;
 export const LIST_MAX_LIMIT = 200;
 
 /**
+ * The most rows one CSV export may hold.
+ *
+ * An export is a list route's query without the page: the same search,
+ * filters and ordering, answered with every matching row. The cap is far
+ * above any list this committee has, so reaching it means a query has gone
+ * wrong rather than a real table that needs exporting; the route refuses
+ * instead of building a file nobody asked for.
+ */
+export const LIST_EXPORT_MAX_ROWS = 10_000;
+
+/**
  * Builds a list route's query schema.
  *
  * `sort` and `dir` are two independent enums rather than one `?sort=-name`
@@ -109,6 +120,18 @@ export type InvitationStatusFilter = (typeof INVITATION_STATUS_FILTERS)[number];
 
 export const MEMBER_FILTERS = ["all", "current", "past"] as const;
 export type MemberFilter = (typeof MEMBER_FILTERS)[number];
+
+/**
+ * Where a member stands relative to a target campaign, computed in SQL when
+ * the members list is given `targetCampaignId`.
+ */
+export const MEMBER_TARGET_STATES = [
+  "eligible",
+  "member",
+  "registered",
+  "invited",
+] as const;
+export type MemberTargetState = (typeof MEMBER_TARGET_STATES)[number];
 
 // --- Members ---------------------------------------------------------------
 

@@ -12,6 +12,7 @@ import {
 import {
   MEMBER_DEFAULT_SORT,
   type MemberSortKey,
+  type MemberTargetState,
   type SortDirection,
 } from "@repo/constants/validators/admin-list";
 
@@ -41,14 +42,15 @@ export interface MemberListParams {
   offset: number;
 }
 
-export type MemberTargetState =
-  "eligible" | "member" | "registered" | "invited";
+export type { MemberTargetState };
 
 export interface MemberListRow {
   userId: string;
   name: string;
   surnames: string;
   email: string;
+  /** `phoneDisplay`. Not a table column, but the CSV export carries it. */
+  phone: string;
   degree: string;
   studyYear: number;
   role: string | null;
@@ -222,6 +224,7 @@ export function createMemberListQueries(db: Db) {
             name: memberProfile.name,
             surnames: memberProfile.surnames,
             email: user.email,
+            phone: memberProfile.phoneDisplay,
             degree: memberProfile.degree,
             studyYear: memberProfile.studyYear,
             role: user.role,

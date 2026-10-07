@@ -269,6 +269,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/registrations/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Every registration `GET /v1/admin/registrations` matches for the same `campaignId`, `status`, `q`, `sort` and `dir`, as CSV. 404 for an unknown campaign. Requires the `registrations.review` capability. */
+        get: operations["adminExportRegistrations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/registrations": {
         parameters: {
             query?: never;
@@ -348,6 +365,23 @@ export interface paths {
         put?: never;
         /** @description Requires the `registrations.review` capability. The reviewer is the session user. */
         post: operations["adminRejectRegistration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/campaigns/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Every campaign `GET /v1/admin/campaigns` matches for the same `q`, `state`, `sort` and `dir`, as CSV. Requires `campaigns.write`. */
+        get: operations["adminExportCampaigns"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -434,6 +468,23 @@ export interface paths {
         put?: never;
         /** @description Archive a campaign. Never deletes; clears both coexistence flags. Requires `campaigns.rollover`. */
         post: operations["adminArchiveCampaign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/members/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Every member `GET /v1/admin/members` matches for the same `q`, `filter`, `campaignId`, `targetCampaignId`, `sort` and `dir`, as CSV. A `destí` column is added when `targetCampaignId` is given. 404 for an unknown `campaignId`. Requires `members.read`. */
+        get: operations["adminExportMembers"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -558,6 +609,23 @@ export interface paths {
         head?: never;
         /** @description Promote or demote a member between `member` and `admin`. Writes a `role_changed` audit event, separate from membership changes. Requires `members.role.write`. */
         patch: operations["adminMemberSetRole"];
+        trace?: never;
+    };
+    "/v1/admin/invitations/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Every invitation `GET /v1/admin/invitations` matches for the same `campaignId`, `status`, `q`, `sort` and `dir`, as CSV. 404 for an unknown campaign. Requires `invitations.write`. */
+        get: operations["adminExportInvitations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/admin/invitations": {
@@ -1028,6 +1096,8 @@ export interface components {
             slug: string;
             label: string;
         } | null;
+        /** @enum {string} */
+        RegistrationStatus: "pending_email" | "pending_review" | "accepted" | "rejected";
         AdminRegistrationList: {
             rows: components["schemas"]["AdminRegistration"][];
             total: number;
@@ -1050,8 +1120,6 @@ export interface components {
             createdAt: string;
             updatedAt: string;
         };
-        /** @enum {string} */
-        RegistrationStatus: "pending_email" | "pending_review" | "accepted" | "rejected";
         AdminRegistrationProfileSnapshot: {
             name: string;
             surnames: string;
@@ -1106,6 +1174,8 @@ export interface components {
             /** @example No hi ha places disponibles aquest curs. */
             reason: string;
         };
+        /** @enum {string} */
+        CampaignState: "draft" | "published" | "archived";
         AdminCampaignList: {
             rows: components["schemas"]["AdminCampaignWithCounts"][];
             total: number;
@@ -1131,8 +1201,6 @@ export interface components {
             activeMembers: number;
             pendingReview: number;
         };
-        /** @enum {string} */
-        CampaignState: "draft" | "published" | "archived";
         AdminCampaign: {
             id: string;
             slug: string;
@@ -1189,6 +1257,7 @@ export interface components {
             name: string;
             surnames: string;
             email: string;
+            phone: string;
             degree: string;
             studyYear: number;
             role: string | null;
@@ -2258,6 +2327,77 @@ export interface operations {
             };
         };
     };
+    adminExportRegistrations: {
+        parameters: {
+            query: {
+                q?: string;
+                sort?: "name" | "surnames" | "email" | "degree" | "studyYear" | "status" | "createdAt";
+                dir?: "asc" | "desc";
+                campaignId: string;
+                status?: components["schemas"]["RegistrationStatus"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every row the query matches, in the list's order, as a CSV attachment named `<table>[-<campaign slug>]-<date>.csv`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No campaign with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description More rows match than one export may hold. Narrow the filters. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description A query parameter is missing or not a valid value. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     adminListRegistrations: {
         parameters: {
             query: {
@@ -2535,6 +2675,67 @@ export interface operations {
             };
             /** @description The registration is not in pending_review. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminExportCampaigns: {
+        parameters: {
+            query?: {
+                q?: string;
+                sort?: "label" | "slug" | "state" | "activeMembers" | "pendingReview" | "membershipStartsAt";
+                dir?: "asc" | "desc";
+                state?: components["schemas"]["CampaignState"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every row the query matches, in the list's order, as a CSV attachment named `<table>[-<campaign slug>]-<date>.csv`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description More rows match than one export may hold. Narrow the filters. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description A query parameter is missing or not a valid value. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2844,6 +3045,78 @@ export interface operations {
             };
             /** @description No campaign with that id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminExportMembers: {
+        parameters: {
+            query?: {
+                q?: string;
+                sort?: "name" | "surnames" | "email" | "degree" | "studyYear" | "role" | "status" | "totalMemberships" | "targetState";
+                dir?: "asc" | "desc";
+                filter?: "all" | "current" | "past";
+                campaignId?: string;
+                targetCampaignId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every row the query matches, in the list's order, as a CSV attachment named `<table>[-<campaign slug>]-<date>.csv`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No campaign with the given campaignId. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description More rows match than one export may hold. Narrow the filters. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description A query parameter is missing or not a valid value. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3295,6 +3568,77 @@ export interface operations {
             };
             /** @description No member (member_profile row) with that user id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    adminExportInvitations: {
+        parameters: {
+            query: {
+                q?: string;
+                sort?: "email" | "name" | "status" | "role" | "createdAt" | "expiresAt";
+                dir?: "asc" | "desc";
+                campaignId: string;
+                status?: "pending" | "accepted" | "cancelled" | "expired";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every row the query matches, in the list's order, as a CSV attachment named `<table>[-<campaign slug>]-<date>.csv`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            /** @description No session cookie, or the session is expired or revoked. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The session's role lacks the required capability, or the user has not completed onboarding. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No campaign with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description More rows match than one export may hold. Narrow the filters. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description A query parameter is missing or not a valid value. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
