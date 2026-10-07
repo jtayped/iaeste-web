@@ -208,7 +208,18 @@ export function DataTable<Row, SortKey extends string = never>({
                     return (
                       <TableRow
                         key={key}
-                        className={cn(href === undefined ? null : "relative")}
+                        // Safari ignores `position: relative` on a `<tr>`
+                        // (https://bugs.webkit.org/show_bug.cgi?id=240961),
+                        // so with it alone every row's link would stretch
+                        // over the whole table and the last one would take
+                        // every click. A transform makes the row the
+                        // containing block in every engine; a 2D one keeps
+                        // each row off its own compositing layer.
+                        className={cn(
+                          href === undefined
+                            ? null
+                            : "relative [transform:translate(0)]",
+                        )}
                         {...(selected ? { "data-state": "selected" } : {})}
                       >
                         {selectionConfig ? (
