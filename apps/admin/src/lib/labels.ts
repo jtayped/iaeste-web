@@ -1,3 +1,11 @@
+import {
+  CAMPAIGN_STATE_LABELS,
+  invitationStatusLabel,
+  MEMBER_TARGET_STATE_LABELS,
+  membershipStatusLabel,
+  REGISTRATION_STATUS_LABELS,
+} from "@repo/constants/admin-labels";
+
 import type {
   CampaignState,
   InvitationStatusFilter,
@@ -6,10 +14,14 @@ import type {
   RegistrationStatus,
 } from "@/lib/admin-types";
 
+export { roleLabel } from "@repo/constants/admin-labels";
+
 /**
  * Every enum the API returns, in lowercase Catalan, plus the badge tone it
- * should carry. Defined once here so the same status is never called two
- * things on two screens.
+ * should carry. The words come from `@repo/constants/admin-labels`, which the
+ * API also writes into CSV exports, so a status is never called one thing on a
+ * badge and another in the file downloaded from the same screen. The tones are
+ * this app's alone.
  *
  * How loud a status is allowed to be:
  *
@@ -32,11 +44,11 @@ export interface Labelled {
   tone: Tone;
 }
 
-const REGISTRATION_LABELS: Record<RegistrationStatus, Labelled> = {
-  pending_email: { label: "correu sense verificar", tone: "outline" },
-  pending_review: { label: "per revisar", tone: "default" },
-  accepted: { label: "acceptada", tone: "outline" },
-  rejected: { label: "rebutjada", tone: "destructive" },
+const REGISTRATION_TONES: Record<RegistrationStatus, Tone> = {
+  pending_email: "outline",
+  pending_review: "default",
+  accepted: "outline",
+  rejected: "destructive",
 };
 
 /** The short form used on tab triggers, where the full sentence does not fit. */
@@ -48,39 +60,51 @@ export const REGISTRATION_TAB_LABELS: Record<RegistrationStatus, string> = {
 };
 
 export function registrationStatus(status: RegistrationStatus): Labelled {
-  return REGISTRATION_LABELS[status];
+  return {
+    label: REGISTRATION_STATUS_LABELS[status],
+    tone: REGISTRATION_TONES[status],
+  };
 }
 
-const CAMPAIGN_STATE_LABELS: Record<CampaignState, Labelled> = {
-  draft: { label: "esborrany", tone: "outline" },
-  published: { label: "publicada", tone: "default" },
-  archived: { label: "arxivada", tone: "outline" },
+const CAMPAIGN_STATE_TONES: Record<CampaignState, Tone> = {
+  draft: "outline",
+  published: "default",
+  archived: "outline",
 };
 
 export function campaignState(state: CampaignState): Labelled {
-  return CAMPAIGN_STATE_LABELS[state];
+  return {
+    label: CAMPAIGN_STATE_LABELS[state],
+    tone: CAMPAIGN_STATE_TONES[state],
+  };
 }
 
 /** `membership.status`, typed as a plain string by the generated client. */
-const MEMBERSHIP_LABELS: Record<string, Labelled> = {
-  active: { label: "activa", tone: "default" },
-  left: { label: "baixa", tone: "outline" },
-  kicked: { label: "expulsat", tone: "destructive" },
+const MEMBERSHIP_TONES: Record<string, Tone> = {
+  active: "default",
+  left: "outline",
+  kicked: "destructive",
 };
 
 export function membershipStatus(status: string): Labelled {
-  return MEMBERSHIP_LABELS[status] ?? { label: status, tone: "outline" };
+  return {
+    label: membershipStatusLabel(status),
+    tone: MEMBERSHIP_TONES[status] ?? "outline",
+  };
 }
 
-const MEMBER_TARGET_LABELS: Record<MemberTargetState, Labelled> = {
-  eligible: { label: "per convidar", tone: "default" },
-  member: { label: "ja és membre", tone: "outline" },
-  registered: { label: "inscripció enviada", tone: "outline" },
-  invited: { label: "ja convidat", tone: "outline" },
+const MEMBER_TARGET_TONES: Record<MemberTargetState, Tone> = {
+  eligible: "default",
+  member: "outline",
+  registered: "outline",
+  invited: "outline",
 };
 
 export function memberTargetState(status: MemberTargetState): Labelled {
-  return MEMBER_TARGET_LABELS[status];
+  return {
+    label: MEMBER_TARGET_STATE_LABELS[status],
+    tone: MEMBER_TARGET_TONES[status],
+  };
 }
 
 /**
@@ -123,11 +147,12 @@ export function eventLabel(eventType: string): string {
   return EVENT_LABELS[eventType] ?? eventType;
 }
 
-const INVITATION_LABELS: Record<string, Labelled> = {
-  pending: { label: "pendent", tone: "default" },
-  accepted: { label: "acceptat", tone: "outline" },
-  cancelled: { label: "anul·lat", tone: "outline" },
-  expired: { label: "caducat", tone: "outline" },
+/** Keyed by the state the badge shows, so `expired` is one of them. */
+const INVITATION_TONES: Record<string, Tone> = {
+  pending: "default",
+  accepted: "outline",
+  cancelled: "outline",
+  expired: "outline",
 };
 
 export const INVITATION_FILTER_STATUSES = [
@@ -153,20 +178,11 @@ export const INVITATION_FILTER_LABELS: Record<InvitationStatusFilter, string> =
  * is dead is the cancellation.
  */
 export function invitationStatus(status: string, expired: boolean): Labelled {
-  if (status === "pending" && expired) {
-    return INVITATION_LABELS.expired as Labelled;
-  }
-  return INVITATION_LABELS[status] ?? { label: status, tone: "outline" };
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  member: "membre",
-  admin: "administrador",
-};
-
-export function roleLabel(role: string | null): string {
-  if (role === null) return "sense rol";
-  return ROLE_LABELS[role] ?? role;
+  const shown = status === "pending" && expired ? "expired" : status;
+  return {
+    label: invitationStatusLabel(status, expired),
+    tone: INVITATION_TONES[shown] ?? "outline",
+  };
 }
 
 export const INVITATION_ROLES = [

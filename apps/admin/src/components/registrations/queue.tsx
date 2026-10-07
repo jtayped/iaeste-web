@@ -40,7 +40,12 @@ import {
   REGISTRATION_TAB_LABELS,
   registrationStatus,
 } from "@/lib/labels";
-import { REGISTRATIONS_PAGE_SIZE, useRegistrations } from "@/lib/registrations";
+import {
+  REGISTRATIONS_PAGE_SIZE,
+  useRegistrations,
+  useRegistrationsExport,
+  type RegistrationsQuery,
+} from "@/lib/registrations";
 import { useTableParams } from "@/lib/table-params";
 
 /**
@@ -211,15 +216,19 @@ export function RegistrationsQueue({
   const campaignId = get("campaign") || initialCampaignId;
   const q = get("q");
 
-  const query = useRegistrations({
+  const listQuery: RegistrationsQuery = {
     campaignId,
     status,
     q,
     sort: sort.key,
     dir: sort.dir,
+  };
+  const query = useRegistrations({
+    ...listQuery,
     limit: REGISTRATIONS_PAGE_SIZE,
     offset,
   });
+  const csvExport = useRegistrationsExport(listQuery);
 
   const columns = React.useMemo(() => registrationColumns(status), [status]);
   const handleSearch = React.useCallback(
@@ -320,6 +329,7 @@ export function RegistrationsQueue({
             },
           }
         : {})}
+      csvExport={csvExport}
       toolbar={
         <TableToolbar>
           <TableSearch

@@ -56,7 +56,10 @@ Rules the shell enforces, and that you must respect when adding a page:
   otherwise apply a second time.
 - **The header is the shell's, not yours.** Title, description, and an optional
   `actions` slot (right-aligned on `sm+`, stacked under the title on a phone)
-  are props. Do not add a second `<h1>` or a bespoke toolbar above the content.
+  are props. A client component deeper in the page that owns a page-wide
+  action, such as a table's CSV export, adds it to the same row with
+  `<PageAction>`; those come first and the `actions` prop ends the row. Do not
+  add a second `<h1>` or a bespoke toolbar above the content.
 
 The full prop shape (`src/components/shell/page-shell.tsx`):
 
@@ -142,10 +145,10 @@ added to the mobile nav needs the same handler.
 **Every list screen renders through one component: `<DataTable>`**
 (`src/components/data-table/`). Members, sol·licituds, invitacions and campanyes
 all use it, and a new list must too. It owns the header row, the row density,
-the loading skeleton, the empty state, the error state and the pager, so a
-list cannot look like a different product from the one next to it. A page that
-draws its own `<table>`, or its own "no hi ha res" panel, is a bug — reviewers
-should reject it.
+the loading skeleton, the empty state, the error state, the pager and the CSV
+export control, so a list cannot look like a different product from the one
+next to it. A page that draws its own `<table>`, or its own "no hi ha res"
+panel, is a bug — reviewers should reject it.
 
 **All querying is server-side.** Search, filters, ordering and pagination are
 URL search parameters (`?q=&status=&filter=&sort=&dir=&page=`), read with
@@ -212,6 +215,40 @@ selection checkbox and `rowActions` cells raised above it — a row of six links
 is six tab stops to one place. A per-cell anchor in a `primary` column would
 nest inside that overlay, so there must not be one. The header buttons sit
 ahead of the row links in the tab order, which is why sorting stays reachable.
+
+**Every list exports to CSV through one mechanism.** `<DataTable>` takes a
+`csvExport` and every list gives it one, from its lib's export hook
+(`useMembersExport`, `useRegistrationsExport`, `useInvitationsExport`,
+`useCampaignsExport`), each a thin call to `useTableExport`
+(`src/lib/table-export.ts`). The hook fetches the file through the generated
+client, saves it under the name the API's `Content-Disposition` gives it, and
+toasts a failure like any other mutation.
+
+- **The control sits in the page header, beside the title.** It acts on the
+  whole filtered list rather than on a row or a page of it, so it is a page
+  action. `<DataTable>` portals it with `<PageAction>`
+  (`src/components/shell/page-actions.tsx`) into the slot at the start of
+  `<PageShell>`'s action row. It comes before the page's own `actions` as the
+  secondary, outline button, and stacks under the title with them on a phone.
+  Pages never place it, and the toolbar above the table holds only the search
+  and the filters.
+
+- **The export is the list's query without the page, resolved on the server.**
+  Each lib builds its API parameters in one function (`membersApiQuery` and
+  its siblings); the list hook adds `limit`/`offset` to that and the export
+  hook sends it as it is, to `GET /v1/admin/<list>/export`. The route runs the
+  list's own repository query and answers with every matching row, so the file
+  holds exactly what the table is searched, filtered and ordered to — all of
+  it, not the page on screen.
+- **Never build a CSV from rows already in memory.** It would hold one page,
+  and it is the same bug as filtering or sorting them on the client.
+- More rows than `LIST_EXPORT_MAX_ROWS` is a 409, and the toast for it asks for
+  narrower filters rather than the generic "the state changed" copy.
+- **A new list adds an export route next to its list route** in `apps/api`
+  (then `npm run generate:api`), adds that path to `EXPORT_REQUESTS` in
+  `src/lib/table-export.ts` — `check-types` fails until it does — and wires it
+  the same way: one function building the list's API parameters, shared by the
+  list hook and an export hook, whose result goes to `<DataTable csvExport>`.
 
 **The two analytics tables are outside this contract.** `owners-table` and
 `cold-leads-table` render a fixed five-minute Odoo snapshot with no query of

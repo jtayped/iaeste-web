@@ -37,7 +37,6 @@ import {
   createCrmAnalyticsService,
   type CrmAnalyticsService,
 } from "./services/crm-analytics-service";
-import { membersCsv, membersCsvFilename } from "./lib/member-export";
 import {
   createNoopPushNotifier,
   createPushNotifier,
@@ -47,6 +46,13 @@ import { createRequireCapability } from "./lib/admin-auth";
 import { toCampaignView } from "./lib/campaign-view";
 import { toMemberDetail, toOwnProfile } from "./lib/member-detail";
 import { checkRequest } from "./lib/rate-limit";
+import { exportFilename, sendTableExport } from "./lib/table-export";
+import {
+  CAMPAIGN_EXPORT_COLUMNS,
+  INVITATION_EXPORT_COLUMNS,
+  memberExportColumns,
+  REGISTRATION_EXPORT_COLUMNS,
+} from "./lib/table-exports";
 import {
   createBroadcastService,
   RecipientCountChangedError,
@@ -84,6 +90,10 @@ import {
   adminCancelInvitationRoute,
   adminCreateInvitationRoute,
   adminDeleteMemberRoute,
+  adminExportCampaignsRoute,
+  adminExportInvitationsRoute,
+  adminExportMembersRoute,
+  adminExportRegistrationsRoute,
   adminGetOwnProfileRoute,
   adminGetMemberRoute,
   adminGetRegistrationRoute,
@@ -759,6 +769,7 @@ export function createApp(dependencies: AppDependencies = {}) {
     requireCapability("notifications.manage"),
   );
   app.use("/v1/admin/campaigns", requireCapability("campaigns.write"));
+  app.use("/v1/admin/campaigns/export", requireCapability("campaigns.write"));
   app.use("/v1/admin/campaigns/:id", requireCapability("campaigns.write"));
   app.use(
     "/v1/admin/campaigns/:id/registration",
@@ -805,6 +816,10 @@ export function createApp(dependencies: AppDependencies = {}) {
     requireCapability("members.email.write"),
   );
   app.use("/v1/admin/invitations", requireCapability("invitations.write"));
+  app.use(
+    "/v1/admin/invitations/export",
+    requireCapability("invitations.write"),
+  );
   app.use("/v1/admin/invitations/bulk", requireCapability("invitations.write"));
   app.use(
     "/v1/admin/invitations/:id/resend",
@@ -822,6 +837,10 @@ export function createApp(dependencies: AppDependencies = {}) {
   app.use("/v1/admin/broadcasts/preview", requireCapability("broadcasts.send"));
   app.use("/v1/admin/broadcasts/test", requireCapability("broadcasts.send"));
   app.use("/v1/admin/registrations", requireCapability("registrations.review"));
+  app.use(
+    "/v1/admin/registrations/export",
+    requireCapability("registrations.review"),
+  );
   // Before the `:id` matcher below, so "bulk-accept" is never read as an id.
   app.use(
     "/v1/admin/registrations/bulk-accept",
@@ -982,6 +1001,26 @@ export function createApp(dependencies: AppDependencies = {}) {
       },
       200,
     );
+  });
+
+  // Every list export below is registered ahead of its resource's `/:id`
+  // routes, or Hono hands "export" to the detail handler as an id.
+  app.openapi(adminExportRegistrationsRoute, async (c) => {
+    const query = c.req.valid("query");
+    const campaign = await createCampaignRepository(adminDb()).getById(
+      query.campaignId,
+    );
+    if (!campaign) {
+      return c.json(
+        errorBody(c.get("requestId"), "NOT_FOUND", "No campaign with that id."),
+        404,
+      );
+    }
+    return sendTableExport(c, {
+      filename: exportFilename("sollicituds", { slug: campaign.slug }),
+      columns: REGISTRATION_EXPORT_COLUMNS,
+      load: (window) => registrationService.list({ ...query, ...window }),
+    });
   });
 
   app.openapi(adminListRegistrationsRoute, async (c) => {
@@ -1149,6 +1188,19 @@ export function createApp(dependencies: AppDependencies = {}) {
   const noSuchCampaign = (c: Parameters<typeof errorBody>[0]) =>
     errorBody(c, "NOT_FOUND", "No campaign with that id.");
 
+  app.openapi(adminExportCampaignsRoute, async (c) => {
+    const query = c.req.valid("query");
+    return sendTableExport(c, {
+      filename: exportFilename("campanyes"),
+      columns: CAMPAIGN_EXPORT_COLUMNS,
+      load: (window) =>
+        createCampaignRepository(adminDb()).listWithCounts({
+          ...query,
+          ...window,
+        }),
+    });
+  });
+
   app.openapi(adminListCampaignsRoute, async (c) => {
     const { q, state, sort, dir, limit, offset } = c.req.valid("query");
     const { rows, total } = await createCampaignRepository(
@@ -1292,40 +1344,34 @@ export function createApp(dependencies: AppDependencies = {}) {
 
   // --- Admin: members -------------------------------------------------
 
-  // CSV export of a campaign's members. A plain route rather than an
-  // `app.openapi(...)` one: the body is text/csv, and openapi-fetch would try
-  // to JSON-parse it. The admin app hits this same-origin (`/api/v1/...`) so
-  // the session cookie rides along; `requireCapability("members.read")` is
-  // registered on the path above. No `campaignId` means the current campaign.
-  app.get("/v1/admin/members/export", async (c) => {
-    const campaigns = createCampaignRepository(adminDb());
-    const requested = c.req.query("campaignId");
-    const campaign = requested
-      ? await campaigns.getById(requested)
-      : await campaigns.getCurrent();
-
-    if (!campaign) {
-      return c.json(
-        errorBody(
-          c.get("requestId"),
-          requested ? "NOT_FOUND" : "CONFLICT",
-          requested
-            ? "No campaign with that id."
-            : "No campaign is current; pass campaignId to choose one.",
-        ),
-        requested ? 404 : 409,
+  app.openapi(adminExportMembersRoute, async (c) => {
+    const query = c.req.valid("query");
+    const db = adminDb();
+    // The source campaign names the file, so "last year's team" and "this
+    // year's" do not download under the same name.
+    let slug: string | undefined;
+    if (query.campaignId) {
+      const campaign = await createCampaignRepository(db).getById(
+        query.campaignId,
       );
+      if (!campaign) {
+        return c.json(
+          errorBody(
+            c.get("requestId"),
+            "NOT_FOUND",
+            "No campaign with that id.",
+          ),
+          404,
+        );
+      }
+      slug = campaign.slug;
     }
-
-    const rows = await createMemberRepository(adminDb()).exportForCampaign(
-      campaign.id,
-    );
-    c.header("Content-Type", "text/csv; charset=utf-8");
-    c.header(
-      "Content-Disposition",
-      `attachment; filename="${membersCsvFilename(campaign.slug)}"`,
-    );
-    return c.body(membersCsv(rows));
+    return sendTableExport(c, {
+      filename: exportFilename("membres", { slug }),
+      columns: memberExportColumns(Boolean(query.targetCampaignId)),
+      load: (window) =>
+        createMemberRepository(db).list({ ...query, ...window }),
+    });
   });
 
   app.openapi(adminListMembersRoute, async (c) => {
@@ -1642,6 +1688,24 @@ export function createApp(dependencies: AppDependencies = {}) {
 
   // --- Admin: invitations --------------------------------------------
 
+  app.openapi(adminExportInvitationsRoute, async (c) => {
+    const query = c.req.valid("query");
+    const campaign = await createCampaignRepository(adminDb()).getById(
+      query.campaignId,
+    );
+    if (!campaign) {
+      return c.json(
+        errorBody(c.get("requestId"), "NOT_FOUND", "No campaign with that id."),
+        404,
+      );
+    }
+    return sendTableExport(c, {
+      filename: exportFilename("invitacions", { slug: campaign.slug }),
+      columns: INVITATION_EXPORT_COLUMNS,
+      load: (window) => invitationService.listPage({ ...query, ...window }),
+    });
+  });
+
   app.openapi(adminListInvitationsRoute, async (c) => {
     const { campaignId, q, status, sort, dir, limit, offset } =
       c.req.valid("query");
@@ -1677,6 +1741,26 @@ export function createApp(dependencies: AppDependencies = {}) {
           "You cannot invite someone as an admin.",
         ),
         403,
+      );
+    }
+
+    const campaign = await createCampaignRepository(adminDb()).getById(
+      body.campaignId,
+    );
+    if (!campaign) {
+      return c.json(
+        errorBody(requestId, "NOT_FOUND", "No campaign with that id."),
+        404,
+      );
+    }
+    if (!campaign.isCurrent) {
+      return c.json(
+        errorBody(
+          requestId,
+          "CONFLICT",
+          "Invitations can only be sent to the current campaign.",
+        ),
+        409,
       );
     }
 
@@ -1726,10 +1810,21 @@ export function createApp(dependencies: AppDependencies = {}) {
     const requestId = c.get("requestId");
     const db = adminDb();
 
-    if (!(await createCampaignRepository(db).getById(campaignId))) {
+    const campaign = await createCampaignRepository(db).getById(campaignId);
+    if (!campaign) {
       return c.json(
         errorBody(requestId, "NOT_FOUND", "No campaign with that id."),
         404,
+      );
+    }
+    if (!campaign.isCurrent) {
+      return c.json(
+        errorBody(
+          requestId,
+          "CONFLICT",
+          "Invitations can only be sent to the current campaign.",
+        ),
+        409,
       );
     }
 

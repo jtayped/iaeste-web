@@ -16,10 +16,19 @@ import { Tabs, TabsList, TabsTrigger } from "@repo/ui/tabs";
 
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 
-/** The row that holds a table's search box and its filters. */
+/**
+ * The block above a table: the search box, then the filters, as its children.
+ *
+ * Stacked full-width on a phone. From `sm` they sit on one line, packed to the
+ * left, and wrap onto another when they do not fit: search, a tab set and a
+ * campaign select together are wider than the content column even at its
+ * 960px cap. `items-end` keeps the inputs level under their labels, and
+ * `min-w-0` lets a tab set too wide for a line of its own shrink and scroll
+ * inside itself rather than run past the column.
+ */
 export function TableToolbar({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between [&>*]:min-w-0">
+    <div className="flex min-w-0 flex-col gap-3 *:min-w-0 sm:flex-row sm:flex-wrap sm:items-end">
       {children}
     </div>
   );
@@ -66,7 +75,11 @@ export function TableSearch({
   }, [debounced]);
 
   return (
-    <div className="w-full space-y-1.5 lg:max-w-xs">
+    // Grows from 12rem to 20rem on the toolbar line, so it gives way before
+    // the filters beside it have to wrap. At 12rem it still holds its
+    // placeholder, and sol·licituds' five tabs and campaign select fit
+    // beside it in the 960px column.
+    <div className="w-full space-y-1.5 sm:max-w-xs sm:flex-1 sm:basis-48">
       <Label htmlFor={id} className="text-xs text-muted-foreground">
         {label}
       </Label>
@@ -172,7 +185,7 @@ export function TableFilter({
             <TabsTrigger
               key={option.value}
               value={option.value}
-              className="whitespace-nowrap"
+              className="h-11 whitespace-nowrap sm:h-9"
             >
               {option.label}
             </TabsTrigger>

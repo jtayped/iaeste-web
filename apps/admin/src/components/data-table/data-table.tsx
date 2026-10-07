@@ -12,11 +12,13 @@ import {
 } from "@repo/ui/table";
 import { cn } from "@repo/ui/lib/utils";
 
+import { TableExportButton } from "@/components/data-table/export-button";
 import { Pagination } from "@/components/data-table/pagination";
 import { TableScroller } from "@/components/data-table/table-scroller";
 import type {
   DataTableColumn,
   DataTableEmpty,
+  DataTableExport,
   DataTablePagination,
   DataTableSelectionConfig,
   DataTableSort,
@@ -28,6 +30,7 @@ import { SortHeader } from "@/components/data-table/sort-header";
 import { TableSkeleton } from "@/components/data-table/table-skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
+import { PageAction } from "@/components/shell/page-actions";
 import { errorMessage } from "@/lib/api-error";
 import {
   DEFAULT_SELECTION_UNIT,
@@ -55,8 +58,16 @@ export interface DataTableProps<Row, SortKey extends string = never> {
    * `sortKey` alone draws nothing, so a screen opts in once, here.
    */
   sort?: DataTableSort<SortKey>;
-  /** Search and filter controls, rendered above the table. */
+  /** Search and filter controls above the table, built from `<TableToolbar>`. */
   toolbar?: React.ReactNode;
+  /**
+   * The list's CSV export, from `useTableExport`. Every list passes one. The
+   * control acts on the whole filtered list rather than on the rows on
+   * screen, so it is drawn in the page header beside the title, ahead of the
+   * page's own actions, through `<PageAction>`. That makes it one export per
+   * page, which is all a list page has.
+   */
+  csvExport?: DataTableExport;
   /** Optional multiselect. The table owns all checkbox/state mechanics. */
   selection?: DataTableSelectionConfig<Row>;
 }
@@ -96,6 +107,7 @@ export function DataTable<Row, SortKey extends string = never>({
   pagination,
   sort,
   toolbar,
+  csvExport,
   selection: selectionConfig,
 }: DataTableProps<Row, SortKey>) {
   const ready = !state.isPending && !state.isError;
@@ -126,6 +138,16 @@ export function DataTable<Row, SortKey extends string = never>({
 
   return (
     <div className="space-y-4">
+      {csvExport ? (
+        <PageAction>
+          <TableExportButton
+            csvExport={csvExport}
+            // An empty list would export a header row and nothing else.
+            disabled={!ready || rows.length === 0}
+          />
+        </PageAction>
+      ) : null}
+
       {toolbar}
 
       {state.isPending || pastEnd ? (

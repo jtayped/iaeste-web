@@ -43,6 +43,8 @@ import {
   INVITATIONS_PAGE_SIZE,
   useInvitationAction,
   useInvitations,
+  useInvitationsExport,
+  type InvitationsQuery,
 } from "@/lib/invitations";
 import { useTableParams } from "@/lib/table-params";
 
@@ -240,15 +242,19 @@ export function InvitationsTable({
     : "all";
   const q = get("q");
 
-  const query = useInvitations({
+  const listQuery: InvitationsQuery = {
     campaignId,
     status,
     q,
     sort: sort.key,
     dir: sort.dir,
+  };
+  const query = useInvitations({
+    ...listQuery,
     limit: INVITATIONS_PAGE_SIZE,
     offset,
   });
+  const csvExport = useInvitationsExport(listQuery);
   const columns = React.useMemo(() => invitationColumns(status), [status]);
   const handleSearch = React.useCallback(
     (next: string) => setParams({ q: next }),
@@ -316,6 +322,7 @@ export function InvitationsTable({
             },
           }
         : {})}
+      csvExport={csvExport}
       toolbar={
         <TableToolbar>
           <TableSearch

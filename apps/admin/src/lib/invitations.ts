@@ -19,6 +19,7 @@ import type {
   AdminInvitationList,
   InvitationRole,
   InvitationStatusFilter,
+  ListPage,
 } from "@/lib/admin-types";
 import type { DataTableSelectionValue } from "@/components/data-table/types";
 import { apiClient, NO_BODY_POST } from "@/lib/api";
@@ -29,9 +30,13 @@ import {
   unwrap,
 } from "@/lib/api-error";
 import { queryKeys } from "@/lib/query-keys";
+import { useTableExport, type TableExportQuery } from "@/lib/table-export";
 
 export const INVITATIONS_PAGE_SIZE = 50;
 
+/**
+ * Search, filters and ordering: the invitations list's query minus the page.
+ */
 export interface InvitationsQuery {
   campaignId: string;
   status: InvitationStatusFilter;
@@ -39,11 +44,25 @@ export interface InvitationsQuery {
   /** Resolved in SQL by the route; never re-ordered on the client. */
   sort: InvitationSortKey;
   dir: SortDirection;
-  limit: number;
-  offset: number;
 }
 
-export function useInvitations(params: InvitationsQuery) {
+/**
+ * The one place `InvitationsQuery` becomes API parameters. The list adds the
+ * page to it and the export sends it as it is, so the two cannot drift apart.
+ */
+function invitationsApiQuery(
+  params: InvitationsQuery,
+): TableExportQuery<"/v1/admin/invitations/export"> {
+  return {
+    campaignId: params.campaignId,
+    ...(params.status === "all" ? {} : { status: params.status }),
+    ...(params.q ? { q: params.q } : {}),
+    sort: params.sort,
+    dir: params.dir,
+  };
+}
+
+export function useInvitations(params: InvitationsQuery & ListPage) {
   return useQuery({
     queryKey: queryKeys.invitations.list(params),
     enabled: params.campaignId.length > 0,
@@ -53,11 +72,7 @@ export function useInvitations(params: InvitationsQuery) {
         await apiClient.GET("/v1/admin/invitations", {
           params: {
             query: {
-              campaignId: params.campaignId,
-              ...(params.status === "all" ? {} : { status: params.status }),
-              ...(params.q ? { q: params.q } : {}),
-              sort: params.sort,
-              dir: params.dir,
+              ...invitationsApiQuery(params),
               limit: params.limit,
               offset: params.offset,
             },
@@ -65,6 +80,13 @@ export function useInvitations(params: InvitationsQuery) {
         }),
       ),
   });
+}
+
+export function useInvitationsExport(params: InvitationsQuery) {
+  return useTableExport(
+    "/v1/admin/invitations/export",
+    invitationsApiQuery(params),
+  );
 }
 
 export interface CreateInvitationInput {
@@ -95,15 +117,24 @@ export function isUdlEmail(email: string): boolean {
 }
 
 /**
- * Both 409s the create route can return carry the code `CONFLICT`; only the
+ * Every 409 the create route can return carries the code `CONFLICT`; only the
  * message separates "that is not a udl.cat address" from "there is already a
- * pending invitation for this email". Matching on the flag name the API tells
- * us to resend with is the narrowest signal available — and the form also
- * pre-checks the domain itself, so this branch is the backstop, not the
- * primary path.
+ * pending invitation for this email" and "that is not the current campaign".
+ * Matching on the flag name the API tells us to resend with is the narrowest
+ * signal available — and the form also pre-checks the domain itself, so this
+ * branch is the backstop, not the primary path.
  */
 function isExternalDomainConflict(detail: string | undefined): boolean {
   return detail?.includes("allowExternalDomain") === true;
+}
+
+/**
+ * The form only ever sends the current campaign, so this means it changed
+ * while the dialog was open. It is not a duplicate, so it surfaces as a
+ * failure rather than as the duplicate notice.
+ */
+function isNotCurrentCampaignConflict(detail: string | undefined): boolean {
+  return detail?.includes("current campaign") === true;
 }
 
 async function createInvitation(
@@ -138,6 +169,7 @@ async function createInvitation(
     }
 
     if (error.status === 409) {
+      if (isNotCurrentCampaignConflict(error.detail)) throw error;
       return isExternalDomainConflict(error.detail)
         ? { kind: "needsExternalConfirm", detail: error.detail ?? "" }
         : {

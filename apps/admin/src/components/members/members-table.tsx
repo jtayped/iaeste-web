@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Users } from "lucide-react";
 
+import { NO_CURRENT_MEMBERSHIP_LABEL } from "@repo/constants/admin-labels";
 import {
   MEMBER_DEFAULT_SORT,
   MEMBER_SORT_KEYS,
@@ -16,8 +17,12 @@ import type {
   DataTableColumn,
   DataTableSelectionHandle,
 } from "@/components/data-table/types";
+import {
+  TableSearch,
+  TableSelectFilter,
+  TableToolbar,
+} from "@/components/data-table/toolbar";
 import { BulkInviteAction } from "@/components/members/bulk-invite-action";
-import { MembersFilters } from "@/components/members/members-filters";
 import {
   fullName,
   type AdminMemberListItem,
@@ -30,14 +35,18 @@ import {
   personName,
   roleLabel,
 } from "@/lib/labels";
-import { MEMBERS_PAGE_SIZE, useMembers } from "@/lib/members";
+import {
+  MEMBERS_PAGE_SIZE,
+  useMembers,
+  useMembersExport,
+  type MembersQuery,
+} from "@/lib/members";
 import { useTableParams } from "@/lib/table-params";
 
 export interface MemberCampaignOption {
   id: string;
   label: string;
   isCurrent: boolean;
-  isRegistrationOpen: boolean;
 }
 
 /**
@@ -105,7 +114,9 @@ const COLUMNS: DataTableColumn<AdminMemberListItem, MemberSortKey>[] = [
       row.currentStatus ? (
         <StatusBadge status={membershipStatus(row.currentStatus)} />
       ) : (
-        <StatusBadge status={{ label: "sense alta activa", tone: "outline" }} />
+        <StatusBadge
+          status={{ label: NO_CURRENT_MEMBERSHIP_LABEL, tone: "outline" }}
+        />
       ),
     className: "whitespace-nowrap",
   },
@@ -122,7 +133,7 @@ const COLUMNS: DataTableColumn<AdminMemberListItem, MemberSortKey>[] = [
 /**
  * The readiness column, in its two forms.
  *
- * With no target campaign every row carries the same (absent) state, so the
+ * With no current campaign every row carries the same (absent) state, so the
  * API has nothing to order by and the tiebreaker decides on its own: a header
  * that flipped a chevron and moved no rows would read as sorting being broken.
  * It becomes sortable exactly when it means something. Two literals rather
@@ -163,25 +174,27 @@ function sourceFilter(source: string): MemberFilter {
 
 /**
  * Members stay server-filtered while selection spans every matching page.
- * A source campaign identifies who to renew; the target campaign adds a
- * readiness state, so existing registrations, memberships and invitations
- * remain visible but cannot be selected again.
+ *
+ * «membres de» decides who is listed, and opens on the current campaign's
+ * team, or on everyone when no campaign is current. Invitations only ever go
+ * to the current campaign, so it is also what the «destí» column reports
+ * against: whether each person already has a registration, membership or
+ * invitation there. Inviting an earlier team means switching «membres de» to
+ * it.
  */
 export function MembersTable({
   campaigns,
-  initialSource,
-  initialTarget,
   canBroadcast,
 }: {
   campaigns: readonly MemberCampaignOption[];
-  initialSource: string;
-  initialTarget: string;
   /** `broadcasts.send` — resolved on the server, re-checked by the API. */
   canBroadcast: boolean;
 }) {
+  const current = campaigns.find((campaign) => campaign.isCurrent);
+  const defaultSource = current ? `campaign:${current.id}` : "all";
   const defaults = React.useMemo(
-    () => ({ q: "", source: initialSource, target: initialTarget }),
-    [initialSource, initialTarget],
+    () => ({ q: "", source: defaultSource }),
+    [defaultSource],
   );
   const { get, setParams, offset, setOffset, sort, setSort, scope } =
     useTableParams(defaults, {
@@ -196,29 +209,25 @@ export function MembersTable({
     rawSource === "all" ||
     campaigns.some((campaign) => `campaign:${campaign.id}` === rawSource)
       ? rawSource
-      : initialSource;
-  const rawTarget = get("target");
-  const target =
-    campaigns.find((campaign) => campaign.id === rawTarget) ??
-    campaigns.find((campaign) => campaign.id === initialTarget);
+      : defaultSource;
   const filter = sourceFilter(source);
   const campaignId = sourceCampaignId(source);
 
-  const query = useMembers({
+  const listQuery: MembersQuery = {
     q,
     filter,
     ...(campaignId ? { campaignId } : {}),
-    ...(target ? { targetCampaignId: target.id } : {}),
+    ...(current ? { targetCampaignId: current.id } : {}),
     sort: sort.key,
     dir: sort.dir,
-    limit: MEMBERS_PAGE_SIZE,
-    offset,
-  });
+  };
+  const query = useMembers({ ...listQuery, limit: MEMBERS_PAGE_SIZE, offset });
+  const csvExport = useMembersExport(listQuery);
   const rows = query.data?.rows ?? [];
 
   const columns = React.useMemo(
-    () => [...COLUMNS, target ? SORTABLE_TARGET_COLUMN : TARGET_COLUMN],
-    [target],
+    () => [...COLUMNS, current ? SORTABLE_TARGET_COLUMN : TARGET_COLUMN],
+    [current],
   );
 
   const handleSearch = React.useCallback(
@@ -230,12 +239,6 @@ export function MembersTable({
     ...(q ? { q } : {}),
     ...(campaignId ? { campaignId } : { filter }),
   };
-  // What the collapsed `filtres` button has to admit to on a phone: anything
-  // the operator moved off the default the page opened on.
-  const activeCount =
-    (q ? 1 : 0) +
-    (source === initialSource ? 0 : 1) +
-    (target === undefined || target.id === initialTarget ? 0 : 1);
   const sourceOptions = [
     ...campaigns.map((campaign) => ({
       value: `campaign:${campaign.id}`,
@@ -244,10 +247,6 @@ export function MembersTable({
     { value: "past", label: "sense alta actual" },
     { value: "all", label: "tothom" },
   ];
-  const targetOptions = campaigns.map((campaign) => ({
-    value: campaign.id,
-    label: `${campaign.label}${campaign.isRegistrationOpen ? " · inscripcions obertes" : ""}`,
-  }));
 
   const emptyDescription = q
     ? `no hi ha ningú que encaixi amb «${q}» en aquest filtre.`
@@ -289,11 +288,11 @@ export function MembersTable({
             },
           }
         : {})}
-      {...((canBroadcast || target) && query.data
+      {...((canBroadcast || current) && query.data
         ? {
             // Every row is selectable, not only the invite-eligible ones: the
             // selection now feeds two actions, and a broadcast has to be able
-            // to reach someone who is already a member of the target campaign.
+            // to reach someone who is already a member of the current campaign.
             // Ineligible rows stay visible in "destí" and the bulk invite
             // route skips them, reporting how many it left out.
             selection: {
@@ -313,10 +312,10 @@ export function MembersTable({
                       unit="membres"
                     />
                   ) : null}
-                  {target ? (
+                  {current ? (
                     <BulkInviteAction
-                      campaignId={target.id}
-                      campaignLabel={target.label}
+                      campaignId={current.id}
+                      campaignLabel={current.label}
                       eligibleTotal={query.data.inviteEligibleTotal}
                       query={selectionQuery}
                       selection={selection}
@@ -327,18 +326,23 @@ export function MembersTable({
             },
           }
         : {})}
+      csvExport={csvExport}
       toolbar={
-        <MembersFilters
-          q={q}
-          onSearch={handleSearch}
-          source={source}
-          sourceOptions={sourceOptions}
-          onSourceChange={(next) => setParams({ source: next })}
-          {...(target ? { targetId: target.id } : {})}
-          targetOptions={targetOptions}
-          onTargetChange={(next) => setParams({ target: next })}
-          activeCount={activeCount}
-        />
+        <TableToolbar>
+          <TableSearch
+            id="members-search"
+            value={q}
+            placeholder="nom, cognoms o correu"
+            onCommit={handleSearch}
+          />
+          <TableSelectFilter
+            id="members-source"
+            label="membres de"
+            value={source}
+            options={sourceOptions}
+            onChange={(next) => setParams({ source: next })}
+          />
+        </TableToolbar>
       }
     />
   );

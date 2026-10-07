@@ -9,7 +9,6 @@ import { InviteForm } from "@/components/invitations/invite-form";
 import { PageShell, type BreadcrumbEntry } from "@/components/shell/page-shell";
 import { fetchCampaigns } from "@/lib/admin.server";
 import { adminMetadata } from "@/lib/page-title";
-import { fetchOverview } from "@/lib/overview.server";
 import { hasPageCapability } from "@/lib/permissions.server";
 
 export const dynamic = "force-dynamic";
@@ -24,12 +23,13 @@ export const metadata = adminMetadata(BREADCRUMB, TITLE, DESCRIPTION);
 /**
  * Like the review queue, this page exists to resolve a `campaignId` before the
  * client can ask for anything: `GET /v1/admin/invitations` requires one. The
- * default is the current campaign — you invite people into the team that is
- * running now, not into the one still taking public registrations.
+ * list opens on the current campaign, and the invite form only ever invites
+ * into it — you invite people into the team that is running now, not into the
+ * one still taking public registrations. Earlier campaigns' invitations stay
+ * one pick away in the list's own campaign filter.
  */
 export default async function InvitationsPage() {
-  const [overview, campaigns, canBroadcast] = await Promise.all([
-    fetchOverview(),
+  const [campaigns, canBroadcast] = await Promise.all([
     fetchCampaigns(),
     hasPageCapability("broadcasts.send"),
   ]);
@@ -64,12 +64,8 @@ export default async function InvitationsPage() {
     );
   }
 
-  const preferred =
-    overview.status === "ok"
-      ? overview.overview.currentCampaign?.id
-      : undefined;
-  const initialCampaignId =
-    rows.find((row) => row.id === preferred)?.id ?? rows[0]?.id ?? "";
+  const current = rows.find((row) => row.isCurrent);
+  const initialCampaignId = current?.id ?? rows[0]?.id ?? "";
 
   const options = rows.map((row) => ({
     id: row.id,
@@ -83,7 +79,9 @@ export default async function InvitationsPage() {
       title={TITLE}
       description={DESCRIPTION}
       actions={
-        <InviteForm campaigns={options} defaultCampaignId={initialCampaignId} />
+        <InviteForm
+          campaign={current ? { id: current.id, label: current.label } : null}
+        />
       }
     >
       <Suspense fallback={<TableSkeleton columns={4} />}>

@@ -101,6 +101,7 @@ describe("admin + public invitations routes", () => {
   it("bulk-invites an all-except member selection and guards existing target activity", async () => {
     const source = await createTestCampaign(db, { label: "2025-2026" });
     const target = await createTestCampaign(db, { label: "2026-2027" });
+    await createCampaignRepository(db).setCurrent(target.id);
     const actor = await createTestUser(db);
     const eligible = await makeMember(db, source.id, "Aina");
     const excluded = await makeMember(db, source.id, "Berta");
@@ -181,8 +182,47 @@ describe("admin + public invitations routes", () => {
     );
   });
 
+  it("only invites into the current campaign", async () => {
+    const past = await createTestCampaign(db, { label: "2025-2026" });
+    const current = await createTestCampaign(db, { label: "2026-2027" });
+    await createCampaignRepository(db).setCurrent(current.id);
+    const actor = await createTestUser(db);
+    const member = await makeMember(db, past.id, "Aina");
+    const a = makeApp(db, "admin", actor.id);
+
+    const single = await post(a, "/v1/admin/invitations", {
+      campaignId: past.id,
+      email: "nou@alumnes.udl.cat",
+    });
+    assert.equal(single.status, 409);
+    assert.equal(
+      (
+        await post(a, "/v1/admin/invitations", {
+          campaignId: "no-such-campaign",
+          email: "nou@alumnes.udl.cat",
+        })
+      ).status,
+      404,
+    );
+
+    const bulk = await post(a, "/v1/admin/invitations/bulk", {
+      campaignId: past.id,
+      selection: { mode: "ids", userIds: [member.id] },
+    });
+    assert.equal(bulk.status, 409);
+
+    assert.deepEqual(
+      await createInvitationService({
+        db,
+        emailer: silentEmailer(),
+      }).listByCampaign(past.id),
+      [],
+    );
+  });
+
   it("creates, lists, resends and cancels an invitation", async () => {
     const campaign = await createTestCampaign(db);
+    await createCampaignRepository(db).setCurrent(campaign.id);
     const actor = await createTestUser(db);
     const a = makeApp(db, "admin", actor.id);
 
@@ -233,6 +273,7 @@ describe("admin + public invitations routes", () => {
 
   it("requires allowExternalDomain for a non-udl address", async () => {
     const campaign = await createTestCampaign(db);
+    await createCampaignRepository(db).setCurrent(campaign.id);
     const actor = await createTestUser(db);
     const a = makeApp(db, "admin", actor.id);
 
