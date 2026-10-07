@@ -83,6 +83,15 @@ export type MemberFilter = "all" | "current" | "past";
 /** The role a member can hold. `null` on a user with no explicit role. */
 export type MemberRole = "member" | "admin";
 
+/**
+ * The page a list route is asked for. A list's own query type never includes
+ * it, because the CSV export sends the same query without it.
+ */
+export interface ListPage {
+  limit: number;
+  offset: number;
+}
+
 /** Full name from any of the shapes that carry a split name. */
 export function fullName(person: { name: string; surnames: string }): string {
   return `${person.name} ${person.surnames}`.trim();

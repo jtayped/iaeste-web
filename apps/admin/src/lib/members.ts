@@ -18,15 +18,18 @@ import type {
   AdminMemberEmails,
   AdminMemberList,
   AdminSetMemberEmailsRequest,
+  ListPage,
   MemberFilter,
   MemberRole,
 } from "@/lib/admin-types";
 import { apiClient, NO_BODY_POST } from "@/lib/api";
 import { errorDetail, errorMessage, unwrap } from "@/lib/api-error";
 import { queryKeys } from "@/lib/query-keys";
+import { useTableExport, type TableExportQuery } from "@/lib/table-export";
 
 export const MEMBERS_PAGE_SIZE = 20;
 
+/** Search, filters and ordering: the members list's query minus the page. */
 export interface MembersQuery {
   q: string;
   filter: MemberFilter;
@@ -35,11 +38,28 @@ export interface MembersQuery {
   /** Resolved in SQL by the route; never re-ordered on the client. */
   sort: MemberSortKey;
   dir: SortDirection;
-  limit: number;
-  offset: number;
 }
 
-export function useMembers(params: MembersQuery) {
+/**
+ * The one place `MembersQuery` becomes API parameters. The list adds the page
+ * to it and the export sends it as it is, so the two cannot drift apart.
+ */
+function membersApiQuery(
+  params: MembersQuery,
+): TableExportQuery<"/v1/admin/members/export"> {
+  return {
+    ...(params.q ? { q: params.q } : {}),
+    filter: params.filter,
+    ...(params.campaignId ? { campaignId: params.campaignId } : {}),
+    ...(params.targetCampaignId
+      ? { targetCampaignId: params.targetCampaignId }
+      : {}),
+    sort: params.sort,
+    dir: params.dir,
+  };
+}
+
+export function useMembers(params: MembersQuery & ListPage) {
   return useQuery({
     queryKey: queryKeys.members.list(params),
     // The previous page stays on screen while the next one loads, so paging
@@ -50,14 +70,7 @@ export function useMembers(params: MembersQuery) {
         await apiClient.GET("/v1/admin/members", {
           params: {
             query: {
-              ...(params.q ? { q: params.q } : {}),
-              filter: params.filter,
-              ...(params.campaignId ? { campaignId: params.campaignId } : {}),
-              ...(params.targetCampaignId
-                ? { targetCampaignId: params.targetCampaignId }
-                : {}),
-              sort: params.sort,
-              dir: params.dir,
+              ...membersApiQuery(params),
               limit: params.limit,
               offset: params.offset,
             },
@@ -65,6 +78,10 @@ export function useMembers(params: MembersQuery) {
         }),
       ),
   });
+}
+
+export function useMembersExport(params: MembersQuery) {
+  return useTableExport("/v1/admin/members/export", membersApiQuery(params));
 }
 
 export function useMember(userId: string, initialData?: AdminMemberDetail) {

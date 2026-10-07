@@ -87,6 +87,17 @@ export interface DataTablePagination {
 }
 
 /**
+ * A list's CSV export, as `useTableExport` (`src/lib/table-export.ts`) returns
+ * it. The table only draws the control: which rows the file holds is decided
+ * by the query the hook was given, on the server.
+ */
+export interface DataTableExport {
+  /** Fetches every row the list's query matches and saves it as a file. */
+  download: () => void;
+  isPending: boolean;
+}
+
+/**
  * A selection can name individual rows or the whole server-side result set.
  *
  * The second form is what keeps "select all" honest on a paginated table:

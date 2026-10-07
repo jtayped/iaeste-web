@@ -19,7 +19,12 @@ import {
 } from "@/components/data-table/toolbar";
 import type { DataTableColumn } from "@/components/data-table/types";
 import type { AdminCampaignWithCounts, CampaignState } from "@/lib/admin-types";
-import { CAMPAIGNS_PAGE_SIZE, useCampaigns } from "@/lib/campaigns";
+import {
+  CAMPAIGNS_PAGE_SIZE,
+  useCampaigns,
+  useCampaignsExport,
+  type CampaignsQuery,
+} from "@/lib/campaigns";
 import { formatDateRange } from "@/lib/format";
 import { campaignState } from "@/lib/labels";
 import { useTableParams } from "@/lib/table-params";
@@ -158,17 +163,12 @@ export function CampaignsTable({
   const isFirstUnfilteredPage =
     q === "" && state === "" && offset === 0 && isDefaultSort;
 
+  const listQuery: CampaignsQuery = { q, state, sort: sort.key, dir: sort.dir };
   const query = useCampaigns(
-    {
-      q,
-      state,
-      sort: sort.key,
-      dir: sort.dir,
-      limit: CAMPAIGNS_PAGE_SIZE,
-      offset,
-    },
+    { ...listQuery, limit: CAMPAIGNS_PAGE_SIZE, offset },
     isFirstUnfilteredPage ? initialData : undefined,
   );
+  const csvExport = useCampaignsExport(listQuery);
   const handleSearch = React.useCallback(
     (next: string) => setParams({ q: next }),
     [setParams],
@@ -206,6 +206,7 @@ export function CampaignsTable({
             },
           }
         : {})}
+      csvExport={csvExport}
       toolbar={
         <TableToolbar>
           <TableSearch

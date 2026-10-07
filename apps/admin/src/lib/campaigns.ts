@@ -17,21 +17,22 @@ import type {
   AdminCampaignList,
   AdminCampaignWithCounts,
   CampaignState,
+  ListPage,
 } from "@/lib/admin-types";
 import { apiClient, NO_BODY_POST } from "@/lib/api";
 import { errorDetail, errorMessage, unwrap } from "@/lib/api-error";
 import { queryKeys } from "@/lib/query-keys";
+import { useTableExport, type TableExportQuery } from "@/lib/table-export";
 
 export const CAMPAIGNS_PAGE_SIZE = 100;
 
+/** Search, filter and ordering: the campaigns list's query minus the page. */
 export interface CampaignsQuery {
   q: string;
   state: CampaignState | "";
   /** Resolved in SQL by the route; never re-ordered on the client. */
   sort: CampaignSortKey;
   dir: SortDirection;
-  limit: number;
-  offset: number;
 }
 
 /** The four ISO instants every campaign carries. */
@@ -42,8 +43,23 @@ export interface CampaignDates {
   registrationClosesAt: string;
 }
 
-export function useCampaigns(
+/**
+ * The one place `CampaignsQuery` becomes API parameters. The list adds the page
+ * to it and the export sends it as it is, so the two cannot drift apart.
+ */
+function campaignsApiQuery(
   params: CampaignsQuery,
+): TableExportQuery<"/v1/admin/campaigns/export"> {
+  return {
+    ...(params.q ? { q: params.q } : {}),
+    ...(params.state ? { state: params.state } : {}),
+    sort: params.sort,
+    dir: params.dir,
+  };
+}
+
+export function useCampaigns(
+  params: CampaignsQuery & ListPage,
   initialData?: AdminCampaignWithCounts[],
 ) {
   return useQuery({
@@ -64,10 +80,7 @@ export function useCampaigns(
         await apiClient.GET("/v1/admin/campaigns", {
           params: {
             query: {
-              ...(params.q ? { q: params.q } : {}),
-              ...(params.state ? { state: params.state } : {}),
-              sort: params.sort,
-              dir: params.dir,
+              ...campaignsApiQuery(params),
               limit: params.limit,
               offset: params.offset,
             },
@@ -75,6 +88,13 @@ export function useCampaigns(
         }),
       ),
   });
+}
+
+export function useCampaignsExport(params: CampaignsQuery) {
+  return useTableExport(
+    "/v1/admin/campaigns/export",
+    campaignsApiQuery(params),
+  );
 }
 
 export type CampaignAction =

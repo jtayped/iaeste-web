@@ -12,11 +12,13 @@ import {
 } from "@repo/ui/table";
 import { cn } from "@repo/ui/lib/utils";
 
+import { TableExportButton } from "@/components/data-table/export-button";
 import { Pagination } from "@/components/data-table/pagination";
 import { TableScroller } from "@/components/data-table/table-scroller";
 import type {
   DataTableColumn,
   DataTableEmpty,
+  DataTableExport,
   DataTablePagination,
   DataTableSelectionConfig,
   DataTableSort,
@@ -57,6 +59,11 @@ export interface DataTableProps<Row, SortKey extends string = never> {
   sort?: DataTableSort<SortKey>;
   /** Search and filter controls, rendered above the table. */
   toolbar?: React.ReactNode;
+  /**
+   * The list's CSV export, from `useTableExport`. Every list passes one; the
+   * table draws the control at the end of the toolbar row.
+   */
+  csvExport?: DataTableExport;
   /** Optional multiselect. The table owns all checkbox/state mechanics. */
   selection?: DataTableSelectionConfig<Row>;
 }
@@ -96,6 +103,7 @@ export function DataTable<Row, SortKey extends string = never>({
   pagination,
   sort,
   toolbar,
+  csvExport,
   selection: selectionConfig,
 }: DataTableProps<Row, SortKey>) {
   const ready = !state.isPending && !state.isError;
@@ -126,7 +134,20 @@ export function DataTable<Row, SortKey extends string = never>({
 
   return (
     <div className="space-y-4">
-      {toolbar}
+      {toolbar || csvExport ? (
+        // Bottom-aligned, so the export sits level with the last control
+        // whether the toolbar is one row (desktop) or a stack (phone).
+        <div className="flex min-w-0 items-end gap-3">
+          <div className="min-w-0 flex-1">{toolbar}</div>
+          {csvExport ? (
+            <TableExportButton
+              csvExport={csvExport}
+              // An empty list would export a header row and nothing else.
+              disabled={!ready || rows.length === 0}
+            />
+          ) : null}
+        </div>
+      ) : null}
 
       {state.isPending || pastEnd ? (
         // The skeleton draws the same frame itself: the route files hand it

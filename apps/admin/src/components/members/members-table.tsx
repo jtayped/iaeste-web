@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Users } from "lucide-react";
 
+import { NO_CURRENT_MEMBERSHIP_LABEL } from "@repo/constants/admin-labels";
 import {
   MEMBER_DEFAULT_SORT,
   MEMBER_SORT_KEYS,
@@ -30,7 +31,12 @@ import {
   personName,
   roleLabel,
 } from "@/lib/labels";
-import { MEMBERS_PAGE_SIZE, useMembers } from "@/lib/members";
+import {
+  MEMBERS_PAGE_SIZE,
+  useMembers,
+  useMembersExport,
+  type MembersQuery,
+} from "@/lib/members";
 import { useTableParams } from "@/lib/table-params";
 
 export interface MemberCampaignOption {
@@ -105,7 +111,9 @@ const COLUMNS: DataTableColumn<AdminMemberListItem, MemberSortKey>[] = [
       row.currentStatus ? (
         <StatusBadge status={membershipStatus(row.currentStatus)} />
       ) : (
-        <StatusBadge status={{ label: "sense alta activa", tone: "outline" }} />
+        <StatusBadge
+          status={{ label: NO_CURRENT_MEMBERSHIP_LABEL, tone: "outline" }}
+        />
       ),
     className: "whitespace-nowrap",
   },
@@ -204,16 +212,16 @@ export function MembersTable({
   const filter = sourceFilter(source);
   const campaignId = sourceCampaignId(source);
 
-  const query = useMembers({
+  const listQuery: MembersQuery = {
     q,
     filter,
     ...(campaignId ? { campaignId } : {}),
     ...(target ? { targetCampaignId: target.id } : {}),
     sort: sort.key,
     dir: sort.dir,
-    limit: MEMBERS_PAGE_SIZE,
-    offset,
-  });
+  };
+  const query = useMembers({ ...listQuery, limit: MEMBERS_PAGE_SIZE, offset });
+  const csvExport = useMembersExport(listQuery);
   const rows = query.data?.rows ?? [];
 
   const columns = React.useMemo(
@@ -327,6 +335,7 @@ export function MembersTable({
             },
           }
         : {})}
+      csvExport={csvExport}
       toolbar={
         <MembersFilters
           q={q}

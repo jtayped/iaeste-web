@@ -17,6 +17,7 @@ import type {
   AdminBulkAcceptRegistrationsResponse,
   AdminRegistrationDetail,
   AdminRegistrationList,
+  ListPage,
   RegistrationStatus,
 } from "@/lib/admin-types";
 import type { DataTableSelectionValue } from "@/components/data-table/types";
@@ -28,9 +29,11 @@ import {
   bulkAcceptSummary,
 } from "@/lib/bulk-accept";
 import { queryKeys } from "@/lib/query-keys";
+import { useTableExport, type TableExportQuery } from "@/lib/table-export";
 
 export const REGISTRATIONS_PAGE_SIZE = 50;
 
+/** Search, filters and ordering: the review queue's query minus the page. */
 export interface RegistrationsQuery {
   campaignId: string;
   status: RegistrationStatus | "all";
@@ -38,8 +41,22 @@ export interface RegistrationsQuery {
   /** Resolved in SQL by the route; never re-ordered on the client. */
   sort: RegistrationSortKey;
   dir: SortDirection;
-  limit: number;
-  offset: number;
+}
+
+/**
+ * The one place `RegistrationsQuery` becomes API parameters. The list adds the
+ * page to it and the export sends it as it is, so the two cannot drift apart.
+ */
+function registrationsApiQuery(
+  params: RegistrationsQuery,
+): TableExportQuery<"/v1/admin/registrations/export"> {
+  return {
+    campaignId: params.campaignId,
+    ...(params.status === "all" ? {} : { status: params.status }),
+    ...(params.q ? { q: params.q } : {}),
+    sort: params.sort,
+    dir: params.dir,
+  };
 }
 
 /**
@@ -49,7 +66,7 @@ export interface RegistrationsQuery {
  * — there is no "every campaign" listing — so every hook here takes one and
  * the calling page is responsible for having resolved it first.
  */
-export function useRegistrations(params: RegistrationsQuery) {
+export function useRegistrations(params: RegistrationsQuery & ListPage) {
   return useQuery({
     queryKey: queryKeys.registrations.list(params),
     enabled: params.campaignId.length > 0,
@@ -59,11 +76,7 @@ export function useRegistrations(params: RegistrationsQuery) {
         await apiClient.GET("/v1/admin/registrations", {
           params: {
             query: {
-              campaignId: params.campaignId,
-              ...(params.status === "all" ? {} : { status: params.status }),
-              ...(params.q ? { q: params.q } : {}),
-              sort: params.sort,
-              dir: params.dir,
+              ...registrationsApiQuery(params),
               limit: params.limit,
               offset: params.offset,
             },
@@ -71,6 +84,13 @@ export function useRegistrations(params: RegistrationsQuery) {
         }),
       ),
   });
+}
+
+export function useRegistrationsExport(params: RegistrationsQuery) {
+  return useTableExport(
+    "/v1/admin/registrations/export",
+    registrationsApiQuery(params),
+  );
 }
 
 export function useRegistration(
