@@ -32,7 +32,7 @@ export function AppHeader({
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-1 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:gap-2 md:px-4">
       <SidebarToggle />
-      <Separator orientation="vertical" className="mx-1 hidden h-4 md:block" />
+      <Separator orientation="vertical" className="mx-1 hidden md:block" />
 
       <div
         data-desktop-breadcrumbs

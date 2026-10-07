@@ -11,19 +11,19 @@ export const dynamic = "force-dynamic";
 
 const BREADCRUMB: BreadcrumbEntry[] = [{ label: "membres" }];
 const TITLE = "membres";
-// The two campaign selects are the whole point of this screen — you look at
-// last year's team to invite it into this year's — and read as two unrelated
-// filters unless the page says which is which.
+// The list opens on the current team, and every invitation from it goes to
+// the current campaign. Renewing an earlier team is the reason to change
+// «membres de», and nothing else on screen says that is how it works.
 const DESCRIPTION =
-  "qui forma part del comitè, ara i abans. «membres de» és l'equip que estàs mirant; «convida a», la campanya on els donaràs d'alta.";
+  "qui forma part del comitè, ara i abans. tria un equip anterior a «membres de» per convidar-lo a la campanya actual.";
 
 export const metadata = adminMetadata(BREADCRUMB, TITLE, DESCRIPTION);
 
 /**
  * The table itself reads its query from the URL and fetches through TanStack
- * Query, so the server's only jobs here are the campaign list behind the two
- * campaign selects, the campaigns they open on, and whether this session may
- * send a broadcast.
+ * Query, so the server's only jobs here are the campaign list behind
+ * «membres de», which also says which campaign is current, and whether this
+ * session may send a broadcast.
  *
  * `<MembersTable>` calls `useSearchParams`, which Next requires to sit under a
  * Suspense boundary; the fallback is the same skeleton the table shows for its
@@ -35,37 +35,16 @@ export default async function MembersPage() {
     hasPageCapability("broadcasts.send"),
   ]);
   const rows = campaigns.status === "ok" ? campaigns.data : [];
-  const target =
-    rows.find((campaign) => campaign.isRegistrationOpen) ??
-    rows.find((campaign) => campaign.isCurrent) ??
-    rows[0];
-  const source =
-    rows.find((campaign) => campaign.isCurrent && campaign.id !== target?.id) ??
-    rows.find(
-      (campaign) =>
-        target &&
-        campaign.id !== target.id &&
-        new Date(campaign.membershipStartsAt) <
-          new Date(target.membershipStartsAt),
-    ) ??
-    rows.find((campaign) => campaign.id !== target?.id) ??
-    target;
   const options = rows.map((campaign) => ({
     id: campaign.id,
     label: campaign.label,
     isCurrent: campaign.isCurrent,
-    isRegistrationOpen: campaign.isRegistrationOpen,
   }));
 
   return (
     <PageShell breadcrumb={BREADCRUMB} title={TITLE} description={DESCRIPTION}>
       <Suspense fallback={<TableSkeleton columns={6} />}>
-        <MembersTable
-          campaigns={options}
-          initialSource={source ? `campaign:${source.id}` : "all"}
-          initialTarget={target?.id ?? ""}
-          canBroadcast={canBroadcast}
-        />
+        <MembersTable campaigns={options} canBroadcast={canBroadcast} />
       </Suspense>
     </PageShell>
   );

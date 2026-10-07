@@ -33,7 +33,6 @@ import {
 } from "@repo/ui/drawer";
 import { useIsMobile } from "@repo/ui/hooks/use-mobile";
 
-import type { CampaignOption } from "@/components/admin/campaign-picker";
 import {
   DuplicateInviteNotice,
   ExternalDomainConfirm,
@@ -53,21 +52,23 @@ const EMPTY = { email: "", name: "", surnames: "" };
 /**
  * The invite form.
  *
+ * An invitation always goes to the current campaign, which the API enforces,
+ * so the form names it rather than offering a choice. With no current
+ * campaign it explains why it cannot send.
+ *
  * The interesting part is the external-domain step: a non-`udl.cat` address is
  * caught here and turned into an explicit "convida igualment", which is what
  * sets `allowExternalDomain`. The API's own 409 is handled too, as the
  * backstop for anything the client-side check gets wrong.
  */
 export function InviteForm({
-  campaigns,
-  defaultCampaignId,
+  campaign,
 }: {
-  campaigns: readonly CampaignOption[];
-  defaultCampaignId: string;
+  /** The current campaign, or `null` when no campaign is marked current. */
+  campaign: { id: string; label: string } | null;
 }) {
   const [open, setOpen] = React.useState(false);
   const [fields, setFields] = React.useState(EMPTY);
-  const [campaignId, setCampaignId] = React.useState(defaultCampaignId);
   const [role, setRole] = React.useState<InvitationRole>("member");
   const [notice, setNotice] = React.useState<Notice>({ kind: "none" });
   const [emailError, setEmailError] = React.useState<string | undefined>();
@@ -89,9 +90,10 @@ export function InviteForm({
   }
 
   function send(allowExternalDomain: boolean) {
+    if (!campaign) return;
     create.mutate(
       {
-        campaignId,
+        campaignId: campaign.id,
         email,
         intendedRole: role,
         ...(fields.name.trim() ? { prefillName: fields.name.trim() } : {}),
@@ -119,6 +121,7 @@ export function InviteForm({
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setNotice({ kind: "none" });
+    if (!campaign) return;
 
     if (!email.includes("@") || email.length < 3) {
       setEmailError("escriu una adreça de correu vàlida");
@@ -146,8 +149,9 @@ export function InviteForm({
   );
 
   const title = "convida algú";
-  const description =
-    "rebrà un correu amb un enllaç per entrar al comitè sense passar pel formulari públic.";
+  const description = campaign
+    ? `rebrà un correu amb un enllaç per entrar a la campanya ${campaign.label} sense passar pel formulari públic.`
+    : "no hi ha cap campanya actual, i les invitacions sempre són per a l'actual. marca'n una com a actual a «campanyes» per poder convidar.";
 
   const form = (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
@@ -225,23 +229,6 @@ export function InviteForm({
       </p>
 
       <div className="space-y-1.5">
-        <Label htmlFor="invite-campaign">campanya</Label>
-        <Select value={campaignId} onValueChange={setCampaignId}>
-          <SelectTrigger id="invite-campaign" className="h-11 sm:h-9">
-            <SelectValue placeholder="tria una campanya" />
-          </SelectTrigger>
-          <SelectContent>
-            {campaigns.map((campaign) => (
-              <SelectItem key={campaign.id} value={campaign.id}>
-                {campaign.label}
-                {campaign.isCurrent === true ? " · actual" : ""}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-1.5">
         <Label htmlFor="invite-role">rol</Label>
         <Select
           value={role}
@@ -284,7 +271,7 @@ export function InviteForm({
         >
           cancel·la
         </Button>
-        <Button type="submit" disabled={pending || campaignId.length === 0}>
+        <Button type="submit" disabled={pending || campaign === null}>
           {pending ? "enviant…" : "envia la invitació"}
         </Button>
       </div>

@@ -117,15 +117,24 @@ export function isUdlEmail(email: string): boolean {
 }
 
 /**
- * Both 409s the create route can return carry the code `CONFLICT`; only the
+ * Every 409 the create route can return carries the code `CONFLICT`; only the
  * message separates "that is not a udl.cat address" from "there is already a
- * pending invitation for this email". Matching on the flag name the API tells
- * us to resend with is the narrowest signal available — and the form also
- * pre-checks the domain itself, so this branch is the backstop, not the
- * primary path.
+ * pending invitation for this email" and "that is not the current campaign".
+ * Matching on the flag name the API tells us to resend with is the narrowest
+ * signal available — and the form also pre-checks the domain itself, so this
+ * branch is the backstop, not the primary path.
  */
 function isExternalDomainConflict(detail: string | undefined): boolean {
   return detail?.includes("allowExternalDomain") === true;
+}
+
+/**
+ * The form only ever sends the current campaign, so this means it changed
+ * while the dialog was open. It is not a duplicate, so it surfaces as a
+ * failure rather than as the duplicate notice.
+ */
+function isNotCurrentCampaignConflict(detail: string | undefined): boolean {
+  return detail?.includes("current campaign") === true;
 }
 
 async function createInvitation(
@@ -160,6 +169,7 @@ async function createInvitation(
     }
 
     if (error.status === 409) {
+      if (isNotCurrentCampaignConflict(error.detail)) throw error;
       return isExternalDomainConflict(error.detail)
         ? { kind: "needsExternalConfirm", detail: error.detail ?? "" }
         : {

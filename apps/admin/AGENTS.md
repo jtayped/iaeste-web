@@ -56,7 +56,10 @@ Rules the shell enforces, and that you must respect when adding a page:
   otherwise apply a second time.
 - **The header is the shell's, not yours.** Title, description, and an optional
   `actions` slot (right-aligned on `sm+`, stacked under the title on a phone)
-  are props. Do not add a second `<h1>` or a bespoke toolbar above the content.
+  are props. A client component deeper in the page that owns a page-wide
+  action, such as a table's CSV export, adds it to the same row with
+  `<PageAction>`; those come first and the `actions` prop ends the row. Do not
+  add a second `<h1>` or a bespoke toolbar above the content.
 
 The full prop shape (`src/components/shell/page-shell.tsx`):
 
@@ -221,14 +224,14 @@ ahead of the row links in the tab order, which is why sorting stays reachable.
 client, saves it under the name the API's `Content-Disposition` gives it, and
 toasts a failure like any other mutation.
 
-- **The control ends the toolbar's first row, at every width.** `<DataTable>`
-  hands it through context to `<TableToolbar>`, which is a search row (the
-  `search` prop, then the export) over the filters (its children). The
-  filters never share the export's line, so they can wrap freely without
-  running under it, and on a phone every stacked row ends at the same edge.
-  A `collapsible` toolbar (members) puts the export beside its `filtres`
-  button below `md`. Build a list's toolbar from `<TableToolbar>`, since a
-  hand-rolled one has nowhere to draw the export.
+- **The control sits in the page header, beside the title.** It acts on the
+  whole filtered list rather than on a row or a page of it, so it is a page
+  action. `<DataTable>` portals it with `<PageAction>`
+  (`src/components/shell/page-actions.tsx`) into the slot at the start of
+  `<PageShell>`'s action row. It comes before the page's own `actions` as the
+  secondary, outline button, and stacks under the title with them on a phone.
+  Pages never place it, and the toolbar above the table holds only the search
+  and the filters.
 
 - **The export is the list's query without the page, resolved on the server.**
   Each lib builds its API parameters in one function (`membersApiQuery` and

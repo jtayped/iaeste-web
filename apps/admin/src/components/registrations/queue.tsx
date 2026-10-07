@@ -331,16 +331,13 @@ export function RegistrationsQueue({
         : {})}
       csvExport={csvExport}
       toolbar={
-        <TableToolbar
-          search={
-            <TableSearch
-              id="registrations-search"
-              value={q}
-              placeholder="nom, cognoms o correu"
-              onCommit={handleSearch}
-            />
-          }
-        >
+        <TableToolbar>
+          <TableSearch
+            id="registrations-search"
+            value={q}
+            placeholder="nom, cognoms o correu"
+            onCommit={handleSearch}
+          />
           <TableFilter
             value={status}
             options={FILTERS}

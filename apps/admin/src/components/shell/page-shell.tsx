@@ -1,6 +1,10 @@
 import { cn } from "@repo/ui/lib/utils";
 
 import { DocumentTitle } from "@/components/shell/document-title";
+import {
+  PageActionsProvider,
+  PageActionsRow,
+} from "@/components/shell/page-actions";
 import { ResponsiveBreadcrumbs } from "@/components/shell/responsive-breadcrumbs";
 import { adminTitle, pageTrail, type BreadcrumbEntry } from "@/lib/page-title";
 
@@ -33,7 +37,11 @@ export interface PageShellProps {
   /** Lowercase Catalan for a fixed page; the record's own name for a leaf. */
   title: string;
   description?: string;
-  /** Right-aligned on `sm+`, stacked under the title on a phone. */
+  /**
+   * Right-aligned on `sm+`, stacked under the title on a phone. A client
+   * component inside the page adds to the same row with `<PageAction>`; those
+   * come first, and these end the row.
+   */
   actions?: React.ReactNode;
   children?: React.ReactNode;
 }
@@ -63,45 +71,41 @@ export function PageShell({
     <div className={PAGE_CONTAINER_CLASS}>
       <DocumentTitle title={adminTitle(pageTrail(breadcrumb, title))} />
 
-      <div className="space-y-6 md:space-y-8">
-        <div>
-          <ResponsiveBreadcrumbs entries={breadcrumb} title={title} />
+      <PageActionsProvider>
+        <div className="space-y-6 md:space-y-8">
+          <div>
+            <ResponsiveBreadcrumbs entries={breadcrumb} title={title} />
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-            <div className="min-w-0 space-y-1">
-              {/* `data-page-title` is how the sticky mobile header finds the
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+              <div className="min-w-0 space-y-1">
+                {/* `data-page-title` is how the sticky mobile header finds the
                   heading it takes over from once you have scrolled past it. */}
-              <h1
-                data-page-title
-                className="text-lg font-semibold tracking-tight"
-              >
-                {title}
-              </h1>
-              {description ? (
-                <p
-                  className={cn(
-                    "text-sm text-muted-foreground",
-                    PROSE_MEASURE_CLASS,
-                  )}
+                <h1
+                  data-page-title
+                  className="text-lg font-semibold tracking-tight"
                 >
-                  {description}
-                </p>
-              ) : null}
-            </div>
-            {actions ? (
-              // Full-height taps on a phone; back to the compact control size
-              // once there is a pointer.
-              <div className="flex flex-wrap items-center gap-2 [&>*]:min-h-11 sm:[&>*]:min-h-9">
-                {actions}
+                  {title}
+                </h1>
+                {description ? (
+                  <p
+                    className={cn(
+                      "text-sm text-muted-foreground",
+                      PROSE_MEASURE_CLASS,
+                    )}
+                  >
+                    {description}
+                  </p>
+                ) : null}
               </div>
-            ) : null}
+              <PageActionsRow>{actions}</PageActionsRow>
+            </div>
           </div>
-        </div>
 
-        {children ? (
-          <div className="space-y-6 md:space-y-8">{children}</div>
-        ) : null}
-      </div>
+          {children ? (
+            <div className="space-y-6 md:space-y-8">{children}</div>
+          ) : null}
+        </div>
+      </PageActionsProvider>
     </div>
   );
 }
