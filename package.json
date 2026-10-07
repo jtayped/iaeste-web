@@ -50,6 +50,7 @@
     "tooling/*"
   ],
   "simple-git-hooks": {
+    "commit-msg": "sed -i.bak -e '/^[Cc]o-[Aa]uthored-[Bb]y:.*<noreply@anthropic\\.com>/d' -e '/^[Cc]laude-[Ss]ession:/d' -e '/Generated with \\[Claude Code\\]/d' \"$1\" && rm -f \"$1.bak\"",
     "pre-push": "npm run lint && npm run check-types"
   }
 }
