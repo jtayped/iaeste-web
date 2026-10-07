@@ -1352,7 +1352,8 @@ export const adminCreateInvitationRoute = createRoute({
   operationId: "adminCreateInvitation",
   tags: ["Admin"],
   description:
-    "Invite someone to a campaign. Requires `invitations.write`, and " +
+    "Invite someone to the current campaign; any other campaign is " +
+    "rejected. Requires `invitations.write`, and " +
     "`invitations.grant_admin` as well when intendedRole is admin. A " +
     "non-udl.cat email needs allowExternalDomain: true.",
   request: {
@@ -1368,11 +1369,15 @@ export const adminCreateInvitationRoute = createRoute({
       description: "The pending invitation.",
       content: { "application/json": { schema: adminInvitationSchema } },
     },
+    404: {
+      description: "No campaign with that id.",
+      content: { "application/json": { schema: apiErrorSchema } },
+    },
     409: {
       description:
-        "An invitation for this email + campaign already exists, or the " +
-        "email domain needs confirmation, or admin was requested without " +
-        "the capability.",
+        "The campaign is not the current one, or an invitation for this " +
+        "email + campaign already exists, or the email domain needs " +
+        "confirmation.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
     ...adminAuthResponses,
@@ -1385,7 +1390,8 @@ export const adminBulkCreateInvitationsRoute = createRoute({
   operationId: "adminBulkCreateInvitations",
   tags: ["Admin"],
   description:
-    "Invite a member-table selection to one campaign. The selection is " +
+    "Invite a member-table selection to the current campaign; any other " +
+    "campaign is rejected. The selection is " +
     "either explicit user ids or all rows matching a server-side member " +
     "query except named exclusions. Existing memberships, registrations " +
     "and pending invitations are skipped. Requires `invitations.write`.",
@@ -1411,7 +1417,9 @@ export const adminBulkCreateInvitationsRoute = createRoute({
       content: { "application/json": { schema: apiErrorSchema } },
     },
     409: {
-      description: "The resolved selection is larger than 200 members.",
+      description:
+        "The campaign is not the current one, or the resolved selection " +
+        "is larger than 200 members.",
       content: { "application/json": { schema: apiErrorSchema } },
     },
     ...adminAuthResponses,

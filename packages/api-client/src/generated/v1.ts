@@ -638,7 +638,7 @@ export interface paths {
         /** @description Invitations for a campaign, `expired` computed in SQL from the database's clock. `sort` is one of email | name | status | role | createdAt | expiresAt and `dir` asc | desc, resolved in SQL; both default to createdAt desc. Requires `invitations.write`. */
         get: operations["adminListInvitations"];
         put?: never;
-        /** @description Invite someone to a campaign. Requires `invitations.write`, and `invitations.grant_admin` as well when intendedRole is admin. A non-udl.cat email needs allowExternalDomain: true. */
+        /** @description Invite someone to the current campaign; any other campaign is rejected. Requires `invitations.write`, and `invitations.grant_admin` as well when intendedRole is admin. A non-udl.cat email needs allowExternalDomain: true. */
         post: operations["adminCreateInvitation"];
         delete?: never;
         options?: never;
@@ -655,7 +655,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Invite a member-table selection to one campaign. The selection is either explicit user ids or all rows matching a server-side member query except named exclusions. Existing memberships, registrations and pending invitations are skipped. Requires `invitations.write`. */
+        /** @description Invite a member-table selection to the current campaign; any other campaign is rejected. The selection is either explicit user ids or all rows matching a server-side member query except named exclusions. Existing memberships, registrations and pending invitations are skipped. Requires `invitations.write`. */
         post: operations["adminBulkCreateInvitations"];
         delete?: never;
         options?: never;
@@ -3734,7 +3734,16 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description An invitation for this email + campaign already exists, or the email domain needs confirmation, or admin was requested without the capability. */
+            /** @description No campaign with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description The campaign is not the current one, or an invitation for this email + campaign already exists, or the email domain needs confirmation. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3794,7 +3803,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description The resolved selection is larger than 200 members. */
+            /** @description The campaign is not the current one, or the resolved selection is larger than 200 members. */
             409: {
                 headers: {
                     [name: string]: unknown;

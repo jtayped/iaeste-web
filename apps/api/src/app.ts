@@ -1744,6 +1744,26 @@ export function createApp(dependencies: AppDependencies = {}) {
       );
     }
 
+    const campaign = await createCampaignRepository(adminDb()).getById(
+      body.campaignId,
+    );
+    if (!campaign) {
+      return c.json(
+        errorBody(requestId, "NOT_FOUND", "No campaign with that id."),
+        404,
+      );
+    }
+    if (!campaign.isCurrent) {
+      return c.json(
+        errorBody(
+          requestId,
+          "CONFLICT",
+          "Invitations can only be sent to the current campaign.",
+        ),
+        409,
+      );
+    }
+
     const domain = body.email.split("@").at(-1) ?? "";
     const isUdl = domain === "udl.cat" || domain.endsWith(".udl.cat");
     if (!isUdl && !body.allowExternalDomain) {
@@ -1790,10 +1810,21 @@ export function createApp(dependencies: AppDependencies = {}) {
     const requestId = c.get("requestId");
     const db = adminDb();
 
-    if (!(await createCampaignRepository(db).getById(campaignId))) {
+    const campaign = await createCampaignRepository(db).getById(campaignId);
+    if (!campaign) {
       return c.json(
         errorBody(requestId, "NOT_FOUND", "No campaign with that id."),
         404,
+      );
+    }
+    if (!campaign.isCurrent) {
+      return c.json(
+        errorBody(
+          requestId,
+          "CONFLICT",
+          "Invitations can only be sent to the current campaign.",
+        ),
+        409,
       );
     }
 
