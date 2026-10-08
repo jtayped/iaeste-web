@@ -82,12 +82,14 @@ COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/.next/static ./apps/ad
 
 USER nextjs
 
+COPY docker/healthcheck.mjs ./healthcheck.mjs
+
 EXPOSE 3005
 
 # `/sign-in` rather than `/`: the root is behind the session check and answers
 # with a redirect, and it reaches out to the API to get there. The sign-in page
 # is the shallowest route that proves this container itself is serving.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:3005/sign-in').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+  CMD ["node", "/app/healthcheck.mjs", "http://127.0.0.1:3005/sign-in"]
 
 CMD ["node", "apps/admin/server.js"]

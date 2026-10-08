@@ -101,12 +101,14 @@ COPY --from=builder --chown=nextjs:nodejs /app/apps/cms/docker-entrypoint.sh ./a
 # The entrypoint runs as root only to chown the mounted media volume, then hands
 # every long-lived process to `nextjs` via gosu.
 
+COPY docker/healthcheck.mjs ./healthcheck.mjs
+
 EXPOSE 3006
 
 # The health endpoint runs a bounded Postgres query, so an unhealthy database
 # keeps the container from going ready — which is what we want after a failed
 # migration.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:3006/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+  CMD ["node", "/app/healthcheck.mjs", "http://127.0.0.1:3006/api/health"]
 
 ENTRYPOINT ["apps/cms/docker-entrypoint.sh"]

@@ -48,9 +48,11 @@ COPY --from=builder --chown=api:nodejs /app/apps/api/docker-entrypoint.sh ./apps
 
 USER api
 
+COPY docker/healthcheck.mjs ./healthcheck.mjs
+
 EXPOSE 3004
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:3004/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+  CMD ["node", "/app/healthcheck.mjs", "http://127.0.0.1:3004/health"]
 
 ENTRYPOINT ["apps/api/docker-entrypoint.sh"]
