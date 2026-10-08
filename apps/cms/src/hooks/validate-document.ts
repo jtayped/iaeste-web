@@ -120,10 +120,10 @@ export const requireCatalanToPublish =
   async ({ data, req, originalDoc, collection }) => {
     if (data?._status !== "published") return data;
 
-    // Whichever locale this write targets, validate the Catalan content:
-    // fetch it explicitly rather than trusting the in-flight `data`, which
-    // only holds the current request's locale.
-    let catalan: unknown = data;
+    // Whichever locale this write targets, validate the Catalan content, never
+    // the in-flight `data`, which only holds the current request's locale. A
+    // document created in es or en has no Catalan content to validate yet.
+    let catalan: unknown;
     if (req.locale === CATALAN) {
       catalan = { ...originalDoc, ...data };
     } else if (originalDoc?.id) {
@@ -137,6 +137,11 @@ export const requireCatalanToPublish =
           draft: true,
           req,
         }),
+      );
+    } else {
+      throw new APIError(
+        "no es pot publicar: encara no hi ha res en català; desa primer el contingut en català",
+        400,
       );
     }
 

@@ -15,6 +15,7 @@ Run from the repo root; scope with `--workspace cms`.
 ```sh
 npm run --workspace cms dev                # payload admin + APIs on :3006
 npm run --workspace cms build              # next build (via withPayload)
+npm run --workspace cms test               # node:test via tsx, src/**/*.test.ts
 npm run --workspace cms generate:types     # rewrites src/payload-types.ts
 npm run --workspace cms generate:importmap # rewrites src/app/(payload)/admin/importMap.js
 npm run --workspace cms migrate:create     # new migration in src/migrations
