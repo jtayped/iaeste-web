@@ -145,6 +145,11 @@
     "contact": {
       "title": "inicia tu viaje iaeste",
       "description": "únete a los estudiantes de ingeniería de la udl que han lanzado carreras globales a través de nuestro programa lc lleida."
+    },
+    "experiences": {
+      "title": "en primera persona",
+      "subtitle": "estudiantes que han hecho prácticas en el extranjero con iaeste te cuentan cómo les fue",
+      "all": "todas las experiencias"
     }
   },
   "IncommingPage": {
@@ -283,6 +288,30 @@
     "fallbackNotice": "este artículo aún no tiene versión en el idioma seleccionado. te mostramos el original en catalán.",
     "translationsLabel": "otros idiomas",
     "paginationLabel": "páginas del blog"
+  },
+  "ExperiencesPage": {
+    "Metadata": {
+      "title": "experiencias | iaeste lc lleida",
+      "description": "prácticas en el extranjero contadas por quien las ha hecho con iaeste: adónde fueron, qué hicieron y cómo les fue."
+    },
+    "title": "experiencias",
+    "description": "prácticas en el extranjero contadas en primera persona por quien las ha hecho con iaeste.",
+    "empty": "todavía no hay experiencias publicadas.",
+    "fallbackLabel": "catalán",
+    "fallbackNotice": "esta experiencia aún no tiene versión en el idioma seleccionado. te mostramos el original en catalán.",
+    "back": "volver a las experiencias",
+    "translationsLabel": "otros idiomas",
+    "factsTitle": "la estancia",
+    "facts": {
+      "degree": "estudios",
+      "role": "qué hizo",
+      "country": "país",
+      "city": "ciudad",
+      "hostCompany": "empresa o institución",
+      "period": "fechas"
+    },
+    "galleryTitle": "fotos de la estancia",
+    "moreTitle": "más experiencias"
   },
   "header": {
     "pages": {

@@ -1,14 +1,14 @@
 import type { Access, FieldAccess } from "payload";
 
 /**
- * Role model for the blog CMS. Two roles, checked on the server for every
+ * Role model for the CMS. Two roles, checked on the server for every
  * REST, GraphQL and Local API call — hiding a control in the admin UI is not
  * authorization (see `apps/cms/AGENTS.md`).
  *
- *   administrator  full control of users, posts, tags and media
- *   editor         create / read / update / publish / unpublish posts;
- *                  create tags and media; cannot touch users; cannot
- *                  permanently delete posts
+ *   administrator  full control of users, posts, experiences, tags and media
+ *   editor         create / read / update / publish / unpublish posts and
+ *                  experiences; create tags and media; cannot touch users;
+ *                  cannot permanently delete posts or experiences
  */
 export type Role = "administrator" | "editor";
 
@@ -31,7 +31,8 @@ export const authenticated: Access = ({ req }) => Boolean(req.user);
 
 /**
  * Readable by anyone. Used for `tags` (no draft concept) and as the base for
- * `media`/`posts`, which narrow it to published rows for non-editors below.
+ * `media`, `posts` and `experiences`, which narrow it to published rows for
+ * non-editors below.
  * The narrow public API always calls the Local API with `overrideAccess`, so
  * this only governs the raw REST/GraphQL surface.
  */

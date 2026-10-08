@@ -1,12 +1,14 @@
 import type { MetadataRoute } from "next";
 
-import { CmsUnavailableError, fetchBlogSitemap } from "@/lib/cms-blog-client";
 import { blogLocales } from "@/lib/blog";
+import { fetchBlogSitemap } from "@/lib/cms-blog-client";
+import { CmsUnavailableError } from "@/lib/cms-client";
+import { getExperienceSitemap } from "@/lib/experiences";
 
 const host = "https://iaestelleida.cat";
 const paths = ["", "/student", "/company", "/incommings", "/blog"];
 
-function staticEntries(): MetadataRoute.Sitemap {
+function staticEntries(paths: string[]): MetadataRoute.Sitemap {
   return paths.flatMap((path) =>
     blogLocales.map((locale) => {
       const url = `${host}/${locale}${path}`;
@@ -47,5 +49,18 @@ async function postEntries(): Promise<MetadataRoute.Sitemap> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  return [...staticEntries(), ...(await postEntries())];
+  const experiences = await getExperienceSitemap();
+  // The list page is only worth indexing once it has something on it.
+  const listed = experiences.length > 0 ? [...paths, "/experiences"] : paths;
+
+  return [
+    ...staticEntries(listed),
+    ...(await postEntries()),
+    ...experiences.map((entry) => ({
+      url: entry.url,
+      lastModified: entry.lastModified.split("T")[0],
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+  ];
 }

@@ -3,14 +3,21 @@ import SendEmailBtn from "@/components/common/buttons/send-email";
 import Content from "@/components/common/sections/content";
 import HeroSection from "@/components/common/sections/hero";
 import ContactSection from "@/components/sections/students/contact";
+import FeaturedExperiences from "@/components/sections/students/experiences";
 import Team from "@/components/sections/students/team";
 import WhyIaeste from "@/components/sections/students/why";
 import ButtonGroup from "@repo/ui/button-group";
 import { getTranslations } from "next-intl/server";
 import { getRegistrationWindow } from "@/lib/registration-status";
 import Inscripcions from "@/components/sections/students/inscripcions";
+import type { BlogLocale } from "@/lib/blog";
 
-const StudentsPage = async () => {
+const StudentsPage = async ({
+  params,
+}: {
+  params: Promise<{ locale: BlogLocale }>;
+}) => {
+  const { locale } = await params;
   const t = await getTranslations("StudentsPage.hero");
   const registrationWindow = await getRegistrationWindow();
 
@@ -35,6 +42,7 @@ const StudentsPage = async () => {
       <Inscripcions status={registrationWindow} />
       <Content>
         <WhyIaeste />
+        <FeaturedExperiences locale={locale} />
         <Team />
         <ContactSection />
       </Content>

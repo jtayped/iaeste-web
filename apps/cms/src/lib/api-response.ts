@@ -37,7 +37,7 @@ export function upstreamFailure(
   });
   return jsonError(
     "upstream_unavailable",
-    "el servei de blog no està disponible",
+    "el servei de continguts no està disponible",
     requestId,
     502,
   );

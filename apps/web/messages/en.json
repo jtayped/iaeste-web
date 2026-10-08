@@ -145,6 +145,11 @@
     "contact": {
       "title": "start your iaeste journey",
       "description": "join udl's engineering students who've launched global careers through our lc lleida program."
+    },
+    "experiences": {
+      "title": "in their own words",
+      "subtitle": "students who did an internship abroad with iaeste tell you how it went",
+      "all": "all experiences"
     }
   },
   "IncommingPage": {
@@ -283,6 +288,30 @@
     "fallbackNotice": "this article is not available in the selected language yet. here is the original in catalan.",
     "translationsLabel": "other languages",
     "paginationLabel": "blog pages"
+  },
+  "ExperiencesPage": {
+    "Metadata": {
+      "title": "experiences | iaeste lc lleida",
+      "description": "internships abroad told by the people who did them with iaeste: where they went, what they did and how it went."
+    },
+    "title": "experiences",
+    "description": "internships abroad, told in their own words by the people who did them with iaeste.",
+    "empty": "there are no published experiences yet.",
+    "fallbackLabel": "catalan",
+    "fallbackNotice": "this experience is not available in the selected language yet. here is the original in catalan.",
+    "back": "back to experiences",
+    "translationsLabel": "other languages",
+    "factsTitle": "the placement",
+    "facts": {
+      "degree": "studies",
+      "role": "what they did",
+      "country": "country",
+      "city": "city",
+      "hostCompany": "host organisation",
+      "period": "dates"
+    },
+    "galleryTitle": "photos from the placement",
+    "moreTitle": "more experiences"
   },
   "header": {
     "pages": {

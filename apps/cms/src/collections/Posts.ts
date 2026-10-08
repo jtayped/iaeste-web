@@ -1,15 +1,13 @@
 import type { CollectionConfig } from "payload";
 
 import { adminOnly, editorOrAdmin, publishedOrEditor } from "../access/roles";
+import { publishDateField } from "../fields/publish-date";
+import { localizedSlugField } from "../fields/slug";
+import { revalidateOnChange, revalidateOnDelete } from "../hooks/revalidate";
 import {
   rejectDuplicateSlug,
   requireCatalanToPublish,
-  slugField,
-} from "../hooks/validate-post";
-import {
-  revalidateOnChange,
-  revalidateOnDelete,
-} from "../hooks/revalidate-blog";
+} from "../hooks/validate-document";
 import { postBodyEditor } from "../lib/lexical";
 import { createPreviewToken, type PreviewLocale } from "../lib/signed-preview";
 
@@ -30,7 +28,7 @@ export const Posts: CollectionConfig = {
       const id = doc?.id;
       if (!id) return null;
       const previewLocale = (locale ?? "ca") as PreviewLocale;
-      const token = createPreviewToken(String(id), previewLocale);
+      const token = createPreviewToken("posts", String(id), previewLocale);
       return `${env.WEB_PUBLIC_ORIGIN}/api/preview/blog/${id}?locale=${previewLocale}&token=${token}`;
     },
   },
@@ -48,8 +46,16 @@ export const Posts: CollectionConfig = {
     },
   },
   hooks: {
-    beforeValidate: [rejectDuplicateSlug],
-    beforeChange: [requireCatalanToPublish],
+    beforeValidate: [rejectDuplicateSlug("un article")],
+    beforeChange: [
+      requireCatalanToPublish({
+        title: "títol",
+        slug: "slug",
+        excerpt: "resum",
+        body: "contingut",
+        coverImage: "imatge de portada",
+      }),
+    ],
     afterChange: [revalidateOnChange],
     afterDelete: [revalidateOnDelete],
   },
@@ -61,19 +67,7 @@ export const Posts: CollectionConfig = {
       label: "títol",
       admin: { description: "obligatori per publicar en català" },
     },
-    {
-      name: "slug",
-      type: "text",
-      localized: true,
-      index: true,
-      label: "slug",
-      admin: {
-        position: "sidebar",
-        description:
-          "minúscules, xifres i guionets; es bloqueja després de la primera publicació",
-      },
-      hooks: { beforeValidate: [slugField] },
-    },
+    localizedSlugField(),
     {
       name: "excerpt",
       type: "textarea",
@@ -116,26 +110,7 @@ export const Posts: CollectionConfig = {
       defaultValue: "iaeste lc lleida",
       label: "autoria",
     },
-    {
-      name: "publishDate",
-      type: "date",
-      label: "data de publicació",
-      admin: {
-        position: "sidebar",
-        description: "es fixa a la primera publicació si no se n'indica cap",
-      },
-      hooks: {
-        beforeChange: [
-          ({ value, data, originalDoc }) => {
-            if (value) return value;
-            const publishing =
-              data?._status === "published" &&
-              originalDoc?._status !== "published";
-            return publishing ? new Date().toISOString() : value;
-          },
-        ],
-      },
-    },
+    publishDateField(),
     {
       name: "legacyTranslationKey",
       type: "text",

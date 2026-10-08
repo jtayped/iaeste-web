@@ -9,7 +9,13 @@ import { env } from "@repo/env/cms/server";
 
 const LOCALES = ["ca", "es", "en"] as const;
 
+/**
+ * Body of the signed POST to the site's revalidation endpoint. `collection`
+ * tells the site which cache tags to drop; the site treats a body without it
+ * as `posts`.
+ */
 type RevalidatePayload = {
+  collection: "posts" | "experiences";
   documentId: string;
   slugs: string[];
   reason: "publish" | "unpublish" | "update" | "delete";
@@ -54,7 +60,8 @@ async function postRevalidation(body: RevalidatePayload): Promise<void> {
     });
 
     if (!response.ok) {
-      console.error("[cms] blog revalidation rejected", {
+      console.error("[cms] revalidation rejected", {
+        collection: body.collection,
         documentId: body.documentId,
         requestId: body.requestId,
         status: response.status,
@@ -63,7 +70,8 @@ async function postRevalidation(body: RevalidatePayload): Promise<void> {
   } catch (error) {
     // A failed invalidation never rolls back the database write or shows the
     // editor a false failure. The 60s cache lifetime is the safety net.
-    console.error("[cms] blog revalidation failed", {
+    console.error("[cms] revalidation failed", {
+      collection: body.collection,
       documentId: body.documentId,
       requestId: body.requestId,
       error: error instanceof Error ? error.message : "unknown error",
@@ -73,10 +81,16 @@ async function postRevalidation(body: RevalidatePayload): Promise<void> {
   }
 }
 
+function revalidatedCollection(slug: string): RevalidatePayload["collection"] {
+  if (slug === "posts" || slug === "experiences") return slug;
+  throw new Error(`[cms] no revalidation contract for "${slug}"`);
+}
+
 export const revalidateOnChange: CollectionAfterChangeHook = async ({
   doc,
   previousDoc,
   req,
+  collection,
 }) => {
   const wasPublished = previousDoc?._status === "published";
   const isPublished = doc?._status === "published";
@@ -91,6 +105,7 @@ export const revalidateOnChange: CollectionAfterChangeHook = async ({
     : "unpublish";
 
   await postRevalidation({
+    collection: revalidatedCollection(collection.slug),
     documentId: String(doc.id),
     slugs: [...new Set([...collectSlugs(previousDoc), ...collectSlugs(doc)])],
     reason,
@@ -103,10 +118,12 @@ export const revalidateOnChange: CollectionAfterChangeHook = async ({
 export const revalidateOnDelete: CollectionAfterDeleteHook = async ({
   doc,
   req,
+  collection,
 }) => {
   if (doc?._status !== "published") return doc;
 
   await postRevalidation({
+    collection: revalidatedCollection(collection.slug),
     documentId: String(doc.id),
     slugs: collectSlugs(doc),
     reason: "delete",

@@ -1,7 +1,7 @@
 import {
-  blogDetailQuerySchema,
-  blogPostDetailSchema,
-} from "@repo/constants/validators/blog";
+  experienceDetailQuerySchema,
+  experienceDetailSchema,
+} from "@repo/constants/validators/experiences";
 
 import {
   jsonError,
@@ -10,14 +10,17 @@ import {
   upstreamFailure,
 } from "../../../../../lib/api-response";
 import { getPayloadClient } from "../../../../../lib/payload-client";
-import { type RawPost, toDetail } from "../../../../../lib/public-blog-dto";
+import {
+  type RawExperience,
+  toDetail,
+} from "../../../../../lib/public-experience-dto";
 import { previewSecretMatches } from "../../../../../lib/signed-preview";
 
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/preview/blog/:id — the latest draft of one article, for the
- * marketing site's Draft Mode. Server-to-server only: it requires the shared
+ * GET /api/preview/experiences/:id — the latest draft of one experience, for
+ * the marketing site's Draft Mode. Server-to-server only: it requires the shared
  * `x-preview-secret` header (constant-time compared) and is otherwise a 404,
  * so the endpoint's existence is not observable without the secret.
  */
@@ -32,7 +35,7 @@ export async function GET(
   }
 
   const { id } = await params;
-  const parsed = blogDetailQuerySchema.safeParse(
+  const parsed = experienceDetailQuerySchema.safeParse(
     Object.fromEntries(new URL(req.url).searchParams),
   );
   if (!parsed.success) {
@@ -42,22 +45,22 @@ export async function GET(
   try {
     const payload = await getPayloadClient();
     const doc = (await payload.findByID({
-      collection: "posts",
+      collection: "experiences",
       id,
       draft: true,
       locale: "all",
-      depth: 2,
+      depth: 1,
       overrideAccess: true,
-    })) as unknown as RawPost | null;
+    })) as unknown as RawExperience | null;
 
     if (!doc) {
       return jsonError("not_found", "esborrany no trobat", requestId, 404);
     }
 
     return jsonOk(
-      blogPostDetailSchema.parse(toDetail(doc, parsed.data.locale)),
+      experienceDetailSchema.parse(toDetail(doc, parsed.data.locale)),
     );
   } catch (error) {
-    return upstreamFailure("blog preview", error, requestId);
+    return upstreamFailure("experience preview", error, requestId);
   }
 }
