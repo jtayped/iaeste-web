@@ -9,6 +9,7 @@
     "start": "next start --port 3006",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
+    "test": "tsx --test \"src/**/*.test.ts\"",
     "payload": "npm run with-env -- payload",
     "generate:types": "npm run with-env -- payload generate:types",
     "generate:importmap": "npm run with-env -- payload generate:importmap",
@@ -43,6 +44,7 @@
     "@types/react-dom": "19.2.4",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.22.0",
+    "tsx": "^4.20.0",
     "typescript": "5.8.2"
   }
 }
