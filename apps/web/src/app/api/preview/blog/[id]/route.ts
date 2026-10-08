@@ -1,8 +1,7 @@
-import { cookies, draftMode } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { fetchBlogPreview } from "@/lib/cms-blog-client";
-import { PREVIEW_COOKIE, verifyPreviewToken } from "@/lib/preview-token";
+import { rememberPreviewTarget, verifyPreviewToken } from "@/lib/preview-token";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +20,7 @@ export async function GET(
   const token = url.searchParams.get("token") ?? "";
 
   const claims = verifyPreviewToken(token);
-  if (!claims || claims.id !== id) {
+  if (!claims || claims.collection !== "posts" || claims.id !== id) {
     return new Response(
       "l'enllaç de previsualització no és vàlid o ha caducat",
       { status: 401 },
@@ -33,18 +32,11 @@ export async function GET(
     return new Response("no s'ha pogut carregar l'esborrany", { status: 502 });
   }
 
-  (await draftMode()).enable();
-  (await cookies()).set(
-    PREVIEW_COOKIE,
-    JSON.stringify({ id, locale: claims.locale }),
-    {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: true,
-      path: "/",
-      maxAge: 60 * 60,
-    },
-  );
+  await rememberPreviewTarget({
+    collection: "posts",
+    id,
+    locale: claims.locale,
+  });
 
   redirect(`/${claims.locale}/blog/${draft.slug}`);
 }

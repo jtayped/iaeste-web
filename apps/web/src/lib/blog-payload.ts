@@ -1,5 +1,3 @@
-import { cookies, draftMode } from "next/headers";
-
 import {
   BLOG_LIST_MAX_LIMIT,
   type BlogLocale as CmsLocale,
@@ -7,14 +5,14 @@ import {
   type BlogPostSummary,
 } from "@repo/constants/validators/blog";
 
-import { PREVIEW_COOKIE } from "@/lib/preview-token";
+import { previewedDocumentId } from "@/lib/preview-token";
 
 import {
   fetchBlogList,
   fetchBlogPost,
   fetchBlogPreview,
-  CmsUnavailableError,
 } from "./cms-blog-client";
+import { CmsUnavailableError } from "./cms-client";
 import {
   blogLocales,
   type BlogLocale,
@@ -99,20 +97,10 @@ async function readPreviewIfActive(
   requestedLocale: BlogLocale,
   slug: string,
 ): Promise<BlogPost | null> {
-  if (!(await draftMode()).isEnabled) return null;
+  const id = await previewedDocumentId("posts", requestedLocale);
+  if (!id) return null;
 
-  const raw = (await cookies()).get(PREVIEW_COOKIE)?.value;
-  if (!raw) return null;
-
-  let claim: { id?: string; locale?: string };
-  try {
-    claim = JSON.parse(raw);
-  } catch {
-    return null;
-  }
-  if (!claim.id || claim.locale !== requestedLocale) return null;
-
-  const draft = await fetchBlogPreview(claim.id, requestedLocale as CmsLocale);
+  const draft = await fetchBlogPreview(id, requestedLocale as CmsLocale);
   if (!draft || draft.slug !== slug) return null;
   return toBlogPost(draft);
 }

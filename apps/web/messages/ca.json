@@ -145,6 +145,11 @@
     "contact": {
       "title": "inicia el teu viatge iaeste",
       "description": "uneix-te als estudiants d'enginyeria de la udl que han llançat carreres globals a través del nostre programa lc lleida."
+    },
+    "experiences": {
+      "title": "en primera persona",
+      "subtitle": "estudiants que han fet pràctiques a l'estranger amb iaeste t'expliquen com els va anar",
+      "all": "totes les experiències"
     }
   },
   "CompanyPage": {
@@ -283,6 +288,30 @@
     "fallbackNotice": "aquest article encara no té versió en la llengua seleccionada. et mostrem l'original en català.",
     "translationsLabel": "altres llengües",
     "paginationLabel": "pàgines del blog"
+  },
+  "ExperiencesPage": {
+    "Metadata": {
+      "title": "experiències | iaeste lc lleida",
+      "description": "pràctiques a l'estranger explicades per qui les ha fet amb iaeste: on van anar, què hi van fer i com els va anar."
+    },
+    "title": "experiències",
+    "description": "pràctiques a l'estranger explicades en primera persona per qui les ha fet amb iaeste.",
+    "empty": "encara no hi ha cap experiència publicada.",
+    "fallbackLabel": "català",
+    "fallbackNotice": "aquesta experiència encara no té versió en la llengua seleccionada. et mostrem l'original en català.",
+    "back": "torna a les experiències",
+    "translationsLabel": "altres llengües",
+    "factsTitle": "l'estada",
+    "facts": {
+      "degree": "estudis",
+      "role": "què hi va fer",
+      "country": "país",
+      "city": "ciutat",
+      "hostCompany": "empresa o institució",
+      "period": "dates"
+    },
+    "galleryTitle": "fotos de l'estada",
+    "moreTitle": "més experiències"
   },
   "header": {
     "pages": {
