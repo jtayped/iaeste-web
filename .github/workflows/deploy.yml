@@ -13,6 +13,7 @@ on:
       - ".github/scripts/**"
       - ".github/workflows/deploy.yml"
       - "apps/**"
+      - "docker/**"
       - "packages/**"
       - "tooling/**"
       - "package.json"
@@ -43,8 +44,59 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
+  # build-push-action otherwise uploads a build record artifact for every
+  # image, which nothing reads.
+  DOCKER_BUILD_RECORD_UPLOAD: false
 
 jobs:
+  # Whether a pull request already passed ci.yml on this exact tree. A merge of
+  # an up-to-date branch always has, and then `ci` is skipped and the builds
+  # start at once. A direct push, or a merge onto a master that moved after the
+  # pull request's last run, has a tree nothing checked, so `ci` runs the
+  # whole suite before anything is built.
+  tree:
+    name: Look for a verified tree
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      verified: ${{ steps.lookup.outputs.verified }}
+    steps:
+      - id: lookup
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const { data: commit } = await github.rest.git.getCommit({ owner, repo, commit_sha: context.sha });
+            const { data } = await github.rest.actions.listArtifactsForRepo({
+              owner, repo, name: `ci-passed-${commit.tree.sha}`, per_page: 100,
+            });
+            // Only a run from this repository counts. A pull request from a
+            // fork runs its own copy of ci.yml and could upload any name.
+            const repositoryId = Number(process.env.GITHUB_REPOSITORY_ID);
+            const passed = data.artifacts.find(
+              (artifact) => !artifact.expired && artifact.workflow_run?.head_repository_id === repositoryId,
+            );
+            core.setOutput('verified', String(Boolean(passed)));
+            await core.summary
+              .addRaw(passed
+                ? `Tree ${commit.tree.sha} passed CI in run ${passed.workflow_run.id}; CI is skipped.`
+                : `No CI run passed on tree ${commit.tree.sha}; CI runs before the builds.`)
+              .write();
+
+  ci:
+    name: CI
+    needs: tree
+    if: github.event_name == 'push' && needs.tree.outputs.verified != 'true'
+    uses: ./.github/workflows/ci.yml
+    # Everything ci.yml's jobs ask for. GitHub checks this before the run
+    # starts, including for jobs that are then skipped.
+    permissions:
+      contents: read
+      packages: write
+
   detect-changes:
     name: Select images
     if: github.event_name == 'push'
@@ -95,8 +147,10 @@ jobs:
 
   build-admin:
     name: Build and push iaeste-admin
-    if: github.event_name == 'push' && needs.detect-changes.outputs.admin == 'true'
-    needs: detect-changes
+    if: >-
+      !cancelled() && github.event_name == 'push' && needs.detect-changes.outputs.admin == 'true' &&
+      needs.tree.result == 'success' && contains(fromJSON('["success","skipped"]'), needs.ci.result)
+    needs: [detect-changes, tree, ci]
     runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -130,8 +184,10 @@ jobs:
 
   build-cms:
     name: Build and push iaeste-cms
-    if: github.event_name == 'push' && needs.detect-changes.outputs.cms == 'true'
-    needs: detect-changes
+    if: >-
+      !cancelled() && github.event_name == 'push' && needs.detect-changes.outputs.cms == 'true' &&
+      needs.tree.result == 'success' && contains(fromJSON('["success","skipped"]'), needs.ci.result)
+    needs: [detect-changes, tree, ci]
     runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -163,8 +219,10 @@ jobs:
 
   build-api:
     name: Build and push iaeste-api
-    if: github.event_name == 'push' && needs.detect-changes.outputs.api == 'true'
-    needs: detect-changes
+    if: >-
+      !cancelled() && github.event_name == 'push' && needs.detect-changes.outputs.api == 'true' &&
+      needs.tree.result == 'success' && contains(fromJSON('["success","skipped"]'), needs.ci.result)
+    needs: [detect-changes, tree, ci]
     runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -196,8 +254,10 @@ jobs:
 
   build-inscripcions:
     name: Build and push iaeste-inscripcions
-    if: github.event_name == 'push' && needs.detect-changes.outputs.inscripcions == 'true'
-    needs: detect-changes
+    if: >-
+      !cancelled() && github.event_name == 'push' && needs.detect-changes.outputs.inscripcions == 'true' &&
+      needs.tree.result == 'success' && contains(fromJSON('["success","skipped"]'), needs.ci.result)
+    needs: [detect-changes, tree, ci]
     runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -233,8 +293,10 @@ jobs:
 
   build-web:
     name: Build and push iaeste-web
-    if: github.event_name == 'push' && needs.detect-changes.outputs.web == 'true'
-    needs: detect-changes
+    if: >-
+      !cancelled() && github.event_name == 'push' && needs.detect-changes.outputs.web == 'true' &&
+      needs.tree.result == 'success' && contains(fromJSON('["success","skipped"]'), needs.ci.result)
+    needs: [detect-changes, tree, ci]
     runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -289,6 +351,8 @@ jobs:
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'api')))
     needs:
       [
+        tree,
+        ci,
         detect-changes,
         build-api,
         build-admin,
@@ -325,7 +389,7 @@ jobs:
       !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'admin' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
-    needs: [detect-changes, build-admin, deploy-api]
+    needs: [tree, ci, detect-changes, build-admin, deploy-api]
     runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -355,7 +419,7 @@ jobs:
       !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'inscripcions' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
-    needs: [detect-changes, build-inscripcions, deploy-api]
+    needs: [tree, ci, detect-changes, build-inscripcions, deploy-api]
     runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -385,7 +449,7 @@ jobs:
       !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'cms' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
-    needs: [detect-changes, build-cms, deploy-api]
+    needs: [tree, ci, detect-changes, build-cms, deploy-api]
     runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -417,7 +481,7 @@ jobs:
       !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')) ||
       (github.event_name == 'workflow_dispatch' && (inputs.target == 'web' ||
       (inputs.target == 'all' && needs.deploy-api.result == 'success'))))
-    needs: [detect-changes, build-web, deploy-api, deploy-cms]
+    needs: [tree, ci, detect-changes, build-web, deploy-api, deploy-cms]
     runs-on: ${{ vars.CI_RUNNER_PIN || 'ubuntu-latest' }}
     permissions:
       contents: read

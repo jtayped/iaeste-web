@@ -1,18 +1,23 @@
 name: CI
 
+# Pull requests, and nothing on master. deploy.yml calls this workflow for a
+# push only when no pull request already passed on that exact tree, which a
+# merge of an up-to-date branch always has. `passed` below is what records it.
 on:
-  push:
-    branches: [master]
   pull_request:
+  workflow_call:
+  workflow_dispatch:
 
+# A new push to a pull request cancels its older run. A call from deploy.yml
+# gets a group of its own, so it never waits behind or cancels anything.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   TURBO_TELEMETRY_DISABLED: 1
-  # What `--affected` diffs against. Unset on a push, where turbo falls back
-  # to its own default. The flag itself is decided per job by the "How much of
+  # What `--affected` diffs against. Empty outside a pull request, where no
+  # job narrows to `--affected` in the first place. The flag itself is decided per job by the "How much of
   # the graph" step, which writes TURBO_AFFECTED into the environment.
   TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
 
@@ -306,3 +311,35 @@ jobs:
           # green build down with it. Missing the write is the right outcome
           # there; failing the check is not.
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/iaeste-${{ matrix.name }}:buildcache,mode=max,image-manifest=true,ignore-error=true
+
+  # Records the tree this run verified, as an artifact named after it. On a
+  # push to master, deploy.yml looks that name up and skips straight to the
+  # image builds when it finds one, so a merge does not run the whole suite a
+  # second time over files it has already checked. The tree is the pull
+  # request's merge commit, which is byte for byte what a merge of an
+  # up-to-date branch puts on master.
+  passed:
+    name: Record verified tree
+    needs: [verify, build, detect-images, container-images]
+    # container-images is skipped when no image is affected, and a skipped
+    # need would otherwise skip this job as well.
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - id: tree
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const { data } = await github.rest.git.getCommit({ ...context.repo, commit_sha: context.sha });
+            return data.tree.sha;
+      - run: echo "$GITHUB_SHA" > "$RUNNER_TEMP/verified-commit"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-passed-${{ steps.tree.outputs.result }}
+          path: ${{ runner.temp }}/verified-commit
+          retention-days: 30

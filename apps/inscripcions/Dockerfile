@@ -73,9 +73,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/apps/inscripcions/.next/static ./
 
 USER nextjs
 
+COPY docker/healthcheck.mjs ./healthcheck.mjs
+
 EXPOSE 3003
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:3003/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+  CMD ["node", "/app/healthcheck.mjs", "http://127.0.0.1:3003/"]
 
 CMD ["node", "apps/inscripcions/server.js"]

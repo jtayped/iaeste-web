@@ -14,10 +14,35 @@ certificates. The public site moved here from Vercel on 2026-08-29.
 | `iaeste-admin`        | `apps/admin/Dockerfile`        | 3005 | `/sign-in`    | `admin.iaestelleida.cat`        |
 | `iaeste-cms`          | `apps/cms/Dockerfile`          | 3006 | `/api/health` | `cms.iaestelleida.cat`          |
 
-Each Coolify resource has its own container healthcheck **disabled** — the
-`node:22-slim` images carry no `curl`/`wget` for Coolify's generated check to
-run, and every Dockerfile already ships a Node-based `HEALTHCHECK`. The API
-resource carries a stable `iaeste-api` network alias on the `coolify` network;
+A deploy is a rolling update. Coolify starts the new container beside the old
+one, runs its health check, and removes the old container only once the new one
+passes, so a container that never turns healthy never takes traffic and the
+previous release keeps serving. The check is a command,
+`node /app/healthcheck.mjs http://127.0.0.1:<port><health path>`, every 5s with
+10 retries after a 10s start period (15s on the API and CMS, which migrate as
+they start). The `node:22-slim` images carry no `curl` or `wget` for Coolify's
+default HTTP check, and its command check refuses quotes and parentheses, which
+is why `docker/healthcheck.mjs` exists. Every Dockerfile's `HEALTHCHECK` runs
+the same script.
+
+Each resource's labels also route its HTTPS routers through
+`deploy-retry@file` and its services through `fast-dial@file`, both defined in
+`rolling-deploys.yaml` in the proxy's dynamic configuration on the host. They
+cover the fraction of a second after the old container is removed in which
+Traefik still sends it requests:
+
+```
+traefik.http.routers.https-<n>-<resource uuid>.middlewares=gzip,deploy-retry@file
+traefik.http.services.https-<n>-<resource uuid>.loadbalancer.serverstransport=fast-dial@file
+```
+
+One pair per domain, `<n>` counting from 0 in the order the domains are listed.
+Coolify regenerates the labels when a resource's domains change, which drops
+these lines, so put them back after any domain change. A deploy that changes
+the labels answers 503 for a few seconds anyway, while old and new containers
+define the same router differently; deploys that leave them alone do not.
+
+The API resource carries a stable `iaeste-api` network alias on the `coolify` network;
 `apps/admin` reaches the API at `http://iaeste-api:3004` (baked as a build arg,
 since `next.config.ts` rewrites are serialised at build time), and the API
 reaches Postgres by the database resource's UUID on that same network.
@@ -187,8 +212,16 @@ a web change never ships ahead of the CMS it reads. New secrets/variables:
 
 `.github/workflows/deploy.yml` runs only for relevant pushes to `master` and
 manual rollbacks. Pull requests run `.github/workflows/ci.yml`, which compiles
-the workspaces and builds all five Dockerfiles without logging in to GHCR,
-pushing images, or calling Coolify.
+the workspaces and builds the Dockerfiles of the apps they affect without
+pushing images or calling Coolify. When every job passes, ci.yml uploads an
+artifact named `ci-passed-<tree sha>` for the pull request's merge commit.
+
+A push to `master` does not run ci.yml again for a tree that already passed.
+deploy.yml's first job looks that artifact up for the pushed commit's tree. A
+merge of an up-to-date branch finds it, and the builds start at once. A direct
+push, or a merge onto a `master` that moved after the pull request's last run,
+does not, and deploy.yml calls ci.yml in full before anything is built. A
+failed CI stops every build and deploy.
 
 On an ordinary push, the workflow builds all five images.
 
@@ -261,8 +294,11 @@ repository, Dockerfile, Nixpacks, or another source-build option. Configure:
 | admin        | `ghcr.io/<owner>/iaeste-admin:main`        | 3005 | `/sign-in`    |
 | cms          | `ghcr.io/<owner>/iaeste-cms:main`          | 3006 | `/api/health` |
 
-Set each hostname, enable automatic TLS and HTTP-to-HTTPS redirects, disable
-Coolify's own healthcheck (see the intro), and copy the authenticated deploy
+Set each hostname, enable automatic TLS and HTTP-to-HTTPS redirects, turn on
+Coolify's health check as a command with the retry labels (see the intro), and
+leave port mappings, a custom container name and consistent container names
+unset, since any of them makes Coolify stop the old container before it starts
+the new one. Copy the authenticated deploy
 webhook into the matching GitHub secret. Put database and registration-email
 credentials only on the API resource; the CMS carries its own isolated
 `iaeste_cms` credentials and nothing else's. Keep both databases on Coolify's
