@@ -54,6 +54,7 @@ most common failure mode in this repo's history.
 | Email sending                | `@repo/email/resend` (`createResendEmailer`)               |
 | Bulk email (one per person)  | `Emailer.sendBatch` — never one message with many `to`     |
 | Broadcast rules/placeholders | `@repo/constants/validators/broadcast`                     |
+| Blog / experiences CMS API   | `@repo/constants/validators/{blog,experiences}`            |
 
 ## Rules
 
