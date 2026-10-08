@@ -8,11 +8,10 @@ runs:
   steps:
     # Three outcomes, cheapest reasoning first.
     #
-    # A push to master runs everything. The merge commit's content is what the
-    # pull request just validated, so the whole graph is a cache hit and the
-    # full run costs seconds — free insurance against the one thing an
-    # affected filter cannot catch, a package breaking without its own files
-    # changing.
+    # Anything that is not a pull request runs everything. That is deploy.yml
+    # calling ci.yml for a master tree no pull request verified (a direct
+    # push, or a merge onto a base that moved), or a manual run. Nothing is
+    # known about that tree, so nothing is narrowed.
     #
     # A pull request normally narrows to the packages it changed and their
     # dependents, which is the whole point of this action.
@@ -35,7 +34,7 @@ runs:
 
         if [ "$EVENT" != "pull_request" ]; then
           echo "TURBO_AFFECTED=" >> "$GITHUB_ENV"
-          echo "Push to master: running every task." >> "$GITHUB_STEP_SUMMARY"
+          echo "Not a pull request: running every task." >> "$GITHUB_STEP_SUMMARY"
           exit 0
         fi
 
