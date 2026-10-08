@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { APIError } from "payload";
 
 import { env } from "@repo/env/cms/server";
 
@@ -10,8 +11,8 @@ const MAX_BYTES = 8 * 1024 * 1024;
 /**
  * Uploaded images. Metadata in Postgres, bytes under `CMS_MEDIA_DIR` (a
  * persistent Coolify volume in production). Only editors upload; deletion is
- * blocked while a post still references the file unless an administrator
- * overrides it.
+ * blocked while a post or an experience still references the file unless an
+ * administrator overrides it.
  */
 export const Media: CollectionConfig = {
   slug: "media",
@@ -86,18 +87,33 @@ export const Media: CollectionConfig = {
       async ({ req, id }) => {
         if (isAdmin(req.user) && req.query?.force === "true") return;
 
-        const referencing = await req.payload.find({
-          collection: "posts",
-          where: { coverImage: { equals: id } },
-          limit: 1,
-          depth: 0,
-          overrideAccess: true,
-          req,
-        });
+        const [posts, experiences] = await Promise.all([
+          req.payload.count({
+            collection: "posts",
+            where: { coverImage: { equals: id } },
+            overrideAccess: true,
+            req,
+          }),
+          req.payload.count({
+            collection: "experiences",
+            where: {
+              or: [{ photo: { equals: id } }, { gallery: { in: [id] } }],
+            },
+            overrideAccess: true,
+            req,
+          }),
+        ]);
 
-        if (referencing.totalDocs > 0) {
-          throw new Error(
+        if (posts.totalDocs > 0) {
+          throw new APIError(
             "aquest fitxer s'utilitza en un article; elimina la referència primer",
+            400,
+          );
+        }
+        if (experiences.totalDocs > 0) {
+          throw new APIError(
+            "aquest fitxer s'utilitza en una experiència; elimina la referència primer",
+            400,
           );
         }
       },
